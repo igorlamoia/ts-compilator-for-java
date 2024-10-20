@@ -1,5 +1,5 @@
 // Operadores Aritméticos
-export const ArithmeticOperators = {
+export const ARITHMETICS = {
   PLUS: 1, // +
   MINUS: 2, // -
   STAR: 3, // *
@@ -8,14 +8,14 @@ export const ArithmeticOperators = {
 };
 
 // Operadores Lógicos
-export const LogicalOperators = {
+export const LOGICALS = {
   LOGICAL_OR: 6, // ||
   LOGICAL_AND: 7, // &&
   LOGICAL_NOT: 8, // !
 };
 
 // Operadores Relacionais
-export const RelationalOperators = {
+export const RELATIONALS = {
   EQUAL_EQUAL: 9, // ==
   NOT_EQUAL: 10, // !=
   GREATER: 11, // >
@@ -25,7 +25,7 @@ export const RelationalOperators = {
 };
 
 // Operadores de Atribuição
-export const AssignmentOperators = {
+export const ASSIGNMENTS = {
   EQUAL: 15, // =
   PLUS_EQUAL: 16, // +=
   MINUS_EQUAL: 17, // -=
@@ -35,7 +35,7 @@ export const AssignmentOperators = {
 };
 
 // Palavras Reservadas
-export const ReservedWords = {
+export const RESERVEDS = {
   INT: 21,
   FLOAT: 22,
   STRING: 23,
@@ -77,13 +77,13 @@ export const Literals = {
 // Fim de Arquivo
 export const EOF = 99;
 
-// TOKENS unificado
+// TOKENS unificados
 export const TOKENS = {
-  ...ArithmeticOperators,
-  ...LogicalOperators,
-  ...RelationalOperators,
-  ...AssignmentOperators,
-  ...ReservedWords,
+  ...ARITHMETICS,
+  ...LOGICALS,
+  ...RELATIONALS,
+  ...ASSIGNMENTS,
+  ...RESERVEDS,
   ...Symbols,
   ...Literals,
   EOF,

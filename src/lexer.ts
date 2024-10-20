@@ -1,14 +1,6 @@
+import { TOKENS_MAP } from "./utils/tokens-map";
 import { Token } from "./utils/token";
-import {
-  TOKENS,
-  ArithmeticOperators,
-  LogicalOperators,
-  RelationalOperators,
-  AssignmentOperators,
-  ReservedWords,
-  Symbols,
-  Literals,
-} from "./utils/tokens";
+import { TOKENS, RESERVEDS, Literals } from "./utils/tokens";
 
 export class Lexer {
   private source: string;
@@ -18,7 +10,7 @@ export class Lexer {
   private column = 1;
   private start = 0;
 
-  private reservedWords: { [key: string]: number } = ReservedWords;
+  private RESERVEDS: { [key: string]: number } = RESERVEDS;
 
   constructor(source: string) {
     this.source = source;
@@ -37,23 +29,19 @@ export class Lexer {
   private scanToken() {
     const c = this.advance();
 
-    const tokenFunction = this.tokenMap[c];
-    if (tokenFunction) {
-      tokenFunction(this);
-    } else if (this.isWhitespace(c)) {
-      // Ignora espaços em branco
-    } else if (c === "\n") {
+    const tokenFunction = TOKENS_MAP[c];
+    if (tokenFunction) return tokenFunction(this);
+    if (this.isWhitespace(c)) return;
+    if (c === "\n") {
       this.line++;
       this.column = 0;
-    } else if (c === '"') {
-      this.string();
-    } else if (this.isDigit(c)) {
-      this.number();
-    } else if (this.isAlpha(c)) {
-      this.identifier();
-    } else {
-      this.error(`Caractere inesperado '${c}'`);
+      return;
     }
+    if (c === '"') return this.string();
+    if (this.isDigit(c)) return this.number();
+    if (this.isAlpha(c)) return this.identifier();
+
+    this.error(`Caractere inesperado '${c}'`);
   }
 
   private isAtEnd(): boolean {
@@ -67,7 +55,7 @@ export class Lexer {
     return c;
   }
 
-  private match(expected: string): boolean {
+  public match(expected: string): boolean {
     if (this.isAtEnd()) return false;
     if (this.source[this.current] !== expected) return false;
     this.current++;
@@ -85,14 +73,14 @@ export class Lexer {
     return this.source[this.current + 1];
   }
 
-  private addToken(type: number, lexeme?: string) {
+  public addToken(type: number, lexeme?: string) {
     const text = lexeme || this.source.substring(this.start, this.current);
     this.tokens.push(
       new Token(type, text, this.line, this.column - text.length)
     );
   }
 
-  private error(message: string) {
+  public error(message: string) {
     console.error(
       `[Linha ${this.line}, Coluna ${this.column}] Erro: ${message}`
     );
@@ -101,107 +89,6 @@ export class Lexer {
   private isWhitespace(c: string): boolean {
     return c === " " || c === "\r" || c === "\t";
   }
-
-  private tokenMap: { [key: string]: (lexer: Lexer) => void } = {
-    "+": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(AssignmentOperators.PLUS_EQUAL);
-      } else {
-        lexer.addToken(ArithmeticOperators.PLUS);
-      }
-    },
-    "-": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(AssignmentOperators.MINUS_EQUAL);
-      } else {
-        lexer.addToken(ArithmeticOperators.MINUS);
-      }
-    },
-    "*": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(AssignmentOperators.STAR_EQUAL);
-      } else {
-        lexer.addToken(ArithmeticOperators.STAR);
-      }
-    },
-    "/": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(AssignmentOperators.SLASH_EQUAL);
-      } else {
-        lexer.addToken(ArithmeticOperators.SLASH);
-      }
-    },
-    "%": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(AssignmentOperators.MODULO_EQUAL);
-      } else {
-        lexer.addToken(ArithmeticOperators.MODULO);
-      }
-    },
-    ";": (lexer) => {
-      lexer.addToken(Symbols.SEMICOLON);
-    },
-    ",": (lexer) => {
-      lexer.addToken(Symbols.COMMA);
-    },
-    "{": (lexer) => {
-      lexer.addToken(Symbols.LEFT_BRACE);
-    },
-    "}": (lexer) => {
-      lexer.addToken(Symbols.RIGHT_BRACE);
-    },
-    "(": (lexer) => {
-      lexer.addToken(Symbols.LEFT_PAREN);
-    },
-    ")": (lexer) => {
-      lexer.addToken(Symbols.RIGHT_PAREN);
-    },
-    ".": (lexer) => {
-      lexer.addToken(Symbols.DOT);
-    },
-    "!": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(RelationalOperators.NOT_EQUAL);
-      } else {
-        lexer.addToken(LogicalOperators.LOGICAL_NOT);
-      }
-    },
-    "=": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(RelationalOperators.EQUAL_EQUAL);
-      } else {
-        lexer.addToken(AssignmentOperators.EQUAL);
-      }
-    },
-    ">": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(RelationalOperators.GREATER_EQUAL);
-      } else {
-        lexer.addToken(RelationalOperators.GREATER);
-      }
-    },
-    "<": (lexer) => {
-      if (lexer.match("=")) {
-        lexer.addToken(RelationalOperators.LESS_EQUAL);
-      } else {
-        lexer.addToken(RelationalOperators.LESS);
-      }
-    },
-    "|": (lexer) => {
-      if (lexer.match("|")) {
-        lexer.addToken(LogicalOperators.LOGICAL_OR);
-      } else {
-        lexer.error("Caractere inesperado '|'");
-      }
-    },
-    "&": (lexer) => {
-      if (lexer.match("&")) {
-        lexer.addToken(LogicalOperators.LOGICAL_AND);
-      } else {
-        lexer.error("Caractere inesperado '&'");
-      }
-    },
-  };
 
   private string() {
     let value = "";
@@ -212,51 +99,56 @@ export class Lexer {
       }
       if (this.peek() === "\\") {
         value += this.advance();
-        value += this.advance();
-      } else {
-        value += this.advance();
+        if (!this.isAtEnd()) value += this.advance();
+        continue;
       }
+      value += this.advance();
     }
+
     if (this.isAtEnd()) {
       this.error("String não terminada.");
       return;
     }
-    this.advance(); // Fecha a string
+
+    this.advance(); // Consome o caractere de fechamento "
     this.addToken(Literals.STRING_LITERAL, '"' + value + '"');
   }
 
   private number() {
     let numberStr = this.source.substring(this.start, this.current);
+
     if (numberStr === "0") {
-      if (this.peek().toLowerCase() === "x") {
+      const nextChar = this.peek().toLowerCase();
+      if (nextChar === "x") {
         numberStr += this.advance(); // Consome 'x'
         while (this.isHexDigit(this.peek())) {
           numberStr += this.advance();
         }
         this.addToken(Literals.HEX_LITERAL, numberStr);
-      } else {
-        while (this.isDigit(this.peek())) {
-          numberStr += this.advance();
-        }
-        this.addToken(Literals.OCTAL_LITERAL, numberStr);
+        return;
       }
-    } else {
+
       while (this.isDigit(this.peek())) {
         numberStr += this.advance();
       }
-      if (this.peek() === ".") {
-        numberStr += this.advance();
-        while (this.isDigit(this.peek())) {
-          numberStr += this.advance();
-        }
-        if (numberStr.endsWith(".")) {
-          numberStr += "0"; // Adiciona '0' se terminar com '.'
-        }
-        this.addToken(Literals.FLOAT_LITERAL, numberStr);
-      } else {
-        this.addToken(Literals.INTEGER_LITERAL, numberStr);
-      }
+      this.addToken(Literals.OCTAL_LITERAL, numberStr);
+      return;
     }
+
+    while (this.isDigit(this.peek())) {
+      numberStr += this.advance();
+    }
+
+    if (this.peek() === ".") {
+      numberStr += this.advance();
+      while (this.isDigit(this.peek())) {
+        numberStr += this.advance();
+      }
+      if (numberStr.endsWith(".")) numberStr += "0";
+      this.addToken(Literals.FLOAT_LITERAL, numberStr);
+      return;
+    }
+    this.addToken(Literals.INTEGER_LITERAL, numberStr);
   }
 
   private identifier() {
@@ -264,12 +156,8 @@ export class Lexer {
       this.advance();
     }
     const ident = this.source.substring(this.start, this.current);
-    const type = this.reservedWords[ident];
-    if (type !== undefined) {
-      this.addToken(type, ident);
-    } else {
-      this.addToken(Literals.IDENTIFIER, ident);
-    }
+    const type = this.RESERVEDS[ident];
+    this.addToken(type !== undefined ? type : Literals.IDENTIFIER, ident);
   }
 
   private isDigit(c: string): boolean {
