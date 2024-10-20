@@ -7,7 +7,11 @@ import {
   Symbols,
 } from "./tokens";
 
-export const TOKENS_MAP: { [key: string]: (lexer: Lexer) => void } = {
+type TTokenMap = {
+  [key: string]: (lexer: Lexer) => void;
+};
+
+export const TOKENS_MAP: TTokenMap = {
   ";": (lexer) => lexer.addToken(Symbols.SEMICOLON),
   ",": (lexer) => lexer.addToken(Symbols.COMMA),
   "{": (lexer) => lexer.addToken(Symbols.LEFT_BRACE),
