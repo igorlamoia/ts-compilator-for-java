@@ -1,5 +1,5 @@
 import { TOKENS_MAP } from "./utils/tokens-map";
-import { Token } from "./utils/token";
+import { Token } from "./token";
 import { TOKENS, RESERVEDS, Literals } from "./utils/tokens";
 
 export class Lexer {
