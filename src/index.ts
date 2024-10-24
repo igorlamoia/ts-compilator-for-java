@@ -1,9 +1,10 @@
 import { Lexer } from "./lexer";
+import fs from "fs";
 
 const PATH = "src/resource/input-code.java";
 const ENCODE = "utf-8";
 
-const sourceCode: string = require("fs").readFileSync(PATH, ENCODE);
+const sourceCode: string = fs.readFileSync(PATH, ENCODE);
 
 const lexer = new Lexer(sourceCode);
 const tokens = lexer.scanTokens();
