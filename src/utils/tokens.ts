@@ -1,77 +1,77 @@
 // Operadores Aritméticos
 export const ARITHMETICS = {
-  PLUS: 1, // +
-  MINUS: 2, // -
-  STAR: 3, // *
-  SLASH: 4, // /
-  MODULO: 5, // %
+  plus: 1, // +
+  minus: 2, // -
+  star: 3, // *
+  slash: 4, // /
+  modulo: 5, // %
 };
 
 // Operadores Lógicos
 export const LOGICALS = {
-  LOGICAL_OR: 6, // ||
-  LOGICAL_AND: 7, // &&
-  LOGICAL_NOT: 8, // !
+  logical_or: 6, // ||
+  logical_and: 7, // &&
+  logical_not: 8, // !
 };
 
 // Operadores Relacionais
 export const RELATIONALS = {
-  EQUAL_EQUAL: 9, // ==
-  NOT_EQUAL: 10, // !=
-  GREATER: 11, // >
-  GREATER_EQUAL: 12, // >=
-  LESS: 13, // <
-  LESS_EQUAL: 14, // <=
+  equal_equal: 9, // ==
+  not_equal: 10, // !=
+  greater: 11, // >
+  greater_equal: 12, // >=
+  less: 13, // <
+  less_equal: 14, // <=
 };
 
 // Operadores de Atribuição
 export const ASSIGNMENTS = {
-  EQUAL: 15, // =
-  PLUS_EQUAL: 16, // +=
-  MINUS_EQUAL: 17, // -=
-  STAR_EQUAL: 18, // *=
-  SLASH_EQUAL: 19, // /=
-  MODULO_EQUAL: 20, // %=
+  equal: 15, // =
+  plus_equal: 16, // +=
+  minus_equal: 17, // -=
+  star_equal: 18, // *=
+  slash_equal: 19, // /=
+  modulo_equal: 20, // %=
 };
 
 // Palavras Reservadas
 export const RESERVEDS = {
-  INT: 21,
-  FLOAT: 22,
-  STRING: 23,
-  FOR: 24,
-  WHILE: 25,
-  BREAK: 26,
-  CONTINUE: 27,
-  IF: 28,
-  ELSE: 29,
-  RETURN: 30,
-  SYSTEM: 31,
-  OUT: 32,
-  PRINT: 33,
-  IN: 34,
-  SCAN: 35,
+  int: 21,
+  float: 22,
+  string: 23,
+  for: 24,
+  while: 25,
+  break: 26,
+  continue: 27,
+  if: 28,
+  else: 29,
+  return: 30,
+  system: 31,
+  out: 32,
+  print: 33,
+  in: 34,
+  scan: 35,
 };
 
 // Símbolos
-export const Symbols = {
-  SEMICOLON: 36, // ;
-  COMMA: 37, // ,
-  LEFT_BRACE: 38, // {
-  RIGHT_BRACE: 39, // }
-  LEFT_PAREN: 40, // (
-  RIGHT_PAREN: 41, // )
-  DOT: 42, // .
+export const SYMBOLS = {
+  semicolon: 36, // ;
+  comma: 37, // ,
+  left_brace: 38, // {
+  right_brace: 39, // }
+  left_paren: 40, // (
+  right_paren: 41, // )
+  dot: 42, // .
 };
 
 // Literais
-export const Literals = {
-  IDENTIFIER: 43,
-  STRING_LITERAL: 44,
-  INTEGER_LITERAL: 45,
-  FLOAT_LITERAL: 46,
-  HEX_LITERAL: 47,
-  OCTAL_LITERAL: 48,
+export const LITERALS = {
+  identifier: 43,
+  string_literal: 44,
+  integer_literal: 45,
+  float_literal: 46,
+  hex_literal: 47,
+  octal_literal: 48,
 };
 
 // Fim de Arquivo
@@ -84,7 +84,7 @@ export const TOKENS = {
   ...RELATIONALS,
   ...ASSIGNMENTS,
   ...RESERVEDS,
-  ...Symbols,
-  ...Literals,
+  ...SYMBOLS,
+  ...LITERALS,
   EOF,
 };

@@ -1,6 +1,6 @@
 import { TOKENS_MAP } from "./utils/tokens-map";
 import { Token } from "./token";
-import { TOKENS, RESERVEDS, Literals } from "./utils/tokens";
+import { TOKENS, RESERVEDS, LITERALS } from "./utils/tokens";
 
 export class Lexer {
   private source: string;
@@ -28,7 +28,6 @@ export class Lexer {
 
   private scanToken() {
     const c = this.advance();
-
     const tokenFunction = TOKENS_MAP[c];
     if (tokenFunction) return tokenFunction(this);
     if (this.isWhitespace(c)) return;
@@ -82,7 +81,10 @@ export class Lexer {
 
   public error(message: string) {
     console.error(
-      `[Linha ${this.line}, Coluna ${this.column}] Erro: ${message}`
+      `Row ${this.line}, Column ${this.column}, Error message: ${message}`
+    );
+    throw new Error(
+      `Row: ${this.line}, Column ${this.column}, Error message: ${message}`
     );
   }
 
@@ -106,12 +108,12 @@ export class Lexer {
     }
 
     if (this.isAtEnd()) {
-      this.error("String não terminada.");
+      this.error("Not fineshed String.");
       return;
     }
 
     this.advance(); // Consome o caractere de fechamento "
-    this.addToken(Literals.STRING_LITERAL, '"' + value + '"');
+    this.addToken(LITERALS.string_literal, '"' + value + '"');
   }
 
   private number() {
@@ -124,14 +126,14 @@ export class Lexer {
         while (this.isHexDigit(this.peek())) {
           numberStr += this.advance();
         }
-        this.addToken(Literals.HEX_LITERAL, numberStr);
+        this.addToken(LITERALS.hex_literal, numberStr);
         return;
       }
 
       while (this.isDigit(this.peek())) {
         numberStr += this.advance();
       }
-      this.addToken(Literals.OCTAL_LITERAL, numberStr);
+      this.addToken(LITERALS.octal_literal, numberStr);
       return;
     }
 
@@ -145,19 +147,17 @@ export class Lexer {
         numberStr += this.advance();
       }
       if (numberStr.endsWith(".")) numberStr += "0";
-      this.addToken(Literals.FLOAT_LITERAL, numberStr);
+      this.addToken(LITERALS.float_literal, numberStr);
       return;
     }
-    this.addToken(Literals.INTEGER_LITERAL, numberStr);
+    this.addToken(LITERALS.integer_literal, numberStr);
   }
 
   private identifier() {
-    while (this.isAlphaNumeric(this.peek())) {
-      this.advance();
-    }
+    while (this.isAlphaNumeric(this.peek())) this.advance();
     const ident = this.source.substring(this.start, this.current);
     const type = this.RESERVEDS[ident];
-    this.addToken(type !== undefined ? type : Literals.IDENTIFIER, ident);
+    this.addToken(type ?? LITERALS.identifier, ident);
   }
 
   private isDigit(c: string): boolean {
