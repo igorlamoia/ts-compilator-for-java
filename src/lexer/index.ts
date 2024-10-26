@@ -27,17 +27,17 @@ export class Lexer {
   }
 
   public scanToken() {
-    const c = this.peekAndAdvance();
-    if (isWhitespace(c)) return;
-    if (c === "\n") return this.goToNextLine();
+    const char = this.peekAndAdvance();
+    if (isWhitespace(char)) return;
+    if (char === "\n") return this.goToNextLine();
 
-    const tokenFunction = TOKENS_MAP[c];
+    const tokenFunction = TOKENS_MAP[char];
     if (tokenFunction) return tokenFunction(this);
 
-    const scanner = LexerScannerFactory.getInstance(c, this);
+    const scanner = LexerScannerFactory.getInstance(char, this);
     if (scanner) return scanner.run();
 
-    this.error(`Caractere inesperado '${c}'`);
+    this.error(`Caractere inesperado '${char}'`);
   }
 
   public isAtEnd(): boolean {
@@ -45,10 +45,10 @@ export class Lexer {
   }
 
   public peekAndAdvance(): string {
-    const c = this.source[this.current];
+    const char = this.source[this.current];
     this.current++;
     this.column++;
-    return c;
+    return char;
   }
 
   public match(expected: string): boolean {
