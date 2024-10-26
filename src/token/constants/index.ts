@@ -16,3 +16,13 @@ export const TOKENS = {
   LITERALS,
   EOF: 99,
 };
+
+export {
+  ARITHMETICS,
+  LOGICALS,
+  RELATIONALS,
+  ASSIGNMENTS,
+  RESERVEDS,
+  SYMBOLS,
+  LITERALS,
+};
