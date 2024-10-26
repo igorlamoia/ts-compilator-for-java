@@ -23,4 +23,13 @@ export class Token {
       column: this.column,
     };
   }
+
+  toArrayOfStrings() {
+    return [
+      this.type.toString(),
+      this.lexeme,
+      this.line.toString(),
+      this.column.toString(),
+    ];
+  }
 }

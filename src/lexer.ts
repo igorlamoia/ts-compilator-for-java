@@ -9,6 +9,7 @@ export class Lexer {
   private line = 1;
   private column = 1;
   private start = 0;
+  // private lastToken: Token | null = null;
 
   private RESERVEDS: { [key: string]: number } = RESERVEDS;
 
@@ -26,11 +27,15 @@ export class Lexer {
     return this.tokens;
   }
 
+  private getLastToken(): Token {
+    return this.tokens[this.tokens.length - 1];
+  }
+
   private scanToken() {
-    const c = this.advance();
+    const c = this.peekAndAdvance();
+    if (this.isWhitespace(c)) return;
     const tokenFunction = TOKENS_MAP[c];
     if (tokenFunction) return tokenFunction(this);
-    if (this.isWhitespace(c)) return;
     if (c === "\n") {
       this.line++;
       this.column = 0;
@@ -47,7 +52,7 @@ export class Lexer {
     return this.current >= this.source.length;
   }
 
-  private advance(): string {
+  private peekAndAdvance(): string {
     const c = this.source[this.current];
     this.current++;
     this.column++;
@@ -72,6 +77,11 @@ export class Lexer {
     return this.source[this.current + 1];
   }
 
+  private peekPrevious(): string {
+    if (this.current - 1 < 0) return "\0";
+    return this.source[this.current - 1];
+  }
+
   public addToken(type: number, lexeme?: string) {
     const text = lexeme || this.source.substring(this.start, this.current);
     this.tokens.push(
@@ -80,9 +90,6 @@ export class Lexer {
   }
 
   public error(message: string) {
-    console.error(
-      `Row ${this.line}, Column ${this.column}, Error message: ${message}`
-    );
     throw new Error(
       `Row: ${this.line}, Column ${this.column}, Error message: ${message}`
     );
@@ -100,11 +107,11 @@ export class Lexer {
         this.column = 0;
       }
       if (this.peek() === "\\") {
-        value += this.advance();
-        if (!this.isAtEnd()) value += this.advance();
+        value += this.peekAndAdvance();
+        if (!this.isAtEnd()) value += this.peekAndAdvance();
         continue;
       }
-      value += this.advance();
+      value += this.peekAndAdvance();
     }
 
     if (this.isAtEnd()) {
@@ -112,8 +119,15 @@ export class Lexer {
       return;
     }
 
-    this.advance(); // Consome o caractere de fechamento "
+    this.peekAndAdvance(); // Consome o caractere de fechamento "
     this.addToken(LITERALS.string_literal, '"' + value + '"');
+  }
+
+  private validateNumber(c: string, throws: boolean = false) {
+    const isInvalidNumber =
+      !this.isWhitespace(c) && c !== "." && !this.isDigit(c) && !TOKENS_MAP[c];
+    if (isInvalidNumber && throws) this.error("Caractere inesperado");
+    return !isInvalidNumber;
   }
 
   private number() {
@@ -122,39 +136,43 @@ export class Lexer {
     if (numberStr === "0") {
       const nextChar = this.peek().toLowerCase();
       if (nextChar === "x") {
-        numberStr += this.advance(); // Consome 'x'
+        numberStr += this.peekAndAdvance(); // Consome 'x'
         while (this.isHexDigit(this.peek())) {
-          numberStr += this.advance();
+          numberStr += this.peekAndAdvance();
         }
         this.addToken(LITERALS.hex_literal, numberStr);
         return;
       }
 
       while (this.isDigit(this.peek())) {
-        numberStr += this.advance();
+        numberStr += this.peekAndAdvance();
       }
       this.addToken(LITERALS.octal_literal, numberStr);
       return;
     }
 
     while (this.isDigit(this.peek())) {
-      numberStr += this.advance();
+      numberStr += this.peekAndAdvance();
     }
 
-    if (this.peek() === ".") {
-      numberStr += this.advance();
-      while (this.isDigit(this.peek())) {
-        numberStr += this.advance();
-      }
-      if (numberStr.endsWith(".")) numberStr += "0";
-      this.addToken(LITERALS.float_literal, numberStr);
-      return;
+    this.validateNumber(this.peek(), true);
+
+    if (this.peek() !== ".")
+      return this.addToken(LITERALS.integer_literal, numberStr);
+
+    numberStr += this.peekAndAdvance();
+    while (this.isDigit(this.peek())) {
+      numberStr += this.peekAndAdvance();
     }
-    this.addToken(LITERALS.integer_literal, numberStr);
+
+    this.validateNumber(this.peek(), true);
+
+    if (numberStr.endsWith(".")) numberStr += "0";
+    this.addToken(LITERALS.float_literal, numberStr);
   }
 
   private identifier() {
-    while (this.isAlphaNumeric(this.peek())) this.advance();
+    while (this.isAlphaNumeric(this.peek())) this.peekAndAdvance();
     const ident = this.source.substring(this.start, this.current);
     const type = this.RESERVEDS[ident];
     this.addToken(type ?? LITERALS.identifier, ident);
