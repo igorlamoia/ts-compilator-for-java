@@ -1,6 +1,13 @@
-import { TOKENS_MAP } from "../tokens/mappings";
-import { Token } from "../tokens";
-import { TOKENS } from "../tokens/constants";
+import { TOKENS_MAP } from "../token/mappings";
+import { Token } from "../token";
+import { TOKENS } from "../token/constants";
+import {
+  isAlpha,
+  isAlphaNumeric,
+  isDigit,
+  isHexDigit,
+  isWhitespace,
+} from "./lexer-helpers";
 
 const { LITERALS, RESERVEDS } = TOKENS;
 
@@ -32,7 +39,7 @@ export class Lexer {
 
   private scanToken() {
     const c = this.peekAndAdvance();
-    if (this.isWhitespace(c)) return;
+    if (isWhitespace(c)) return;
     const tokenFunction = TOKENS_MAP[c];
     if (tokenFunction) return tokenFunction(this);
     if (c === "\n") {
@@ -41,8 +48,8 @@ export class Lexer {
       return;
     }
     if (c === '"') return this.string();
-    if (this.isDigit(c)) return this.number();
-    if (this.isAlpha(c)) return this.identifier();
+    if (isDigit(c)) return this.number();
+    if (isAlpha(c)) return this.identifier();
 
     this.error(`Caractere inesperado '${c}'`);
   }
@@ -94,10 +101,6 @@ export class Lexer {
     );
   }
 
-  private isWhitespace(c: string): boolean {
-    return c === " " || c === "\r" || c === "\t";
-  }
-
   private string() {
     let value = "";
     while (this.peek() !== '"' && !this.isAtEnd()) {
@@ -124,7 +127,7 @@ export class Lexer {
 
   private validateNumber(c: string, throws: boolean = false) {
     const isInvalidNumber =
-      !this.isWhitespace(c) && c !== "." && !this.isDigit(c) && !TOKENS_MAP[c];
+      !isWhitespace(c) && c !== "." && !isDigit(c) && !TOKENS_MAP[c];
     if (isInvalidNumber && throws) this.error("Caractere inesperado");
     return !isInvalidNumber;
   }
@@ -136,21 +139,21 @@ export class Lexer {
       const nextChar = this.peek().toLowerCase();
       if (nextChar === "x") {
         numberStr += this.peekAndAdvance(); // Consome 'x'
-        while (this.isHexDigit(this.peek())) {
+        while (isHexDigit(this.peek())) {
           numberStr += this.peekAndAdvance();
         }
         this.addToken(LITERALS.hex_literal, numberStr);
         return;
       }
 
-      while (this.isDigit(this.peek())) {
+      while (isDigit(this.peek())) {
         numberStr += this.peekAndAdvance();
       }
       this.addToken(LITERALS.octal_literal, numberStr);
       return;
     }
 
-    while (this.isDigit(this.peek())) {
+    while (isDigit(this.peek())) {
       numberStr += this.peekAndAdvance();
     }
 
@@ -160,7 +163,7 @@ export class Lexer {
       return this.addToken(LITERALS.integer_literal, numberStr);
 
     numberStr += this.peekAndAdvance();
-    while (this.isDigit(this.peek())) {
+    while (isDigit(this.peek())) {
       numberStr += this.peekAndAdvance();
     }
 
@@ -171,30 +174,12 @@ export class Lexer {
   }
 
   private identifier() {
-    while (this.isAlphaNumeric(this.peek())) this.peekAndAdvance();
+    while (isAlphaNumeric(this.peek())) this.peekAndAdvance();
     const ident = this.source.substring(
       this.start,
       this.current
     ) as keyof typeof RESERVEDS;
     const type = RESERVEDS[ident];
     this.addToken(type ?? LITERALS.identifier, ident as string);
-  }
-
-  private isDigit(c: string): boolean {
-    return c >= "0" && c <= "9";
-  }
-
-  private isHexDigit(c: string): boolean {
-    return (
-      this.isDigit(c) || (c.toLowerCase() >= "a" && c.toLowerCase() <= "f")
-    );
-  }
-
-  private isAlpha(c: string): boolean {
-    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
-  }
-
-  private isAlphaNumeric(c: string): boolean {
-    return this.isAlpha(c) || this.isDigit(c);
   }
 }
