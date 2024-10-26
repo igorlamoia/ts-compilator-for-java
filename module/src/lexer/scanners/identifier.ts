@@ -1,4 +1,4 @@
-import { isAlphaNumeric } from "../../lexer/lexer-helpers";
+import { isAlphaNumeric } from "../lexer-helpers";
 import { LexerScanner } from "./lexer";
 import { LITERALS, RESERVEDS } from "../../token/constants";
 
