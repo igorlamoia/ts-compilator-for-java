@@ -1,7 +1,7 @@
 import { isDigit, isHexDigit, isWhitespace } from "../lexer-helpers";
 import { LITERALS } from "../../token/constants";
 import { TOKENS_MAP } from "../../token/mappings";
-import { LexerScanner } from "./lexer-scanner";
+import { LexerScanner } from "./lexer";
 
 export default class NumberScanner extends LexerScanner {
   public run(): void {

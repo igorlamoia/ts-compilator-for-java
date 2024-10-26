@@ -1,5 +1,5 @@
 import { isAlphaNumeric } from "../../lexer/lexer-helpers";
-import { LexerScanner } from "./lexer-scanner";
+import { LexerScanner } from "./lexer";
 import { LITERALS, RESERVEDS } from "../../token/constants";
 
 export default class IdentifierScanner extends LexerScanner {

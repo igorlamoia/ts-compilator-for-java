@@ -1,8 +1,8 @@
 import { TOKENS_MAP } from "../token/mappings";
 import { Token } from "../token";
 import { TOKENS } from "../token/constants";
-import { isAlpha, isDigit, isWhitespace } from "./lexer-helpers";
-import { IdentifierScanner, NumberScanner, StringScanner } from "./scanners";
+import { isWhitespace } from "./lexer-helpers";
+import { LexerScannerFactory } from "./scanners";
 
 export class Lexer {
   public source: string;
@@ -29,12 +29,13 @@ export class Lexer {
   public scanToken() {
     const c = this.peekAndAdvance();
     if (isWhitespace(c)) return;
+    if (c === "\n") return this.goToNextLine();
+
     const tokenFunction = TOKENS_MAP[c];
     if (tokenFunction) return tokenFunction(this);
-    if (c === "\n") return this.goToNextLine();
-    if (c === '"') return new StringScanner(this).run();
-    if (isDigit(c)) return new NumberScanner(this).run();
-    if (isAlpha(c)) return new IdentifierScanner(this).run();
+
+    const scanner = LexerScannerFactory.getInstance(c, this);
+    if (scanner) return scanner.run();
 
     this.error(`Caractere inesperado '${c}'`);
   }

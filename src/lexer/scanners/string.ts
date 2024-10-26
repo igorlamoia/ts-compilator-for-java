@@ -1,5 +1,5 @@
 import { LITERALS } from "../../token/constants";
-import { LexerScanner } from "./lexer-scanner";
+import { LexerScanner } from "./lexer";
 
 export default class StringScanner extends LexerScanner {
   public run(): void {
