@@ -1,24 +1,8 @@
-import { Lexer } from "lexer";
-import {
-  ARITHMETICS,
-  LOGICALS,
-  RELATIONALS,
-  ASSIGNMENTS,
-  SYMBOLS,
-} from "./tokens";
+import { TOKENS } from "../constants";
+import { TTokenMap } from ".";
 
-type TTokenMap = {
-  [key: string]: (lexer: Lexer) => void;
-};
-
-export const TOKENS_MAP: TTokenMap = {
-  ";": (lexer) => lexer.addToken(SYMBOLS.semicolon),
-  ",": (lexer) => lexer.addToken(SYMBOLS.comma),
-  "{": (lexer) => lexer.addToken(SYMBOLS.left_brace),
-  "}": (lexer) => lexer.addToken(SYMBOLS.right_brace),
-  "(": (lexer) => lexer.addToken(SYMBOLS.left_paren),
-  ")": (lexer) => lexer.addToken(SYMBOLS.right_paren),
-  ".": (lexer) => lexer.addToken(SYMBOLS.dot),
+const { ARITHMETICS, ASSIGNMENTS, RELATIONALS, LOGICALS } = TOKENS;
+export const OPERATORS_TOKENS_MAP: TTokenMap = {
   "+": (lexer) =>
     lexer.addToken(
       lexer.match("=") ? ASSIGNMENTS.plus_equal : ARITHMETICS.plus
@@ -39,10 +23,6 @@ export const TOKENS_MAP: TTokenMap = {
     lexer.addToken(
       lexer.match("=") ? ASSIGNMENTS.modulo_equal : ARITHMETICS.modulo
     ),
-  "!": (lexer) =>
-    lexer.addToken(
-      lexer.match("=") ? RELATIONALS.not_equal : LOGICALS.logical_not
-    ),
   "=": (lexer) =>
     lexer.addToken(
       lexer.match("=") ? RELATIONALS.equal_equal : ASSIGNMENTS.equal
@@ -54,6 +34,10 @@ export const TOKENS_MAP: TTokenMap = {
   "<": (lexer) =>
     lexer.addToken(
       lexer.match("=") ? RELATIONALS.less_equal : RELATIONALS.less
+    ),
+  "!": (lexer) =>
+    lexer.addToken(
+      lexer.match("=") ? RELATIONALS.not_equal : LOGICALS.logical_not
     ),
   "|": (lexer) =>
     lexer.match("|")

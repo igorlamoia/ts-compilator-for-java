@@ -12,7 +12,7 @@ export class Token {
   }
 
   toString() {
-    return `Token(${this.type}, "${this.lexeme}", Linha: ${this.line}, Coluna: ${this.column})`;
+    return `Token(${this.type}, "${this.lexeme}", Row: ${this.line}, Column: ${this.column})`;
   }
 
   toObject() {

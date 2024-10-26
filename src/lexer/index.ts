@@ -1,6 +1,8 @@
-import { TOKENS_MAP } from "./utils/tokens-map";
-import { Token } from "./token";
-import { TOKENS, RESERVEDS, LITERALS } from "./utils/tokens";
+import { TOKENS_MAP } from "../tokens/mappings";
+import { Token } from "../tokens";
+import { TOKENS } from "../tokens/constants";
+
+const { LITERALS, RESERVEDS } = TOKENS;
 
 export class Lexer {
   private source: string;
@@ -9,9 +11,6 @@ export class Lexer {
   private line = 1;
   private column = 1;
   private start = 0;
-  // private lastToken: Token | null = null;
-
-  private RESERVEDS: { [key: string]: number } = RESERVEDS;
 
   constructor(source: string) {
     this.source = source;
@@ -173,9 +172,12 @@ export class Lexer {
 
   private identifier() {
     while (this.isAlphaNumeric(this.peek())) this.peekAndAdvance();
-    const ident = this.source.substring(this.start, this.current);
-    const type = this.RESERVEDS[ident];
-    this.addToken(type ?? LITERALS.identifier, ident);
+    const ident = this.source.substring(
+      this.start,
+      this.current
+    ) as keyof typeof RESERVEDS;
+    const type = RESERVEDS[ident];
+    this.addToken(type ?? LITERALS.identifier, ident as string);
   }
 
   private isDigit(c: string): boolean {
