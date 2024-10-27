@@ -1,7 +1,7 @@
 import { createContext, useRef, useState, useEffect, ReactNode } from "react";
 import loader from "@monaco-editor/loader";
 import type * as monacoEditor from "monaco-editor";
-import { INITIAL_CODE } from "@/utils/compiles/editor/initial-code";
+import { INITIAL_CODE } from "@/utils/compiler/editor/initial-code";
 import { TEditorConfig, TEditorContextType, TLineAlert } from "@/@types/editor";
 import { ConfigEntity } from "@/entities/editor-config";
 

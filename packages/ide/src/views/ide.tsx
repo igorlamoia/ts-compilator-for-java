@@ -1,15 +1,14 @@
+import { TFormattedToken, TToken } from "@/@types/token";
 import { MainButton } from "@/components/buttons/main";
 import { Editor } from "@/components/editor";
+import { TokenCard } from "@/components/token-card";
 import { useEditor } from "@/hooks/useEditor";
 import { api } from "@/utils/axios";
+import { Classification } from "@/utils/compiler/classification";
+import { classifyTokens } from "@/utils/compiler/editor/tokens";
 import { useState } from "react";
 
-type TToken = {
-  column: number;
-  lexeme: string;
-  line: number;
-  type: number;
-};
+const TokenClassification = new Classification();
 
 export function IDEView() {
   const { showLineAlerts, getEditorCode } = useEditor();
@@ -31,6 +30,15 @@ export function IDEView() {
       },
     ]);
   };
+
+  const formattedTokens = classifyTokens(tokens, TokenClassification);
+  const allFormattedTokens = tokens.map((token) => ({
+    token,
+    info: TokenClassification.classifyToken(token.type),
+  }));
+
+  console.log(formattedTokens);
+
   return (
     <div className="flex flex-col gap-4">
       <Editor />
@@ -40,26 +48,27 @@ export function IDEView() {
       {/* <pre>{JSON.stringify(tokens)}</pre> */}
       {tokens.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-xl font-bold">Tokens</h2>
-
+          <h2 className="text-xl font-bold">All Tokens</h2>
           <div className="flex gap-2 flex-wrap w-full p-4">
-            {tokens.map((token, index) => (
-              <div
-                className="w-80 shadow-sm bg-slate-600 rounded-sm p-2"
-                key={index}
-              >
-                <p>
-                  <strong> Line:</strong> {token.line}
-                </p>
-                <p>
-                  <strong> Column:</strong> {token.column}
-                </p>
-                <p>
-                  <strong> Lexeme:</strong> {token.lexeme}
-                </p>
-                <p>
-                  <strong> Type:</strong> {token.type}
-                </p>
+            {allFormattedTokens.map(({ token, info: { styles } }) => (
+              <TokenCard
+                key={token.type + token.column}
+                token={token}
+                styles={styles}
+              />
+            ))}
+          </div>
+          <div className="flex gap-2 flex-wrap w-full p-4">
+            {Object.entries(formattedTokens).map(([key, values]) => (
+              <div key={key} className="flex flex-col gap-2">
+                <h3 className="text-lg font-bold">{key}</h3>
+                {values.map(({ token, info: { styles } }) => (
+                  <TokenCard
+                    key={token.type + token.column}
+                    token={token}
+                    styles={styles}
+                  />
+                ))}
               </div>
             ))}
           </div>

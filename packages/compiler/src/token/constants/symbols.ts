@@ -7,3 +7,10 @@ export const SYMBOLS = {
   right_paren: 41, // )
   dot: 42, // .
 };
+
+export const SYMBOLS_STYLE = {
+  text: "bg-gray-500",
+  bg: "bg-gray-100",
+  border: "border-gray-500",
+  transform: "hover:bg-gray-200",
+};

@@ -6,3 +6,10 @@ export const LITERALS = {
   hex_literal: 47,
   octal_literal: 48,
 };
+
+export const LITERALS_STYLE = {
+  text: "bg-orange-500",
+  bg: "bg-orange-100",
+  border: "border-orange-500",
+  transform: "hover:bg-orange-200",
+};

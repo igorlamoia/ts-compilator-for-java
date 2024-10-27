@@ -6,3 +6,10 @@ export const RELATIONALS = {
   less: 13, // <
   less_equal: 14, // <=
 };
+
+export const RELATIONALS_STYLE = {
+  text: "bg-yellow-500",
+  bg: "bg-yellow-100",
+  border: "border-yellow-500",
+  transform: "hover:bg-yellow-200",
+};
