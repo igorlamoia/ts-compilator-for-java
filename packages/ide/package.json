@@ -1,19 +1,20 @@
 {
-  "name": "ide",
+  "name": "@ts-compilator-for-java/ide",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/preset-typescript": "^7.26.0",
     "@monaco-editor/loader": "^1.4.0",
-    "@ts-compilator-for-java/compiler": "^1.0.0",
     "axios": "^1.7.7",
-    "monaco-editor": "^0.52.0",
+    "babel-loader": "^9.2.1",
     "next": "15.0.1",
+    "next-transpile-modules": "^10.0.1",
     "react": "19.0.0-rc-69d4b800-20241021",
     "react-dom": "19.0.0-rc-69d4b800-20241021"
   },

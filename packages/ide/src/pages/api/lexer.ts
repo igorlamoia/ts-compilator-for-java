@@ -1,8 +1,7 @@
 // Import the Lexer class from the compiler package
-
+import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
 // Example usage in a Next.js API route
 import { TToken } from "@/@types/token";
-import { Lexer } from "@/utils/compiler/server/lexer";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
