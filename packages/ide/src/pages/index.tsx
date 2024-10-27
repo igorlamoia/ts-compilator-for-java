@@ -21,7 +21,7 @@ export default function Home() {
         className={`${geistSans.variable} ${geistMono.variable}
         min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]`}
       >
-        <main className="flex flex-col gap-6 ">
+        <main className="flex flex-col gap-6 pb-20">
           <Image
             className="dark:invert"
             src="/next.svg"
@@ -33,16 +33,13 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-center">
             Welcome to your JAVA-- IDE
           </h1>
-          <div className="text-center">
+          {/* <div className="text-center">
             <h3>Here you can write down your</h3>
             <p>java-- is java with limitations</p>
-            {/* <p>Like a person on the left</p> */}
-          </div>
-          <div className="">
-            <EditorProvider>
-              <IDEView />
-            </EditorProvider>
-          </div>
+          </div> */}
+          <EditorProvider>
+            <IDEView />
+          </EditorProvider>
         </main>
 
         {/* bg-[var(--background)]/[0.9] */}

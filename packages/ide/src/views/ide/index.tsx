@@ -13,11 +13,17 @@ export function IDEView() {
     const code = getEditorCode();
     const { data } = await api.post("/lexer", { sourceCode: code });
     setTokens(data.tokens);
+    window.scrollTo({
+      top: 700,
+      behavior: "smooth",
+    });
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <Editor />
+      <div className=" h-[65vh]">
+        <Editor />
+      </div>
       <MainButton className="ml-auto" onClick={handleRun}>
         Lexical Analysis
       </MainButton>
