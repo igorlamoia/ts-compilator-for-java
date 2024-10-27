@@ -1,5 +1,5 @@
 {
-  "name": "ts-compilator-for-java",
+  "name": "@ts-compilator-for-java/compiler",
   "version": "1.0.0",
   "description": "Compilador TS para compilar códigos Java.jar",
   "main": "build/index.js",
