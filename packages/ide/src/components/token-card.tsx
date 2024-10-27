@@ -9,6 +9,10 @@ export function TokenCard({ token, styles }: TokenCardProps) {
   const { showLineAlerts } = useEditor();
 
   const handleTokenClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
     showLineAlerts([
       {
         startLineNumber: token.line,
@@ -28,7 +32,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
         ${styles.bg}
         bg-opacity-80
         relative
-        w-64 shadow-sm  rounded-sm p-4
+        w-full sm:w-64 shadow-sm  rounded-sm p-4
         cursor-pointer
         ${styles.border} text-${styles.text} ${styles.transform}`}
       onClick={handleTokenClick}

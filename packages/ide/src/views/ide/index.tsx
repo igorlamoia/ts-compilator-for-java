@@ -19,7 +19,7 @@ export function IDEView() {
     <div className="flex flex-col gap-4">
       <Editor />
       <MainButton className="ml-auto" onClick={handleRun}>
-        Run
+        Lexical Analysis
       </MainButton>
       <ShowTokens tokens={tokens} />
     </div>
