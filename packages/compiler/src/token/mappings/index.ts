@@ -1,4 +1,4 @@
-import { Lexer } from "lexer";
+import { Lexer } from "../../lexer";
 import { OPERATORS_TOKENS_MAP } from "./operators-tokens";
 import { SYMBOLS_TOKENS_MAP } from "./symbols-tokens";
 

@@ -3,7 +3,10 @@ import {
   TTokenStyle,
   TTokenStyleKey,
 } from "@/@types/token";
-import { TOKENS, TOKENS_STYLE } from "./server/token/constants";
+import {
+  TOKENS,
+  TOKENS_STYLE,
+} from "@ts-compilator-for-java/compiler/src/token/constants";
 import { COLORS } from "./styles";
 
 export class Classification {

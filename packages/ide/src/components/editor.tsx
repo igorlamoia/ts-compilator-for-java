@@ -12,6 +12,13 @@ export function Editor() {
   }, [initializeEditor]);
 
   return (
-    <div ref={editorContainerRef} style={{ height: "50vh", width: "100%" }} />
+    <div
+      ref={editorContainerRef}
+      style={{
+        minHeight: "40vh",
+        height: "100%",
+        width: "100%",
+      }}
+    />
   );
 }

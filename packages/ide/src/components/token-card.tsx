@@ -9,6 +9,10 @@ export function TokenCard({ token, styles }: TokenCardProps) {
   const { showLineAlerts } = useEditor();
 
   const handleTokenClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
     showLineAlerts([
       {
         startLineNumber: token.line,
@@ -23,15 +27,15 @@ export function TokenCard({ token, styles }: TokenCardProps) {
 
   return (
     <div
-      // put the bg to be opaque
       className={`
         ${styles.bg}
         bg-opacity-80
         relative
-        w-64 shadow-sm  rounded-sm p-4
+        w-full min-w-64 shadow-sm  rounded-sm p-4
         cursor-pointer
         ${styles.border} text-${styles.text} ${styles.transform}`}
       onClick={handleTokenClick}
+      style={{ flex: "1 1 20%" }}
     >
       <div className="text-slate-600 grid grid-cols-12 text-sm">
         <div className="col-span-5">
