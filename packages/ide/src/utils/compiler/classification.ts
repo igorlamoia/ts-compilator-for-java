@@ -1,4 +1,8 @@
-import { TTokenClassification, TTokenStyle } from "@/@types/token";
+import {
+  TTokenClassification,
+  TTokenStyle,
+  TTokenStyleKey,
+} from "@/@types/token";
 import { TOKENS, TOKENS_STYLE } from "./server/token/constants";
 import { COLORS } from "./styles";
 
@@ -30,7 +34,9 @@ export class Classification {
 
   findTokenStyle(Classification: string | undefined): TTokenStyle {
     return (
-      (TOKENS_STYLE[`${Classification}_STYLE`] as TTokenStyle) ?? COLORS.DEFAULT
+      (TOKENS_STYLE[
+        `${Classification}_STYLE` as TTokenStyleKey
+      ] as TTokenStyle) ?? COLORS.DEFAULT
     );
   }
 

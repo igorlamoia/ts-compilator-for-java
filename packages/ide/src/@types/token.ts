@@ -11,6 +11,16 @@ export type TTokenStyle = {
   border: string;
   transform: string;
 };
+
+export type TTokenStyleKey =
+  | "LITERALS_STYLE"
+  | "ARITHMETICS_STYLE"
+  | "ASSIGNMENTS_STYLE"
+  | "LOGICALS_STYLE"
+  | "RELATIONALS_STYLE"
+  | "RESERVEDS_STYLE"
+  | "SYMBOLS_STYLE";
+
 export type TTokenClass =
   | "LITERALS"
   | "ARITHMETICS"
