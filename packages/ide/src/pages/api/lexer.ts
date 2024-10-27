@@ -1,11 +1,12 @@
 // Import the Lexer class from the compiler package
 
 // Example usage in a Next.js API route
+import { TToken } from "@/@types/token";
 import { Lexer } from "@/utils/compiler/server/lexer";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
-  tokens: any[];
+  tokens: TToken[];
 };
 
 export default function handler(
