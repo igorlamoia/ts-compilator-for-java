@@ -15,7 +15,7 @@ export const ARITHMETICS_TYPES = {
 };
 
 export const ARITHMETICS_STYLE = {
-  text: "bg-green-500",
+  text: "text-green-500",
   bg: "bg-green-100",
   border: "border-green-500",
   transform: "hover:bg-green-200",

@@ -5,7 +5,7 @@ export const LOGICALS = {
 };
 
 export const LOGICALS_STYLE = {
-  text: "bg-yellow-500",
+  text: "text-yellow-500",
   bg: "bg-yellow-100",
   border: "border-yellow-500",
   transform: "hover:bg-yellow-200",

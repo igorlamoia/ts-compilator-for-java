@@ -7,19 +7,27 @@ type TokenCardProps = {
 export function TokenCard({ token, styles }: TokenCardProps) {
   return (
     <div
-      className={`w-80 shadow-sm  rounded-sm p-2 ${styles.bg} ${styles.border} ${styles.text} ${styles.transform}`}
+      // put the bg to be opaque
+      className={`
+        ${styles.bg}
+        bg-opacity-80
+
+        w-64 shadow-sm  rounded-sm p-4
+
+        ${styles.border} text-${styles.text} ${styles.transform}`}
     >
-      <p>
-        <strong> Line:</strong> <span>{token.line}</span>
+      <p className="text-slate-600">
+        <strong>Line: </strong> <span>{token.line}</span>
       </p>
-      <p>
-        <strong> Column:</strong> <span>{token.column}</span>
+      <p className="text-slate-600">
+        <strong>Column: </strong> <span>{token.column}</span>
       </p>
-      <p>
-        <strong> Lexeme:</strong> <span>{token.lexeme}</span>
+      <p className="text-slate-600">
+        <strong>Lexeme: </strong>
+        <span className={styles.text}>{token.lexeme}</span>
       </p>
-      <p>
-        <strong> Type:</strong>
+      <p className="text-slate-600">
+        <strong>Type: </strong>
         <span className={styles.text}>{token.type}</span>
       </p>
     </div>
