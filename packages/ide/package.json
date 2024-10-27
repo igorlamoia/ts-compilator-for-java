@@ -1,6 +1,6 @@
 {
   "name": "@ts-compilator-for-java/ide",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ts-compilator-for-java/compiler": "1.0.0",
     "@babel/preset-typescript": "^7.26.0",
     "@monaco-editor/loader": "^1.4.0",
     "axios": "^1.7.7",

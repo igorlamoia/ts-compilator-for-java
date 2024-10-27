@@ -11,6 +11,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@ts-compilator-for-java/ide": "1.0.0"
+  },
   "devDependencies": {
     "@types/node": "^22.7.7",
     "ts-node": "^10.9.2",
