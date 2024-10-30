@@ -15,10 +15,11 @@ export const OPERATORS_TOKENS_MAP: TTokenMap = {
     lexer.addToken(
       lexer.match("=") ? ASSIGNMENTS.star_equal : ARITHMETICS.star
     ),
-  "/": (lexer) =>
-    lexer.addToken(
-      lexer.match("=") ? ASSIGNMENTS.slash_equal : ARITHMETICS.slash
-    ),
+  "/": (lexer) => {
+    if(lexer.match("=")) return  lexer.addToken(ASSIGNMENTS.slash_equal);
+    if(lexer.match("/")) return lexer.goToNextLine();
+    lexer.addToken( ARITHMETICS.slash);
+  },
   "%": (lexer) =>
     lexer.addToken(
       lexer.match("=") ? ASSIGNMENTS.modulo_equal : ARITHMETICS.modulo
