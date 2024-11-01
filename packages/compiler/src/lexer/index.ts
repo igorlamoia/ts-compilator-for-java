@@ -44,18 +44,21 @@ export class Lexer {
     return this.current >= this.source.length;
   }
 
-  public peekAndAdvance(): string {
-    const char = this.source[this.current];
+  public advance() {
     this.current++;
     this.column++;
+  }
+
+  public peekAndAdvance(): string {
+    const char = this.source[this.current];
+    this.advance();
     return char;
   }
 
-  public match(expected: string): boolean {
+  public matchAndAdvance(expected: string): boolean {
     if (this.isAtEnd()) return false;
     if (this.source[this.current] !== expected) return false;
-    this.current++;
-    this.column++;
+    this.advance();
     return true;
   }
 
