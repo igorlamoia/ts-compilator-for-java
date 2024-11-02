@@ -1,16 +1,18 @@
-import { TOKENS_MAP } from "../token/mappings";
 import { Token } from "../token";
 import { TOKENS } from "../token/constants";
 import { isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
+import { IssueWarning, IssueInfo, IssueError } from "../issue";
 
 export class Lexer {
-  public source: string;
-  public tokens: Token[] = [];
-  public current = 0;
-  public line = 1;
-  public column = 1;
-  public start = 0;
+  source: string;
+  tokens: Token[] = [];
+  line = 1;
+  column = 1;
+  scannerBegin = 0;
+  current = 0;
+  warnings: IssueWarning[] = [];
+  infos: IssueInfo[] = [];
 
   constructor(source: string) {
     this.source = source;
@@ -18,7 +20,7 @@ export class Lexer {
 
   public scanTokens(): Token[] {
     while (!this.isAtEnd()) {
-      this.start = this.current;
+      this.scannerBegin = this.current;
       this.scanToken();
     }
 
@@ -31,9 +33,6 @@ export class Lexer {
     if (isWhitespace(char)) return;
     if (char === "\n") return this.goToNextLine();
 
-    const tokenFunction = TOKENS_MAP[char];
-    if (tokenFunction) return tokenFunction(this);
-
     const scanner = LexerScannerFactory.getInstance(char, this);
     if (scanner) return scanner.run();
 
@@ -44,25 +43,35 @@ export class Lexer {
     return this.current >= this.source.length;
   }
 
-  public peekAndAdvance(): string {
-    const char = this.source[this.current];
+  public advance() {
     this.current++;
     this.column++;
+  }
+
+  public peekAndAdvance(): string {
+    const char = this.source[this.current];
+    this.advance();
     return char;
   }
 
-  public match(expected: string): boolean {
+  public matchAndAdvance(expected: string): boolean {
     if (this.isAtEnd()) return false;
     if (this.source[this.current] !== expected) return false;
-    this.current++;
-    this.column++;
+    this.advance();
     return true;
   }
 
-  public addToken(type: number, lexeme?: string) {
-    const text = lexeme || this.source.substring(this.start, this.current);
+  /**
+   * Add a token to the list of tokens class
+   * @param type Token type from TOKENS enum
+   * @param lexeme Token lexeme string
+   * @param addedChars Number of added chars to the lexeme string (default 0), used to calculate the column position of the beginning of the token
+   */
+  public addToken(type: number, lexeme?: string, addedChars: number = 0) {
+    const text =
+      lexeme || this.source.substring(this.scannerBegin, this.current);
     this.tokens.push(
-      new Token(type, text, this.line, this.column - text.length)
+      new Token(type, text, this.line, this.column - text.length + addedChars)
     );
   }
 
@@ -83,12 +92,18 @@ export class Lexer {
 
   public goToNextLine() {
     this.line++;
-    this.column = 0;
+    this.column = 1;
   }
 
   public error(message: string) {
-    throw new Error(
-      `Row: ${this.line}, Column ${this.column}, Error message: ${message}`
-    );
+    throw new IssueError(message, this.line, this.column);
+  }
+
+  public warning(message: string) {
+    this.warnings.push(new IssueWarning(message, this.line, this.column));
+  }
+
+  public info(message: string) {
+    this.infos.push(new IssueInfo(message, this.line, this.column));
   }
 }

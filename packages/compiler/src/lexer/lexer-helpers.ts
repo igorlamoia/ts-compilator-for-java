@@ -3,7 +3,11 @@ export function isDigit(c: string): boolean {
 }
 
 export function isHexDigit(c: string): boolean {
-  return isDigit(c) || (c.toLowerCase() >= "a" && c.toLowerCase() <= "f");
+  return isDigit(c) || (c >= "A" && c <= "F");
+}
+
+export function isOctalDigit(c: string): boolean {
+  return c >= "0" && c <= "7";
 }
 
 export function isAlpha(c: string): boolean {

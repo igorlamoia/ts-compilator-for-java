@@ -6,14 +6,14 @@ type TokenCardProps = {
   styles: TTokenStyle;
 };
 export function TokenCard({ token, styles }: TokenCardProps) {
-  const { showLineAlerts } = useEditor();
+  const { showLineIssues } = useEditor();
 
   const handleTokenClick = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
-    showLineAlerts([
+    showLineIssues([
       {
         startLineNumber: token.line,
         startColumn: token.column + 1,
