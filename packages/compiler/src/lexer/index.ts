@@ -61,11 +61,17 @@ export class Lexer {
     return true;
   }
 
-  public addToken(type: number, lexeme?: string) {
+  /**
+   * Add a token to the list of tokens class
+   * @param type Token type from TOKENS enum
+   * @param lexeme Token lexeme string
+   * @param addedChars Number of added chars to the lexeme string (default 0), used to calculate the column position of the beginning of the token
+   */
+  public addToken(type: number, lexeme?: string, addedChars: number = 0) {
     const text =
       lexeme || this.source.substring(this.scannerBegin, this.current);
     this.tokens.push(
-      new Token(type, text, this.line, this.column - text.length)
+      new Token(type, text, this.line, this.column - text.length + addedChars)
     );
   }
 
