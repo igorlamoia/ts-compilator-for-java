@@ -1,4 +1,3 @@
-import { ASSIGNMENTS } from "token/constants";
 import { LexerScanner } from "./lexer";
 
 export default class CommentScanner extends LexerScanner {
