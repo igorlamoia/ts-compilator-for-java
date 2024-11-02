@@ -47,12 +47,12 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     "bottom-right": "bottom-5 right-5",
   };
 
-  const typeClasses = {
-    success: "bg-green-500",
-    error: "bg-red-500",
-    info: "bg-blue-500",
-    warning: "bg-yellow-500",
-  };
+  // const typeClasses = {
+  //   success: "bg-green-500",
+  //   error: "bg-red-500",
+  //   info: "bg-blue-500",
+  //   warning: "bg-yellow-500",
+  // };
 
   return (
     <ToastContext.Provider value={{ showToast }}>
