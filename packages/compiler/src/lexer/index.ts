@@ -2,6 +2,7 @@ import { Token } from "../token";
 import { TOKENS } from "../token/constants";
 import { isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
+import { IssueWarning, IssueInfo, IssueError } from "../issue";
 
 export class Lexer {
   source: string;
@@ -10,6 +11,8 @@ export class Lexer {
   column = 1;
   scannerBegin = 0;
   current = 0;
+  warnings: IssueWarning[] = [];
+  infos: IssueInfo[] = [];
 
   constructor(source: string) {
     this.source = source;
@@ -87,8 +90,14 @@ export class Lexer {
   }
 
   public error(message: string) {
-    throw new Error(
-      `Row: ${this.line}, Column ${this.column}, Error message: ${message}`
-    );
+    throw new IssueError(message, this.line, this.column);
+  }
+
+  public warning(message: string) {
+    this.warnings.push(new IssueWarning(message, this.line, this.column));
+  }
+
+  public info(message: string) {
+    this.infos.push(new IssueInfo(message, this.line, this.column));
   }
 }
