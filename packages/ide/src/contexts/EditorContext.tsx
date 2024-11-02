@@ -64,25 +64,40 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     editorInstanceRef.current?.setValue(newCode);
   };
 
-  const showLineAlerts = (alerts: TLineAlert[]) => {
+  const showLineIssues = (alerts: TLineAlert[], triggerError = false) => {
     if (editorInstanceRef.current && monacoRef.current) {
       const model = editorInstanceRef.current.getModel();
-
-      if (model) {
-        monacoRef.current.editor.setModelMarkers(
-          model,
-          "owner",
-          alerts.map((alert) => ({
-            startLineNumber: alert.startLineNumber,
-            startColumn: alert.startColumn,
-            endLineNumber: alert.endLineNumber,
-            endColumn: alert.endColumn,
-            message: alert.message,
-            severity: alert.severity,
-          }))
-        );
-      }
+      if (!model) return;
+      monacoRef.current.editor.setModelMarkers(
+        model,
+        "owner",
+        alerts.map((alert) => ({
+          startLineNumber: alert.startLineNumber,
+          startColumn: alert.startColumn - 1,
+          endLineNumber: alert.endLineNumber,
+          endColumn: alert.endColumn - 1,
+          message: alert.message,
+          severity: alert.severity,
+          // tags: [1,2], // unnecessary and deprecated
+        }))
+      );
+      // Center the editor view on the error line
+      editorInstanceRef.current.revealLineInCenter(alerts[0].startLineNumber);
+      if (!triggerError) return;
+      editorInstanceRef.current.trigger(
+        "keyboard",
+        "editor.action.marker.next",
+        {}
+      );
     }
+  };
+
+  const cleanIssues = () => {
+    if (!editorInstanceRef?.current && monacoRef.current) return;
+    const model = editorInstanceRef.current!.getModel();
+    if (!model) return;
+    monacoRef.current!.editor.setModelMarkers(model, "owner", []);
+    editorInstanceRef.current!.trigger("keyboard", "closeWidget", {});
   };
 
   const getEditorCode = () => {
@@ -96,9 +111,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         config,
         updateSourceCode,
         setConfig,
-        showLineAlerts,
+        showLineIssues,
         initializeEditor,
         getEditorCode,
+        cleanIssues,
       }}
     >
       {loading ? <div>Loading Editor...</div> : children}

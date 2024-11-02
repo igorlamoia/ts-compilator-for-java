@@ -1,10 +1,7 @@
 import { IssueDetails } from "./details";
 
-export class IssueWarning {
-  message: string = "";
-  details: IssueDetails = new IssueDetails(0, 0, "warning");
+export class IssueWarning extends IssueDetails {
   constructor(message: string, line: number, column: number) {
-    this.message = message;
-    this.details = new IssueDetails(line, column, "warning");
+    super(message, line, column, "warning");
   }
 }

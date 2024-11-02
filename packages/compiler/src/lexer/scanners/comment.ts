@@ -23,7 +23,7 @@ export default class CommentScanner extends LexerScanner {
       if (currentChar === "\n") this.lexer.goToNextLine();
     }
 
-    if (this.lexer.isAtEnd()) this.lexer.error("Comentário não fechado");
+    if (this.lexer.isAtEnd()) this.lexer.error("Unterminated comment.");
     this.lexer.advance();
   }
 }

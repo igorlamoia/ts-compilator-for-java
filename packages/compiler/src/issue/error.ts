@@ -5,7 +5,7 @@ export class IssueError extends Error {
 
   constructor(message: string, line: number, column: number) {
     super(message);
-    this.details = new IssueDetails(line, column, "error");
+    this.details = new IssueDetails(message, line, column, "error");
 
     // Object.setPrototypeOf(this, IssueError.prototype);
   }

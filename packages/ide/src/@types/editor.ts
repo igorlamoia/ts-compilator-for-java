@@ -9,6 +9,13 @@ export type TLineAlert = {
   severity: MarkerSeverity;
 };
 
+export enum ESeverity {
+  hint = 1,
+  info = 2,
+  warning = 4,
+  error = 8,
+}
+
 // Define types
 export type TEditorConfig = {
   theme: string;
@@ -20,7 +27,8 @@ export type TEditorContextType = {
   config: TEditorConfig;
   updateSourceCode: (newCode: string) => void;
   setConfig: (newConfig: Partial<TEditorConfig>) => void;
-  showLineAlerts: (errors: TLineAlert[]) => void;
+  showLineIssues: (errors: TLineAlert[], showDetails?: boolean) => void;
   initializeEditor: (container: HTMLDivElement) => void;
   getEditorCode: () => string;
+  cleanIssues: () => void;
 };

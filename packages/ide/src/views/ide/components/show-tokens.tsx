@@ -1,22 +1,23 @@
-import { TToken } from "@/@types/token";
 import { MainButton } from "@/components/buttons/main";
 import { TokenCard } from "@/components/token-card";
+import { TLexerAnalyseData } from "@/pages/api/lexer";
 import { Classification } from "@/utils/compiler/classification";
 import { classifyTokens } from "@/utils/compiler/editor/tokens";
 import { useState } from "react";
 
 interface IShowTokensProps {
-  tokens: TToken[];
+  analyseData: TLexerAnalyseData;
 }
 
 const TokenClassification = new Classification();
 
-export function ShowTokens({ tokens }: IShowTokensProps) {
+export function ShowTokens({ analyseData }: IShowTokensProps) {
+  const { tokens } = analyseData;
   const [hideAllTokens, setHideAllTokens] = useState(false);
   const [orientation, setOrientation] = useState<"verticaly" | "horizontaly">(
     "verticaly"
   );
-  if (!tokens.length) return null;
+  if (!tokens?.length) return null;
   const formattedTokens = classifyTokens(tokens, TokenClassification);
   const allFormattedTokens = tokens.map((token) => ({
     token,
