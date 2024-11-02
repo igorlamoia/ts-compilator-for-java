@@ -1,16 +1,15 @@
-import { TOKENS_MAP } from "../token/mappings";
 import { Token } from "../token";
 import { TOKENS } from "../token/constants";
 import { isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
 
 export class Lexer {
-  public source: string;
-  public tokens: Token[] = [];
-  public current = 0;
-  public line = 1;
-  public column = 1;
-  public start = 0;
+  source: string;
+  tokens: Token[] = [];
+  line = 1;
+  column = 1;
+  scannerBegin = 0;
+  current = 0;
 
   constructor(source: string) {
     this.source = source;
@@ -18,7 +17,7 @@ export class Lexer {
 
   public scanTokens(): Token[] {
     while (!this.isAtEnd()) {
-      this.start = this.current;
+      this.scannerBegin = this.current;
       this.scanToken();
     }
 
@@ -30,9 +29,6 @@ export class Lexer {
     const char = this.peekAndAdvance();
     if (isWhitespace(char)) return;
     if (char === "\n") return this.goToNextLine();
-
-    const tokenFunction = TOKENS_MAP[char];
-    if (tokenFunction) return tokenFunction(this);
 
     const scanner = LexerScannerFactory.getInstance(char, this);
     if (scanner) return scanner.run();
@@ -63,7 +59,8 @@ export class Lexer {
   }
 
   public addToken(type: number, lexeme?: string) {
-    const text = lexeme || this.source.substring(this.start, this.current);
+    const text =
+      lexeme || this.source.substring(this.scannerBegin, this.current);
     this.tokens.push(
       new Token(type, text, this.line, this.column - text.length)
     );
@@ -86,7 +83,7 @@ export class Lexer {
 
   public goToNextLine() {
     this.line++;
-    this.column = 0;
+    this.column = 1;
   }
 
   public error(message: string) {

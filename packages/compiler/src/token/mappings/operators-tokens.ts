@@ -16,25 +16,9 @@ export const OPERATORS_TOKENS_MAP: TTokenMap = {
       lexer.matchAndAdvance("=") ? ASSIGNMENTS.star_equal : ARITHMETICS.star
     ),
   "/": (lexer) => {
-    const currentChar = lexer.peek();
-    if (currentChar === "=") {
-      lexer.addToken(ASSIGNMENTS.slash_equal);
-      return lexer.advance();
-    }
-
-    if (currentChar === "*") {
-      while (
-        lexer.peekAndAdvance() !== "*" &&
-        lexer.peek() !== "/" &&
-        !lexer.isAtEnd()
-      );
-      return;
-    }
-    if (currentChar === "/") {
-      while (lexer.peekAndAdvance() !== "\n" && !lexer.isAtEnd());
-      return;
-    }
-    lexer.addToken(ARITHMETICS.slash);
+    lexer.addToken(
+      lexer.matchAndAdvance("=") ? ASSIGNMENTS.slash_equal : ARITHMETICS.slash
+    );
   },
   "%": (lexer) =>
     lexer.addToken(

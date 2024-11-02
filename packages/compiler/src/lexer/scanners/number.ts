@@ -6,7 +6,7 @@ import { LexerScanner } from "./lexer";
 export default class NumberScanner extends LexerScanner {
   public run(): void {
     let numberStr = this.lexer.source.substring(
-      this.lexer.start,
+      this.lexer.scannerBegin,
       this.lexer.current
     );
 
