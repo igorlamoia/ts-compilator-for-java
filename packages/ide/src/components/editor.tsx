@@ -14,11 +14,8 @@ export function Editor() {
   return (
     <div
       ref={editorContainerRef}
-      style={{
-        minHeight: "40vh",
-        height: "100%",
-        width: "100%",
-      }}
+      className="min-h-[40vh] w-full h-full  overflow-hidden rounded-sm border-2 border-cyan-600 dark:border-slate-700
+      "
     />
   );
 }

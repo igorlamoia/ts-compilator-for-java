@@ -2,6 +2,8 @@ import Image from "next/image";
 import localFont from "next/font/local";
 import { IDEView } from "@/views/ide";
 import { EditorProvider } from "@/contexts/EditorContext";
+import { Typing } from "@/components/text/typing";
+import { ToggleTheme } from "@/components/toggle-theme";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -19,24 +21,49 @@ export default function Home() {
     <>
       <div
         className={`${geistSans.variable} ${geistMono.variable}
-        min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]`}
+          min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]
+          from-slate-700 to-slate-900
+          `}
       >
-        <main className="flex flex-col gap-6 pb-20">
-          <Image
-            className="dark:invert"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={180}
-            height={38}
-            priority
-          />
-          <h1 className="text-4xl font-bold text-center">
-            Welcome to your JAVA-- IDE
-          </h1>
-          {/* <div className="text-center">
-            <h3>Here you can write down your</h3>
-            <p>java-- is java with limitations</p>
-          </div> */}
+        <main className="flex flex-col gap-6 pb-20 max-w-screen-2xl m-auto">
+          <div className="flex gap-6 items-center flex-col md:flex-row-reverse">
+            <div className="ml-auto">
+              <ToggleTheme />
+            </div>
+
+            <div>
+              <div className="flex flex-col md:flex-row gap-2  items-center">
+                <h1 className="text-4xl font-bold text-center">
+                  Welcome to your IDE
+                </h1>
+                <div className="text-center">
+                  <Typing
+                    phrases={[
+                      "JAVA --",
+                      "where all is possible",
+                      "perfect Lexer analysis",
+                    ]}
+                  />
+                </div>
+              </div>
+              <p className="text-lg dark:text-gray-300 text-gray-700">
+                Get started by editing the follwing file{" "}
+                <code className="dark:text-gray-300 text-gray-700">
+                  Home.java
+                </code>
+              </p>
+            </div>
+            <Image
+              className="
+            border-2 dark:border-slate-100 border-cyan-600  rounded-md
+            "
+              src="/java--.webp"
+              alt="Next.js logo"
+              width={70}
+              height={20}
+              // priority
+            />
+          </div>
           <EditorProvider>
             <IDEView />
           </EditorProvider>
@@ -44,7 +71,7 @@ export default function Home() {
 
         {/* bg-[var(--background)]/[0.9] */}
         <footer
-          className="fixed bottom-0 p-2
+          className="fixed bottom-0 left-0 p-2
          bg-[#0a0a0a]/[.8]
          backdrop-blur-sm  w-full flex gap-6 flex-wrap items-center justify-center"
         >

@@ -5,15 +5,26 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: cyan;
+  --secondary: #f9f9f9;
+  --shape: #f9f9f9;
+  --bgbutton: red;
+  /* --sha */
 }
-
+/* get the actual color in the body */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --primary: cyan;
+    --secondary: #171717;
+    --shape: #171717;
+    --bgbutton: #0a0a0a;
   }
 }
-
+html {
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
 body {
   color: var(--foreground);
   background: var(--background);
