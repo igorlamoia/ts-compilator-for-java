@@ -5,7 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary: cyan;
+  --primary: #7be5ec;
   --secondary: #f9f9f9;
   --shape: #f9f9f9;
   --bgbutton: red;
@@ -16,7 +16,7 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-    --primary: cyan;
+    --primary: #7be5ec;
     --secondary: #171717;
     --shape: #171717;
     --bgbutton: #0a0a0a;

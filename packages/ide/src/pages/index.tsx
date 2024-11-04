@@ -4,6 +4,8 @@ import { IDEView } from "@/views/ide";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { Typing } from "@/components/text/typing";
 import { ToggleTheme } from "@/components/toggle-theme";
+import { NightSky } from "@/components/canvas/night-sky";
+import { Meteores } from "@/components/canvas/meteores";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -18,14 +20,18 @@ const geistMono = localFont({
 
 export default function Home() {
   return (
-    <>
+    <div className="">
+      <div>
+        <Meteores />
+      </div>
+      {/* <NightSky /> */}
       <div
         className={`${geistSans.variable} ${geistMono.variable}
           min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]
-          from-slate-700 to-slate-900
+          z-100 relative
           `}
       >
-        <main className="flex flex-col gap-6 pb-20 max-w-screen-2xl m-auto">
+        <main className="flex flex-col gap-6 pb-20 max-w-screen-2xl m-auto z-10">
           <div className="flex gap-6 items-center flex-col md:flex-row-reverse">
             <div className="ml-auto">
               <ToggleTheme />
@@ -122,6 +128,6 @@ export default function Home() {
           </a>
         </footer>
       </div>
-    </>
+    </div>
   );
 }
