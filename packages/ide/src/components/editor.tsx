@@ -1,8 +1,10 @@
+import { useTheme } from "@/contexts/ThemeContext";
 import { useEditor } from "@/hooks/useEditor";
 import React, { useEffect, useRef } from "react";
 
 export function Editor() {
-  const { initializeEditor } = useEditor();
+  const { initializeEditor, setConfig } = useEditor();
+  const { darkMode } = useTheme();
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -10,6 +12,11 @@ export function Editor() {
       initializeEditor(editorContainerRef.current); // Initialize editor with the container
     }
   }, [initializeEditor]);
+
+  useEffect(() => {
+    if (darkMode) return setConfig({ theme: "vs-dark" });
+    setConfig({ theme: "hc-light" });
+  }, [setConfig, darkMode]);
 
   return (
     <div

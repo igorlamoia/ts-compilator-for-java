@@ -13,6 +13,7 @@ export const EditorContext = createContext<TEditorContextType>(
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [sourceCode, setSourceCode] = useState(INITIAL_CODE);
   const [config, setConfigState] = useState<TEditorConfig>(new ConfigEntity());
+  const [loading, setLoading] = useState(true);
 
   const monacoRef = useRef<typeof monacoEditor | null>(null);
   const editorInstanceRef =
@@ -21,7 +22,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loader.init().then((monaco) => {
       monacoRef.current = monaco;
-      // setLoading(false);
+      setLoading(false);
     });
   }, []);
 
@@ -116,7 +117,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         cleanIssues,
       }}
     >
-      {children}
+      {loading ? <div>Loading Editor...</div> : children}
     </EditorContext.Provider>
   );
 }
