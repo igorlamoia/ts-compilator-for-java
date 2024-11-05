@@ -10,19 +10,20 @@ import { useToast } from "@/contexts/ToastContext";
 
 export function useLexerAnalyse() {
   const { showToast } = useToast();
+  // const [isLoading, setIsLoading] = useState(false);
   const { getEditorCode, showLineIssues, cleanIssues } = useEditor();
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
     {} as TLexerAnalyseData
   );
   const handleRun = async () => {
     const code = getEditorCode();
+    setAnalyseData({} as TLexerAnalyseData);
     try {
       cleanIssues();
       const { data } = await api.post<TLexerAnalyseData>("/lexer", {
         sourceCode: code,
       });
       const issues = [...data.warnings, ...data.infos];
-      if (issues.length) handleIssues(issues);
       setAnalyseData(data);
       showToast({
         message: data.message || "Lexical Analysis completed",
@@ -32,6 +33,7 @@ export function useLexerAnalyse() {
         top: 700,
         behavior: "smooth",
       });
+      if (issues.length) handleIssues(issues);
     } catch (error) {
       setAnalyseData({} as TLexerAnalyseData);
       if (error instanceof AxiosError) {

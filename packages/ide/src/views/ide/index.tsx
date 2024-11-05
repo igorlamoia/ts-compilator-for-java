@@ -1,4 +1,4 @@
-import { MainButton } from "@/components/buttons/main";
+import { HeroButton } from "@/components/buttons/hero";
 import { Editor } from "@/components/editor";
 import { ShowTokens } from "./components/show-tokens";
 import { useLexerAnalyse } from "./useLexerAnalyse";
@@ -11,9 +11,12 @@ export function IDEView() {
       <div className=" h-[65vh]">
         <Editor />
       </div>
-      <MainButton className="ml-auto" onClick={handleRun}>
-        Lexical Analysis
-      </MainButton>
+      <HeroButton
+        start="Lexical Analysis"
+        end="Run"
+        className="ml-auto"
+        onClick={handleRun}
+      />
       <ShowTokens analyseData={analyseData} />
     </div>
   );

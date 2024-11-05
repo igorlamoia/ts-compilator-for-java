@@ -26,13 +26,16 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
 
   return (
     <>
-      <MainButton onClick={() => setHideAllTokens((old) => !old)}>
-        Hide All Tokens
+      <MainButton
+        className="max-w-max"
+        onClick={() => setHideAllTokens((old) => !old)}
+      >
+        Sequence Token
       </MainButton>
       <div className="flex flex-col gap-2">
         {!hideAllTokens && (
           <>
-            <h2 className="text-xl font-bold">All Tokens</h2>
+            <h2 className="text-xl font-bold">Sequence Tokens</h2>
             <div className="flex gap-2 flex-wrap w-full items-start">
               {allFormattedTokens.map(({ token, info: { styles } }) => (
                 <TokenCard
@@ -68,7 +71,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
               >
                 {values.map(({ token, info: { styles } }) => (
                   <TokenCard
-                    key={token.type + token.column}
+                    key={token.type + token.column + "horizontaly"}
                     token={token}
                     styles={styles}
                   />
@@ -83,7 +86,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                 <h3 className="text-lg font-bold">{key}</h3>
                 {values.map(({ token, info: { styles } }) => (
                   <TokenCard
-                    key={token.type + token.column}
+                    key={token.type + token.column + "verticaly"}
                     token={token}
                     styles={styles}
                   />

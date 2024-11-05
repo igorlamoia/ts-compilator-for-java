@@ -21,7 +21,7 @@ export function Toast(props: ToastProps) {
       transition-all duration-500 ease-out transform ${
         props.open ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-20"
       }
-      items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800/75`}
+      items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white/75 rounded-lg shadow dark:text-gray-400 dark:bg-gray-800/75`}
       role="alert"
     >
       <Icon type={props.type || "success"} />
