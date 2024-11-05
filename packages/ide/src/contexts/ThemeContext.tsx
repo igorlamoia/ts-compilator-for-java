@@ -1,4 +1,3 @@
-import { useEditor } from "@/hooks/useEditor";
 import {
   createContext,
   ReactNode,
@@ -14,7 +13,6 @@ const ThemeContext = createContext({
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
-  const { setConfig } = useEditor();
 
   useEffect(() => {
     // Access `localStorage` and `window` only after the component mounts on the client
@@ -43,11 +41,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (!darkMode) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
-      setConfig({ theme: "vs-dark" });
     } else {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
-      setConfig({ theme: "hc-light" });
     }
   };
 
