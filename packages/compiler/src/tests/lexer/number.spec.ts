@@ -55,6 +55,30 @@ describe("Lexer Number", () => {
       // Assert
       expect(tokens).toEqual(expected);
     });
+    it("should throw an error when there is more than one dot", () => {
+      // Arrange
+      const source = `float pi = 3.1.4;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
+    it("should throw an error when finishing with not valid char", () => {
+      // Arrange
+      const source = `float pi = 3.1b;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
+    it("shouldn't throw an error when finishing with a space before invalid char", () => {
+      // Arrange
+      const source = `float pi = 3.1 b;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).not.toThrow();
+    });
   });
   describe("Integer Cases", () => {
     it("should scan an integer number", () => {
@@ -73,6 +97,22 @@ describe("Lexer Number", () => {
       const tokens = lexer.scanTokens();
       // Assert
       expect(tokens).toEqual(expected);
+    });
+    it("should throw an error when finishing with not valid char", () => {
+      // Arrange
+      const source = `float pi = 3b;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
+    it("shouldn't throw an error when finishing with a space before invalid char", () => {
+      // Arrange
+      const source = `float pi = 3 b;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).not.toThrow();
     });
   });
   describe("Octal Cases", () => {
@@ -93,6 +133,14 @@ describe("Lexer Number", () => {
       // Assert
       expect(tokens).toEqual(expected);
     });
+    it("should throw an error when the number is invalid", () => {
+      // Arrange
+      const source = `int pi = 07778;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
   });
   describe("Hex Cases", () => {
     it("should scan a hex number", () => {
@@ -111,6 +159,38 @@ describe("Lexer Number", () => {
       const tokens = lexer.scanTokens();
       // Assert
       expect(tokens).toEqual(expected);
+    });
+    it("should throw an error when the letters are in lower case", () => {
+      // Arrange
+      const source = `int pi = 0xfff;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
+    it("should throw an error when the x is in upper case", () => {
+      // Arrange
+      const source = `int pi = 0XFFF;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
+    it("should throw an error when finishing with not valid char", () => {
+      // Arrange
+      const source = `int pi = 0xFFFx;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).toThrow();
+    });
+    it("shouldn't throw an error when finishing with a space before invalid char", () => {
+      // Arrange
+      const source = `float pi = 0xFFF x;`;
+      // Act
+      const lexer = new Lexer(source);
+      // Assert
+      expect(() => lexer.scanTokens()).not.toThrow();
     });
   });
 });
