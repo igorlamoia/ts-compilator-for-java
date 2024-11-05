@@ -45,13 +45,3 @@ export function Typing({ phrases }: TypingProps) {
     </div>
   );
 }
-
-// import { useTyping } from "@/hooks/useTyping";
-// const { currentText } = useTyping();
-// return (
-//   <div className="w-max">
-//     <h1 className="animate-typewriter overflow-hidden whitespace-nowrap border-r-4 border-r-white pr-5 text-5xl text-white font-bold">
-//       {currentText}
-//     </h1>
-//   </div>
-// );
