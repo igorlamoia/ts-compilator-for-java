@@ -4,7 +4,6 @@ import { IDEView } from "@/views/ide";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { Typing } from "@/components/text/typing";
 import { ToggleTheme } from "@/components/toggle-theme";
-import { NightSky } from "@/components/canvas/night-sky";
 import { Meteores } from "@/components/canvas/meteores";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -27,7 +26,6 @@ export default function Home() {
           <div className="">
             <Meteores />
           </div>
-          {/* <NightSky /> */}
           <div
             className={`${geistSans.variable} ${geistMono.variable}
           min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]
