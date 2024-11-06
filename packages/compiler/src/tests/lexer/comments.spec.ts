@@ -58,5 +58,23 @@ describe("Lexer", () => {
       // Assert
       expect(tokens).toEqual(expected);
     });
+    it("should keep the line count accurate", () => {
+      // Arrange
+      const source = `int x = 10;\n/*\n\n\n*/\nfloat`;
+      const expected = [
+        new Token(21, "int", 1, 1),
+        new Token(43, "x", 1, 5),
+        new Token(15, "=", 1, 7),
+        new Token(45, "10", 1, 9),
+        new Token(36, ";", 1, 11),
+        new Token(22, "float", 6, 1),
+        new Token(99, "", 6, 6),
+      ];
+      // Act
+      const lexer = new Lexer(source);
+      const tokens = lexer.scanTokens();
+      // Assert
+      expect(tokens).toEqual(expected);
+    });
   });
 });

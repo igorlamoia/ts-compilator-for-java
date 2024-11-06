@@ -4,11 +4,11 @@ import {
   IdentifierScanner,
   NumberScanner,
   StringScanner,
+  SymbolAndOperatorScanner,
 } from ".";
 import { isDigit, isAlpha } from "../lexer-helpers";
 import { Lexer } from "..";
 import { TOKENS_MAP } from "../../token/mappings";
-import SymbolAndOperatorScanner from "./SymbolAndOperator";
 
 export default class LexerScannerFactory {
   static getInstance(char: string, lexer: Lexer): LexerScanner | null {
