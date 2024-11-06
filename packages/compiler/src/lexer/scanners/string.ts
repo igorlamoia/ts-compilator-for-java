@@ -14,7 +14,9 @@ export default class StringScanner extends LexerScanner {
     }
 
     if (this.lexer.peek() === "\n")
-      return this.lexer.error("Unterminated String.");
+      return this.lexer.error(
+        "Unterminated String, must end at the same line."
+      );
     if (this.lexer.isAtEnd()) return this.lexer.error("Unterminated String.");
 
     this.lexer.peekAndAdvance(); // Consume the closing quote
