@@ -36,11 +36,9 @@ npm run test
 
 # Instructions
 
-Readmes for each package are in their respective folders
-
-![IDE reame](./packages/ide/README.md)
-
-![Compiler readme](./packages/compiler/README.md)
+Readmes for each package are in their respective folders:
+[IDE](./packages/ide/README.md)
+| [Compiler](./packages/compiler/README.md)
 
 If you want to use the compiler start, you can edit the code by the file in: `packages/compiler/src/resource/input-code.java`
 
