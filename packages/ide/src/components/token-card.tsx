@@ -61,7 +61,9 @@ export function TokenCard({ token, styles }: TokenCardProps) {
         className={`ml-auto rounded-md ${styles.bg} mt-2 bg-opacity-30 py-1 px-2.5 border border-transparent text-sm text-slate-600 transition-all shadow-sm`}
       >
         <strong>Lexeme: </strong>
-        <span className={styles.text}>{token.lexeme}</span>
+        <span className={styles.text} style={{ whiteSpace: "pre-wrap" }}>
+          {token.lexeme}
+        </span>
       </div>
     </div>
   );
