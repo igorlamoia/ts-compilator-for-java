@@ -12,6 +12,6 @@ const tokens = lexer.scanTokens();
 let tokensArray = [];
 for (const token of tokens) {
   tokensArray.push(token.toObject());
-  // console.log(token.toString());
+  console.log(token.toString());
 }
 console.table(tokensArray);

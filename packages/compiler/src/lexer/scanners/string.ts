@@ -1,16 +1,24 @@
 import { LITERALS } from "../../token/constants";
 import { LexerScanner } from "./lexer";
 
+const escapeSequences: { [key: string]: string } = {
+  n: "\n",
+  t: "\t",
+};
+
 export default class StringScanner extends LexerScanner {
   public run(): void {
-    let value = "";
+    let value = "",
+      removedChars = 0;
     while (!['"', "\n"].includes(this.lexer.peek()) && !this.lexer.isAtEnd()) {
-      if (this.lexer.peek() === "\\") {
-        value += this.lexer.peekAndAdvance();
-        if (!this.lexer.isAtEnd()) value += this.lexer.peekAndAdvance();
+      const [actual, next] = [this.lexer.peek(), this.lexer.peekNext()];
+      if (actual === "\\" && escapeSequences[next]) {
+        this.lexer.advance(2);
+        value += escapeSequences[next];
+        removedChars++;
         continue;
       }
-      value += this.lexer.peekAndAdvance();
+      if (!this.lexer.isAtEnd()) value += this.lexer.peekAndAdvance();
     }
 
     if (this.lexer.peek() === "\n")
@@ -20,6 +28,10 @@ export default class StringScanner extends LexerScanner {
     if (this.lexer.isAtEnd()) return this.lexer.error("Unterminated String.");
 
     this.lexer.peekAndAdvance(); // Consume the closing quote
-    this.lexer.addToken(LITERALS.string_literal, '"' + value + '"');
+    this.lexer.addToken(
+      LITERALS.string_literal,
+      '"' + value + '"',
+      -removedChars
+    );
   }
 }
