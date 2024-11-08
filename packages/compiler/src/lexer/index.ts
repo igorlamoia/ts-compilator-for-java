@@ -24,7 +24,7 @@ export class Lexer {
       this.scanToken();
     }
 
-    this.tokens.push(new Token(TOKENS.EOF, "", this.line, this.column));
+    // this.tokens.push(new Token(TOKENS.EOF, "", this.line, this.column));
     return this.tokens;
   }
 
@@ -43,9 +43,9 @@ export class Lexer {
     return this.current >= this.source.length;
   }
 
-  public advance() {
-    this.current++;
-    this.column++;
+  public advance(columns = 1): void {
+    this.current += columns;
+    this.column += columns;
   }
 
   public peekAndAdvance(): string {

@@ -36,7 +36,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
         {!hideAllTokens && (
           <>
             <h2 className="text-xl font-bold">Sequence Tokens</h2>
-            <div className="flex gap-2 flex-wrap w-full items-start">
+            <div className="flex gap-2 flex-wrap w-full">
               {allFormattedTokens.map(({ token, info: { styles } }) => (
                 <TokenCard
                   key={token.type + token.column}
@@ -65,10 +65,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
           Object.entries(formattedTokens).map(([key, values]) => (
             <>
               <h3 className="text-lg font-bold">{key}</h3>
-              <div
-                key={key}
-                className="flex gap-2 flex-wrap w-full  items-start"
-              >
+              <div key={key} className="flex gap-2 flex-wrap w-full ">
                 {values.map(({ token, info: { styles } }) => (
                   <TokenCard
                     key={token.type + token.column + "horizontaly"}
@@ -80,7 +77,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
             </>
           ))
         ) : (
-          <div className="flex gap-2 flex-wrap w-full items-start">
+          <div className="flex-1 md:flex gap-2 flex-wrap w-full md:items-start">
             {Object.entries(formattedTokens).map(([key, values]) => (
               <div key={key} className="flex flex-col gap-2">
                 <h3 className="text-lg font-bold">{key}</h3>

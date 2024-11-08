@@ -13,7 +13,7 @@ describe("Lexer Number", () => {
         new Token(15, "=", 1, 10),
         new Token(46, "3.14", 1, 12),
         new Token(36, ";", 1, 16),
-        new Token(99, "", 1, 17),
+        // new Token(99, "", 1, 17),
       ];
       // Act
       const lexer = new Lexer(source);
@@ -30,7 +30,7 @@ describe("Lexer Number", () => {
         new Token(15, "=", 1, 10),
         new Token(46, "0.14", 1, 12),
         new Token(36, ";", 1, 15),
-        new Token(99, "", 1, 16),
+        // new Token(99, "", 1, 16),
       ];
       // Act
       const lexer = new Lexer(source);
@@ -47,7 +47,7 @@ describe("Lexer Number", () => {
         new Token(15, "=", 1, 10),
         new Token(46, "3.0", 1, 12),
         new Token(36, ";", 1, 14),
-        new Token(99, "", 1, 15),
+        // new Token(99, "", 1, 15),
       ];
       // Act
       const lexer = new Lexer(source);
@@ -90,7 +90,7 @@ describe("Lexer Number", () => {
         new Token(15, "=", 1, 7),
         new Token(45, "123", 1, 9),
         new Token(36, ";", 1, 12),
-        new Token(99, "", 1, 13),
+        // new Token(99, "", 1, 13),
       ];
       // Act
       const lexer = new Lexer(source);
@@ -125,7 +125,7 @@ describe("Lexer Number", () => {
         new Token(15, "=", 1, 7),
         new Token(48, "0123", 1, 9),
         new Token(36, ";", 1, 13),
-        new Token(99, "", 1, 14),
+        // new Token(99, "", 1, 14),
       ];
       // Act
       const lexer = new Lexer(source);
@@ -152,7 +152,7 @@ describe("Lexer Number", () => {
         new Token(15, "=", 1, 7),
         new Token(47, "0xFFF", 1, 9),
         new Token(36, ";", 1, 14),
-        new Token(99, "", 1, 15),
+        // new Token(99, "", 1, 15),
       ];
       // Act
       const lexer = new Lexer(source);
