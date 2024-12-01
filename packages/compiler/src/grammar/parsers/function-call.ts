@@ -3,6 +3,7 @@ import { typeStmt } from "./typeSmt";
 import { TOKENS } from "../../token/constants";
 import { blockStmt } from "./blockStmt";
 
+// <functionCall\*> -> <typeStmt> 'IDENT' '(' ')' <bloco> ;
 export function functionCall(iterator: TokenIterator): void {
   const { left_paren, right_paren } = TOKENS.SYMBOLS;
   typeStmt(iterator);

@@ -1,6 +1,7 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 
+// <typeStmt> -> 'int' | 'float' | 'string' ;
 export function typeStmt(iterator: TokenIterator): void {
   const { int, float, string } = TOKENS.RESERVEDS;
   const token = iterator.peek();
