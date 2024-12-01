@@ -1,7 +1,8 @@
-import { isAlphaNumeric } from "../lexer-helpers";
 import { LexerScanner } from "./lexer";
-import { LITERALS, RESERVEDS } from "../../token/constants";
+import { isAlphaNumeric } from "../lexer-helpers";
+import { TOKENS } from "../../token/constants";
 
+const { LITERALS, RESERVEDS } = TOKENS;
 export default class IdentifierScanner extends LexerScanner {
   public run(): void {
     while (isAlphaNumeric(this.lexer.peek())) this.lexer.peekAndAdvance();

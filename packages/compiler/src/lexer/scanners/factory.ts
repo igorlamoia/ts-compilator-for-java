@@ -1,4 +1,6 @@
+import { Lexer } from "..";
 import { LexerScanner } from "./lexer";
+import { isDigit, isAlpha } from "../lexer-helpers";
 import {
   CommentScanner,
   IdentifierScanner,
@@ -6,8 +8,6 @@ import {
   StringScanner,
   SymbolAndOperatorScanner,
 } from ".";
-import { isDigit, isAlpha } from "../lexer-helpers";
-import { Lexer } from "..";
 import { TOKENS_MAP } from "../../token/mappings";
 
 export default class LexerScannerFactory {

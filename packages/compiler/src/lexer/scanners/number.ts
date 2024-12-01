@@ -1,7 +1,8 @@
-import { isDigit, isHexDigit, isOctalDigit } from "../lexer-helpers";
-import { LITERALS } from "../../token/constants";
 import { LexerScanner } from "./lexer";
+import { isDigit, isHexDigit, isOctalDigit } from "../lexer-helpers";
+import { TOKENS } from "../../token/constants";
 
+const { LITERALS } = TOKENS;
 export default class NumberScanner extends LexerScanner {
   public run(): void {
     let numberStr = this.lexer.peekPrevious();

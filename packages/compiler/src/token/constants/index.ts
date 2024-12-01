@@ -14,7 +14,6 @@ export const TOKENS = {
   RESERVEDS,
   SYMBOLS,
   LITERALS,
-  EOF: 99,
 };
 
 export const TOKENS_STYLE = {
@@ -27,19 +26,19 @@ export const TOKENS_STYLE = {
   SYMBOLS_STYLE,
 };
 
-export {
-  ARITHMETICS,
-  LOGICALS,
-  RELATIONALS,
-  ASSIGNMENTS,
-  RESERVEDS,
-  SYMBOLS,
-  LITERALS,
-  ARITHMETICS_STYLE,
-  ASSIGNMENTS_STYLE,
-  LITERALS_STYLE,
-  LOGICALS_STYLE,
-  RELATIONALS_STYLE,
-  RESERVEDS_STYLE,
-  SYMBOLS_STYLE,
+export const TOKENS_DESCRIPTION_TO_ID = {
+  ...ARITHMETICS,
+  ...LOGICALS,
+  ...RELATIONALS,
+  ...ASSIGNMENTS,
+  ...RESERVEDS,
+  ...SYMBOLS,
+  ...LITERALS,
 };
+
+export const TOKENS_ID_TO_DESCRIPTION = Object.entries(
+  TOKENS_DESCRIPTION_TO_ID
+).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {} as Record<number, string>);
