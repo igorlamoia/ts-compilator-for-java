@@ -1,4 +1,4 @@
-import { TokenIterator } from "token/TokenIterator";
+import { TokenIterator } from "../../token/TokenIterator";
 import { addStmt } from "./addStmt";
 
 export function relationalStmt(iterator: TokenIterator): void {

@@ -1,4 +1,4 @@
-import { TOKENS } from "token/constants";
+import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 
 export function typeStmt(iterator: TokenIterator): void {

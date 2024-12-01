@@ -1,5 +1,5 @@
-import { TOKENS } from "token/constants";
-import { TokenIterator } from "token/TokenIterator";
+import { TOKENS } from "../../token/constants";
+import { TokenIterator } from "../../token/TokenIterator";
 import { andStmt } from "./andStmt";
 
 export function orStmt(iterator: TokenIterator): void {

@@ -1,5 +1,5 @@
-import { TOKENS } from "token/constants";
-import { TokenIterator } from "token/TokenIterator";
+import { TOKENS } from "../../token/constants";
+import { TokenIterator } from "../../token/TokenIterator";
 import { listStmt } from "./listStmt";
 
 export function blockStmt(iterator: TokenIterator): void {

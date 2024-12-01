@@ -1,5 +1,5 @@
-import { TOKENS } from "token/constants";
-import { TokenIterator } from "token/TokenIterator";
+import { TOKENS } from "../../token/constants";
+import { TokenIterator } from "../../token/TokenIterator";
 import { forStmt } from "./forStmt";
 import { blockStmt } from "./blockStmt";
 import { attributeStmt } from "./attributeStmt";

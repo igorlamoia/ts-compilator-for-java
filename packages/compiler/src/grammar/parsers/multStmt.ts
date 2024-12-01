@@ -1,4 +1,4 @@
-import { TokenIterator } from "token/TokenIterator";
+import { TokenIterator } from "../../token/TokenIterator";
 import { unitaryStmt } from "./unitaryStmt";
 
 export function multStmt(iterator: TokenIterator): void {

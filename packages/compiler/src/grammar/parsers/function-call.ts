@@ -1,6 +1,6 @@
-import { TokenIterator } from "token/TokenIterator";
+import { TokenIterator } from "../../token/TokenIterator";
 import { typeStmt } from "./typeSmt";
-import { TOKENS } from "token/constants";
+import { TOKENS } from "../../token/constants";
 import { blockStmt } from "./blockStmt";
 
 export function functionCall(iterator: TokenIterator): void {

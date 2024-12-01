@@ -1,7 +1,7 @@
-import { TOKENS } from "token/constants";
+import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeSmt";
 import { identListStmt } from "./identListStmt";
-import { TokenIterator } from "token/TokenIterator";
+import { TokenIterator } from "../../token/TokenIterator";
 
 export function declarationStmt(iterator: TokenIterator): void {
   typeStmt(iterator); // Parse the type

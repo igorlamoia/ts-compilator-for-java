@@ -1,5 +1,5 @@
-import { TOKENS } from "token/constants";
-import { TokenIterator } from "token/TokenIterator";
+import { TOKENS } from "../../token/constants";
+import { TokenIterator } from "../../token/TokenIterator";
 
 export function restIdentListStmt(iterator: TokenIterator): void {
   while (iterator.match(TOKENS.SYMBOLS.comma)) {

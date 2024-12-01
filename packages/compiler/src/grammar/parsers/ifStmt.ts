@@ -1,6 +1,6 @@
-import { TokenIterator } from "token/TokenIterator";
+import { TokenIterator } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
-import { TOKENS } from "token/constants";
+import { TOKENS } from "../../token/constants";
 import { stmt } from "./stmt";
 
 export function ifStmt(iterator: TokenIterator): void {

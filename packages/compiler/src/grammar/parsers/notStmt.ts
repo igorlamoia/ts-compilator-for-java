@@ -1,5 +1,5 @@
-import { TOKENS } from "token/constants";
-import { TokenIterator } from "token/TokenIterator";
+import { TOKENS } from "../../token/constants";
+import { TokenIterator } from "../../token/TokenIterator";
 import { relationalStmt } from "./relationalStmt";
 
 export function notStmt(iterator: TokenIterator): void {

@@ -1,6 +1,6 @@
-import { TokenIterator } from "token/TokenIterator";
+import { TokenIterator } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
-import { TOKENS } from "token/constants";
+import { TOKENS } from "../../token/constants";
 
 export function factorStmt(iterator: TokenIterator): void {
   const token = iterator.peek();

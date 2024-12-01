@@ -1,5 +1,5 @@
-import { TokenIterator } from "token/TokenIterator";
-import { TOKENS } from "token/constants";
+import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { attributeStmt } from "./attributeStmt";
 
 export function optAttributeStmt(iterator: TokenIterator): void {
