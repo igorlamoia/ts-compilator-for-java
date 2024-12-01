@@ -11,7 +11,7 @@
 <stmt> -> <forStmt>
 | <ioStmt>
 | <whileStmt>
-| <expr> ';'
+| <atrib> ';'
 | <ifStmt>
 | <bloco>
 | 'break'
@@ -39,8 +39,8 @@
 
 # comandos de IO
 
-<ioStmt> -> 'system' '.' 'out' '.' 'print' '(' <type> ',' 'IDENT' ')' ';'
-| 'system' '.' 'in' '.' 'scan' '(' <outList> ')' ';' ;
+<ioStmt> -> 'system' '.' 'in' '.' 'scan' '(' <type> ',' 'IDENT' ')' ';'
+| 'system' '.' 'out' '.' 'print' '(' <outList> ')' ';' ;
 <outList> -> <out> <restoOutList> ;
 <out> -> 'STR' | 'IDENT' | 'NUMdec' | 'NUMfloat' | 'NUMoct' | 'NUMhex';
 <restoOutList> -> ',' <out> <restoOutList> | & ;

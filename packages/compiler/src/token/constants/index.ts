@@ -6,16 +6,6 @@ import { RELATIONALS, RELATIONALS_STYLE } from "./relationals";
 import { RESERVEDS, RESERVEDS_STYLE } from "./reserveds";
 import { SYMBOLS, SYMBOLS_STYLE } from "./symbols";
 
-export const TOKENS = {
-  ARITHMETICS,
-  LOGICALS,
-  RELATIONALS,
-  ASSIGNMENTS,
-  RESERVEDS,
-  SYMBOLS,
-  LITERALS,
-};
-
 export const TOKENS_STYLE = {
   ARITHMETICS_STYLE,
   ASSIGNMENTS_STYLE,
@@ -26,7 +16,7 @@ export const TOKENS_STYLE = {
   SYMBOLS_STYLE,
 };
 
-export const TOKENS_DESCRIPTION_TO_ID = {
+const BY_DESCRIPTION = {
   ...ARITHMETICS,
   ...LOGICALS,
   ...RELATIONALS,
@@ -36,9 +26,19 @@ export const TOKENS_DESCRIPTION_TO_ID = {
   ...LITERALS,
 };
 
-export const TOKENS_ID_TO_DESCRIPTION = Object.entries(
-  TOKENS_DESCRIPTION_TO_ID
-).reduce((acc, [key, value]) => {
+const BY_ID = Object.entries(BY_DESCRIPTION).reduce((acc, [key, value]) => {
   acc[value] = key;
   return acc;
 }, {} as Record<number, string>);
+
+export const TOKENS = {
+  ARITHMETICS,
+  LOGICALS,
+  RELATIONALS,
+  ASSIGNMENTS,
+  RESERVEDS,
+  SYMBOLS,
+  LITERALS,
+  BY_DESCRIPTION,
+  BY_ID,
+};
