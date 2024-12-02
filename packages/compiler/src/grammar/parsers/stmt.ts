@@ -28,10 +28,11 @@ export function stmt(iterator: TokenIterator): void {
   const goToStmt = stmtsFactory[token.type];
   if (goToStmt) return goToStmt(iterator);
 
+  // ! Aqui está a cagada do consume
   const ignoreStmts = {
-    [RESERVEDS.break]: iterator.consume,
-    [RESERVEDS.continue]: iterator.consume,
-    [TOKENS.SYMBOLS.semicolon]: iterator.consume,
+    [RESERVEDS.break]: iterator.consume.bind(iterator),
+    [RESERVEDS.continue]: iterator.consume.bind(iterator),
+    [TOKENS.SYMBOLS.semicolon]: iterator.consume.bind(iterator),
   };
 
   const ignoreStmt = ignoreStmts[token.type];

@@ -25,7 +25,7 @@ export class TokenIterator {
     if (isDifferentType || isDifferentLexeme)
       throw new Error(
         `Unexpected token at line ${token.line}, column ${token.column}. ` +
-          `Expected type ${expectedType}, lexeme "${expectedLexeme}", but got type ${token.type}, lexeme "${token.lexeme}".`
+          `Expected type ${expectedType}, but got type ${token.type}, lexeme "${token.lexeme}".`
       );
     return this.next();
   }

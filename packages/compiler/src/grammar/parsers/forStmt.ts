@@ -8,12 +8,12 @@ import { optAttributeStmt } from "./optAttributeStmt";
 export function forStmt(iterator: TokenIterator): void {
   iterator.consume(TOKENS.RESERVEDS.for);
   const { left_paren, right_paren, semicolon } = TOKENS.SYMBOLS;
-  iterator.consume(left_paren, "(");
+  iterator.consume(left_paren);
   optAttributeStmt(iterator);
-  iterator.consume(semicolon, ";");
+  iterator.consume(semicolon);
   optExprStmt(iterator);
-  iterator.consume(semicolon, ";");
+  iterator.consume(semicolon);
   optAttributeStmt(iterator);
-  iterator.consume(right_paren, ")");
+  iterator.consume(right_paren);
   stmt(iterator);
 }
