@@ -1,10 +1,9 @@
 import { TokenIterator } from "../../token/TokenIterator";
+import { restMultStmt } from "./restMultStmt";
 import { unitaryStmt } from "./unitaryStmt";
 
+// <mult> -> <uno> <restoMult> ;
 export function multStmt(iterator: TokenIterator): void {
-  unitaryStmt(iterator); // Parse the first unitary expression
-  while (["*", "/", "%"].includes(iterator.peek().lexeme)) {
-    iterator.next(); // Consume `*`, `/`, or `%`
-    unitaryStmt(iterator); // Parse the next unitary expression
-  }
+  unitaryStmt(iterator);
+  restMultStmt(iterator);
 }

@@ -11,5 +11,5 @@ export function typeStmt(iterator: TokenIterator): void {
     throw new Error(
       `Unexpected type "${token.lexeme}" at line ${token.line}, column ${token.column}.`
     );
-  iterator.next();
+  iterator.consume(token.type);
 }

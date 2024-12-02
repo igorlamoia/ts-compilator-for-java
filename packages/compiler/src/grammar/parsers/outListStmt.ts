@@ -2,7 +2,8 @@ import { TokenIterator } from "../../token/TokenIterator";
 import { outStmt } from "./outStmt";
 import { restOutListStmt } from "./restOutListStmt";
 
+// <outList> -> <out> <restoOutList> ;
 export function outListStmt(iterator: TokenIterator): void {
-  outStmt(iterator); // Parse the first <out>
-  restOutListStmt(iterator); // Parse the rest of the list
+  outStmt(iterator);
+  restOutListStmt(iterator);
 }

@@ -1,12 +1,9 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { addStmt } from "./addStmt";
+import { restRelationalStmt } from "./restRelationalStmt";
 
+// <rel> -> <add> <restoRel> ;
 export function relationalStmt(iterator: TokenIterator): void {
-  addStmt(iterator); // Parse the first additive expression
-  const validRelationalOps = ["==", "!=", "<", "<=", ">", ">="];
-  const token = iterator.peek();
-  if (validRelationalOps.includes(token.lexeme)) {
-    iterator.next(); // Consume relational operator
-    addStmt(iterator); // Parse the second additive expression
-  }
+  addStmt(iterator);
+  restRelationalStmt(iterator);
 }

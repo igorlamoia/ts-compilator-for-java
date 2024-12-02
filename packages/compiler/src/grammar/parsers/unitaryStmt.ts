@@ -1,12 +1,13 @@
+import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { factorStmt } from "./factorStmt";
 
+// <uno> -> '+' <uno> | '-' <uno> | <fator> ;
 export function unitaryStmt(iterator: TokenIterator): void {
   const token = iterator.peek();
-  if (["+", "-"].includes(token.lexeme)) {
-    iterator.next(); // Consume `+` or `-`
-    unitaryStmt(iterator);
-  } else {
-    factorStmt(iterator); // Delegate to factor
-  }
+  const { minus, plus } = TOKENS.ARITHMETICS;
+  if (![minus, plus].includes(token.type)) return factorStmt(iterator);
+
+  iterator.consume(token.type);
+  unitaryStmt(iterator);
 }

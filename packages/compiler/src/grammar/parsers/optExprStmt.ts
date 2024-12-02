@@ -2,9 +2,9 @@ import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
 
+// <optExpr> -> <expr> | & ;
 export function optExprStmt(iterator: TokenIterator): void {
   const token = iterator.peek();
-
   if (isStartToken(token.type)) exprStmt(iterator);
 }
 

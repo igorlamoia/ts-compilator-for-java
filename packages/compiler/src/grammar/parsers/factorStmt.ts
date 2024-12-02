@@ -2,22 +2,19 @@ import { TokenIterator } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
 import { TOKENS } from "../../token/constants";
 
+// <fator> -> 'NUMint' | 'NUMfloat' | 'NUMoct' | 'NUMhex'
+// | 'IDENT' | '(' <expr> ')' | 'STR';
 export function factorStmt(iterator: TokenIterator): void {
   const token = iterator.peek();
-
-  if ([TOKENS.RESERVEDS.int, TOKENS.RESERVEDS.float].includes(token.type)) {
-    iterator.next(); // Consume the number
-  } else if (iterator.match(TOKENS.LITERALS.identifier)) {
-    iterator.next(); // Consume `IDENT`
-  } else if (iterator.match(TOKENS.SYMBOLS.left_paren)) {
-    iterator.next(); // Consume `(`
-    exprStmt(iterator); // Parse the nested expression
+  if (Object.values(TOKENS.LITERALS).includes(token.type))
+    iterator.consume(token.type);
+  else if (iterator.match(TOKENS.SYMBOLS.left_paren)) {
+    iterator.consume(TOKENS.SYMBOLS.left_paren);
+    exprStmt(iterator);
     iterator.consume(TOKENS.SYMBOLS.right_paren, ")");
-  } else if (iterator.match(TOKENS.LITERALS.string_literal)) {
-    iterator.next(); // Consume string
-  } else {
-    throw new Error(
-      `Unexpected token "${token.lexeme}" at line ${token.line}, column ${token.column}.`
-    );
+    return;
   }
+  throw new Error(
+    `Unexpected token "${token.lexeme}" at line ${token.line}, column ${token.column}.`
+  );
 }

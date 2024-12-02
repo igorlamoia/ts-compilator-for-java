@@ -3,6 +3,7 @@ import { exprStmt } from "./exprStmt";
 import { TOKENS } from "../../token/constants";
 import { stmt } from "./stmt";
 
+// <whileStmt> -> 'while' '(' <expr> ')' <stmt> ;
 export function whileStmt(iterator: TokenIterator): void {
   iterator.consume(TOKENS.RESERVEDS.while);
   iterator.consume(TOKENS.SYMBOLS.left_brace);

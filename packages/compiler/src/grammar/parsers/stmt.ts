@@ -15,30 +15,35 @@ export function stmt(iterator: TokenIterator): void {
 
   const stmtsFactory = {
     [RESERVEDS.for]: forStmt,
+    [RESERVEDS.system]: ioStmt,
     [RESERVEDS.while]: whileStmt,
+    [TOKENS.LITERALS.identifier]: attrbuteStmtVariant,
     [RESERVEDS.if]: ifStmt,
+    [TOKENS.SYMBOLS.left_brace]: blockStmt,
     [RESERVEDS.int]: declarationStmt,
     [RESERVEDS.float]: declarationStmt,
     [RESERVEDS.string]: declarationStmt,
-    [RESERVEDS.system]: ioStmt, // Add ioStmt here
-    [TOKENS.SYMBOLS.left_brace]: blockStmt,
-    [TOKENS.LITERALS.identifier]: attributeStmt,
   };
 
   const goToStmt = stmtsFactory[token.type];
   if (goToStmt) return goToStmt(iterator);
 
   const ignoreStmts = {
-    [RESERVEDS.break]: iterator.next,
-    [RESERVEDS.continue]: iterator.next,
-    [TOKENS.SYMBOLS.semicolon]: iterator.next,
+    [RESERVEDS.break]: iterator.consume,
+    [RESERVEDS.continue]: iterator.consume,
+    [TOKENS.SYMBOLS.semicolon]: iterator.consume,
   };
 
   const ignoreStmt = ignoreStmts[token.type];
   if (ignoreStmt) {
-    ignoreStmt();
+    ignoreStmt(token.type);
     return;
   }
 
   throw new Error(`Unexpected statement: ${token.lexeme}`);
+}
+
+function attrbuteStmtVariant(iterator: TokenIterator): void {
+  attributeStmt(iterator);
+  iterator.consume(TOKENS.SYMBOLS.semicolon);
 }
