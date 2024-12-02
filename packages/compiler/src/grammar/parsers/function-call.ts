@@ -8,7 +8,7 @@ export function functionCall(iterator: TokenIterator): void {
   const { left_paren, right_paren } = TOKENS.SYMBOLS;
   typeStmt(iterator);
   iterator.consume(TOKENS.LITERALS.identifier);
-  iterator.consume(left_paren, "(");
-  iterator.consume(right_paren, ")");
+  iterator.consume(left_paren);
+  iterator.consume(right_paren);
   blockStmt(iterator);
 }
