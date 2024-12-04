@@ -1,5 +1,5 @@
 import fs from "fs";
-import { functionCall } from "./grammar/parsers/function-call";
+import { functionCall } from "./grammar/syntax/function-call";
 import { Lexer } from "./lexer";
 import { TokenIterator } from "./token/TokenIterator";
 
