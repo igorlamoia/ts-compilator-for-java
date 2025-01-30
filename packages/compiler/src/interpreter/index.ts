@@ -1,5 +1,5 @@
 import promptSync from "prompt-sync";
-import { makeOperation } from "../utils";
+import { makeOperation, makeRelation } from "../utils";
 const prompt = promptSync();
 
 export type Tarithmetics = "+" | "-" | "*" | "/" | "%" | "//";
@@ -12,6 +12,8 @@ export type TsystemCalls = "CALL"; // e.g. PRINT, SCAN
 export type Tlabel = "LABEL";
 
 const arithmetics: Tarithmetics[] = ["+", "-", "*", "/", "%", "//"];
+const logicals: TLogical[] = ["||", "&&", "!"];
+const relationals: TRelational[] = ["==", "<>", ">", "≥", "<", "≤"];
 
 export type OpName =
   | Tarithmetics
@@ -159,7 +161,7 @@ export function interpret(program: Instruction[]): void {
     }
 
     // -- Logical Operators
-    else if (op === "||" || op === "&&" || op === "!") {
+    else if (logicals.includes(op as TLogical)) {
       if (op === "!") {
         // unary NOT
         const val1 = parseOperand(operand1, variables);
@@ -181,32 +183,14 @@ export function interpret(program: Instruction[]): void {
     }
 
     // -- Relational Operators
-    else if (["==", "<>", ">", "≥", "<", "≤"].includes(op)) {
+    else if (relationals.includes(op as TRelational)) {
       const val1 = parseOperand(operand1, variables);
       const val2 = parseOperand(operand2, variables);
+      variables.set(
+        result,
+        makeRelation(op as TRelational, val1 as number, val2 as number)
+      );
 
-      switch (op) {
-        case "==":
-          variables.set(result, val1 === val2);
-          break;
-        case "<>":
-          variables.set(result, val1 !== val2);
-          break;
-        case ">":
-          variables.set(result, Number(val1) > Number(val2));
-          break;
-        case "≥":
-          variables.set(result, Number(val1) >= Number(val2));
-          break;
-        case "<":
-          variables.set(result, Number(val1) < Number(val2));
-          break;
-        case "≤":
-          variables.set(result, Number(val1) <= Number(val2));
-          break;
-        default:
-          throw new Error(`Unknown relational operator '${op}'`);
-      }
       instructionPointer++;
     }
 
