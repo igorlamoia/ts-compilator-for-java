@@ -2,8 +2,9 @@ import fs from "fs";
 import { functionCall } from "./grammar/syntax/function-call";
 import { Lexer } from "./lexer";
 import { TokenIterator } from "./token/TokenIterator";
-import { demo, interpret } from "./interpreter";
-import { loadInstructionsFromTxt } from "./interpreter/scan";
+import { Interpreter } from "./interpreter";
+import { loadInstructionsFromString } from "./interpreter/scan";
+import { demo } from "./interpreter/demo";
 
 const PATH = "src/resource/input-code.java";
 const ENCODE = "utf-8";
@@ -13,8 +14,9 @@ const program: string = fs.readFileSync(
   ENCODE
 );
 // interpret(program);
-const obj = loadInstructionsFromTxt(program);
-interpret(obj);
+const instructions = loadInstructionsFromString(program);
+new Interpreter(instructions).execute();
+// demo();
 // demo();
 
 function lexemerCode() {

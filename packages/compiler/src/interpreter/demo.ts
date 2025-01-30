@@ -1,21 +1,25 @@
-import { Instruction, interpret } from "./interpreter";
+import { Interpreter } from "./";
+import { Instruction } from "./constants";
 
 export function demo() {
-  // Example "program"
   const demoProgram: Instruction[] = [
     // (op, result, operand1, operand2)
-    { op: "=", result: "x", operand1: 10, operand2: null }, // x = 10
-    { op: "CALL", result: "PRINT", operand1: "x", operand2: null }, // print(x)
-    { op: "-", result: "x", operand1: "x", operand2: 1 }, // x = x - 1
-    { op: "CALL", result: "PRINT", operand1: "x", operand2: null }, // print(x)
-    { op: "IF", result: "x", operand1: "LOOP", operand2: "END" }, // if x != 0 => jump "LOOP", else "END"
-    { op: "LABEL", result: "LOOP", operand1: null, operand2: null },
-    { op: "-", result: "x", operand1: "x", operand2: 1 },
-    { op: "CALL", result: "PRINT", operand1: "x", operand2: null },
-    // repeat the IF
-    { op: "IF", result: "x", operand1: "LOOP", operand2: "END" },
-    { op: "LABEL", result: "END", operand1: null, operand2: null },
+    // ('=', 'numBloco_0', 0, None),
+    // ('=', 'divBloco_0', 0, None),
+    // ('=', 'restoBloco_0', 0, None),
+    // ('CALL', 'PRINT', 'Entre com o inteiro: ', None),
+    // ('CALL', 'SCAN', None, 'numBloco_0'),
+    // ('CALL', 'PRINT', None, 'numBloco_0'),
+    { op: "=", result: "numBloco_0", operand1: 0, operand2: null },
+    {
+      op: "CALL",
+      result: "PRINT",
+      operand1: "Entre com o inteiro: ",
+      operand2: null,
+    },
+    { op: "CALL", result: "SCAN", operand1: null, operand2: "numBloco_0" },
+    { op: "CALL", result: "PRINT", operand1: null, operand2: "numBloco_0" },
   ];
 
-  interpret(demoProgram);
+  new Interpreter(demoProgram).execute();
 }
