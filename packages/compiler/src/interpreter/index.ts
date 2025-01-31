@@ -48,13 +48,10 @@ export class Interpreter {
       const { op, result, operand1, operand2 } =
         this.program[this.instructionPointer];
       if (op === "CALL" && result === "STOP") break;
-
       if (op === "LABEL") {
         this.instructionPointer++;
         continue;
-      }
-
-      if (ARITHMETICS.includes(op as TArithmetics)) {
+      } else if (ARITHMETICS.includes(op as TArithmetics)) {
         if (operand2 !== null) {
           const val1 = parseOrGetVariable(operand1, this.variables);
           const val2 = parseOrGetVariable(operand2, this.variables);
@@ -133,7 +130,9 @@ export class Interpreter {
             this.instructionPointer++;
             continue;
           }
-          console.log(operand1 ?? parseOrGetVariable(operand2, this.variables));
+          process.stdout.write(
+            String(operand1 ?? parseOrGetVariable(operand2, this.variables))
+          );
         } else if (callType === "SCAN") {
           if (typeof operand2 !== "string")
             throw new Error(`SCAN requires a string variable name as operand1`);
