@@ -26,7 +26,7 @@ const geistMono = localFont({
 });
 
 export default function Home() {
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(true);
   return (
     <ThemeProvider>
       <Meteores />
