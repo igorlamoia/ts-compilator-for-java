@@ -1,4 +1,3 @@
-import promptSync from "prompt-sync";
 import {
   makeOperation,
   makeRelation,
@@ -27,20 +26,13 @@ export class Interpreter {
 
   constructor(
     program: Instruction[],
-    io?: {
+    io: {
       stdout: (msg: string) => void;
       stdin: () => Promise<string>;
     }
   ) {
-    if (!io) {
-      // const prompt = promptSync();
-
-      this.stdout = (msg: string) => process.stdout.write(msg);
-      this.stdin = async () => prompt("");
-    } else {
-      this.stdout = io.stdout;
-      this.stdin = io.stdin;
-    }
+    this.stdout = io.stdout;
+    this.stdin = io.stdin;
     this.program = program;
     this.labels = new Map<string, number>();
     this.variables = new Map<string, unknown>();
@@ -52,7 +44,7 @@ export class Interpreter {
     this.variables.clear();
     this.instructionPointer = 0;
 
-    console.log(this.program);
+    // console.log(this.program);
 
     this.program.forEach((instruction, index) => {
       if (instruction.op !== "LABEL") return;
