@@ -125,14 +125,10 @@ export class Interpreter {
       } else if (op === "CALL") {
         const callType = result.toUpperCase();
         if (callType === "PRINT") {
-          if (operand1 === "\\n") {
-            console.log();
-            this.instructionPointer++;
-            continue;
-          }
-          process.stdout.write(
-            String(operand1 ?? parseOrGetVariable(operand2, this.variables))
+          const output = String(
+            operand1 ?? parseOrGetVariable(operand2, this.variables)
           );
+          process.stdout.write(output.replace(/\\n/g, "\n")); // Replace all occurrences of \n in the string with actual newlines
         } else if (callType === "SCAN") {
           if (typeof operand2 !== "string")
             throw new Error(`SCAN requires a string variable name as operand1`);
