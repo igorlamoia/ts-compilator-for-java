@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { useState } from "react";
 interface FooterProps {
-  openTerminal: (current: boolean) => void;
+  toggleTerminal: () => void;
 }
-export function Footer({ openTerminal }: FooterProps) {
+export function Footer({ toggleTerminal }: FooterProps) {
   const [isDocOpen, setIsDocOpen] = useState(false);
 
   return (
@@ -39,11 +39,7 @@ export function Footer({ openTerminal }: FooterProps) {
           <DocumentationLinks />
         </div>
       </div>
-      <ButtonItem
-        onClick={() => openTerminal((current: boolean) => !current)}
-        src="/window.svg"
-        alt="Window icon"
-      >
+      <ButtonItem onClick={toggleTerminal} src="/window.svg" alt="Window icon">
         Terminal
       </ButtonItem>
     </footer>

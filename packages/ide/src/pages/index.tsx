@@ -77,11 +77,14 @@ export default function Home() {
           </div>
           <EditorProvider>
             <IDEView />
-            <TerminalView isTerminalOpen={isTerminalOpen} />
+            <TerminalView
+              isTerminalOpen={isTerminalOpen}
+              toggleTerminal={() => setIsTerminalOpen((old) => !old)}
+            />
           </EditorProvider>
         </section>
       </main>
-      <Footer openTerminal={setIsTerminalOpen} />
+      <Footer toggleTerminal={() => setIsTerminalOpen((old) => !old)} />
     </ThemeProvider>
   );
 }
