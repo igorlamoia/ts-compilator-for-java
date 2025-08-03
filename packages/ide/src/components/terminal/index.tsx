@@ -17,10 +17,19 @@ function initPrompt(terminal: MutableRefObject<Terminal | null>) {
 
 function handleEnter(
   terminal: MutableRefObject<Terminal | null>,
-  commandRef: MutableRefObject<string>
+  commandRef: MutableRefObject<string>,
+  commandHistory: MutableRefObject<string[]>,
+  historyPointer: MutableRefObject<number>
 ) {
   if (!terminal.current) return;
   terminal.current.writeln(`\r\nExecuted: ${commandRef.current}`);
+
+  // Add the command to history if it's not empty
+  if (commandRef.current.trim() !== "") {
+    commandHistory.current.push(commandRef.current);
+    historyPointer.current = commandHistory.current.length; // Reset pointer to the end
+  }
+
   commandRef.current = "";
   initPrompt(terminal);
 }
@@ -38,6 +47,10 @@ export default function TerminalView({
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminal = useRef<Terminal | null>(null);
   const commandRef = useRef<string>("");
+
+  // Command history and pointer
+  const commandHistory = useRef<string[]>([]);
+  const historyPointer = useRef<number>(0);
 
   useEffect(() => {
     if (terminalRef.current && !terminal.current) {
@@ -81,19 +94,40 @@ export default function TerminalView({
           commandRef.current = "";
           return;
         }
+
         switch (data) {
           case "\x03": // Ctrl+C
             terminal.current.writeln("\r\nProcess interrupted.");
             initPrompt(terminal);
             commandRef.current = "";
             return;
-          case "\r":
-            handleEnter(terminal, commandRef);
+          case "\r": // Enter
+            handleEnter(terminal, commandRef, commandHistory, historyPointer);
             return;
           case "\u007F": // Backspace
             if (commandRef.current.length > 0) {
               commandRef.current = commandRef.current.slice(0, -1);
               terminal.current.write("\b \b");
+            }
+            return;
+          case "\x1B[A": // Up arrow
+            if (historyPointer.current > 0) {
+              historyPointer.current -= 1;
+              commandRef.current =
+                commandHistory.current[historyPointer.current] || "";
+              terminal.current.write("\r\x1B[K$ " + commandRef.current); // Clear line and write command
+            }
+            return;
+          case "\x1B[B": // Down arrow
+            if (historyPointer.current < commandHistory.current.length - 1) {
+              historyPointer.current += 1;
+              commandRef.current =
+                commandHistory.current[historyPointer.current] || "";
+              terminal.current.write("\r\x1B[K$ " + commandRef.current); // Clear line and write command
+            } else {
+              historyPointer.current = commandHistory.current.length;
+              commandRef.current = "";
+              terminal.current.write("\r\x1B[K$ "); // Clear line
             }
             return;
           default:
@@ -113,7 +147,6 @@ export default function TerminalView({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      console.log(event);
       if (event.ctrlKey && ["'", "j"].includes(event.key)) {
         toggleTerminal();
       } else if (event.key === "Escape") {
@@ -137,12 +170,9 @@ export default function TerminalView({
   return (
     <div
       ref={terminalRef}
-      className={`
-        fixed bottom-10 left-0 right-0
-      ${isTerminalOpen ? "h-[300px]" : "hidden"} w-full  p-4 md:p-8
-        backdrop-blur-md bg-black/50 z-50
-        scrollbar-none
-        `}
+      className={`fixed bottom-10 left-0 right-0 ${
+        isTerminalOpen ? "h-[300px]" : "hidden"
+      } w-full p-4 md:p-8 backdrop-blur-md bg-black/50 z-50 scrollbar-none`}
     />
   );
 }
