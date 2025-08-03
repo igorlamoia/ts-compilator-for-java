@@ -1,6 +1,7 @@
-import { LITERALS } from "../../token/constants";
 import { LexerScanner } from "./lexer";
+import { TOKENS } from "../../token/constants";
 
+const { LITERALS } = TOKENS;
 const escapeSequences: { [key: string]: string } = {
   n: "\n",
   t: "\t",

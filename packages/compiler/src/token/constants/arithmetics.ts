@@ -6,14 +6,6 @@ export const ARITHMETICS = {
   modulo: 5, // %
 };
 
-export const ARITHMETICS_TYPES = {
-  [ARITHMETICS.plus]: "plus",
-  [ARITHMETICS.minus]: "minus",
-  [ARITHMETICS.star]: "star",
-  [ARITHMETICS.slash]: "slash",
-  [ARITHMETICS.modulo]: "modulo",
-};
-
 export const ARITHMETICS_STYLE = {
   text: "text-green-500",
   bg: "bg-green-100",

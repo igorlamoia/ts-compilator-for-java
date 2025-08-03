@@ -7,15 +7,6 @@ export const ASSIGNMENTS = {
   modulo_equal: 20, // %=
 };
 
-export const ASSIGNMENTS_TYPES = {
-  [ASSIGNMENTS.equal]: "equal",
-  [ASSIGNMENTS.plus_equal]: "plus_equal",
-  [ASSIGNMENTS.minus_equal]: "minus_equal",
-  [ASSIGNMENTS.star_equal]: "star_equal",
-  [ASSIGNMENTS.slash_equal]: "slash_equal",
-  [ASSIGNMENTS.modulo_equal]: "modulo_equal",
-};
-
 export const ASSIGNMENTS_STYLE = {
   text: "text-green-500",
   bg: "bg-green-100",
