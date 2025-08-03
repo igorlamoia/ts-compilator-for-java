@@ -39,7 +39,7 @@ export default function TerminalView({ isTerminalOpen }: ITerminalViewProps) {
         cols: 80,
         rows: 20,
         theme: {
-          background: "rgba(0, 0, 0, 0.3)",
+          background: "rgba(0, 0, 0, 0)",
           // foreground: darkMode ? "white" : "black", // TODO implement the theme switching logic
         },
       });
@@ -59,6 +59,7 @@ export default function TerminalView({ isTerminalOpen }: ITerminalViewProps) {
         isTerminalOpen ? "h-[300px]" : "h-0"
       } w-full rounded-md border border-gray-300
         backdrop-blur-md bg-black/50 z-50
+        scrollbar-none
         `}
     />
   );
