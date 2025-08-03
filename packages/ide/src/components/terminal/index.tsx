@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Terminal } from "xterm";
+import { MutableRefObject } from "react";
 import "xterm/css/xterm.css";
 
 interface ITerminalViewProps {
@@ -9,68 +10,121 @@ interface ITerminalViewProps {
   toggleTerminal: () => void;
 }
 
+function initPrompt(terminal: MutableRefObject<Terminal | null>) {
+  if (!terminal.current) return;
+  terminal.current.write("\r\n$ ");
+}
+
+function handleEnter(
+  terminal: MutableRefObject<Terminal | null>,
+  commandRef: MutableRefObject<string>
+) {
+  if (!terminal.current) return;
+  terminal.current.writeln(`\r\nExecuted: ${commandRef.current}`);
+  commandRef.current = "";
+  initPrompt(terminal);
+}
+
+function handleWelcomeMessage(terminal: MutableRefObject<Terminal | null>) {
+  if (!terminal.current) return;
+  terminal.current.writeln("\r\nWelcome to the Lamoia's Terminal!");
+  initPrompt(terminal);
+}
+
 export default function TerminalView({
   isTerminalOpen,
   toggleTerminal,
 }: ITerminalViewProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
-  const term = useRef<Terminal | null>(null);
+  const terminal = useRef<Terminal | null>(null);
   const commandRef = useRef<string>("");
 
-  function prompt() {
-    if (!term.current) return;
-    term.current.write("\r\n$ ");
-  }
-
   useEffect(() => {
-    if (terminalRef.current && !term.current) {
-      term.current = new Terminal({
-        cols: 80,
+    if (terminalRef.current && !terminal.current) {
+      terminal.current = new Terminal({
+        cols: 120,
         rows: 14,
         theme: {
           background: "rgba(0, 0, 0, 0)",
         },
       });
 
-      term.current.open(terminalRef.current);
-      term.current.writeln("Welcome to the Lamoia's Terminal!");
-      prompt();
+      terminal.current.open(terminalRef.current);
+      handleWelcomeMessage(terminal);
 
-      // Register the onData listener only once
-      term.current.onData((data) => {
-        if (!term.current) return;
+      terminal.current.onData((data) => {
+        if (!terminal.current) return;
 
-        if (data === "\r") {
-          // Handle enter key
-          term.current.writeln(`\r\nExecuted: ${commandRef.current}`);
-          commandRef.current = "";
-          prompt();
-        } else if (data === "\u007F") {
-          // Handle backspace
-          if (commandRef.current.length > 0) {
-            commandRef.current = commandRef.current.slice(0, -1);
-            term.current.write("\b \b");
+        const possibleCommands = ["clear", "cls", "help", "exit"];
+        if (possibleCommands.includes(commandRef.current)) {
+          switch (commandRef.current) {
+            case "clear":
+            case "cls":
+              terminal.current.clear();
+              initPrompt(terminal);
+              break;
+            case "help":
+              terminal.current.writeln(
+                "\r\nAvailable commands: clear, cls, help, exit, ctrl+c to interrupt, ctrl+' to toggle terminal\r\n"
+              );
+              initPrompt(terminal);
+              break;
+            case "exit":
+              terminal.current.writeln("\r\nExiting terminal...");
+              setTimeout(() => {
+                terminal?.current?.clear();
+                toggleTerminal();
+                handleWelcomeMessage(terminal);
+              }, 1000);
+              break;
           }
-        } else {
-          commandRef.current += data;
-          term.current.write(data);
+          commandRef.current = "";
+          return;
+        }
+        switch (data) {
+          case "\x03": // Ctrl+C
+            terminal.current.writeln("\r\nProcess interrupted.");
+            initPrompt(terminal);
+            commandRef.current = "";
+            return;
+          case "\r":
+            handleEnter(terminal, commandRef);
+            return;
+          case "\u007F": // Backspace
+            if (commandRef.current.length > 0) {
+              commandRef.current = commandRef.current.slice(0, -1);
+              terminal.current.write("\b \b");
+            }
+            return;
+          default:
+            commandRef.current += data;
+            terminal.current.write(data);
+            return;
         }
       });
     }
   }, []);
 
   useEffect(() => {
-    if (isTerminalOpen && term.current) {
-      term.current.focus();
+    if (isTerminalOpen && terminal.current) {
+      terminal.current.focus();
     }
   }, [isTerminalOpen]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      console.log(event);
       if (event.ctrlKey && ["'", "j"].includes(event.key)) {
         toggleTerminal();
       } else if (event.key === "Escape") {
         toggleTerminal();
+      } else if (event.ctrlKey && event.key === "c") {
+        // Handle Ctrl+C
+        if (!terminal.current) return;
+        terminal.current.writeln("\r\nProcess interrupted.");
+        initPrompt(terminal);
+        commandRef.current = "";
+        return;
       }
     };
 
