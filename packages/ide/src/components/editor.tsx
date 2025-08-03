@@ -21,7 +21,8 @@ export function Editor() {
   return (
     <div
       ref={editorContainerRef}
-      className="min-h-[40vh] w-full h-full  overflow-hidden rounded-sm border-2 border-[var(--primary-opaque)]
+      className="
+      w-full h-full  overflow-hidden rounded-sm border-2 border-[var(--primary-opaque)]
       border-opacity-50
       "
     />

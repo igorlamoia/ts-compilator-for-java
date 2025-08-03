@@ -7,6 +7,13 @@ import { ToggleTheme } from "@/components/toggle-theme";
 import { Meteores } from "@/components/canvas/meteores";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Footer } from "@/components/footer";
+// import { TerminalView } from "@/components/terminal";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
+const TerminalView = dynamic(() => import("@/components/terminal"), {
+  ssr: false, // 👈 desabilita SSR para esse componente
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,6 +27,8 @@ const geistMono = localFont({
 });
 
 export default function Home() {
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  console.log(isTerminalOpen);
   return (
     <ThemeProvider>
       <Meteores />
@@ -70,10 +79,11 @@ export default function Home() {
           </div>
           <EditorProvider>
             <IDEView />
+            <TerminalView isTerminalOpen={isTerminalOpen} />
           </EditorProvider>
         </section>
       </main>
-      <Footer />
+      <Footer openTerminal={setIsTerminalOpen} />
     </ThemeProvider>
   );
 }
