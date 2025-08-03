@@ -16,25 +16,43 @@ import {
   TRelational,
 } from "./constants";
 
-const prompt = promptSync();
-
 export class Interpreter {
   private labels: Map<string, number>;
   private variables: Map<string, unknown>;
   private instructionPointer: number;
   private program: Instruction[];
 
-  constructor(program: Instruction[]) {
+  private stdout: (msg: string) => void;
+  private stdin: () => Promise<string>;
+
+  constructor(
+    program: Instruction[],
+    io?: {
+      stdout: (msg: string) => void;
+      stdin: () => Promise<string>;
+    }
+  ) {
+    if (!io) {
+      // const prompt = promptSync();
+
+      this.stdout = (msg: string) => process.stdout.write(msg);
+      this.stdin = async () => prompt("");
+    } else {
+      this.stdout = io.stdout;
+      this.stdin = io.stdin;
+    }
     this.program = program;
     this.labels = new Map<string, number>();
     this.variables = new Map<string, unknown>();
     this.instructionPointer = 0;
   }
 
-  public execute(): void {
+  public async execute(): Promise<void> {
     this.labels.clear();
     this.variables.clear();
     this.instructionPointer = 0;
+
+    console.log(this.program);
 
     this.program.forEach((instruction, index) => {
       if (instruction.op !== "LABEL") return;
@@ -125,15 +143,20 @@ export class Interpreter {
       } else if (op === "CALL") {
         const callType = result.toUpperCase();
         if (callType === "PRINT") {
+          // if (operand1 === "\\n") {
+          //   this.stdout("\n");
+          //   this.instructionPointer++;
+          //   continue;
+          // }
           const output = String(
             operand1 ?? parseOrGetVariable(operand2, this.variables)
           );
-          process.stdout.write(output.replace(/\\n/g, "\n")); // Replace all occurrences of \n in the string with actual newlines
+          this.stdout(output.replace(/\\n/g, "\r\n")); // Replace all occurrences of \n in the string with actual newlines
         } else if (callType === "SCAN") {
           if (typeof operand2 !== "string")
             throw new Error(`SCAN requires a string variable name as operand1`);
 
-          const userInput = prompt("Enter a value: ");
+          const userInput = await this.stdin();
           this.variables.set(operand2, parsePiece(userInput));
         } else throw new Error(`Unknown system call '${callType}'`);
 

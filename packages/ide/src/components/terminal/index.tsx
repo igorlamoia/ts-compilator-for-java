@@ -4,6 +4,9 @@ import { useEffect, useRef } from "react";
 import { Terminal } from "xterm";
 import { MutableRefObject } from "react";
 import "xterm/css/xterm.css";
+import { Interpreter } from "@ts-compilator-for-java/compiler/interpreter";
+import { loadInstructionsFromString } from "@ts-compilator-for-java/compiler/interpreter/scan";
+import PROGRAM from "@ts-compilator-for-java/compiler/resource/intermediate-code";
 
 interface ITerminalViewProps {
   isTerminalOpen: boolean;
@@ -22,7 +25,9 @@ function handleEnter(
   historyPointer: MutableRefObject<number>
 ) {
   if (!terminal.current) return;
-  terminal.current.writeln(`\r\nExecuted: ${commandRef.current}`);
+  terminal.current.writeln(
+    `\r\nComando não reconhecido: ${commandRef.current}\n`
+  );
 
   // Add the command to history if it's not empty
   if (commandRef.current.trim() !== "") {
@@ -52,6 +57,34 @@ export default function TerminalView({
   const commandHistory = useRef<string[]>([]);
   const historyPointer = useRef<number>(0);
 
+  const resolveInput = useRef<(value: string) => void>();
+  const runInterpreter = async () => {
+    if (!terminal.current) return;
+
+    const inputPromise = (): Promise<string> =>
+      new Promise((resolve) => {
+        resolveInput.current = resolve;
+      });
+
+    const io = {
+      stdout: (msg: string) => terminal.current?.write(msg),
+      stdin: inputPromise,
+    };
+    terminal.current.writeln("\n");
+    const instructions = loadInstructionsFromString(PROGRAM);
+    const interpreter = new Interpreter(instructions, io); // `program` vem do seu Parser/Lexer
+
+    terminal.current.writeln("\n🟢  Iniciando execução do código...\n");
+
+    try {
+      await interpreter.execute();
+    } catch (e: any) {
+      terminal.current.writeln(`❌ Erro: ${e.message}`);
+    }
+
+    initPrompt(terminal);
+  };
+
   useEffect(() => {
     if (terminalRef.current && !terminal.current) {
       terminal.current = new Terminal({
@@ -65,8 +98,14 @@ export default function TerminalView({
       terminal.current.open(terminalRef.current);
       handleWelcomeMessage(terminal);
 
-      terminal.current.onData((data) => {
+      terminal.current.onData(async (data) => {
         if (!terminal.current) return;
+        if (commandRef.current.trim().toLowerCase() === "roda pra mim") {
+          // Chamar o interpretador aqui
+          runInterpreter();
+          commandRef.current = "";
+          return;
+        }
 
         const possibleCommands = ["clear", "cls", "help", "exit"];
         if (possibleCommands.includes(commandRef.current)) {
@@ -78,7 +117,7 @@ export default function TerminalView({
               break;
             case "help":
               terminal.current.writeln(
-                "\r\nAvailable commands: clear, cls, help, exit, ctrl+c to interrupt, ctrl+' to toggle terminal\r\n"
+                "\r\nAvailable commands:roda pra mim, clear, cls, help, exit, ctrl+c to interrupt, ctrl+' to toggle terminal\r\n"
               );
               initPrompt(terminal);
               break;
@@ -102,7 +141,13 @@ export default function TerminalView({
             commandRef.current = "";
             return;
           case "\r": // Enter
-            handleEnter(terminal, commandRef, commandHistory, historyPointer);
+            terminal.current?.writeln(""); // move to next line
+            if (resolveInput.current) {
+              resolveInput.current(commandRef.current); // ⬅️ Pass input to Interpreter
+              resolveInput.current = undefined;
+            } else {
+              handleEnter(terminal, commandRef, commandHistory, historyPointer);
+            }
             return;
           case "\u007F": // Backspace
             if (commandRef.current.length > 0) {
