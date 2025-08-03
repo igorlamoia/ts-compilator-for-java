@@ -81,7 +81,7 @@ export default function TerminalView({
       ref={terminalRef}
       className={`
         fixed bottom-0 left-0 right-0
-      ${isTerminalOpen ? "h-[300px]" : "h-0"} w-full  p-4 md:p-8
+      ${isTerminalOpen ? "h-[300px]" : "hidden"} w-full  p-4 md:p-8
         backdrop-blur-md bg-black/50 z-50
         scrollbar-none
         `}

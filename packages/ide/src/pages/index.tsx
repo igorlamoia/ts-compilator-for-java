@@ -84,7 +84,10 @@ export default function Home() {
           </EditorProvider>
         </section>
       </main>
-      <Footer toggleTerminal={() => setIsTerminalOpen((old) => !old)} />
+      <Footer
+        toggleTerminal={() => setIsTerminalOpen((old) => !old)}
+        isTerminalOpen={isTerminalOpen}
+      />
     </ThemeProvider>
   );
 }
