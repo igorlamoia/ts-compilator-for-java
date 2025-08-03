@@ -78,8 +78,12 @@ export default function TerminalView({
 
     try {
       await interpreter.execute();
-    } catch (e: any) {
-      terminal.current.writeln(`❌ Erro: ${e.message}`);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        terminal.current.writeln(`❌ Erro: ${e.message}`);
+      } else {
+        terminal.current.writeln("❌ Erro: An unknown error occurred.");
+      }
     }
 
     initPrompt(terminal);

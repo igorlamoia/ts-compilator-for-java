@@ -5,6 +5,7 @@ import { TokenIterator } from "./token/TokenIterator";
 import { Interpreter } from "./interpreter";
 import { loadInstructionsFromString } from "./interpreter/scan";
 import { demo } from "./interpreter/demo";
+import promptSync from "prompt-sync";
 
 const PATH = "src/resource/input-code.java";
 const ENCODE = "utf-8";
@@ -15,7 +16,12 @@ const program: string = fs.readFileSync(
 );
 // interpret(program);
 const instructions = loadInstructionsFromString(program);
-new Interpreter(instructions).execute();
+const prompt = promptSync();
+const io = {
+  stdout: (msg: string) => process.stdout.write(msg),
+  stdin: async () => prompt(""),
+};
+new Interpreter(instructions, io).execute();
 // demo();
 // demo();
 
