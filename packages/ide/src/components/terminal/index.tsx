@@ -111,9 +111,13 @@ export default function TerminalView({
           return;
         }
 
-        const possibleCommands = ["clear", "cls", "help", "exit"];
+        const possibleCommands = ["clear", "cls", "help", "exit", "ping"];
         if (possibleCommands.includes(commandRef.current)) {
           switch (commandRef.current) {
+            case "ping":
+              terminal.current.writeln("\r\nPong! 🏓\r\n");
+              initPrompt(terminal);
+              break;
             case "clear":
             case "cls":
               terminal.current.clear();
