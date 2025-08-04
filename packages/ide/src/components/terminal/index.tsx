@@ -9,12 +9,12 @@ import { loadInstructionsFromString } from "@ts-compilator-for-java/compiler/int
 import PROGRAM from "@ts-compilator-for-java/compiler/resource/intermediate-code";
 
 const RESET_COLOR = "\x1b[0m";
-const RED_COLOR = "\x1b[31m";
 const GREEN_COLOR = "\x1b[32m";
 const YELLOW_COLOR = "\x1b[33m";
-const BLUE_COLOR = "\x1b[34m";
 const ORANGE_COLOR = "\x1b[38;5;208m"; // Orange color code
 const CYAN_COLOR = "\x1b[36m"; // Cyan color code
+// const RED_COLOR = "\x1b[31m";
+// const BLUE_COLOR = "\x1b[34m";
 
 const ENTER_CHAR = "\r";
 
@@ -107,6 +107,7 @@ export default function TerminalView({
   useEffect(() => {
     if (terminalRef.current && !terminal.current) {
       terminal.current = new Terminal({
+        cursorBlink: true,
         cols: 120,
         rows: 14,
         theme: {
