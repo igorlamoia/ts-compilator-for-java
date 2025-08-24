@@ -1,11 +1,12 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { orStmt } from "./orStmt";
+import { Emitter } from "../../ir/emitter";
 
 /**
- * Processes an expression statement by parsing an or statement.
+ * Parses an expression and returns the final result (identifier, literal, temp).
  *
  * @derivation `<expr> -> <or>`
  */
-export function exprStmt(iterator: TokenIterator): void {
-  orStmt(iterator);
+export function exprStmt(iterator: TokenIterator, emitter: Emitter): string {
+  return orStmt(iterator, emitter);
 }

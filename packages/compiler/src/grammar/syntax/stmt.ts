@@ -7,6 +7,7 @@ import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
 import { declarationStmt } from "./declarationStmt";
 import { ioStmt } from "./ioStmt";
+import { Emitter } from "../../ir/emitter";
 
 /**
  * Parses a statement by calling the appropriate function
@@ -14,7 +15,7 @@ import { ioStmt } from "./ioStmt";
  *
  * @derivation `<stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <atrib> ';' | <ifStmt> | <bloco> | <declaration> | 'break' | 'continue' | ';'`
  */
-export function stmt(iterator: TokenIterator): void {
+export function stmt(iterator: TokenIterator, emitter: Emitter): void {
   const token = iterator.peek();
   const { RESERVEDS } = TOKENS;
 
@@ -31,7 +32,7 @@ export function stmt(iterator: TokenIterator): void {
   };
 
   const goToStmt = stmtsFactory[token.type];
-  if (goToStmt) return goToStmt(iterator);
+  if (goToStmt) return goToStmt(iterator, emitter);
 
   const ignoreStmts = {
     [RESERVEDS.break]: iterator.consume.bind(iterator),
@@ -48,7 +49,7 @@ export function stmt(iterator: TokenIterator): void {
   throw new Error(`Unexpected statement: ${token.lexeme}`);
 }
 
-function attrbuteStmtVariant(iterator: TokenIterator): void {
-  attributeStmt(iterator);
+function attrbuteStmtVariant(iterator: TokenIterator, emitter: Emitter): void {
+  attributeStmt(iterator, emitter);
   iterator.consume(TOKENS.SYMBOLS.semicolon);
 }

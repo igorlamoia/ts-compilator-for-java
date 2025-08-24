@@ -153,9 +153,15 @@ export class Interpreter {
         } else throw new Error(`Unknown system call '${callType}'`);
 
         this.instructionPointer++;
+      } else if (op === "DECLARE") {
+        // if (typeof operand1 !== "string")
+        //   throw new Error(
+        //     `DECLARE requires a string variable name as operand1`
+        //   );
+        // this.variables.set(operand1, null);
       } else
         throw new Error(
-          `Unknown operation '${op}' at IP=${this.instructionPointer}`
+          `Unknown operation '${op}' at Instruction Pointer = ${this.instructionPointer}`
         );
     }
   }

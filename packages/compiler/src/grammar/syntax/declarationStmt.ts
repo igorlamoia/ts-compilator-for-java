@@ -1,16 +1,24 @@
-import { TOKENS } from "../../token/constants";
-import { typeStmt } from "./typeSmt";
-import { identListStmt } from "./identListStmt";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
+import { typeStmt } from "./typeStmt";
+import { identListStmt } from "./identListStmt";
+import { Emitter } from "../../ir/emitter";
 
 /**
- * Processes a declaration statement by first parsing a type statement
- * and then parsing an identifier list statement.
+ * Parses a variable declaration statement and emits declaration instructions.
  *
  * @derivation `<declaration> -> <type> <identList> ';'`
  */
-export function declarationStmt(iterator: TokenIterator): void {
-  typeStmt(iterator); // Parse the type
-  identListStmt(iterator); // Parse the identifier list
+export function declarationStmt(
+  iterator: TokenIterator,
+  emitter: Emitter
+): void {
+  const type = typeStmt(iterator); // "int", "float", "string"
+  const identifiers = identListStmt(iterator); // ["x", "y", "z"]
+
+  for (const ident of identifiers) {
+    emitter.emit("DECLARE", ident, type, null); // código intermediário
+  }
+
   iterator.consume(TOKENS.SYMBOLS.semicolon);
 }

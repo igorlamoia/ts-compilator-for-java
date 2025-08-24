@@ -1,6 +1,7 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { addStmt } from "./addStmt";
 import { restRelationalStmt } from "./restRelationalStmt";
+import { Emitter } from "../../ir/emitter";
 
 /**
  * Parses the relational statement by calling the `addStmt` function
@@ -8,7 +9,10 @@ import { restRelationalStmt } from "./restRelationalStmt";
  *
  * @derivation `<rel> -> <add> <restoRel>`
  */
-export function relationalStmt(iterator: TokenIterator): void {
-  addStmt(iterator);
-  restRelationalStmt(iterator);
+export function relationalStmt(
+  iterator: TokenIterator,
+  emitter: Emitter
+): string {
+  const left = addStmt(iterator, emitter);
+  return restRelationalStmt(iterator, emitter, left);
 }

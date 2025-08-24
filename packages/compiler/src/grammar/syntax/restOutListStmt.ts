@@ -1,18 +1,21 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { outStmt } from "./outStmt";
 
 /**
- * Parses the rest of the out list statement by calling outStmt
- * or does nothing.
+ * Parses the remaining part of a print argument list: `, value, ...`.
  *
- * @derivation `<restoOutList> -> ',' <out> <restoOutList> | &`
+ * @returns Array of strings (identifiers, strings, numbers)
  */
-export function restOutListStmt(iterator: TokenIterator): void {
-  const { SYMBOLS } = TOKENS;
+export function restOutListStmt(iterator: TokenIterator): string[] {
+  const { comma } = TOKENS.SYMBOLS;
+  const items: string[] = [];
 
-  while (iterator.match(SYMBOLS.comma)) {
-    iterator.consume(SYMBOLS.comma);
-    outStmt(iterator);
+  while (iterator.match(comma)) {
+    iterator.consume(comma);
+    const value = outStmt(iterator);
+    items.push(value);
   }
+
+  return items;
 }

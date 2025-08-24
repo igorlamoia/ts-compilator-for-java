@@ -1,14 +1,15 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { multStmt } from "./multStmt";
 import { restAddStmt } from "./restAddStmt";
+import { Emitter } from "../../ir/emitter";
 
 /**
- * Processes an addition statement by first parsing a multiplication statement
- * and then parsing the rest of the addition statement.
+ * Parses an addition or subtraction expression.
+ * Emits code and returns the resulting variable/literal/temp.
  *
  * @derivation `<add> -> <mult> <restoAdd>`
  */
-export function addStmt(iterator: TokenIterator): void {
-  multStmt(iterator);
-  restAddStmt(iterator);
+export function addStmt(iterator: TokenIterator, emitter: Emitter): string {
+  const left = multStmt(iterator, emitter);
+  return restAddStmt(iterator, emitter, left);
 }

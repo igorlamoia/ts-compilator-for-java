@@ -1,14 +1,20 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 
 /**
- * Parses the rest of the identifier list statement or does nothing.
+ * Parses the remaining part of a comma-separated identifier list.
  *
- * @derivation `<restIdentListStmt> -> ',' 'IDENT' <restIdentListStmt> | &`
+ * @returns Array of identifier names (strings)
  */
-export function restIdentListStmt(iterator: TokenIterator): void {
+export function restIdentListStmt(iterator: TokenIterator): string[] {
+  const identifiers: string[] = [];
+
   while (iterator.match(TOKENS.SYMBOLS.comma)) {
     iterator.consume(TOKENS.SYMBOLS.comma);
-    iterator.consume(TOKENS.LITERALS.identifier);
+
+    const ident = iterator.consume(TOKENS.LITERALS.identifier);
+    identifiers.push(ident.lexeme);
   }
+
+  return identifiers;
 }

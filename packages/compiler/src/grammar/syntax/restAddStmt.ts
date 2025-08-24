@@ -1,17 +1,33 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { multStmt } from "./multStmt";
+import { Emitter } from "../../ir/emitter";
+import { TArithmetics } from "../../interpreter/constants";
 
 /**
- * Parses the rest of the addition statement.
- * and calls the multStmt function or does nothing.
+ * Parses the rest of an addition/subtraction chain.
+ * Emits code and returns the final result variable.
  *
- * @derivation `<restAddStmt> -> '+' <multStmt> <restAddStmt> | '-' <multStmt> <restAddStmt> | &`
+ * @param iterator Token stream
+ * @param emitter Code emitter
+ * @param inherited The left-hand value
  */
-export function restAddStmt(iterator: TokenIterator): void {
-  const { minus, plus } = TOKENS.ARITHMETICS;
+export function restAddStmt(
+  iterator: TokenIterator,
+  emitter: Emitter,
+  inherited: string
+): string {
+  const { plus, minus } = TOKENS.ARITHMETICS;
+
   while ([minus, plus].includes(iterator.peek().type)) {
-    iterator.consume(iterator.peek().type);
-    multStmt(iterator);
+    const token = iterator.peek();
+    const op: "+" | "-" = token.type === plus ? "+" : "-";
+    iterator.consume(token.type); // consume '+' or '-'
+    const right = multStmt(iterator, emitter);
+    const temp = emitter.newTemp();
+    emitter.emit(op, temp, inherited, right);
+    inherited = temp; // carry to next round
   }
+
+  return inherited;
 }
