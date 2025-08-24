@@ -22,3 +22,9 @@ export function notStmt(iterator: TokenIterator): string {
 
   return relationalStmt(iterator); // fallback: expressão relacional
 }
+
+// Example: !a
+// { op: "!", result: "__temp0", operand1: "a", operand2: null }
+// Example recursão aninhada: !!x
+// { op: "!", result: "__temp0", operand1: "x", operand2: null }
+// { op: "!", result: "__temp1", operand1: "__temp0", operand2: null }

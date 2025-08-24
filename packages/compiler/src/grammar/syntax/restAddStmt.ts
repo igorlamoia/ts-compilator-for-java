@@ -28,3 +28,8 @@ export function restAddStmt(
 
   return inherited;
 }
+
+// Example: 2 + 3 - 4
+// Results:
+// { op: "+", result: "__temp0", operand1: "2", operand2: "3" }
+// { op: "-", result: "__temp1", operand1: "__temp0", operand2: "4" }

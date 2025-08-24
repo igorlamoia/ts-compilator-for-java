@@ -154,11 +154,13 @@ export class Interpreter {
 
         this.instructionPointer++;
       } else if (op === "DECLARE") {
-        // if (typeof operand1 !== "string")
-        //   throw new Error(
-        //     `DECLARE requires a string variable name as operand1`
-        //   );
-        // this.variables.set(operand1, null);
+        if (typeof operand1 !== "string")
+          throw new Error(
+            `DECLARE requires a string variable name as operand1`
+          );
+        this.variables.set(operand1, null);
+        this.instructionPointer++;
+        continue;
       } else
         throw new Error(
           `Unknown operation '${op}' at Instruction Pointer = ${this.instructionPointer}`

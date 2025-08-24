@@ -37,3 +37,9 @@ export function restMultStmt(
 
   return inherited;
 }
+
+// Example: a * b / c % d
+// Results:
+// { op: "*", result: "__temp0", operand1: "a", operand2: "b" }
+// { op: "/", result: "__temp1", operand1: "__temp0", operand2: "c" }
+// { op: "%", result: "__temp2", operand1: "__temp1", operand2: "d" }

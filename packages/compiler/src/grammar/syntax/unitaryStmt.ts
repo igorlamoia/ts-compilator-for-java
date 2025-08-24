@@ -25,3 +25,9 @@ export function unitaryStmt(iterator: TokenIterator): string {
 
   return factorStmt(iterator); // no operador unário: delega ao fator
 }
+
+// Example: -x
+// { op: "unary-", result: "__temp0", operand1: "x", operand2: null }
+// Example: -(-a)
+// { op: "unary-", result: "__temp0", operand1: "a", operand2: null }
+// { op: "unary-", result: "__temp1", operand1: "__temp0", operand2: null }
