@@ -2,7 +2,6 @@ import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { outListStmt } from "./outListStmt";
 import { typeStmt } from "./typeStmt";
-import { Emitter } from "../../ir/emitter";
 
 const { RESERVEDS, SYMBOLS, LITERALS } = TOKENS;
 
@@ -11,7 +10,7 @@ const { RESERVEDS, SYMBOLS, LITERALS } = TOKENS;
  *
  * @derivation `<ioStmt> -> ...`
  */
-export function ioStmt(iterator: TokenIterator, emitter: Emitter): void {
+export function ioStmt(iterator: TokenIterator): void {
   iterator.consume(RESERVEDS.system);
   iterator.consume(SYMBOLS.dot);
 
@@ -25,10 +24,10 @@ export function ioStmt(iterator: TokenIterator, emitter: Emitter): void {
     throw new Error(`Invalid I/O operation: ${iterator.peek().lexeme}`);
   }
 
-  systemRun(iterator, emitter);
+  systemRun(iterator);
 }
 
-function systemInScan(iterator: TokenIterator, emitter: Emitter): void {
+function systemInScan(iterator: TokenIterator): void {
   iterator.consume(RESERVEDS.in);
   iterator.consume(SYMBOLS.dot);
   iterator.consume(RESERVEDS.scan);
@@ -42,10 +41,10 @@ function systemInScan(iterator: TokenIterator, emitter: Emitter): void {
   iterator.consume(SYMBOLS.semicolon);
 
   // Gera instrução de leitura
-  emitter.emit("CALL", "SCAN", null, ident.lexeme);
+  iterator.emitter.emit("CALL", "SCAN", null, ident.lexeme);
 }
 
-function systemOutPrint(iterator: TokenIterator, emitter: Emitter): void {
+function systemOutPrint(iterator: TokenIterator): void {
   iterator.consume(RESERVEDS.out);
   iterator.consume(SYMBOLS.dot);
   iterator.consume(RESERVEDS.print);
@@ -56,9 +55,9 @@ function systemOutPrint(iterator: TokenIterator, emitter: Emitter): void {
   for (const val of values) {
     // Heurística simples: se for aspas, é string; se número, também é literal
     if (val.startsWith('"') || !isNaN(Number(val))) {
-      emitter.emit("CALL", "PRINT", val, null);
+      iterator.emitter.emit("CALL", "PRINT", val, null);
     } else {
-      emitter.emit("CALL", "PRINT", null, val); // identificador
+      iterator.emitter.emit("CALL", "PRINT", null, val); // identificador
     }
   }
 

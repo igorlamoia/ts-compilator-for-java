@@ -2,9 +2,11 @@ import fs from "fs";
 import { functionCall } from "./grammar/syntax/function-call";
 import { Lexer } from "./lexer";
 import { TokenIterator } from "./token/TokenIterator";
-import { Emitter } from "./ir/emitter";
 import { Interpreter } from "./interpreter";
 import PromptSync from "prompt-sync";
+import { loadInstructionsFromString } from "./interpreter/scan";
+import PROGRAM from "./resource/intermediate-code";
+import { IntermediateObject } from "./resource/intermediate-object";
 
 const sourceCode: string = fs.readFileSync(
   "src/resource/input-code.java",
@@ -15,15 +17,19 @@ function executeCode() {
   const lexer = new Lexer(sourceCode);
   const tokens = lexer.scanTokens();
   const iterator = new TokenIterator(tokens);
-  const emitter = new Emitter();
-  const tree = functionCall(iterator, emitter);
+  const tree = functionCall(iterator);
   const prompt = PromptSync();
   const ioTerminal = {
     stdout: (msg: string) => process.stdout.write(msg),
     // stdout: (msg: string) => console.log(msg),
     stdin: async () => prompt(""),
   };
-  const instructions = emitter.getInstructions();
+  // const instructions = loadInstructionsFromString(PROGRAM);
+
+  // const instructions = iterator.emitter.getInstructions();
+  // console.log(instructions);
+  const instructions = IntermediateObject;
+  // return;
   new Interpreter(instructions, ioTerminal).execute();
 }
 

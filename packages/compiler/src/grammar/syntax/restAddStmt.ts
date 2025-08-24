@@ -1,8 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { multStmt } from "./multStmt";
-import { Emitter } from "../../ir/emitter";
-import { TArithmetics } from "../../interpreter/constants";
 
 /**
  * Parses the rest of an addition/subtraction chain.
@@ -14,7 +12,6 @@ import { TArithmetics } from "../../interpreter/constants";
  */
 export function restAddStmt(
   iterator: TokenIterator,
-  emitter: Emitter,
   inherited: string
 ): string {
   const { plus, minus } = TOKENS.ARITHMETICS;
@@ -23,9 +20,9 @@ export function restAddStmt(
     const token = iterator.peek();
     const op: "+" | "-" = token.type === plus ? "+" : "-";
     iterator.consume(token.type); // consume '+' or '-'
-    const right = multStmt(iterator, emitter);
-    const temp = emitter.newTemp();
-    emitter.emit(op, temp, inherited, right);
+    const right = multStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+    iterator.emitter.emit(op, temp, inherited, right);
     inherited = temp; // carry to next round
   }
 

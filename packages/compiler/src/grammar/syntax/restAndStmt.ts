@@ -1,4 +1,3 @@
-import { Emitter } from "../../ir/emitter";
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { notStmt } from "./notStmt";
@@ -11,17 +10,16 @@ import { notStmt } from "./notStmt";
  */
 export function restAndStmt(
   iterator: TokenIterator,
-  emitter: Emitter,
   inherited: string
 ): string {
   const { logical_and } = TOKENS.LOGICALS;
   while (iterator.match(logical_and)) {
     iterator.consume(TOKENS.LOGICALS.logical_and);
 
-    const right = notStmt(iterator, emitter);
-    const temp = emitter.newTemp();
+    const right = notStmt(iterator);
+    const temp = iterator.emitter.newTemp();
 
-    emitter.emit("&&", temp, inherited, right);
+    iterator.emitter.emit("&&", temp, inherited, right);
     inherited = temp;
   }
 

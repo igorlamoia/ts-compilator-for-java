@@ -1,7 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { exprStmt } from "./exprStmt";
-import { Emitter } from "../../ir/emitter";
 
 /**
  * Parses a factor: literals, identifiers, or parenthesized expressions.
@@ -9,7 +8,7 @@ import { Emitter } from "../../ir/emitter";
  *
  * @returns string representing the result
  */
-export function factorStmt(iterator: TokenIterator, emitter: Emitter): string {
+export function factorStmt(iterator: TokenIterator): string {
   const token = iterator.peek();
   const { LITERALS, SYMBOLS } = TOKENS;
 
@@ -21,7 +20,7 @@ export function factorStmt(iterator: TokenIterator, emitter: Emitter): string {
   // Parênteses: (expr)
   if (iterator.match(SYMBOLS.left_paren)) {
     iterator.consume(SYMBOLS.left_paren);
-    const inner = exprStmt(iterator, emitter);
+    const inner = exprStmt(iterator);
     iterator.consume(SYMBOLS.right_paren, ")");
     return inner;
   }

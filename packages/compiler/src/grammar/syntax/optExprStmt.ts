@@ -2,21 +2,16 @@ import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
 
-import { Emitter } from "../../ir/emitter";
-
 /**
  * Parses an optional expression.
  * @returns The result of the expression or null (ε)
  *
  * @derivation `<optExpr> → <expr> | ε`
  */
-export function optExprStmt(
-  iterator: TokenIterator,
-  emitter: Emitter
-): string | null {
+export function optExprStmt(iterator: TokenIterator): string | null {
   const token = iterator.peek();
   if (isStartToken(token.type)) {
-    return exprStmt(iterator, emitter);
+    return exprStmt(iterator);
   }
 
   return null; // produção vazia

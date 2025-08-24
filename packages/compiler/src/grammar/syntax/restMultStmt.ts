@@ -1,7 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { unitaryStmt } from "./unitaryStmt";
-import { Emitter } from "../../ir/emitter";
 import { TArithmetics } from "../../interpreter/constants";
 
 /**
@@ -15,7 +14,6 @@ import { TArithmetics } from "../../interpreter/constants";
  */
 export function restMultStmt(
   iterator: TokenIterator,
-  emitter: Emitter,
   inherited: string
 ): string {
   const { star, slash, modulo } = TOKENS.ARITHMETICS;
@@ -31,9 +29,9 @@ export function restMultStmt(
     if (!op) break;
 
     iterator.consume(token.type); // consume '*', '/', '%'
-    const right = unitaryStmt(iterator, emitter);
-    const temp = emitter.newTemp();
-    emitter.emit(op, temp, inherited, right);
+    const right = unitaryStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+    iterator.emitter.emit(op, temp, inherited, right);
     inherited = temp;
   }
 

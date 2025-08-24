@@ -2,7 +2,6 @@ import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 import { blockStmt } from "./blockStmt";
-import { Emitter } from "../../ir/emitter";
 
 /**
  * Parses a function declaration or call with no parameters.
@@ -10,7 +9,7 @@ import { Emitter } from "../../ir/emitter";
  *
  * @derivation `<function*> → <type> IDENT '(' ')' <bloco>`
  */
-export function functionCall(iterator: TokenIterator, emitter: Emitter): void {
+export function functionCall(iterator: TokenIterator): void {
   const { left_paren, right_paren } = TOKENS.SYMBOLS;
 
   typeStmt(iterator); // Ex: int, float, string (não usado agora)
@@ -20,8 +19,9 @@ export function functionCall(iterator: TokenIterator, emitter: Emitter): void {
   iterator.consume(right_paren); // )
 
   // Gerar um label para o corpo da função
-  emitter.emit("LABEL", identifier.lexeme, null, null);
+  iterator.emitter.emit("LABEL", identifier.lexeme, null, null);
 
   // Processar o corpo da função
-  blockStmt(iterator, emitter);
+  blockStmt(iterator);
+  iterator.emitter.emit("CALL", "STOP", null, null);
 }

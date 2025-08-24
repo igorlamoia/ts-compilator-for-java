@@ -1,7 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { factorStmt } from "./factorStmt";
-import { Emitter } from "../../ir/emitter";
 import { TUnaryArithmetics } from "../../interpreter/constants";
 
 /**
@@ -10,7 +9,7 @@ import { TUnaryArithmetics } from "../../interpreter/constants";
  *
  * @returns A variable, literal or temporary name
  */
-export function unitaryStmt(iterator: TokenIterator, emitter: Emitter): string {
+export function unitaryStmt(iterator: TokenIterator): string {
   const token = iterator.peek();
   const { minus, plus } = TOKENS.ARITHMETICS;
 
@@ -18,11 +17,11 @@ export function unitaryStmt(iterator: TokenIterator, emitter: Emitter): string {
     const operator = token.type === plus ? "unary+" : "unary-";
     iterator.consume(token.type);
 
-    const value = unitaryStmt(iterator, emitter);
-    const temp = emitter.newTemp();
-    emitter.emit(operator as TUnaryArithmetics, temp, value, null);
+    const value = unitaryStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+    iterator.emitter.emit(operator as TUnaryArithmetics, temp, value, null);
     return temp;
   }
 
-  return factorStmt(iterator, emitter); // no operador unário: delega ao fator
+  return factorStmt(iterator); // no operador unário: delega ao fator
 }

@@ -6,7 +6,6 @@ import { Interpreter } from "./interpreter";
 import { loadInstructionsFromString } from "./interpreter/scan";
 import { demo } from "./interpreter/demo";
 import promptSync from "prompt-sync";
-import { IntermediateCodeGenerator } from "./intermediator/generator";
 
 const PATH = "src/resource/input-code.java";
 const ENCODE = "utf-8";
@@ -22,14 +21,6 @@ const ioTerminal = {
   stdout: (msg: string) => console.log(msg),
   stdin: async () => prompt(""),
 };
-
-function execute() {
-  // runningIntermediate()
-  generateIntermediate()
-}
-
-execute();
-
 
 function runningIntermediate() {
   const instructions = loadInstructionsFromString(program);
@@ -51,17 +42,4 @@ function lexemerCode() {
     console.log(token.toString());
   }
   console.table(tokensArray);
-
-}
-
-
-function generateIntermediate() {
-  const tokens = lexemerCode();
-  // console.log(tokens);
-  const generator = new IntermediateCodeGenerator(tokens);
-  const program = generator.generate();
-  console.log(program);
-  const interpreter = new Interpreter(program, ioTerminal);
-  interpreter.execute();
-
 }

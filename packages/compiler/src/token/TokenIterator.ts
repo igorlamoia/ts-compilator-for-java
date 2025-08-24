@@ -1,12 +1,15 @@
+import { Emitter } from "../ir/emitter";
 import { Token } from "./";
 
 export class TokenIterator {
   private tokens: Token[];
   private index: number;
+  public readonly emitter: Emitter;
 
   constructor(tokens: Token[]) {
     this.tokens = tokens;
     this.index = 0;
+    this.emitter = new Emitter();
   }
 
   peek(): Token {
