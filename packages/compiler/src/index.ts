@@ -17,18 +17,17 @@ function executeCode() {
   const lexer = new Lexer(sourceCode);
   const tokens = lexer.scanTokens();
   const iterator = new TokenIterator(tokens);
-  const tree = functionCall(iterator);
+  const instructions = iterator.generateIntermediateCode();
   const prompt = PromptSync();
   const ioTerminal = {
-    stdout: (msg: string) => process.stdout.write(msg),
-    // stdout: (msg: string) => console.log(msg),
+    // stdout: (msg: string) => process.stdout.write(msg),
+    stdout: (msg: string) => console.log(msg),
     stdin: async () => prompt(""),
   };
   // const instructions = loadInstructionsFromString(PROGRAM);
 
-  // const instructions = iterator.emitter.getInstructions();
-  // console.log(instructions);
-  const instructions = IntermediateObject;
+  console.log(instructions);
+  // const instructions = IntermediateObject;
   // return;
   new Interpreter(instructions, ioTerminal).execute();
 }

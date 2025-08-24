@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Footer } from "@/components/footer";
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -26,7 +27,9 @@ const geistMono = localFont({
 });
 
 export default function Home() {
-  const [isTerminalOpen, setIsTerminalOpen] = useState(true);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [intermediateCode, setIntermediateCode] = useState<Instruction[]>([]);
+  console.log(intermediateCode);
   return (
     <ThemeProvider>
       <Meteores />
@@ -76,8 +79,9 @@ export default function Home() {
             />
           </div>
           <EditorProvider>
-            <IDEView />
+            <IDEView setIntermediateCode={setIntermediateCode} />
             <TerminalView
+              intermediateCode={intermediateCode}
               isTerminalOpen={isTerminalOpen}
               toggleTerminal={() => setIsTerminalOpen((old) => !old)}
             />

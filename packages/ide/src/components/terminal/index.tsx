@@ -7,6 +7,7 @@ import "xterm/css/xterm.css";
 import { Interpreter } from "@ts-compilator-for-java/compiler/interpreter";
 import { loadInstructionsFromString } from "@ts-compilator-for-java/compiler/interpreter/scan";
 import PROGRAM from "@ts-compilator-for-java/compiler/resource/intermediate-code";
+import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 
 const RESET_COLOR = "\x1b[0m";
 const GREEN_COLOR = "\x1b[32m";
@@ -21,6 +22,7 @@ const ENTER_CHAR = "\r";
 interface ITerminalViewProps {
   isTerminalOpen: boolean;
   toggleTerminal: () => void;
+  intermediateCode: Instruction[];
 }
 
 function initPrompt(terminal: MutableRefObject<Terminal | null>) {
@@ -28,7 +30,11 @@ function initPrompt(terminal: MutableRefObject<Terminal | null>) {
   terminal.current.write(`\r\n${CYAN_COLOR}$ ${RESET_COLOR}`);
 }
 
-function addHistory(commandRef: MutableRefObject<string>, commandHistory: MutableRefObject<string[]>, historyPointer: MutableRefObject<number>) {
+function addHistory(
+  commandRef: MutableRefObject<string>,
+  commandHistory: MutableRefObject<string[]>,
+  historyPointer: MutableRefObject<number>
+) {
   // Add the command to history if it's not empty
   if (commandRef.current.trim() !== "") {
     commandHistory.current.push(commandRef.current);
@@ -55,13 +61,16 @@ function handleEnter(
 
 function handleWelcomeMessage(terminal: MutableRefObject<Terminal | null>) {
   if (!terminal.current) return;
-  terminal.current.writeln(`\r\nWelcome to the ${CYAN_COLOR}Lamoia's${RESET_COLOR} Terminal!`);
+  terminal.current.writeln(
+    `\r\nWelcome to the ${CYAN_COLOR}Lamoia's${RESET_COLOR} Terminal!`
+  );
   initPrompt(terminal);
 }
 
 export default function TerminalView({
   isTerminalOpen,
   toggleTerminal,
+  intermediateCode,
 }: ITerminalViewProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminal = useRef<Terminal | null>(null);
@@ -72,6 +81,7 @@ export default function TerminalView({
   const historyPointer = useRef<number>(0);
 
   const resolveInput = useRef<(value: string) => void>();
+
   const runInterpreter = async () => {
     if (!terminal.current) return;
 
@@ -85,14 +95,18 @@ export default function TerminalView({
       stdin: inputPromise,
     };
     terminal.current.writeln("\n");
-    const instructions = loadInstructionsFromString(PROGRAM);
-    const interpreter = new Interpreter(instructions, io); // `program` vem do seu Parser/Lexer
+    console.log(intermediateCode);
+    const interpreter = new Interpreter(intermediateCode, io); // `program` vem do seu Parser/Lexer
 
-    terminal.current.writeln(`\r\n${GREEN_COLOR}🟢  Iniciando execução do código...\n${RESET_COLOR}`);
+    terminal.current.writeln(
+      `\r\n${GREEN_COLOR}🟢  Iniciando execução do código...\n${RESET_COLOR}`
+    );
 
     try {
       await interpreter.execute();
-      terminal.current.writeln(`\r\n\n${GREEN_COLOR}🟢  Finalizando execução do código...\n${RESET_COLOR}`);
+      terminal.current.writeln(
+        `\r\n\n${GREEN_COLOR}🟢  Finalizando execução do código...\n${RESET_COLOR}`
+      );
     } catch (e: unknown) {
       if (e instanceof Error) {
         terminal.current.writeln(`❌ Erro: ${e.message}`);
@@ -128,7 +142,10 @@ export default function TerminalView({
         }
 
         const possibleCommands = ["clear", "cls", "help", "exit", "ping"];
-        if (possibleCommands.includes(commandRef.current) && data === ENTER_CHAR) {
+        if (
+          possibleCommands.includes(commandRef.current) &&
+          data === ENTER_CHAR
+        ) {
           switch (commandRef.current) {
             case "ping":
               terminal.current.writeln(`\r\nPong! 🏓\r\n`);
@@ -161,7 +178,9 @@ export default function TerminalView({
 
         switch (data) {
           case "\x03": // Ctrl+C
-            terminal.current.writeln(`\r\n${ORANGE_COLOR}Process interrupted.${RESET_COLOR}`);
+            terminal.current.writeln(
+              `\r\n${ORANGE_COLOR}Process interrupted.${RESET_COLOR}`
+            );
             initPrompt(terminal);
             commandRef.current = "";
             return;
@@ -185,7 +204,9 @@ export default function TerminalView({
               historyPointer.current -= 1;
               commandRef.current =
                 commandHistory.current[historyPointer.current] || "";
-              terminal.current.write(`\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}` + commandRef.current); // Clear line and write command
+              terminal.current.write(
+                `\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}` + commandRef.current
+              ); // Clear line and write command
             }
             return;
           case "\x1B[B": // Down arrow
@@ -193,7 +214,9 @@ export default function TerminalView({
               historyPointer.current += 1;
               commandRef.current =
                 commandHistory.current[historyPointer.current] || "";
-              terminal.current.write(`\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}` + commandRef.current); // Clear line and write command
+              terminal.current.write(
+                `\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}` + commandRef.current
+              ); // Clear line and write command
             } else {
               historyPointer.current = commandHistory.current.length;
               commandRef.current = "";

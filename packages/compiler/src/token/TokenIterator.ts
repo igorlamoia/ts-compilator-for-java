@@ -1,3 +1,5 @@
+import { Instruction } from "../interpreter/constants";
+import { functionCall } from "../grammar/syntax/function-call";
 import { Emitter } from "../ir/emitter";
 import { Token } from "./";
 
@@ -42,5 +44,10 @@ export class TokenIterator {
 
   hasNext(): boolean {
     return this.index < this.tokens.length;
+  }
+
+  generateIntermediateCode(): Instruction[] {
+    const tree = functionCall(this);
+    return this.emitter.getInstructions();
   }
 }
