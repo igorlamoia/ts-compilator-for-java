@@ -1,14 +1,17 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 
 /**
- * Parses the output statement.
+ * Parses a single output value: string literal, identifier, or number.
  *
- * @derivation `<out> -> 'STR' | 'IDENT' | 'NUMdec' | 'NUMfloat' | 'NUMoct' | 'NUMhex'`
+ * @returns The value's lexeme (e.g., `"x"`, `"42"`, `"mensagem"`)
  */
-export function outStmt(iterator: TokenIterator): void {
+export function outStmt(iterator: TokenIterator): string {
   const token = iterator.peek();
-  if (!Object.values(TOKENS.LITERALS).includes(token.type))
+
+  if (!Object.values(TOKENS.LITERALS).includes(token.type)) {
     throw new Error(`Unexpected output token: ${token.lexeme}`);
-  iterator.consume(token.type);
+  }
+
+  return iterator.consume(token.type).lexeme;
 }

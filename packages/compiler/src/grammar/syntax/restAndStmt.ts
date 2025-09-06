@@ -8,10 +8,20 @@ import { notStmt } from "./notStmt";
  *
  * @derivation `<restAndStmt> -> '&&' <notStmt> <restAndStmt> | &`
  */
-export function restAndStmt(iterator: TokenIterator): void {
+export function restAndStmt(
+  iterator: TokenIterator,
+  inherited: string
+): string {
   const { logical_and } = TOKENS.LOGICALS;
   while (iterator.match(logical_and)) {
-    iterator.consume(logical_and);
-    notStmt(iterator);
+    iterator.consume(TOKENS.LOGICALS.logical_and);
+
+    const right = notStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+
+    iterator.emitter.emit("&&", temp, inherited, right);
+    inherited = temp;
   }
+
+  return inherited;
 }

@@ -1,18 +1,45 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { unitaryStmt } from "./unitaryStmt";
+import { TArithmetics } from "../../interpreter/constants";
 
 /**
- * Parses the rest of the multiplication statement.
- * and calls the unitaryStmt function
- * or does nothing.
+ * Parses the rest of a multiplication/division/modulo chain.
+ * Emits intermediate code and returns the result.
  *
- * @derivation `<restMultStmt> -> '*' <unitaryStmt> <restMultStmt> | '/' <unitaryStmt> <restMultStmt> | '%' <unitaryStmt> <restMultStmt> | &`
+ * @param iterator The token iterator
+ * @param emitter The instruction emitter
+ * @param inherited The left-hand value to chain
+ * @returns Final result as variable/literal/temp
  */
-export function restMultStmt(iterator: TokenIterator): void {
+export function restMultStmt(
+  iterator: TokenIterator,
+  inherited: string
+): string {
   const { star, slash, modulo } = TOKENS.ARITHMETICS;
-  while ([star, slash, modulo].includes(iterator.peek().type)) {
-    iterator.consume(iterator.peek().type); // Consume `*`, `/`, or `%`
-    unitaryStmt(iterator);
+
+  while (true) {
+    const token = iterator.peek();
+    let op: TArithmetics | null = null;
+
+    if (token.type === star) op = "*";
+    else if (token.type === slash) op = "/";
+    else if (token.type === modulo) op = "%";
+
+    if (!op) break;
+
+    iterator.consume(token.type); // consume '*', '/', '%'
+    const right = unitaryStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+    iterator.emitter.emit(op, temp, inherited, right);
+    inherited = temp;
   }
+
+  return inherited;
 }
+
+// Example: a * b / c % d
+// Results:
+// { op: "*", result: "__temp0", operand1: "a", operand2: "b" }
+// { op: "/", result: "__temp1", operand1: "__temp0", operand2: "c" }
+// { op: "%", result: "__temp2", operand1: "__temp1", operand2: "d" }

@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Footer } from "@/components/footer";
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { useIntermediatorCode } from "@/views/ide/useIntermediatorCode";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -26,7 +27,8 @@ const geistMono = localFont({
 });
 
 export default function Home() {
-  const [isTerminalOpen, setIsTerminalOpen] = useState(true);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+
   return (
     <ThemeProvider>
       <Meteores />
@@ -76,10 +78,9 @@ export default function Home() {
             />
           </div>
           <EditorProvider>
-            <IDEView />
-            <TerminalView
+            <IDETerminal
               isTerminalOpen={isTerminalOpen}
-              toggleTerminal={() => setIsTerminalOpen((old) => !old)}
+              setIsTerminalOpen={setIsTerminalOpen}
             />
           </EditorProvider>
         </section>
@@ -89,5 +90,30 @@ export default function Home() {
         isTerminalOpen={isTerminalOpen}
       />
     </ThemeProvider>
+  );
+}
+
+interface IDETerminalProps {
+  setIsTerminalOpen: (value: boolean) => void;
+  isTerminalOpen: boolean;
+}
+
+function IDETerminal({ setIsTerminalOpen, isTerminalOpen }: IDETerminalProps) {
+  const { handleIntermediateCodeGeneration, intermediateCode } =
+    useIntermediatorCode();
+  return (
+    <>
+      <IDEView
+        setIsTerminalOpen={setIsTerminalOpen}
+        handleIntermediateCodeGeneration={handleIntermediateCodeGeneration}
+        intermediateCode={intermediateCode}
+        // setIntermediateCode={setIntermediateCode}
+      />
+      <TerminalView
+        intermediateCode={intermediateCode?.instructions || []}
+        isTerminalOpen={isTerminalOpen}
+        toggleTerminal={() => setIsTerminalOpen(!isTerminalOpen)}
+      />
+    </>
   );
 }

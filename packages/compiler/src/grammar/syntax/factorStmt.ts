@@ -1,23 +1,30 @@
 import { TokenIterator } from "../../token/TokenIterator";
-import { exprStmt } from "./exprStmt";
 import { TOKENS } from "../../token/constants";
+import { exprStmt } from "./exprStmt";
 
 /**
- * Processes a factor statement by parsing a literal token or an expression.
+ * Parses a factor: literals, identifiers, or parenthesized expressions.
+ * Returns a value or variable name.
  *
- * @derivation `<factor> -> 'NUMint' | 'NUMfloat' | 'NUMoct' | 'NUMhex' | 'IDENT' | '(' <expr> ')' | 'STR'`
+ * @returns string representing the result
  */
-export function factorStmt(iterator: TokenIterator): void {
+export function factorStmt(iterator: TokenIterator): string {
   const token = iterator.peek();
-  if (Object.values(TOKENS.LITERALS).includes(token.type)) {
-    iterator.consume(token.type);
-    return;
-  } else if (iterator.match(TOKENS.SYMBOLS.left_paren)) {
-    iterator.consume(TOKENS.SYMBOLS.left_paren);
-    exprStmt(iterator);
-    iterator.consume(TOKENS.SYMBOLS.right_paren, ")");
-    return;
+  const { LITERALS, SYMBOLS } = TOKENS;
+
+  // Identificadores e literais
+  if (Object.values(LITERALS).includes(token.type)) {
+    return iterator.consume(token.type).lexeme;
   }
+
+  // Parênteses: (expr)
+  if (iterator.match(SYMBOLS.left_paren)) {
+    iterator.consume(SYMBOLS.left_paren);
+    const inner = exprStmt(iterator);
+    iterator.consume(SYMBOLS.right_paren, ")");
+    return inner;
+  }
+
   throw new Error(
     `Unexpected token "${token.lexeme}" at line ${token.line}, column ${token.column}.`
   );

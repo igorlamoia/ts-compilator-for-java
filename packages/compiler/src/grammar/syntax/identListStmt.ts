@@ -1,14 +1,18 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { restIdentListStmt } from "./restIdentListStmt";
 
 /**
- * Processes an identifier list statement by first parsing an identifier token
- * and then parsing the rest of the identifier list.
+ * Parses a comma-separated list of identifiers.
  *
- * @derivation `<identList> -> 'IDENT' <restoIdentList>`
+ * @returns Array of identifier names
  */
-export function identListStmt(iterator: TokenIterator): void {
-  iterator.consume(TOKENS.LITERALS.identifier);
-  restIdentListStmt(iterator);
+export function identListStmt(iterator: TokenIterator): string[] {
+  const identifiers: string[] = [];
+
+  const first = iterator.consume(TOKENS.LITERALS.identifier);
+  identifiers.push(first.lexeme);
+
+  const rest = restIdentListStmt(iterator);
+  return identifiers.concat(rest);
 }

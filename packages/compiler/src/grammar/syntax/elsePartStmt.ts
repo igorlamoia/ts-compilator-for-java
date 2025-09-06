@@ -3,10 +3,9 @@ import { TOKENS } from "../../token/constants";
 import { stmt } from "./stmt";
 
 /**
- * Processes an else part statement by first parsing the reserved word 'else'
- * and then parsing a statement or doing nothing (&).
+ * Parses the optional `else` part of an `if` statement.
  *
- * @derivation `<elsePart> -> 'else' <stmt> | &`
+ * @derivation `<elsePart> -> else <stmt> | ε`
  */
 export function elsePartStmt(iterator: TokenIterator): void {
   if (iterator.match(TOKENS.RESERVEDS.else)) {

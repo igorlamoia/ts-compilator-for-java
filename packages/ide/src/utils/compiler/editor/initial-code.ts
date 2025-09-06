@@ -1,7 +1,15 @@
-export const INITIAL_CODE = `int x = 10;
-float y = 205. B;
-boolean b = 20 >= 10;
-string s = "Olá,\\n Mundo!";
-if (x > y) {
-    system.out.print("x é maior que y");
+export const INITIAL_CODE = `int main() {
+  system.out.print("Início do programa");
+  int x, y;
+  system.out.print("Entre com x: ");
+  system.in.scan(int, x);
+  system.out.print("Entre com y: ");
+  system.in.scan(int, y);
+  if(x < y) {
+    system.out.print("x é menor que y");
+  } else {
+    system.out.print("x é maior ou igual a y");
+  }
+
+  system.out.print("Fim do programa");
 }`;

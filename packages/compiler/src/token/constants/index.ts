@@ -2,7 +2,11 @@ import { ARITHMETICS, ARITHMETICS_STYLE } from "./arithmetics";
 import { ASSIGNMENTS, ASSIGNMENTS_STYLE } from "./assignments";
 import { LITERALS, LITERALS_STYLE } from "./literals";
 import { LOGICALS, LOGICALS_STYLE } from "./logicals";
-import { RELATIONALS, RELATIONALS_STYLE } from "./relationals";
+import {
+  RELATIONALS,
+  RELATIONALS_STYLE,
+  RELATIONAL_SYMBOLS,
+} from "./relationals";
 import { RESERVEDS, RESERVEDS_STYLE } from "./reserveds";
 import { SYMBOLS, SYMBOLS_STYLE } from "./symbols";
 
@@ -41,4 +45,5 @@ export const TOKENS = {
   LITERALS,
   BY_DESCRIPTION,
   BY_ID,
+  RELATIONAL_SYMBOLS,
 };

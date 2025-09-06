@@ -3,12 +3,12 @@ import { outStmt } from "./outStmt";
 import { restOutListStmt } from "./restOutListStmt";
 
 /**
- *  Parses the output list statement by calling the `outStmt` function
- * and then the `restOutListStmt` function.
+ * Parses a list of output values for `print(...)`.
  *
- * @derivation `<outList> -> <out> <restoOutList>`
+ * @returns Array of strings (identifiers, literals, numbers)
  */
-export function outListStmt(iterator: TokenIterator): void {
-  outStmt(iterator);
-  restOutListStmt(iterator);
+export function outListStmt(iterator: TokenIterator): string[] {
+  const first = outStmt(iterator);
+  const rest = restOutListStmt(iterator);
+  return [first, ...rest];
 }
