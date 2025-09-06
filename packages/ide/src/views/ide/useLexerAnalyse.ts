@@ -15,7 +15,9 @@ export function useLexerAnalyse() {
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
     {} as TLexerAnalyseData
   );
-  const handleRun = async () => {
+  const handleRun = async (): Promise<
+    TLexerAnalyseData["tokens"] | undefined
+  > => {
     const code = getEditorCode();
     setAnalyseData({} as TLexerAnalyseData);
     try {
@@ -34,22 +36,27 @@ export function useLexerAnalyse() {
         behavior: "smooth",
       });
       if (issues.length) handleIssues(issues);
+
+      return data.tokens;
     } catch (error) {
       setAnalyseData({} as TLexerAnalyseData);
       if (error instanceof AxiosError) {
         const { error: lexerError, message } = (error?.response?.data ||
           {}) as TLexerAnalyseData;
         handleIssues([lexerError as IssueDetails], true);
-        return showToast({
+        showToast({
           message: message || "An error occurred",
           type: "error",
         });
+        return;
       }
-      if (error instanceof Error)
-        return showToast({
+      if (error instanceof Error) {
+        showToast({
           message: error.message,
           type: "error",
         });
+        return;
+      }
     }
   };
 

@@ -5,9 +5,10 @@ import { Terminal } from "xterm";
 import { MutableRefObject } from "react";
 import "xterm/css/xterm.css";
 import { Interpreter } from "@ts-compilator-for-java/compiler/interpreter";
-import { loadInstructionsFromString } from "@ts-compilator-for-java/compiler/interpreter/scan";
-import PROGRAM from "@ts-compilator-for-java/compiler/resource/intermediate-code";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import { useCallback } from "react";
+// import { loadInstructionsFromString } from "@ts-compilator-for-java/compiler/interpreter/scan";
+// import PROGRAM from "@ts-compilator-for-java/compiler/resource/intermediate-code";
 
 const RESET_COLOR = "\x1b[0m";
 const GREEN_COLOR = "\x1b[32m";
@@ -76,13 +77,10 @@ export default function TerminalView({
   const terminal = useRef<Terminal | null>(null);
   const commandRef = useRef<string>("");
 
-  // Command history and pointer
-  const commandHistory = useRef<string[]>([]);
-  const historyPointer = useRef<number>(0);
+  console.log("intermediate-code terminal", intermediateCode);
+  const resolveInput = useRef<(value: string) => void>(() => {});
 
-  const resolveInput = useRef<(value: string) => void>();
-
-  const runInterpreter = async () => {
+  const runInterpreter = useCallback(async () => {
     if (!terminal.current) return;
 
     const inputPromise = (): Promise<string> =>
@@ -95,7 +93,7 @@ export default function TerminalView({
       stdin: inputPromise,
     };
     terminal.current.writeln("\n");
-    console.log(intermediateCode);
+    // console.log("rodando", intermediateCode);
     const interpreter = new Interpreter(intermediateCode, io); // `program` vem do seu Parser/Lexer
 
     terminal.current.writeln(
@@ -103,10 +101,13 @@ export default function TerminalView({
     );
 
     try {
-      await interpreter.execute();
+      await interpreter.execute(commandRef);
       terminal.current.writeln(
         `\r\n\n${GREEN_COLOR}🟢  Finalizando execução do código...\n${RESET_COLOR}`
       );
+      // clean up after execution
+      commandRef.current = "";
+      initPrompt(terminal);
     } catch (e: unknown) {
       if (e instanceof Error) {
         terminal.current.writeln(`❌ Erro: ${e.message}`);
@@ -116,7 +117,15 @@ export default function TerminalView({
     }
 
     initPrompt(terminal);
-  };
+  }, [intermediateCode, terminal, resolveInput]);
+
+  useEffect(() => {
+    if (intermediateCode?.length > 0) runInterpreter();
+  }, [intermediateCode, runInterpreter]);
+
+  // Command history and pointer
+  const commandHistory = useRef<string[]>([]);
+  const historyPointer = useRef<number>(0);
 
   useEffect(() => {
     if (terminalRef.current && !terminal.current) {
@@ -188,7 +197,7 @@ export default function TerminalView({
             terminal.current?.writeln(""); // move to next line
             if (resolveInput.current) {
               resolveInput.current(commandRef.current); // ⬅️ Pass input to Interpreter
-              resolveInput.current = undefined;
+              // resolveInput.current = "";
             } else {
               handleEnter(terminal, commandRef, commandHistory, historyPointer);
             }

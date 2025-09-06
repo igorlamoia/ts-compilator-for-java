@@ -1,4 +1,4 @@
-import { OpName } from "interpreter/constants";
+import { OpName } from "../../interpreter/constants";
 
 export const RELATIONALS = {
   equal_equal: 9, // ==

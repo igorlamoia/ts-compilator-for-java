@@ -39,7 +39,7 @@ export class Interpreter {
     this.instructionPointer = 0;
   }
 
-  public async execute(): Promise<void> {
+  public async execute(commandRef = { current: "" }): Promise<void> {
     this.labels.clear();
     this.variables.clear();
     this.instructionPointer = 0;
@@ -149,6 +149,8 @@ export class Interpreter {
             throw new Error(`SCAN requires a string variable name as operand1`);
 
           const userInput = await this.stdin();
+          console.log("userInput", userInput);
+          commandRef.current = "";
           this.variables.set(operand2, parsePiece(userInput));
         } else throw new Error(`Unknown system call '${callType}'`);
 
