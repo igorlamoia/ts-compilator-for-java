@@ -3,11 +3,12 @@ import { TOKENS } from "../../token/constants";
 import { attributeStmt } from "./attributeStmt";
 
 /**
- * Parses the optional attribute statement or nothing.
+ * Parses an optional assignment expression (or nothing).
  *
- * @derivation `<optAttributeStmt> -> <attributeStmt> | &`
+ * @derivation `<optAtrib> → <atrib> | ε`
  */
 export function optAttributeStmt(iterator: TokenIterator): void {
-  if (iterator.peek().type !== TOKENS.SYMBOLS.semicolon)
+  if (iterator.peek().type !== TOKENS.SYMBOLS.semicolon) {
     attributeStmt(iterator);
+  }
 }

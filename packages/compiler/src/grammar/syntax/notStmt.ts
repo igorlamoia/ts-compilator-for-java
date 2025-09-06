@@ -1,17 +1,30 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { relationalStmt } from "./relationalStmt";
 
 /**
- * Parses the logical NOT statement.
- * and calls the relationalStmt function.
+ * Parses a logical NOT or relational expression.
  *
- * @derivation `<not> -> '!' <not> | <rel>`
+ * @derivation `<not> -> ! <not> | <rel>`
  */
-export function notStmt(iterator: TokenIterator): void {
+export function notStmt(iterator: TokenIterator): string {
   const { logical_not } = TOKENS.LOGICALS;
+
   if (iterator.match(logical_not)) {
     iterator.consume(logical_not);
-    notStmt(iterator);
-  } else relationalStmt(iterator);
+
+    const inner = notStmt(iterator); // chamada recursiva
+    const temp = iterator.emitter.newTemp();
+
+    iterator.emitter.emit("!", temp, inner, null);
+    return temp;
+  }
+
+  return relationalStmt(iterator); // fallback: expressão relacional
 }
+
+// Example: !a
+// { op: "!", result: "__temp0", operand1: "a", operand2: null }
+// Example recursão aninhada: !!x
+// { op: "!", result: "__temp0", operand1: "x", operand2: null }
+// { op: "!", result: "__temp1", operand1: "__temp0", operand2: null }

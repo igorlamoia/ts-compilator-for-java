@@ -1,12 +1,17 @@
+import { Instruction } from "../interpreter/constants";
+import { functionCall } from "../grammar/syntax/function-call";
+import { Emitter } from "../ir/emitter";
 import { Token } from "./";
 
 export class TokenIterator {
   private tokens: Token[];
   private index: number;
+  public readonly emitter: Emitter;
 
   constructor(tokens: Token[]) {
     this.tokens = tokens;
     this.index = 0;
+    this.emitter = new Emitter();
   }
 
   peek(): Token {
@@ -39,5 +44,10 @@ export class TokenIterator {
 
   hasNext(): boolean {
     return this.index < this.tokens.length;
+  }
+
+  generateIntermediateCode(): Instruction[] {
+    const tree = functionCall(this);
+    return this.emitter.getInstructions();
   }
 }

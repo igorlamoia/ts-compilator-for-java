@@ -1,9 +1,7 @@
-('=', 'numBloco_0', 0, None),
+export default `('=', 'numBloco_0', 0, None),
 ('=', 'divBloco_0', 0, None),
 ('=', 'restoBloco_0', 0, None),
-('CALL', 'PRINT', 'dance', None),
-('CALL', 'PRINT', '\n', None),
-('CALL', 'PRINT', 'Entre com \n o inteiro: ', None),
+('CALL', 'PRINT', 'Entre com o inteiro: ', None),
 ('CALL', 'SCAN', None, 'numBloco_0'),
 ('CALL', 'PRINT', None, 'numBloco_0'),
 ('CALL', 'PRINT', ' = ', None),
@@ -33,6 +31,6 @@
 ('LABEL', '__label7', None, None),
 ('JUMP', '__label0', None, None),
 ('LABEL', '__label2', None, None),
-('CALL', 'PRINT', '\n', None),
-('CALL', 'PRINT', 'dance', None),
-('CALL', 'STOP', None, None)
+('CALL', 'PRINT', '\\n', None),
+('CALL', 'PRINT', 'finalizando', None),
+('CALL', 'STOP', None, None)`;

@@ -1,17 +1,35 @@
-import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { TOKENS } from "../../token/constants";
 import { multStmt } from "./multStmt";
 
 /**
- * Parses the rest of the addition statement.
- * and calls the multStmt function or does nothing.
+ * Parses the rest of an addition/subtraction chain.
+ * Emits code and returns the final result variable.
  *
- * @derivation `<restAddStmt> -> '+' <multStmt> <restAddStmt> | '-' <multStmt> <restAddStmt> | &`
+ * @param iterator Token stream
+ * @param emitter Code emitter
+ * @param inherited The left-hand value
  */
-export function restAddStmt(iterator: TokenIterator): void {
-  const { minus, plus } = TOKENS.ARITHMETICS;
+export function restAddStmt(
+  iterator: TokenIterator,
+  inherited: string
+): string {
+  const { plus, minus } = TOKENS.ARITHMETICS;
+
   while ([minus, plus].includes(iterator.peek().type)) {
-    iterator.consume(iterator.peek().type);
-    multStmt(iterator);
+    const token = iterator.peek();
+    const op: "+" | "-" = token.type === plus ? "+" : "-";
+    iterator.consume(token.type); // consume '+' or '-'
+    const right = multStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+    iterator.emitter.emit(op, temp, inherited, right);
+    inherited = temp; // carry to next round
   }
+
+  return inherited;
 }
+
+// Example: 2 + 3 - 4
+// Results:
+// { op: "+", result: "__temp0", operand1: "2", operand2: "3" }
+// { op: "-", result: "__temp1", operand1: "__temp0", operand2: "4" }

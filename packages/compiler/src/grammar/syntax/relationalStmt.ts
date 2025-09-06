@@ -8,7 +8,11 @@ import { restRelationalStmt } from "./restRelationalStmt";
  *
  * @derivation `<rel> -> <add> <restoRel>`
  */
-export function relationalStmt(iterator: TokenIterator): void {
-  addStmt(iterator);
-  restRelationalStmt(iterator);
+export function relationalStmt(iterator: TokenIterator): string {
+  const left = addStmt(iterator);
+  return restRelationalStmt(iterator, left);
 }
+
+// Example: a ≥ b
+// Results:
+// { op: "≥", result: "__temp0", operand1: "a", operand2: "b" }

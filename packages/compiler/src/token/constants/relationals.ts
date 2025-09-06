@@ -1,3 +1,5 @@
+import { OpName } from "../../interpreter/constants";
+
 export const RELATIONALS = {
   equal_equal: 9, // ==
   not_equal: 10, // !=
@@ -12,4 +14,13 @@ export const RELATIONALS_STYLE = {
   bg: "bg-yellow-100",
   border: "border-yellow-500",
   transform: "hover:bg-yellow-200",
+};
+
+export const RELATIONAL_SYMBOLS: Record<number, OpName> = {
+  [RELATIONALS.equal_equal]: "==",
+  [RELATIONALS.not_equal]: "<>",
+  [RELATIONALS.greater]: ">",
+  [RELATIONALS.greater_equal]: "≥",
+  [RELATIONALS.less]: "<",
+  [RELATIONALS.less_equal]: "≤",
 };

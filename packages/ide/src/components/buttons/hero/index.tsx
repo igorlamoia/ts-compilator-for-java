@@ -12,7 +12,7 @@ export function HeroButton({
   ...rest
 }: HeroButtonProps) {
   return (
-    <div className={`${styles.buttons} ml-auto w-max text-white  bg-black `}>
+    <div className={`${styles.buttons} w-max text-white  bg-black `}>
       <button {...rest} className={`w-40 h-12 ${className} ${styles.btn}`}>
         <span></span>
         <p data-start={start} data-title={start} data-text={end}></p>

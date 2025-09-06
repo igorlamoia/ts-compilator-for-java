@@ -26,7 +26,7 @@ export function Typing({ phrases }: TypingProps) {
         if (charIndex === word.length) {
           setTimeout(() => {
             setIsDeleting(true);
-          }, 50000);
+          }, 5000);
         }
       }
     };

@@ -6,6 +6,7 @@ export type TAssignment = "=";
 export type TFlowControl = "IF" | "JUMP";
 export type TSystemCalls = "CALL"; // e.g. PRINT, SCAN
 export type TLabel = "LABEL";
+export type TDeclaration = "DECLARE";
 
 export const ARITHMETICS: TArithmetics[] = ["+", "-", "*", "/", "%", "//"];
 export const LOGICALS: TLogical[] = ["||", "&&", "!"];
@@ -19,7 +20,8 @@ export type OpName =
   | TAssignment
   | TFlowControl
   | TSystemCalls
-  | TLabel;
+  | TLabel
+  | TDeclaration;
 
 export interface Instruction {
   op: OpName;

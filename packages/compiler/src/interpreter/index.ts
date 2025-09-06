@@ -1,4 +1,3 @@
-import promptSync from "prompt-sync";
 import {
   makeOperation,
   makeRelation,
@@ -16,25 +15,36 @@ import {
   TRelational,
 } from "./constants";
 
-const prompt = promptSync();
-
 export class Interpreter {
   private labels: Map<string, number>;
   private variables: Map<string, unknown>;
   private instructionPointer: number;
   private program: Instruction[];
 
-  constructor(program: Instruction[]) {
+  private stdout: (msg: string) => void;
+  private stdin: () => Promise<string>;
+
+  constructor(
+    program: Instruction[],
+    io: {
+      stdout: (msg: string) => void;
+      stdin: () => Promise<string>;
+    }
+  ) {
+    this.stdout = io.stdout;
+    this.stdin = io.stdin;
     this.program = program;
     this.labels = new Map<string, number>();
     this.variables = new Map<string, unknown>();
     this.instructionPointer = 0;
   }
 
-  public execute(): void {
+  public async execute(commandRef = { current: "" }): Promise<void> {
     this.labels.clear();
     this.variables.clear();
     this.instructionPointer = 0;
+
+    // console.log(this.program);
 
     this.program.forEach((instruction, index) => {
       if (instruction.op !== "LABEL") return;
@@ -125,26 +135,37 @@ export class Interpreter {
       } else if (op === "CALL") {
         const callType = result.toUpperCase();
         if (callType === "PRINT") {
-          if (operand1 === "\\n") {
-            console.log();
-            this.instructionPointer++;
-            continue;
-          }
-          process.stdout.write(
-            String(operand1 ?? parseOrGetVariable(operand2, this.variables))
+          // if (operand1 === "\\n") {
+          //   this.stdout("\n");
+          //   this.instructionPointer++;
+          //   continue;
+          // }
+          const output = String(
+            operand1 ?? parseOrGetVariable(operand2, this.variables)
           );
+          this.stdout(output.replace(/\\n/g, "\r\n")); // Replace all occurrences of \n in the string with actual newlines
         } else if (callType === "SCAN") {
           if (typeof operand2 !== "string")
             throw new Error(`SCAN requires a string variable name as operand1`);
 
-          const userInput = prompt("Enter a value: ");
+          const userInput = await this.stdin();
+          console.log("userInput", userInput);
+          commandRef.current = "";
           this.variables.set(operand2, parsePiece(userInput));
         } else throw new Error(`Unknown system call '${callType}'`);
 
         this.instructionPointer++;
+      } else if (op === "DECLARE") {
+        if (typeof operand1 !== "string")
+          throw new Error(
+            `DECLARE requires a string variable name as operand1`
+          );
+        this.variables.set(operand1, null);
+        this.instructionPointer++;
+        continue;
       } else
         throw new Error(
-          `Unknown operation '${op}' at IP=${this.instructionPointer}`
+          `Unknown operation '${op}' at Instruction Pointer = ${this.instructionPointer}`
         );
     }
   }

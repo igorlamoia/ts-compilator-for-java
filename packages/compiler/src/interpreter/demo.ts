@@ -1,5 +1,6 @@
 import { Interpreter } from "./";
 import { Instruction } from "./constants";
+import promptSync from "prompt-sync";
 
 export function demo() {
   const demoProgram: Instruction[] = [
@@ -20,6 +21,10 @@ export function demo() {
     { op: "CALL", result: "SCAN", operand1: null, operand2: "numBloco_0" },
     { op: "CALL", result: "PRINT", operand1: null, operand2: "numBloco_0" },
   ];
-
-  new Interpreter(demoProgram).execute();
+  const prompt = promptSync();
+  const io = {
+    stdout: (msg: string) => process.stdout.write(msg),
+    stdin: async () => prompt(""),
+  };
+  new Interpreter(demoProgram, io).execute();
 }

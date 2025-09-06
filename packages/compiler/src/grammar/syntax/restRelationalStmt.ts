@@ -8,10 +8,18 @@ import { addStmt } from "./addStmt";
  *
  * @derivation `<restoRel> -> '==' <add> | '!=' <add> | '<' <add> | '<=' <add> | '>' <add> | '>=' <add> | &`
  */
-export function restRelationalStmt(iterator: TokenIterator): void {
+export function restRelationalStmt(
+  iterator: TokenIterator,
+  inherited: string
+): string {
   const token = iterator.peek();
-  if (Object.values(TOKENS.RELATIONALS).includes(token.type)) {
+  const operator = TOKENS.RELATIONAL_SYMBOLS[token.type] ?? null;
+  if (operator) {
     iterator.consume(token.type);
-    addStmt(iterator);
+    const right = addStmt(iterator);
+    const temp = iterator.emitter.newTemp();
+    iterator.emitter.emit(operator, temp, inherited, right);
+    return temp;
   }
+  return inherited;
 }

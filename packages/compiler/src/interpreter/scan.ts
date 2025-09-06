@@ -21,8 +21,8 @@ function parseLineToInstruction(line: string): Instruction | null {
   if (line.startsWith("(")) line = line.substring(1).trim();
   if (line.endsWith(")")) line = line.substring(0, line.length - 1).trim();
 
-  const parts = line.split(",");
-  if (parts.length < 4) return null; // Invalid instruction
+  const parts = line.match(/('[^']*'|[^',\s]+)(?=\s*,|\s*$)/g);
+  if (!parts || parts.length < 4) return null; // Invalid instruction
 
   const [rawOp, rawResult, rawOperand1, rawOperand2] = parts;
   const op = parsePiece(rawOp) as OpName;
