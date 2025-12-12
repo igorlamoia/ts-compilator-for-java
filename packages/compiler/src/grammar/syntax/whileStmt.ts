@@ -25,7 +25,13 @@ export function whileStmt(iterator: TokenIterator): void {
 
   iterator.consume(TOKENS.SYMBOLS.right_paren);
 
+  // Push loop context for break/continue
+  iterator.pushLoopContext(labelEnd, labelStart);
+
   stmt(iterator); // corpo do laço
+
+  // Pop loop context
+  iterator.popLoopContext();
 
   iterator.emitter.emit("JUMP", labelStart, null, null);
   iterator.emitter.emit("LABEL", labelEnd, null, null);
