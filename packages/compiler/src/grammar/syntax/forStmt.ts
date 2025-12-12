@@ -39,12 +39,21 @@ export function forStmt(iterator: TokenIterator): void {
   // (3) Incremento — ANTES de consumir o ')'
   iterator.emitter.emit("LABEL", labelIncrement, null, null);
   optAttributeStmt(iterator);
+  iterator.emitter.emit("JUMP", labelStart, null, null);
 
   iterator.consume(right_paren); // ✅ depois do incremento
 
   // (4) Corpo
   iterator.emitter.emit("LABEL", labelBody, null, null);
+
+  // Push loop context for break/continue
+  iterator.pushLoopContext(labelEnd, labelIncrement);
+
   stmt(iterator);
+
+  // Pop loop context
+  iterator.popLoopContext();
+
   iterator.emitter.emit("JUMP", labelIncrement, null, null);
 
   // (5) Fim
