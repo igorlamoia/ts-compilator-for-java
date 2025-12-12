@@ -19,6 +19,9 @@ export function optExprStmt(iterator: TokenIterator): string | null {
 function isStartToken(type: number): boolean {
   return [
     TOKENS.LITERALS.identifier,
+    TOKENS.LITERALS.string_literal,
+    TOKENS.LITERALS.integer_literal,
+    TOKENS.LITERALS.float_literal,
     TOKENS.RESERVEDS.float,
     TOKENS.RESERVEDS.int,
     TOKENS.SYMBOLS.left_brace, // TODO voltar aqui pra saber se tem left brace ou não de vdd? TOKENS.SYMBOLS.left_paren,

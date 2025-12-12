@@ -2,6 +2,7 @@ export const RESERVEDS = {
   int: 21,
   float: 22,
   string: 23,
+  void: 49,
   for: 24,
   while: 25,
   break: 26,

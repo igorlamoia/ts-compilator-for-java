@@ -3,7 +3,7 @@ export type TUnaryArithmetics = "unary+" | "unary-";
 export type TLogical = "||" | "&&" | "!";
 export type TRelational = "==" | "<>" | ">" | "≥" | "<" | "≤";
 export type TAssignment = "=";
-export type TFlowControl = "IF" | "JUMP";
+export type TFlowControl = "IF" | "JUMP" | "RETURN";
 export type TSystemCalls = "CALL"; // e.g. PRINT, SCAN
 export type TLabel = "LABEL";
 export type TDeclaration = "DECLARE";
@@ -26,6 +26,6 @@ export type OpName =
 export interface Instruction {
   op: OpName;
   result: string;
-  operand1: string | number | boolean | null;
+  operand1: string | number | boolean | string[] | null;
   operand2: string | number | boolean | null;
 }

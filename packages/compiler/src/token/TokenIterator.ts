@@ -47,7 +47,10 @@ export class TokenIterator {
   }
 
   generateIntermediateCode(): Instruction[] {
-    const tree = functionCall(this);
+    // Processar múltiplas funções
+    while (this.hasNext()) {
+      functionCall(this);
+    }
     return this.emitter.getInstructions();
   }
 }
