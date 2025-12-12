@@ -45,7 +45,15 @@ export function forStmt(iterator: TokenIterator): void {
 
   // (4) Corpo
   iterator.emitter.emit("LABEL", labelBody, null, null);
+
+  // Push loop context for break/continue
+  iterator.pushLoopContext(labelEnd, labelIncrement);
+
   stmt(iterator);
+
+  // Pop loop context
+  iterator.popLoopContext();
+
   iterator.emitter.emit("JUMP", labelIncrement, null, null);
 
   // (5) Fim

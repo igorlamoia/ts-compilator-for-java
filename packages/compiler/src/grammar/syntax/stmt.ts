@@ -7,6 +7,8 @@ import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
 import { declarationStmt } from "./declarationStmt";
 import { ioStmt } from "./ioStmt";
+import { breakStmt } from "./breakStmt";
+import { continueStmt } from "./continueStmt";
 
 /**
  * Parses a statement by calling the appropriate function
@@ -28,14 +30,14 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.int]: declarationStmt,
     [RESERVEDS.float]: declarationStmt,
     [RESERVEDS.string]: declarationStmt,
+    [RESERVEDS.break]: breakStmt,
+    [RESERVEDS.continue]: continueStmt,
   };
 
   const goToStmt = stmtsFactory[token.type];
   if (goToStmt) return goToStmt(iterator);
 
   const ignoreStmts = {
-    [RESERVEDS.break]: iterator.consume.bind(iterator),
-    [RESERVEDS.continue]: iterator.consume.bind(iterator),
     [TOKENS.SYMBOLS.semicolon]: iterator.consume.bind(iterator),
   };
 
