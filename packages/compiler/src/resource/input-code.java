@@ -1,15 +1,12 @@
-int main() {
-  system.out.print("Início do programa");
-  int x, y;
-  system.out.print("Entre com x: ");
-  system.in.scan(int, x);
-  system.out.print("Entre com y: ");
-  system.in.scan(int, y);
-  if(x < y) {
-    system.out.print("x é menor que y");
-  } else {
-    system.out.print("x é maior ou igual a y");
-  }
+float soma(float a, float b) {
+  return a + b;
+}
 
-  system.out.print("Fim do programa");
+int main() {
+  system.out.print("Testando funcoes\n");
+  float resultado;
+  resultado = soma(3.12, 10);
+  system.out.print("3.12 + 10 = ");
+  system.out.print(resultado);
+  system.out.print("\n");
 }
