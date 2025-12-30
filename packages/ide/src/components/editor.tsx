@@ -16,7 +16,7 @@ export function Editor() {
   useEffect(() => {
     if (darkMode) return setConfig({ theme: "vs-dark" });
     setConfig({ theme: "hc-light" });
-  }, [darkMode]);
+  }, [darkMode, setConfig]);
 
   return (
     <div

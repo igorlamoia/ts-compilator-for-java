@@ -34,7 +34,7 @@ export function Typing({ phrases }: TypingProps) {
     const typingSpeed = isDeleting ? 10 : 100;
     const timer = setTimeout(type, typingSpeed);
     return () => clearTimeout(timer);
-  }, [charIndex, isDeleting, wordIndex]);
+  }, [charIndex, isDeleting, wordIndex, phrases]);
 
   return (
     <div className=" h-full flex justify-center items-center">
