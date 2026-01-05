@@ -6,10 +6,10 @@ export const INITIAL_CODE = `int main() {
   system.out.print("Entre com y: ");
   system.in.scan(int, y);
   if(x < y) {
-    system.out.print("x é menor que y");
+    system.out.print("x é menor que y\\n");
   } else {
-    system.out.print("x é maior ou igual a y");
+    system.out.print("x é maior ou igual a y\\n");
   }
 
-  system.out.print("Fim do programa");
+  system.out.print("\\nFim do programa");
 }`;
