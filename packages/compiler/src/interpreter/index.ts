@@ -152,9 +152,13 @@ export class Interpreter {
       } else if (op === "CALL") {
         const callType = result.toUpperCase();
         if (callType === "PRINT") {
-          const output = String(
+          let output = String(
             operand1 ?? this.parseOrGetVariableWithScope(operand2)
           );
+          // Remove surrounding double quotes from string literals
+          if (output.startsWith('"') && output.endsWith('"')) {
+            output = output.slice(1, -1);
+          }
           this.stdout(output.replace(/\\n/g, "\r\n"));
           this.instructionPointer++;
         } else if (callType === "SCAN") {

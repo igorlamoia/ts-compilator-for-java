@@ -1,24 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Terminal } from "xterm";
-import { MutableRefObject } from "react";
-import "xterm/css/xterm.css";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  KeyboardEvent,
+} from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { cn } from "@/lib/utils";
 import { Interpreter } from "@ts-compilator-for-java/compiler/interpreter";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
-import { useCallback } from "react";
-// import { loadInstructionsFromString } from "@ts-compilator-for-java/compiler/interpreter/scan";
-// import PROGRAM from "@ts-compilator-for-java/compiler/resource/intermediate-code";
 
-const RESET_COLOR = "\x1b[0m";
-const GREEN_COLOR = "\x1b[32m";
-const YELLOW_COLOR = "\x1b[33m";
-const ORANGE_COLOR = "\x1b[38;5;208m"; // Orange color code
-const CYAN_COLOR = "\x1b[36m"; // Cyan color code
-// const RED_COLOR = "\x1b[31m";
-// const BLUE_COLOR = "\x1b[34m";
-
-const ENTER_CHAR = "\r";
+interface TerminalLine {
+  id: number;
+  content: string;
+  type: "output" | "input" | "error" | "success" | "info" | "prompt";
+}
 
 interface ITerminalViewProps {
   isTerminalOpen: boolean;
@@ -26,46 +24,13 @@ interface ITerminalViewProps {
   intermediateCode: Instruction[];
 }
 
-function initPrompt(terminal: MutableRefObject<Terminal | null>) {
-  if (!terminal.current) return;
-  terminal.current.write(`\r\n${CYAN_COLOR}$ ${RESET_COLOR}`);
-}
+let lineIdCounter = 0;
 
-function addHistory(
-  commandRef: MutableRefObject<string>,
-  commandHistory: MutableRefObject<string[]>,
-  historyPointer: MutableRefObject<number>
-) {
-  // Add the command to history if it's not empty
-  if (commandRef.current.trim() !== "") {
-    commandHistory.current.push(commandRef.current);
-    historyPointer.current = commandHistory.current.length; // Reset pointer to the end
-  }
-}
-
-function handleEnter(
-  terminal: MutableRefObject<Terminal | null>,
-  commandRef: MutableRefObject<string>,
-  commandHistory: MutableRefObject<string[]>,
-  historyPointer: MutableRefObject<number>
-) {
-  if (!terminal.current) return;
-  terminal.current.writeln(
-    `\r\nComando não reconhecido: ${commandRef.current}\n`
-  );
-
-  addHistory(commandRef, commandHistory, historyPointer);
-
-  commandRef.current = "";
-  initPrompt(terminal);
-}
-
-function handleWelcomeMessage(terminal: MutableRefObject<Terminal | null>) {
-  if (!terminal.current) return;
-  terminal.current.writeln(
-    `\r\nWelcome to the ${CYAN_COLOR}Lamoia's${RESET_COLOR} Terminal!`
-  );
-  initPrompt(terminal);
+function createLine(
+  content: string,
+  type: TerminalLine["type"] = "output"
+): TerminalLine {
+  return { id: lineIdCounter++, content, type };
 }
 
 export default function TerminalView({
@@ -73,15 +38,43 @@ export default function TerminalView({
   toggleTerminal,
   intermediateCode,
 }: ITerminalViewProps) {
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const terminal = useRef<Terminal | null>(null);
-  const commandRef = useRef<string>("");
+  const [lines, setLines] = useState<TerminalLine[]>([
+    createLine("Welcome to the Lamoia's Terminal!", "info"),
+  ]);
+  const [currentInput, setCurrentInput] = useState("");
+  const [isExecuting, setIsExecuting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const resolveInput = useRef<((value: string) => void) | null>(null);
+  const commandHistory = useRef<string[]>([]);
+  const historyPointer = useRef<number>(0);
 
-  console.log("intermediate-code terminal", intermediateCode);
-  const resolveInput = useRef<(value: string) => void>(() => {});
+  const addLine = useCallback(
+    (content: string, type: TerminalLine["type"] = "output") => {
+      setLines((prev) => [...prev, createLine(content, type)]);
+    },
+    []
+  );
 
+  // Auto-scroll ao adicionar novas linhas
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [lines]);
+
+  // Focar no input quando o terminal abrir
+  useEffect(() => {
+    if (isTerminalOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isTerminalOpen]);
+
+  // Executar interpretador quando receber código intermediário
   const runInterpreter = useCallback(async () => {
-    if (!terminal.current) return;
+    if (intermediateCode.length === 0) return;
+
+    setIsExecuting(true);
 
     const inputPromise = (): Promise<string> =>
       new Promise((resolve) => {
@@ -89,193 +82,249 @@ export default function TerminalView({
       });
 
     const io = {
-      stdout: (msg: string) => terminal.current?.write(msg),
+      stdout: (msg: string) => {
+        const cleanMsg = msg.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        const parts = cleanMsg.split("\n");
+        parts.forEach((part, i) => {
+          if (part.trim() !== "" || i > 0) {
+            addLine(part, "output");
+          }
+        });
+      },
       stdin: inputPromise,
     };
-    terminal.current.writeln("\n");
-    // console.log("rodando", intermediateCode);
-    const interpreter = new Interpreter(intermediateCode, io); // `program` vem do seu Parser/Lexer
 
-    terminal.current.writeln(
-      `\r\n${GREEN_COLOR}🟢  Iniciando execução do código...\n${RESET_COLOR}`
-    );
+    addLine("", "output");
+    addLine("🟢  Iniciando execução do código...", "success");
+    addLine("", "output");
+
+    const interpreter = new Interpreter(intermediateCode, io);
 
     try {
-      await interpreter.execute(commandRef);
-      terminal.current.writeln(
-        `\r\n\n${GREEN_COLOR}🟢  Finalizando execução do código...\n${RESET_COLOR}`
-      );
-      // clean up after execution
-      commandRef.current = "";
-      initPrompt(terminal);
+      await interpreter.execute({ current: "" });
+      addLine("", "output");
+      addLine("🟢  Finalizando execução do código...", "success");
+      addLine("", "output");
     } catch (e: unknown) {
       if (e instanceof Error) {
-        terminal.current.writeln(`❌ Erro: ${e.message}`);
+        addLine(`❌ Erro: ${e.message}`, "error");
       } else {
-        terminal.current.writeln("❌ Erro: An unknown error occurred.");
+        addLine("❌ Erro: An unknown error occurred.", "error");
       }
     }
 
-    initPrompt(terminal);
-  }, [intermediateCode, terminal, resolveInput]);
+    setIsExecuting(false);
+    resolveInput.current = null;
+  }, [intermediateCode, addLine]);
 
   useEffect(() => {
     if (intermediateCode?.length > 0) runInterpreter();
   }, [intermediateCode, runInterpreter]);
 
-  // Command history and pointer
-  const commandHistory = useRef<string[]>([]);
-  const historyPointer = useRef<number>(0);
+  // Processar comandos internos
+  const processCommand = useCallback(
+    (command: string) => {
+      const trimmed = command.trim().toLowerCase();
 
-  useEffect(() => {
-    if (terminalRef.current && !terminal.current) {
-      terminal.current = new Terminal({
-        cursorBlink: true,
-        cols: 120,
-        rows: 14,
-        theme: {
-          background: "rgba(0, 0, 0, 0)",
-        },
-      });
+      // Se o interpretador está esperando input, resolve a promise
+      if (resolveInput.current) {
+        addLine(`$ ${command}`, "input");
+        resolveInput.current(command);
+        resolveInput.current = null;
+        return;
+      }
 
-      terminal.current.open(terminalRef.current);
-      handleWelcomeMessage(terminal);
+      addLine(`$ ${command}`, "input");
 
-      terminal.current.onData(async (data) => {
-        if (!terminal.current) return;
-        if (commandRef.current.trim().toLowerCase() === "roda pra mim") {
-          // Chamar o interpretador aqui
-          runInterpreter();
-          commandRef.current = "";
-          return;
-        }
-
-        const possibleCommands = ["clear", "cls", "help", "exit", "ping"];
-        if (
-          possibleCommands.includes(commandRef.current) &&
-          data === ENTER_CHAR
-        ) {
-          switch (commandRef.current) {
-            case "ping":
-              terminal.current.writeln(`\r\nPong! 🏓\r\n`);
-              initPrompt(terminal);
-              break;
-            case "clear":
-            case "cls":
-              terminal.current.clear();
-              initPrompt(terminal);
-              break;
-            case "help":
-              terminal.current.writeln(
-                `${YELLOW_COLOR}\r\nAvailable commands: roda pra mim, ping, clear, cls, help, exit, ctrl+c to interrupt, ctrl+' to toggle terminal${RESET_COLOR}\r\n`
-              );
-              initPrompt(terminal);
-              break;
-            case "exit":
-              terminal.current.writeln(`\r\n\n❌  Exiting terminal...`);
-              setTimeout(() => {
-                terminal?.current?.clear();
-                toggleTerminal();
-                handleWelcomeMessage(terminal);
-              }, 1000);
-              break;
+      switch (trimmed) {
+        case "clear":
+        case "cls":
+          setLines([]);
+          break;
+        case "help":
+          addLine(
+            "Available commands: ping, clear, cls, help, exit, ctrl+' to toggle terminal",
+            "info"
+          );
+          break;
+        case "ping":
+          addLine("Pong! 🏓", "output");
+          break;
+        case "exit":
+          addLine("❌  Exiting terminal...", "output");
+          setTimeout(() => {
+            setLines([createLine("Welcome to the Lamoia's Terminal!", "info")]);
+            toggleTerminal();
+          }, 1000);
+          break;
+        default:
+          if (trimmed !== "") {
+            addLine(`Comando não reconhecido: ${command}`, "error");
           }
-          addHistory(commandRef, commandHistory, historyPointer);
-          commandRef.current = "";
-          return;
-        }
+          break;
+      }
+    },
+    [addLine, toggleTerminal]
+  );
 
-        switch (data) {
-          case "\x03": // Ctrl+C
-            terminal.current.writeln(
-              `\r\n${ORANGE_COLOR}Process interrupted.${RESET_COLOR}`
-            );
-            initPrompt(terminal);
-            commandRef.current = "";
-            return;
-          case ENTER_CHAR: // Enter
-            terminal.current?.writeln(""); // move to next line
-            if (resolveInput.current) {
-              resolveInput.current(commandRef.current); // ⬅️ Pass input to Interpreter
-              // resolveInput.current = "";
-            } else {
-              handleEnter(terminal, commandRef, commandHistory, historyPointer);
-            }
-            return;
-          case "\u007F": // Backspace
-            if (commandRef.current.length > 0) {
-              commandRef.current = commandRef.current.slice(0, -1);
-              terminal.current.write("\b \b");
-            }
-            return;
-          case "\x1B[A": // Up arrow
-            if (historyPointer.current > 0) {
-              historyPointer.current -= 1;
-              commandRef.current =
-                commandHistory.current[historyPointer.current] || "";
-              terminal.current.write(
-                `\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}` + commandRef.current
-              ); // Clear line and write command
-            }
-            return;
-          case "\x1B[B": // Down arrow
-            if (historyPointer.current < commandHistory.current.length - 1) {
-              historyPointer.current += 1;
-              commandRef.current =
-                commandHistory.current[historyPointer.current] || "";
-              terminal.current.write(
-                `\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}` + commandRef.current
-              ); // Clear line and write command
-            } else {
-              historyPointer.current = commandHistory.current.length;
-              commandRef.current = "";
-              terminal.current.write(`\r\x1B[K${CYAN_COLOR}$ ${RESET_COLOR}`); // Clear line
-            }
-            return;
-          default:
-            commandRef.current += data;
-            terminal.current.write(data);
-            return;
-        }
-      });
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const command = currentInput;
+      if (command.trim() !== "") {
+        commandHistory.current.push(command);
+        historyPointer.current = commandHistory.current.length;
+      }
+      processCommand(command);
+      setCurrentInput("");
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (historyPointer.current > 0) {
+        historyPointer.current -= 1;
+        setCurrentInput(
+          commandHistory.current[historyPointer.current] || ""
+        );
+      }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (historyPointer.current < commandHistory.current.length - 1) {
+        historyPointer.current += 1;
+        setCurrentInput(
+          commandHistory.current[historyPointer.current] || ""
+        );
+      } else {
+        historyPointer.current = commandHistory.current.length;
+        setCurrentInput("");
+      }
+    } else if (e.ctrlKey && e.key === "c") {
+      addLine("Process interrupted.", "error");
+      setCurrentInput("");
+      resolveInput.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
+  // Atalhos globais (ctrl+', ctrl+j, Escape)
   useEffect(() => {
-    if (isTerminalOpen && terminal.current) {
-      terminal.current.focus();
-    }
-  }, [isTerminalOpen]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleGlobalKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.ctrlKey && ["'", "j"].includes(event.key)) {
         toggleTerminal();
-      } else if (event.key === "Escape") {
+      } else if (event.key === "Escape" && isTerminalOpen) {
         toggleTerminal();
-      } else if (event.ctrlKey && event.key === "c") {
-        // Handle Ctrl+C
-        if (!terminal.current) return;
-        terminal.current.writeln("\r\nProcess interrupted.");
-        initPrompt(terminal);
-        commandRef.current = "";
-        return;
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [toggleTerminal]);
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [toggleTerminal, isTerminalOpen]);
+
+  const getLineColor = (type: TerminalLine["type"]) => {
+    switch (type) {
+      case "error":
+        return "text-red-400";
+      case "success":
+        return "text-green-400";
+      case "info":
+        return "text-cyan-400";
+      case "input":
+        return "text-cyan-300";
+      case "prompt":
+        return "text-yellow-400";
+      default:
+        return "text-gray-200";
+    }
+  };
 
   return (
-    <div
-      ref={terminalRef}
-      className={`fixed bottom-10 left-0 right-0 ${
-        isTerminalOpen ? "h-[300px]" : "hidden"
-      } w-full p-4 md:p-8 backdrop-blur-md bg-black/50 z-50 scrollbar-none`}
-    />
+    <AnimatePresence>
+      {isTerminalOpen && (
+        <motion.div
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100%", opacity: 0 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className={cn(
+            "fixed bottom-10 left-0 right-0 z-50 w-full",
+            "backdrop-blur-xl bg-black/70 border-t border-white/10"
+          )}
+          onClick={() => inputRef.current?.focus()}
+        >
+          {/* Header com bolinhas estilo macOS */}
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-x-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleTerminal();
+                  }}
+                  className="h-3 w-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
+                  aria-label="Close terminal"
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLines([]);
+                  }}
+                  className="h-3 w-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors"
+                  aria-label="Clear terminal"
+                />
+                <div className="h-3 w-3 rounded-full bg-green-500" />
+              </div>
+              <span className="ml-3 text-xs text-gray-400 font-mono select-none">
+                lamoia-terminal
+              </span>
+            </div>
+            {isExecuting && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-green-400 font-mono"
+              >
+                ● executing...
+              </motion.span>
+            )}
+          </div>
+
+          {/* Corpo do terminal */}
+          <div
+            ref={scrollRef}
+            className="h-[260px] overflow-y-auto overflow-x-hidden p-4 font-mono text-sm scrollbar-none"
+          >
+            {lines.map((line, index) => (
+              <motion.div
+                key={line.id}
+                initial={
+                  index >= lines.length - 3
+                    ? { opacity: 0, y: -5 }
+                    : { opacity: 1, y: 0 }
+                }
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.15 }}
+                className={cn(
+                  "whitespace-pre-wrap break-all leading-relaxed",
+                  getLineColor(line.type)
+                )}
+              >
+                {line.content || "\u00A0"}
+              </motion.div>
+            ))}
+
+            {/* Linha de input */}
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-cyan-400 select-none">$</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={currentInput}
+                onChange={(e) => setCurrentInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="flex-1 bg-transparent text-gray-200 outline-none caret-cyan-400 font-mono text-sm"
+                spellCheck={false}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
