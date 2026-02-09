@@ -7,17 +7,17 @@ string despedida() {
 }
 
 int main() {
-  system.out.print("=== Teste de Retorno String ===\n");
+  print("=== Teste de Retorno String ===\n");
 
   string msg1;
   msg1 = saudacao("Maria");
-  system.out.print(msg1);
-  system.out.print("Maria\n");
+  print(msg1);
+  print("Maria\n");
 
   string msg2;
   msg2 = despedida();
-  system.out.print(msg2);
-  system.out.print("\n");
+  print(msg2);
+  print("\n");
 
-  system.out.print("Teste concluido!\n");
+  print("Teste concluido!\n");
 }

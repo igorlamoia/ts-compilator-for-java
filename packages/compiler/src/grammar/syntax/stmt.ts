@@ -6,7 +6,7 @@ import { attributeStmt } from "./attributeStmt";
 import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
 import { declarationStmt } from "./declarationStmt";
-import { ioStmt } from "./ioStmt";
+import { printStmt, scanStmt } from "./ioStmt";
 import { returnStmt } from "./returnStmt";
 import { functionCallExpr } from "./functionCallExpr";
 import { breakStmt } from "./breakStmt";
@@ -16,7 +16,7 @@ import { continueStmt } from "./continueStmt";
  * Parses a statement by calling the appropriate function
  * based on the current token.
  *
- * @derivation `<stmt> -> <forStmt> | <ioStmt> | <whileStmt> | <atrib> ';' | <ifStmt> | <bloco> | <declaration> | 'break' | 'continue' | ';'`
+ * @derivation `<stmt> -> <forStmt> | <printStmt> | <scanStmt> | <whileStmt> | <atrib> ';' | <ifStmt> | <bloco> | <declaration> | 'break' | 'continue' | ';'`
  */
 export function stmt(iterator: TokenIterator): void {
   const token = iterator.peek();
@@ -24,7 +24,8 @@ export function stmt(iterator: TokenIterator): void {
 
   const stmtsFactory = {
     [RESERVEDS.for]: forStmt,
-    [RESERVEDS.system]: ioStmt,
+    [RESERVEDS.print]: printStmt,
+    [RESERVEDS.scan]: scanStmt,
     [RESERVEDS.while]: whileStmt,
     [TOKENS.LITERALS.identifier]: attrbuteStmtVariant,
     [RESERVEDS.if]: ifStmt,

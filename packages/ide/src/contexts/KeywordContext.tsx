@@ -9,7 +9,7 @@ import {
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/java-mm-language";
 
-/** As 11 keywords editáveis com seus IDs numéricos de token */
+/** As 13 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
     int: 21,
     float: 22,
@@ -22,14 +22,7 @@ const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
     if: 28,
     else: 29,
     return: 30,
-};
-
-/** Keywords fixas de I/O que não são customizáveis */
-const FIXED_KEYWORDS: Record<string, number> = {
-    system: 31,
-    out: 32,
     print: 33,
-    in: 34,
     scan: 35,
 };
 
@@ -130,10 +123,6 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
             if (conflict)
                 return `"${custom}" já está sendo usada para "${conflict.original}".`;
 
-            // Verificar se conflita com keywords fixas de I/O
-            if (custom in FIXED_KEYWORDS)
-                return `"${custom}" é uma palavra reservada do sistema (I/O).`;
-
             return null; // válido
         },
         [mappings]
@@ -153,7 +142,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const buildKeywordMap = useCallback((): Record<string, number> => {
-        const map: Record<string, number> = { ...FIXED_KEYWORDS };
+        const map: Record<string, number> = {};
         for (const m of mappings) {
             map[m.custom] = m.tokenId;
         }

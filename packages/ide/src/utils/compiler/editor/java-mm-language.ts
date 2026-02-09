@@ -2,8 +2,7 @@ import type * as monacoEditor from "monaco-editor";
 
 export const JAVAMM_LANGUAGE_ID = "java--";
 
-/** Keywords fixas de I/O (sempre presentes no highlighting) */
-const IO_KEYWORDS = ["system", "out", "print", "in", "scan"];
+/** Não há mais keywords fixas de I/O — print e scan são customizáveis */
 
 /**
  * Registra a linguagem Java-- no Monaco com um Monarch tokenizer.
@@ -19,8 +18,8 @@ export function registerJavaMMLanguage(
         monaco.languages.register({ id: JAVAMM_LANGUAGE_ID });
     }
 
-    // Todas as keywords para highlighting (custom + I/O)
-    const allKeywords = [...customKeywords, ...IO_KEYWORDS];
+    // Todas as keywords para highlighting
+    const allKeywords = [...customKeywords];
 
     // Tipos da linguagem (int, float, string, void)
     const typeKeywords = customKeywords.filter((kw) =>
