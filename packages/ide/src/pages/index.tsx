@@ -2,6 +2,7 @@ import Image from "next/image";
 import localFont from "next/font/local";
 import { IDEView } from "@/views/ide";
 import { EditorProvider } from "@/contexts/EditorContext";
+import { KeywordProvider } from "@/contexts/KeywordContext";
 import { Typing } from "@/components/text/typing";
 import { ToggleTheme } from "@/components/toggle-theme";
 import { Meteores } from "@/components/canvas/meteores";
@@ -74,14 +75,16 @@ export default function Home() {
               alt="Next.js logo"
               width={70}
               height={20}
-              // priority
+            // priority
             />
           </div>
           <EditorProvider>
-            <IDETerminal
-              isTerminalOpen={isTerminalOpen}
-              setIsTerminalOpen={setIsTerminalOpen}
-            />
+            <KeywordProvider>
+              <IDETerminal
+                isTerminalOpen={isTerminalOpen}
+                setIsTerminalOpen={setIsTerminalOpen}
+              />
+            </KeywordProvider>
           </EditorProvider>
         </section>
       </main>
@@ -107,7 +110,7 @@ function IDETerminal({ setIsTerminalOpen, isTerminalOpen }: IDETerminalProps) {
         setIsTerminalOpen={setIsTerminalOpen}
         handleIntermediateCodeGeneration={handleIntermediateCodeGeneration}
         intermediateCode={intermediateCode}
-        // setIntermediateCode={setIntermediateCode}
+      // setIntermediateCode={setIntermediateCode}
       />
       <TerminalView
         intermediateCode={intermediateCode?.instructions || []}
