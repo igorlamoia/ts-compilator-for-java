@@ -6,6 +6,8 @@ import {
     ReactNode,
     useCallback,
 } from "react";
+import { useEditor } from "@/hooks/useEditor";
+import { updateJavaMMKeywords } from "@/utils/compiler/editor/java-mm-language";
 
 /** As 11 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
@@ -92,6 +94,7 @@ function loadMappings(): KeywordMapping[] {
 
 export function KeywordProvider({ children }: { children: ReactNode }) {
     const [mappings, setMappings] = useState<KeywordMapping[]>(getDefaultMappings);
+    const { monacoRef, retokenize } = useEditor();
 
     // Carregar do localStorage após montar no client
     useEffect(() => {
@@ -104,6 +107,15 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
         }
     }, [mappings]);
+
+    // Atualizar syntax highlighting do Monaco quando as keywords mudarem
+    useEffect(() => {
+        if (monacoRef.current) {
+            const customWords = mappings.map((m: KeywordMapping) => m.custom).filter(Boolean);
+            updateJavaMMKeywords(monacoRef.current, customWords);
+            retokenize();
+        }
+    }, [mappings, monacoRef, retokenize]);
 
     const validateKeyword = useCallback(
         (original: string, custom: string): string | null => {

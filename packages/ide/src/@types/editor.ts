@@ -22,6 +22,9 @@ export type TEditorConfig = {
   language: string;
 };
 
+import type * as monacoEditor from "monaco-editor";
+import type { MutableRefObject } from "react";
+
 export type TEditorContextType = {
   sourceCode: string;
   config: TEditorConfig;
@@ -31,4 +34,6 @@ export type TEditorContextType = {
   initializeEditor: (container: HTMLDivElement) => void;
   getEditorCode: () => string;
   cleanIssues: () => void;
+  monacoRef: MutableRefObject<typeof monacoEditor | null>;
+  retokenize: () => void;
 };

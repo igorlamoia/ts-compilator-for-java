@@ -4,6 +4,11 @@ import type * as monacoEditor from "monaco-editor";
 import { INITIAL_CODE } from "@/utils/compiler/editor/initial-code";
 import { TEditorConfig, TEditorContextType, TLineAlert } from "@/@types/editor";
 import { ConfigEntity } from "@/entities/editor-config";
+import {
+  registerJavaMMLanguage,
+  JAVAMM_LANGUAGE_ID,
+} from "@/utils/compiler/editor/java-mm-language";
+import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
 
 // Create the EditorContext with default values
 export const EditorContext = createContext<TEditorContextType>(
@@ -22,6 +27,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loader.init().then((monaco) => {
       monacoRef.current = monaco;
+      // Registrar a linguagem Java-- com as keywords padrão
+      registerJavaMMLanguage(monaco, ORIGINAL_KEYWORDS);
       setLoading(false);
     });
   }, []);
@@ -92,6 +99,16 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const retokenize = () => {
+    if (editorInstanceRef.current && monacoRef.current) {
+      const model = editorInstanceRef.current.getModel();
+      if (model) {
+        // Re-set the language to force Monaco to re-tokenize with updated keywords
+        monacoRef.current.editor.setModelLanguage(model, JAVAMM_LANGUAGE_ID);
+      }
+    }
+  };
+
   const cleanIssues = () => {
     if (!editorInstanceRef?.current && monacoRef.current) return;
     const model = editorInstanceRef.current!.getModel();
@@ -115,6 +132,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         initializeEditor,
         getEditorCode,
         cleanIssues,
+        monacoRef,
+        retokenize,
       }}
     >
       {loading ? <div>Loading Editor...</div> : children}
