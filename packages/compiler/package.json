@@ -18,7 +18,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "prompt-sync": "^4.2.0"
