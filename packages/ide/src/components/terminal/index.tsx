@@ -76,8 +76,6 @@ export default function TerminalView({
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminal = useRef<Terminal | null>(null);
   const commandRef = useRef<string>("");
-
-  console.log("intermediate-code terminal", intermediateCode);
   const resolveInput = useRef<(value: string) => void>(() => {});
 
   const runInterpreter = useCallback(async () => {
