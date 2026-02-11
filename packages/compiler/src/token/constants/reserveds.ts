@@ -10,10 +10,7 @@ export const RESERVEDS = {
   if: 28,
   else: 29,
   return: 30,
-  system: 31,
-  out: 32,
   print: 33,
-  in: 34,
   scan: 35,
 };
 

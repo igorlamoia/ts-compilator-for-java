@@ -4,7 +4,7 @@ export const EDITOR_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"];
 
 const DEFAULT_VALUES = {
   theme: EDITOR_THEMES[1],
-  language: "java",
+  language: "java--",
 };
 
 export class ConfigEntity {

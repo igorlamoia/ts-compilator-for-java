@@ -1,14 +1,14 @@
 int main() {
-  system.out.print("Testando for loop\n");
+  print("Testando for loop\n");
   int i;
   for(i = 0; i < 5; i = i + 1) {
-    system.out.print("Iteracao ");
+    print("Iteracao ");
     if(i == 3){
-      system.out.print("especial ");
+      print("especial ");
       break;
     }
-    system.out.print(i);
-    system.out.print("\n");
+    print(i);
+    print("\n");
   }
-  system.out.print("For loop concluido!\n");
+  print("For loop concluido!\n");
 }

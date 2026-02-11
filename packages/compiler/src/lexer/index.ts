@@ -4,6 +4,8 @@ import { isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
 import { IssueWarning, IssueInfo, IssueError } from "../issue";
 
+export type KeywordMap = Record<string, number>;
+
 export class Lexer {
   source: string;
   tokens: Token[] = [];
@@ -13,9 +15,11 @@ export class Lexer {
   current = 0;
   warnings: IssueWarning[] = [];
   infos: IssueInfo[] = [];
+  keywordMap: KeywordMap;
 
-  constructor(source: string) {
+  constructor(source: string, customKeywords?: KeywordMap) {
     this.source = source;
+    this.keywordMap = customKeywords ?? (TOKENS.RESERVEDS as KeywordMap);
   }
 
   public scanTokens(): Token[] {

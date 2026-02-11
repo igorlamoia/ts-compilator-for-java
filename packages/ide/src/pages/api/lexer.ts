@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
+import type { KeywordMap } from "@ts-compilator-for-java/compiler/src/lexer";
 import {
   IssueDetails,
   IssueError,
@@ -19,7 +20,8 @@ export default function handler(
   res: NextApiResponse<TLexerAnalyseData>
 ) {
   try {
-    const lexer = new Lexer(req.body.sourceCode);
+    const keywordMap: KeywordMap | undefined = req.body.keywordMap;
+    const lexer = new Lexer(req.body.sourceCode, keywordMap);
     const tokens = lexer.scanTokens();
     res.status(200).json({
       message:
