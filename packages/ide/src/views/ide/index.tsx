@@ -36,6 +36,7 @@ export function IDEView({
         <KeywordCustomizer />
         <HeroButton start="Lexical Analysis" end="Run" onClick={handleRun} />
       </div>
+
       <ShowTokens analyseData={analyseData} />
       <div className="flex flex-col gap-2">
         <HeroButton
@@ -44,17 +45,6 @@ export function IDEView({
           onClick={() => handleIntermediateCodeGeneration(analyseData.tokens)}
         />
         <ListIntermediateCode instructions={intermediateCode.instructions} />
-        {/* <div className="mt-3 ml-auto">
-          <HeroButton
-            start="Execute"
-            end="Run"
-            className="ml-auto"
-            onClick={() => setIntermediateCode(intermediateCode.instructions)}
-          />
-        </div> */}
-        {/* <pre className="bg-gray-100 p-4 rounded-md">
-          {JSON.stringify(intermediateCode.instructions, null, 2)}
-        </pre> */}
       </div>
     </div>
   );

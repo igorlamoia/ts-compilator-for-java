@@ -10,7 +10,12 @@ export function MainButton({
   return (
     <button
       {...props}
-      className={`${className} bg-white  hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow`}
+      className={`${className} rounded-md
+          border dark:border-slate-600 border-gray-300
+          dark:bg-slate-800 bg-white
+          dark:text-gray-200 text-gray-700
+          hover:dark:bg-slate-700 hover:bg-gray-50
+          transition-colors text-sm font-medium px-4 py-2`}
     >
       {children}
     </button>

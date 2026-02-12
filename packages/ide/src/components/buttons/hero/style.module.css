@@ -183,6 +183,3 @@
   outline: none;
   border: none;
 }
-.buttons button:focus {
-  outline: 2px solid var(--primary);
-}

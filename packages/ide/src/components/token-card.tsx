@@ -1,7 +1,7 @@
 import { TToken, TTokenStyle } from "@/@types/token";
 import { useEditor } from "@/hooks/useEditor";
 
-type TokenCardProps = {
+export type TokenCardProps = {
   token: TToken;
   styles: TTokenStyle;
 };
