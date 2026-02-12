@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  KeyboardEvent,
-} from "react";
+import { useEffect, useRef, useState, useCallback, KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Interpreter } from "@ts-compilator-for-java/compiler/interpreter";
@@ -28,7 +22,7 @@ let lineIdCounter = 0;
 
 function createLine(
   content: string,
-  type: TerminalLine["type"] = "output"
+  type: TerminalLine["type"] = "output",
 ): TerminalLine {
   return { id: lineIdCounter++, content, type };
 }
@@ -53,7 +47,7 @@ export default function TerminalView({
     (content: string, type: TerminalLine["type"] = "output") => {
       setLines((prev) => [...prev, createLine(content, type)]);
     },
-    []
+    [],
   );
 
   // Auto-scroll ao adicionar novas linhas
@@ -144,7 +138,7 @@ export default function TerminalView({
         case "help":
           addLine(
             "Available commands: ping, clear, cls, help, exit, 'ctrl+j' to toggle terminal",
-            "info"
+            "info",
           );
           break;
         case "ping":
@@ -163,7 +157,7 @@ export default function TerminalView({
           break;
       }
     },
-    [addLine, toggleTerminal]
+    [addLine, toggleTerminal],
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -179,17 +173,13 @@ export default function TerminalView({
       e.preventDefault();
       if (historyPointer.current > 0) {
         historyPointer.current -= 1;
-        setCurrentInput(
-          commandHistory.current[historyPointer.current] || ""
-        );
+        setCurrentInput(commandHistory.current[historyPointer.current] || "");
       }
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       if (historyPointer.current < commandHistory.current.length - 1) {
         historyPointer.current += 1;
-        setCurrentInput(
-          commandHistory.current[historyPointer.current] || ""
-        );
+        setCurrentInput(commandHistory.current[historyPointer.current] || "");
       } else {
         historyPointer.current = commandHistory.current.length;
         setCurrentInput("");
@@ -251,8 +241,8 @@ export default function TerminalView({
           exit={{ y: "100%", opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className={cn(
-            "fixed bottom-10 left-0 right-0 z-50 w-full",
-            "backdrop-blur-xl bg-black/70 border-t border-white/10"
+            "fixed bottom-0 left-0 right-0 z-50 w-full",
+            "backdrop-blur-xl bg-black/70 border-t border-white/10",
           )}
           onClick={() => inputRef.current?.focus()}
         >
@@ -310,7 +300,7 @@ export default function TerminalView({
                 transition={{ duration: 0.15 }}
                 className={cn(
                   "whitespace-pre-wrap break-all leading-relaxed",
-                  getLineColor(line.type)
+                  getLineColor(line.type),
                 )}
               >
                 {line.content || "\u00A0"}
