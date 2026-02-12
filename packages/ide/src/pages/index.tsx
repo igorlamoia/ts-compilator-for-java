@@ -1,11 +1,9 @@
 import localFont from "next/font/local";
-import { EditorProvider } from "@/contexts/EditorContext";
-import { KeywordProvider } from "@/contexts/KeywordContext";
 import { Footer } from "@/components/footer";
 import { useState } from "react";
 import { Meteores } from "@/components/canvas/meteores";
 import { HomeHero } from "@/components/heros/home";
-import { IDETerminal } from "@/views/ide-terminal-wrapper";
+import { IDEFunction } from "@/views/ide-terminal-wrapper";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,14 +30,10 @@ export default function Home() {
       >
         <section className="flex flex-col gap-6 pb-20 max-w-screen-2xl m-auto z-10">
           <HomeHero />
-          <EditorProvider>
-            <KeywordProvider>
-              <IDETerminal
-                isTerminalOpen={isTerminalOpen}
-                setIsTerminalOpen={setIsTerminalOpen}
-              />
-            </KeywordProvider>
-          </EditorProvider>
+          <IDEFunction
+            isTerminalOpen={isTerminalOpen}
+            setIsTerminalOpen={setIsTerminalOpen}
+          />
         </section>
       </main>
       <Footer

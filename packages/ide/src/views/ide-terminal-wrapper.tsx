@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 import { IDEView } from "./ide";
 import { useIntermediatorCode } from "./ide/useIntermediatorCode";
+import { EditorProvider } from "@/contexts/EditorContext";
+import { KeywordProvider } from "@/contexts/KeywordContext";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -11,10 +13,23 @@ interface IDETerminalProps {
   isTerminalOpen: boolean;
 }
 
-export function IDETerminal({
-  setIsTerminalOpen,
+export function IDEFunction({
   isTerminalOpen,
+  setIsTerminalOpen,
 }: IDETerminalProps) {
+  return (
+    <EditorProvider>
+      <KeywordProvider>
+        <IDETerminal
+          isTerminalOpen={isTerminalOpen}
+          setIsTerminalOpen={setIsTerminalOpen}
+        />
+      </KeywordProvider>
+    </EditorProvider>
+  );
+}
+
+function IDETerminal({ setIsTerminalOpen, isTerminalOpen }: IDETerminalProps) {
   const { handleIntermediateCodeGeneration, intermediateCode } =
     useIntermediatorCode();
   return (
