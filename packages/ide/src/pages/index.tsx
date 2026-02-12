@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import { IDEView } from "@/views/ide";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { KeywordProvider } from "@/contexts/KeywordContext";
-import { Typing } from "@/components/text/typing";
 import { ToggleTheme } from "@/components/toggle-theme";
 import { Footer } from "@/components/footer";
 import dynamic from "next/dynamic";
@@ -46,7 +45,7 @@ export default function Home() {
             </div>
 
             <div>
-              <div className="flex flex-col md:flex-row gap-2  items-center">
+              <div className="flex flex-col lg:flex-row gap-1  items-center">
                 <h1 className="text-4xl font-bold text-center">
                   Welcome to your IDE
                 </h1>
