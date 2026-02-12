@@ -1,5 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Meteors } from "../ui/meteors";
+import { Particles } from "@/components/ui/particles";
 
 export function Meteores() {
   const { darkMode } = useTheme();
@@ -9,7 +10,8 @@ export function Meteores() {
 
   return (
     <div style={{ background }} className="overflow-hidden flex inset-0 fixed">
-      <Meteors/>
+      <Meteors number={5} />
+      <Particles />
     </div>
   );
 }
