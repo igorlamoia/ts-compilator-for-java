@@ -5,12 +5,11 @@ import { EditorProvider } from "@/contexts/EditorContext";
 import { KeywordProvider } from "@/contexts/KeywordContext";
 import { Typing } from "@/components/text/typing";
 import { ToggleTheme } from "@/components/toggle-theme";
-import { Meteores } from "@/components/canvas/meteores";
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Footer } from "@/components/footer";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useIntermediatorCode } from "@/views/ide/useIntermediatorCode";
+import { Meteores } from "@/components/canvas/meteores";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -31,7 +30,7 @@ export default function Home() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   return (
-    <ThemeProvider>
+    <>
       <Meteores />
       <main
         className={`${geistSans.variable} ${geistMono.variable}
@@ -92,7 +91,7 @@ export default function Home() {
         toggleTerminal={() => setIsTerminalOpen((old) => !old)}
         isTerminalOpen={isTerminalOpen}
       />
-    </ThemeProvider>
+    </>
   );
 }
 

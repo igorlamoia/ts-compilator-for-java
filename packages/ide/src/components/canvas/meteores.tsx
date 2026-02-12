@@ -1,5 +1,5 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import styles from "./meteores.module.scss";
+import { Meteors } from "../ui/meteors";
 
 export function Meteores() {
   const { darkMode } = useTheme();
@@ -8,21 +8,8 @@ export function Meteores() {
     : "radial-gradient(ellipse at bottom, #cfddf3 0%, #ffffff 100%)";
 
   return (
-    <div style={{ background }} className="flex inset-0 fixed">
-      <div className={styles.stars}>
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-        <div className={styles.star} />
-      </div>
+    <div style={{ background }} className="overflow-hidden flex inset-0 fixed">
+      <Meteors/>
     </div>
   );
 }
