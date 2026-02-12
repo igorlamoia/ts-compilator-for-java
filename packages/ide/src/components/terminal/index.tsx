@@ -143,7 +143,7 @@ export default function TerminalView({
           break;
         case "help":
           addLine(
-            "Available commands: ping, clear, cls, help, exit, ctrl+' to toggle terminal",
+            "Available commands: ping, clear, cls, help, exit, 'ctrl+j' to toggle terminal",
             "info"
           );
           break;
@@ -158,9 +158,8 @@ export default function TerminalView({
           }, 1000);
           break;
         default:
-          if (trimmed !== "") {
+          if (trimmed !== "")
             addLine(`Comando não reconhecido: ${command}`, "error");
-          }
           break;
       }
     },
@@ -205,15 +204,25 @@ export default function TerminalView({
   // Atalhos globais (ctrl+', ctrl+j, Escape)
   useEffect(() => {
     const handleGlobalKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.ctrlKey && ["'", "j"].includes(event.key)) {
+      const isToggleShortcut =
+        event.ctrlKey && ["Quote", "KeyJ"].includes(event.code);
+
+      if (isToggleShortcut) {
+        event.preventDefault();
+        event.stopPropagation();
         toggleTerminal();
       } else if (event.key === "Escape" && isTerminalOpen) {
         toggleTerminal();
       }
     };
 
-    document.addEventListener("keydown", handleGlobalKeyDown);
-    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+    document.addEventListener("keydown", handleGlobalKeyDown, {
+      capture: true,
+    });
+    return () =>
+      document.removeEventListener("keydown", handleGlobalKeyDown, {
+        capture: true,
+      });
   }, [toggleTerminal, isTerminalOpen]);
 
   const getLineColor = (type: TerminalLine["type"]) => {
