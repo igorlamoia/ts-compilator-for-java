@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useIntermediatorCode } from "@/views/ide/useIntermediatorCode";
 import { Meteores } from "@/components/canvas/meteores";
+import { TypingAnimation } from "@/components/ui/typing-animation";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -50,12 +51,16 @@ export default function Home() {
                   Welcome to your IDE
                 </h1>
                 <div className="text-center">
-                  <Typing
-                    phrases={[
+                  <TypingAnimation
+                    words={[
                       "JAVA --",
                       "where all is possible",
                       "perfect Lexer analysis",
                     ]}
+                    typeSpeed={50}
+                    deleteSpeed={150}
+                    pauseDelay={2000}
+                    loop
                   />
                 </div>
               </div>
@@ -74,7 +79,7 @@ export default function Home() {
               alt="Next.js logo"
               width={70}
               height={20}
-            // priority
+              // priority
             />
           </div>
           <EditorProvider>
@@ -109,7 +114,7 @@ function IDETerminal({ setIsTerminalOpen, isTerminalOpen }: IDETerminalProps) {
         setIsTerminalOpen={setIsTerminalOpen}
         handleIntermediateCodeGeneration={handleIntermediateCodeGeneration}
         intermediateCode={intermediateCode}
-      // setIntermediateCode={setIntermediateCode}
+        // setIntermediateCode={setIntermediateCode}
       />
       <TerminalView
         intermediateCode={intermediateCode?.instructions || []}

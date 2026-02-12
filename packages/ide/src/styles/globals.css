@@ -35,7 +35,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-
 @keyframes meteor {
   0% {
     transform: rotate(var(--angle)) translateX(0);
@@ -53,6 +52,7 @@ body {
 @layer base {
   .theme {
     --animate-meteor: meteor 5s linear infinite;
+    --animate-blink-cursor: blink-cursor 1.2s step-end infinite;
   }
   :root {
     --background: 0 0% 100%;
@@ -121,5 +121,16 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@theme inline {
+  @keyframes blink-cursor {
+  0%, 49% {
+    opacity: 1;
+    }
+  50%, 100% {
+    opacity: 0;
+    }
   }
 }
