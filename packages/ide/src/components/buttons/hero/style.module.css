@@ -112,6 +112,7 @@
   content: attr(data-title);
   top: 50%;
   transform: translateY(-50%);
+  opacity: 1;
 }
 
 .buttons button p:after {
@@ -120,26 +121,27 @@
   color: var(--primary);
 }
 
-.buttons button:hover:before,
-.buttons button:hover:after {
+.buttons button:not(:disabled):hover:before,
+.buttons button:not(:disabled):hover:after {
   width: 100%;
 }
 
-.buttons button:hover span {
+.buttons button:not(:disabled):hover span {
   z-index: 1;
 }
 
-.buttons button:hover span:before,
-.buttons button:hover span:after {
+.buttons button:not(:disabled):hover span:before,
+.buttons button:not(:disabled):hover span:after {
   height: 100%;
 }
 
-.buttons button:hover p:before {
+.buttons button:not(:disabled):hover p:before {
   top: -50%;
   transform: rotate(5deg);
+  opacity: 0;
 }
 
-.buttons button:hover p:after {
+.buttons button:not(:disabled):hover p:after {
   top: 50%;
   transform: translateY(-50%);
 }
@@ -170,12 +172,12 @@
   }
 }
 
-.buttons button.start:hover:before,
-.buttons button.start:hover:after {
+.buttons button.start:not(:disabled):hover:before,
+.buttons button.start:not(:disabled):hover:after {
   display: none;
 }
 
-.buttons button.start:hover span {
+.buttons button.start:not(:disabled):hover span {
   display: none;
 }
 

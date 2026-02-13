@@ -37,8 +37,11 @@ export function TokenCard({ token, styles }: TokenCardProps) {
       onClick={handleTokenClick}
       style={{ flex: "1 1 20%", height: "100%" }}
     >
+      <div className={`${styles.text} mx-auto mb-2 text-center`}>
+        <strong>{token.custom}</strong>
+      </div>
       <div className="text-slate-600 grid grid-cols-12 text-sm">
-        <div className="col-span-5">
+        <div className="col-span-5 ">
           <strong>Line: </strong> <span>{token.line}</span>
         </div>
         <div

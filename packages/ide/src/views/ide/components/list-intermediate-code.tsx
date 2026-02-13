@@ -11,7 +11,7 @@ export function ListIntermediateCode({
 
   return (
     <div className="mt-4">
-      <h2 className="text-2xl font-bold mb-6 font-mono drop-shadow-lg text-foreground">
+      <h2 className="text-center  text-2xl font-bold mb-6 font-mono drop-shadow-lg text-foreground">
         Intermediate Code Instructions - Execution Timeline
       </h2>
 
@@ -32,12 +32,15 @@ const Mixed = ({
         <div className="relative border-l-4 border-cyan-500 ml-6 space-y-10">
           {instructions.map((instruction, index) => (
             <motion.div
-              key={index}
+              key={`instruction-${index}`}
               className="relative pl-6 z-0 hover:z-40"
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.28, ease: "easeOut", delay: index * 0.03 }}
+              transition={{
+                duration: 0.28,
+                ease: "easeOut",
+              }}
             >
               {/* 🔵 Ponto neon na linha */}
               <span
@@ -51,25 +54,46 @@ const Mixed = ({
                        hover:scale-70 hover:translate-x-4
                        transition-transform duration-300 font-mono"
               >
-                <div className="grid grid-cols-5 gap-2 text-sm">
-                  <h3 className="text-xl font-bold text-cyan-700 dark:text-cyan-300">
-                    {index + 1}. ⚡ {instruction.op}
-                  </h3>
+                <IntermediateCard instruction={instruction} index={index} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted-foreground">
+          No intermediate code instructions available.
+        </p>
+      )}
+    </div>
+  );
+};
 
-                  <p>
-                    <span className="text-pink-600 dark:text-pink-400">Result:</span>{" "}
-                    {instruction.result ?? "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-green-600 dark:text-green-400">Op1:</span>{" "}
-                    {instruction.operand1 ?? "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-yellow-600 dark:text-yellow-400">Op2:</span>{" "}
-                    {instruction.operand2 ?? "N/A"}
-                  </p>
-                  {/* 🔍 Mostrar detalhes ao passar o mouse */}
-                  <div className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer group">
+function IntermediateCard({
+  instruction,
+  index,
+}: {
+  instruction: TIntermediateCodeData["instructions"][number];
+  index: number;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-[auto_repeat(3,minmax(0,1fr))] sm:items-center">
+      <h3 className="text-xl font-bold text-cyan-700 dark:text-cyan-300 sm:pr-2">
+        {index + 1}. ⚡ {instruction.op}
+      </h3>
+      <p>
+        <span className="text-pink-600 dark:text-pink-400">Result:</span>{" "}
+        {instruction.result ?? "N/A"}
+      </p>
+      <p>
+        <span className="text-green-600 dark:text-green-400">Op1:</span>{" "}
+        {instruction.operand1 ?? "N/A"}
+      </p>
+      <p>
+        <span className="text-yellow-600 dark:text-yellow-400">Op2:</span>{" "}
+        {instruction.operand2 ?? "N/A"}
+      </p>
+      {/* 🔍 Mostrar detalhes ao passar o mouse */}
+      {/* <div className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer group">
                     🔍 Show Line
                     <div
                       className="absolute hidden group-hover:block bg-white dark:bg-slate-900
@@ -91,17 +115,7 @@ const Mixed = ({
                         ))}
                       </ul>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-muted-foreground">
-          No intermediate code instructions available.
-        </p>
-      )}
+                  </div> */}
     </div>
   );
-};
+}
