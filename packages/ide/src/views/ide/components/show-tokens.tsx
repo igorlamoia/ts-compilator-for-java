@@ -5,6 +5,7 @@ import { NumberTicker } from "@/components/ui/number-ticker";
 import { TLexerAnalyseData } from "@/pages/api/lexer";
 import { Classification } from "@/utils/compiler/classification";
 import { classifyTokens } from "@/utils/compiler/editor/tokens";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { CardsPreview } from "./cards-preview";
 
@@ -45,15 +46,19 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
         {!hideAllTokens && (
           <>
             <h2 className="text-xl font-bold">Sequence Tokens</h2>
-            <AnimatedList className="flex gap-2 flex-wrap w-full" delay={50}>
-              {allFormattedTokens.map(({ token, info: { styles } }) => (
-                <TokenCard
+            <div className="flex gap-2 flex-wrap w-full">
+              {allFormattedTokens.map(({ token, info: { styles } }, index) => (
+                <motion.div
                   key={token.line + "c" + token.column + "sequence"}
-                  token={token}
-                  styles={styles}
-                />
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.04 }}
+                  style={{ flex: "1 1 20%" }}
+                >
+                  <TokenCard token={token} styles={styles} />
+                </motion.div>
               ))}
-            </AnimatedList>
+            </div>
           </>
         )}
         <MainButton onClick={() => setHideTokensByType((old) => !old)}>
@@ -79,18 +84,19 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
               Object.entries(formattedTokens).map(([key, values]) => (
                 <div key={key}>
                   <h3 className="text-lg font-bold">{key}</h3>
-                  <AnimatedList
-                    className="flex gap-2 flex-wrap w-full"
-                    delay={50}
-                  >
-                    {values.map(({ token, info: { styles } }) => (
-                      <TokenCard
+                  <div className="flex gap-2 flex-wrap w-full">
+                    {values.map(({ token, info: { styles } }, index) => (
+                      <motion.div
                         key={token.line + "c" + token.column + "horizontaly"}
-                        token={token}
-                        styles={styles}
-                      />
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.04 }}
+                        style={{ flex: "1 1 20%" }}
+                      >
+                        <TokenCard token={token} styles={styles} />
+                      </motion.div>
                     ))}
-                  </AnimatedList>
+                  </div>
                 </div>
               ))
             ) : (
@@ -98,15 +104,21 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                 {Object.entries(formattedTokens).map(([key, values]) => (
                   <div key={key} className="flex flex-col gap-2">
                     <h3 className="text-lg font-bold">{key}</h3>
-                    <AnimatedList delay={50}>
-                      {values.map(({ token, info: { styles } }) => (
+                    {values.map(({ token, info: { styles } }, index) => (
+                      <motion.div
+                        key={token.line + "c" + token.column + "verticaly"}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.04 }}
+                        style={{ flex: "1 1 20%" }}
+                      >
                         <TokenCard
                           key={token.line + "c" + token.column + "verticaly"}
                           token={token}
                           styles={styles}
                         />
-                      ))}
-                    </AnimatedList>
+                      </motion.div>
+                    ))}
                   </div>
                 ))}
               </div>

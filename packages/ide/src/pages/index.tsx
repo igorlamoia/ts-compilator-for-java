@@ -1,7 +1,7 @@
 import localFont from "next/font/local";
 import { Footer } from "@/components/footer";
 import { useState } from "react";
-import { Meteores } from "@/components/canvas/meteores";
+import { SpaceBackground } from "@/components/space-background";
 import { HomeHero } from "@/components/heros/home";
 import { IDEFunction } from "@/views/ide-terminal-wrapper";
 
@@ -21,7 +21,7 @@ export default function Home() {
 
   return (
     <>
-      <Meteores />
+      <SpaceBackground />
       <main
         className={`${geistSans.variable} ${geistMono.variable}
           min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]
