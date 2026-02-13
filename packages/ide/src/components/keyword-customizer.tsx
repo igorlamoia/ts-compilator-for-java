@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useKeywords, KeywordMapping } from "@/contexts/KeywordContext";
+import { z } from "zod";
 
 export function KeywordCustomizer({
   isOpen,
@@ -53,28 +54,51 @@ export function KeywordCustomizer({
 
   const currentMapping = draftMappings[currentStep];
 
-  const validateDraftKeyword = (original: string, custom: string) => {
-    if (!custom.trim()) return "A palavra não pode ser vazia.";
-    if (!/^[a-zA-Z]+$/.test(custom)) {
-      return "Use apenas letras (sem números, espaços ou símbolos).";
-    }
-    const conflict = draftMappings.find(
-      (m: KeywordMapping) => m.original !== original && m.custom === custom,
-    );
-    if (conflict) {
-      return `"${custom}" já está sendo usada para "${conflict.original}".`;
+  const validateDraftKeyword = (
+    original: string,
+    custom: string,
+    mappingsToValidate: KeywordMapping[] = draftMappings,
+  ) => {
+    const keywordSchema = z
+      .object({
+        original: z.string(),
+        custom: z
+          .string()
+          .trim()
+          .min(1, "A palavra não pode ser vazia.")
+          .regex(
+            /^[a-zA-Z]+$/,
+            "Use apenas letras (sem números, espaços ou símbolos).",
+          ),
+      })
+      .superRefine((value, ctx) => {
+        const conflict = mappingsToValidate.find(
+          (m) => m.original !== value.original && m.custom === value.custom,
+        );
+        if (conflict) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `"${value.custom}" já está sendo usada para "${conflict.original}".`,
+          });
+        }
+      });
+
+    const result = keywordSchema.safeParse({ original, custom });
+    if (!result.success) {
+      return result.error.issues[0]?.message ?? "Valor inválido.";
     }
     return null;
   };
 
   const handleChange = (value: string) => {
     if (!currentMapping) return;
-    setDraftMappings((prev) =>
-      prev.map((mapping, index) =>
-        index === currentStep ? { ...mapping, custom: value } : mapping,
-      ),
+    const nextMappings = draftMappings.map((mapping, index) =>
+      index === currentStep ? { ...mapping, custom: value } : mapping,
     );
-    setCurrentError(validateDraftKeyword(currentMapping.original, value));
+    setDraftMappings(nextMappings);
+    setCurrentError(
+      validateDraftKeyword(currentMapping.original, value, nextMappings),
+    );
   };
 
   const handleResetDraft = () => {

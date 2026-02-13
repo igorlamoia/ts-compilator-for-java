@@ -15,7 +15,9 @@ export function useIntermediatorCode() {
   const { showLineIssues, cleanIssues } = useEditor();
   const [intermediateCode, setIntermediateCode] =
     useState<TIntermediateCodeData>({} as TIntermediateCodeData);
-  const handleIntermediateCodeGeneration = async (tokens: TToken[]) => {
+  const handleIntermediateCodeGeneration = async (
+    tokens: TToken[],
+  ): Promise<boolean> => {
     setIntermediateCode({} as TIntermediateCodeData);
     try {
       cleanIssues();
@@ -29,22 +31,26 @@ export function useIntermediatorCode() {
         type: issues.length ? "warning" : "success",
       });
       if (issues.length) handleIssues(issues);
+      return true;
     } catch (error) {
       setIntermediateCode({} as TIntermediateCodeData);
       if (error instanceof AxiosError) {
         const { error: lexerError, message } = (error?.response?.data ||
           {}) as TIntermediateCodeData;
         if (lexerError) handleIssues([lexerError as IssueDetails], true);
-        return showToast({
+        showToast({
           message: message || "An error occurred",
           type: "error",
         });
+        return false;
       }
-      if (error instanceof Error)
-        return showToast({
+      if (error instanceof Error) {
+        showToast({
           message: error.message,
           type: "error",
         });
+      }
+      return false;
     }
   };
 

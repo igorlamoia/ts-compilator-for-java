@@ -11,7 +11,7 @@ export function IDEView({
   intermediateCode,
   setIsTerminalOpen,
 }: {
-  handleIntermediateCodeGeneration: (tokens: TToken[]) => Promise<void>;
+  handleIntermediateCodeGeneration: (tokens: TToken[]) => Promise<boolean>;
   intermediateCode: { instructions: Instruction[] };
   setIsTerminalOpen: (isOpen: boolean) => void;
 }) {
@@ -19,10 +19,10 @@ export function IDEView({
 
   const runAll = async () => {
     const tokens = await handleRun();
-    if (tokens) await handleIntermediateCodeGeneration(tokens);
-    setTimeout(() => {
-      setIsTerminalOpen(true);
-    }, 0);
+    if (!tokens) return;
+    const isIntermediateGenerated = await handleIntermediateCodeGeneration(tokens);
+    if (!isIntermediateGenerated) return;
+    setIsTerminalOpen(true);
   };
 
   return (
