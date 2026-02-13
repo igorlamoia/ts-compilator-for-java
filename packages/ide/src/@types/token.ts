@@ -3,6 +3,7 @@ export type TToken = {
   lexeme: string;
   line: number;
   type: number;
+  custom?: string | null;
 };
 
 export type TTokenStyle = {

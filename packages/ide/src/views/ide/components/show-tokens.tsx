@@ -7,6 +7,7 @@ import { classifyTokens } from "@/utils/compiler/editor/tokens";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CardsPreview } from "./cards-preview";
+import { useKeywords } from "@/contexts/KeywordContext";
 
 interface IShowTokensProps {
   analyseData: TLexerAnalyseData;
@@ -15,7 +16,23 @@ interface IShowTokensProps {
 const TokenClassification = new Classification();
 
 export function ShowTokens({ analyseData }: IShowTokensProps) {
-  const { tokens } = analyseData;
+  const { mappings } = useKeywords();
+
+  const keyTypeIndexs = mappings.reduce(
+    (acc, { original, custom, tokenId }) => {
+      acc[tokenId] = custom || original;
+      return acc;
+    },
+    {} as Record<number, string>,
+  );
+
+  const tokens = analyseData?.tokens?.map((token) => {
+    return {
+      ...token,
+      custom: keyTypeIndexs[token.type] || null,
+    };
+  });
+
   const [hideAllTokens, setHideAllTokens] = useState(true);
   const [hideTokensByType, setHideTokensByType] = useState(true);
   const [orientation, setOrientation] = useState<"verticaly" | "horizontaly">(
