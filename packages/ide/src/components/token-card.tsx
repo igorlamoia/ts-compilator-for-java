@@ -1,7 +1,7 @@
 import { TToken, TTokenStyle } from "@/@types/token";
 import { useEditor } from "@/hooks/useEditor";
 
-type TokenCardProps = {
+export type TokenCardProps = {
   token: TToken;
   styles: TTokenStyle;
 };
@@ -35,7 +35,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
         cursor-pointer
         ${styles.border} text-${styles.text} ${styles.transform}`}
       onClick={handleTokenClick}
-      style={{ flex: "1 1 20%" }}
+      style={{ flex: "1 1 20%", height: "100%" }}
     >
       <div className="text-slate-600 grid grid-cols-12 text-sm">
         <div className="col-span-5">

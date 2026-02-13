@@ -112,7 +112,7 @@ npm run test   # Runs Vitest test suite
 
 ## Project-Specific Knowledge
 
-- **Java-- syntax**: Simplified Java with `system.in.scan()` and `system.out.print()` for I/O
+- **Java-- syntax**: Simplified Java with `scan()` and `print()` for I/O
 - **Intermediate code format**: Three-address code (TAC) with instruction object: `{ op, result, operand1, operand2 }`
 - **Monorepo**: Root `package.json` defines workspaces; IDE imports compiler via `@ts-compilator-for-java/compiler`
 - **No AST construction**: Parser directly emits intermediate code (single-pass compilation)

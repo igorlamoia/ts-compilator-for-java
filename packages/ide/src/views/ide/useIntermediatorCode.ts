@@ -28,10 +28,6 @@ export function useIntermediatorCode() {
         message: data.message || "Intermediate code generation completed",
         type: issues.length ? "warning" : "success",
       });
-      window.scrollTo({
-        top: 700,
-        behavior: "smooth",
-      });
       if (issues.length) handleIssues(issues);
     } catch (error) {
       setIntermediateCode({} as TIntermediateCodeData);

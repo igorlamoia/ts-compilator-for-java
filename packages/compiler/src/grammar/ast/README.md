@@ -9,7 +9,8 @@
 <bloco> -> '{' <stmtList> '}' ;
 <stmtList> -> <stmt> <stmtList> | & ;
 <stmt> -> <forStmt>
-| <ioStmt>
+| <printStmt>
+| <scanStmt>
 | <whileStmt>
 | <atrib> ';'
 | <ifStmt>
@@ -39,8 +40,8 @@
 
 # comandos de IO
 
-<ioStmt> -> 'system' '.' 'in' '.' 'scan' '(' <type> ',' 'IDENT' ')' ';'
-| 'system' '.' 'out' '.' 'print' '(' <outList> ')' ';' ;
+<printStmt> -> 'print' '(' <outList> ')' ';' ;
+<scanStmt> -> 'scan' '(' <type> ',' 'IDENT' ')' ';' ;
 <outList> -> <out> <restoOutList> ;
 <out> -> 'STR' | 'IDENT' | 'NUMdec' | 'NUMfloat' | 'NUMoct' | 'NUMhex';
 <restoOutList> -> ',' <out> <restoOutList> | & ;

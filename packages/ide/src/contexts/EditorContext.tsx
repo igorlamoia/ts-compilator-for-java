@@ -1,13 +1,18 @@
-import { createContext, useRef, useState, useEffect, ReactNode } from "react";
+import { createContext, useRef, useState, useEffect, ReactNode, useCallback } from "react";
 import loader from "@monaco-editor/loader";
 import type * as monacoEditor from "monaco-editor";
 import { INITIAL_CODE } from "@/utils/compiler/editor/initial-code";
 import { TEditorConfig, TEditorContextType, TLineAlert } from "@/@types/editor";
 import { ConfigEntity } from "@/entities/editor-config";
+import {
+  registerJavaMMLanguage,
+  JAVAMM_LANGUAGE_ID,
+} from "@/utils/compiler/editor/java-mm-language";
+import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
 
 // Create the EditorContext with default values
 export const EditorContext = createContext<TEditorContextType>(
-  {} as TEditorContextType
+  {} as TEditorContextType,
 );
 
 export function EditorProvider({ children }: { children: ReactNode }) {
@@ -22,6 +27,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loader.init().then((monaco) => {
       monacoRef.current = monaco;
+      // Registrar a linguagem Java-- com as keywords padrão
+      registerJavaMMLanguage(monaco, ORIGINAL_KEYWORDS);
       setLoading(false);
     });
   }, []);
@@ -39,7 +46,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setConfig = (newConfig: Partial<TEditorConfig>) => {
+  const setConfig = useCallback((newConfig: Partial<TEditorConfig>) => {
     setConfigState((prevConfig) => {
       const updatedConfig = { ...prevConfig, ...newConfig };
 
@@ -57,7 +64,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
       return updatedConfig;
     });
-  };
+  }, []);
 
   const updateSourceCode = (newCode: string) => {
     setSourceCode(newCode);
@@ -79,7 +86,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           message: alert.message,
           severity: alert.severity,
           // tags: [1,2], // unnecessary and deprecated
-        }))
+        })),
       );
       // Center the editor view on the error line
       editorInstanceRef.current.revealLineInCenter(alerts[0].startLineNumber);
@@ -87,8 +94,18 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       editorInstanceRef.current.trigger(
         "keyboard",
         "editor.action.marker.next",
-        {}
+        {},
       );
+    }
+  };
+
+  const retokenize = () => {
+    if (editorInstanceRef.current && monacoRef.current) {
+      const model = editorInstanceRef.current.getModel();
+      if (model) {
+        // Re-set the language to force Monaco to re-tokenize with updated keywords
+        monacoRef.current.editor.setModelLanguage(model, JAVAMM_LANGUAGE_ID);
+      }
     }
   };
 
@@ -115,6 +132,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         initializeEditor,
         getEditorCode,
         cleanIssues,
+        monacoRef,
+        retokenize,
       }}
     >
       {loading ? <div>Loading Editor...</div> : children}

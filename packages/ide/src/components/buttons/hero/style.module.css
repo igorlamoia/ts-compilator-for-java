@@ -6,7 +6,7 @@
   display: flex;
   justify-content: space-around;
   top: 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   left: 20px;
 }
 
@@ -14,7 +14,6 @@
   /* background-color: var(--bgbutton); */
   /* color: var(--text); */
   position: relative;
-  overflow: hidden;
   font-size: 14px;
   letter-spacing: 1px;
   font-weight: 500;
@@ -24,7 +23,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 8px;
+}
+
+.buttons button::before,
+.buttons button::after,
+.buttons button span,
+.buttons button span::before,
+.buttons button span::after,
+.buttons button p,
+.buttons button p::before,
+.buttons button p::after {
+  border-radius: inherit;
 }
 
 .buttons button:before,
@@ -68,13 +78,11 @@
   background-color: var(--primary);
   transition: all 0.3s cubic-bezier(0.35, 0.1, 0.25, 1);
 }
-
 .buttons button span:before {
   right: 0;
   top: 0;
   transition: all 0.5s cubic-bezier(0.35, 0.1, 0.25, 1);
 }
-
 .buttons button span:after {
   left: 0;
   bottom: 0;
@@ -83,10 +91,12 @@
 .buttons button p {
   padding: 0;
   margin: 0;
+  overflow: hidden;
   transition: all 0.4s cubic-bezier(0.35, 0.1, 0.25, 1);
   position: absolute;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
 }
 
 .buttons button p:before,
@@ -144,7 +154,6 @@
   top: -50%;
   transform: rotate(5deg);
 }
-
 .buttons button.start p:after {
   color: white;
   transition: all 0s ease;
@@ -173,8 +182,4 @@
 .buttons button:active {
   outline: none;
   border: none;
-}
-
-.buttons button:focus {
-  outline: 0;
 }

@@ -1,21 +1,21 @@
 void imprimirLinha() {
-  system.out.print("====================\n");
+  print("====================\n");
 }
 
 void saudacao(string nome) {
-  system.out.print("Ola, ");
-  system.out.print(nome);
-  system.out.print("!\n");
+  print("Ola, ");
+  print(nome);
+  print("!\n");
 }
 
 void mostrarNumero(int n) {
-  system.out.print("Numero: ");
-  system.out.print(n);
-  system.out.print("\n");
+  print("Numero: ");
+  print(n);
+  print("\n");
 }
 
 int main() {
-  system.out.print("=== Teste de Funcoes Void ===\n");
+  print("=== Teste de Funcoes Void ===\n");
 
   imprimirLinha();
 
@@ -29,5 +29,5 @@ int main() {
 
   imprimirLinha();
 
-  system.out.print("Teste concluido!\n");
+  print("Teste concluido!\n");
 }

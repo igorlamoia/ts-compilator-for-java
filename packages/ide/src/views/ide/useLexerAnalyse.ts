@@ -7,11 +7,13 @@ import { useState } from "react";
 import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
+import { useKeywords } from "@/contexts/KeywordContext";
 
 export function useLexerAnalyse() {
   const { showToast } = useToast();
   // const [isLoading, setIsLoading] = useState(false);
   const { getEditorCode, showLineIssues, cleanIssues } = useEditor();
+  const { buildKeywordMap } = useKeywords();
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
     {} as TLexerAnalyseData
   );
@@ -24,6 +26,7 @@ export function useLexerAnalyse() {
       cleanIssues();
       const { data } = await api.post<TLexerAnalyseData>("/lexer", {
         sourceCode: code,
+        keywordMap: buildKeywordMap(),
       });
       const issues = [...data.warnings, ...data.infos];
       setAnalyseData(data);

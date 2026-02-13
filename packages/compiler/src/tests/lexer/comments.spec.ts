@@ -6,7 +6,7 @@ describe("Lexer", () => {
   describe("Comment Cases", () => {
     it("should scan tokens ignoring multi-line comments", () => {
       // Arrange
-      const source = `int x = 0;\n/* lorem ipsum dolor sit amet, consectetur adipiscing elit. */\nfloat pi = 3.14;\n/* lorem\nipsum */int y = 45;/*lorem ipsum dolor sit amet, consectetur adipiscing elit.\nstring s = /*Igor says "Olá,\\n Mundo!";\nif (x > y) {\n    // another comment\n    system.out.print("x é maior que y");\n}*/float var = 2;`;
+      const source = `int x = 0;\n/* lorem ipsum dolor sit amet, consectetur adipiscing elit. */\nfloat pi = 3.14;\n/* lorem\nipsum */int y = 45;/*lorem ipsum dolor sit amet, consectetur adipiscing elit.\nstring s = /*Igor says "Olá,\\n Mundo!";\nif (x > y) {\n    // another comment\n    print("x é maior que y");\n}*/float var = 2;`;
       const expected = [
         new Token(21, "int", 1, 1),
         new Token(43, "x", 1, 5),

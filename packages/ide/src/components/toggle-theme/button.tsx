@@ -1,14 +1,15 @@
 import styles from "./style.module.css";
+import { cn } from "@/lib/utils";
 type ButtonProps = React.ButtonHTMLAttributes<HTMLInputElement> & {
   className?: string;
   checked?: boolean;
 };
 
-export default function Button({ ...props }: ButtonProps) {
+export default function Button({ className, ...props }: ButtonProps) {
   return (
     <label className={styles["bb8-toggle"]}>
       <input
-        className={styles["bb8-toggle__checkbox"]}
+        className={cn(styles["bb8-toggle__checkbox"], className)}
         type="checkbox"
         {...props}
       />

@@ -11,18 +11,26 @@
   "dependencies": {
     "@babel/preset-typescript": "^7.26.0",
     "@monaco-editor/loader": "^1.4.0",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.4",
     "@react-three/fiber": "^9.3.0",
     "@ts-compilator-for-java/compiler": "1.0.0",
     "axios": "^1.7.7",
     "babel-loader": "^9.2.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
     "monaco-editor": "^0.52.0",
+    "motion": "^12.34.0",
     "next": "^16.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "sass": "^1.80.6",
-    "three": "^0.179.1",
-    "xterm": "^5.3.0"
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
+    "three": "^0.179.1"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -1,8 +1,10 @@
 "use client";
-import Button from "./button";
-import { useTheme } from "@/contexts/ThemeContext";
+import { AnimatedThemeToggler } from "../ui/animated-theme-toggler";
 
 export const ToggleTheme = () => {
-  const { darkMode, toggleDarkMode } = useTheme();
-  return <Button checked={darkMode} onClick={toggleDarkMode} />;
+  return (
+    <div>
+      <AnimatedThemeToggler duration={1000} />
+    </div>
+  );
 };
