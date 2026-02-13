@@ -1,6 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import { FileCodeIcon, MonitorIcon, TerminalIcon } from "lucide-react";
+import {
+  FileCodeIcon,
+  MonitorIcon,
+  TerminalIcon,
+  SettingsIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -52,43 +57,21 @@ const DATA = {
 
 interface FooterProps {
   toggleTerminal: () => void;
-  isTerminalOpen: boolean;
+  toggleKeywordCustomizer: () => void;
 }
 
-export function Footer({ toggleTerminal, isTerminalOpen }: FooterProps) {
+export function Footer({
+  toggleTerminal,
+  toggleKeywordCustomizer,
+}: FooterProps) {
   return (
     <>
-      <div className={`${isTerminalOpen ? "mt-[8rem]" : "mt-0"}`} />
-      <footer className="fixed bottom-3 left-0 right-0 z-50 flex justify-center">
+      <footer className="pointer-events-none fixed bottom-3 left-0 right-0 z-50 flex justify-center">
         <TooltipProvider>
           <Dock
             direction="middle"
-            className="bg-white/90 dark:bg-neutral-900/30 border-neutral-200 dark:border-neutral-700 backdrop-blur-sm"
+            className="pointer-events-auto bg-white/90 dark:bg-neutral-900/30 border-neutral-200 dark:border-neutral-700 backdrop-blur-sm"
           >
-            {DATA.navbar.map((item) => (
-              <DockIcon key={item.label}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={item.label}
-                      className={cn(
-                        buttonVariants({ variant: "ghost", size: "icon" }),
-                        "size-12 rounded-full",
-                      )}
-                    >
-                      <item.icon className="size-4" />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                    <p>{item.label}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </DockIcon>
-            ))}
-            <Separator orientation="vertical" className="h-full" />
             {Object.entries(DATA.contact.social).map(([name, social]) => (
               <DockIcon key={name}>
                 <Tooltip>
@@ -113,6 +96,25 @@ export function Footer({ toggleTerminal, isTerminalOpen }: FooterProps) {
               </DockIcon>
             ))}
             <Separator orientation="vertical" className="h-full" />
+            <DockIcon>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={toggleKeywordCustomizer}
+                    aria-label="Settings"
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "icon" }),
+                      "size-12 rounded-full",
+                    )}
+                  >
+                    <SettingsIcon className="size-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                  <p>Personalização</p>
+                </TooltipContent>
+              </Tooltip>
+            </DockIcon>
             <DockIcon>
               <Tooltip>
                 <TooltipTrigger asChild>

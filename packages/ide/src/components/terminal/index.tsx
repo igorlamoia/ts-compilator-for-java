@@ -161,6 +161,14 @@ export default function TerminalView({
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // console.log('mama aqui victor');
+    // e.preventDefault();
+    // e.stopPropagation();
+    // if (e.ctrlKey && e.key.toLowerCase() === "j") {
+    //   console.log('Custom save triggered');
+
+    //   // Your custom logic here
+    // }
     if (e.key === "Enter") {
       const command = currentInput;
       if (command.trim() !== "") {

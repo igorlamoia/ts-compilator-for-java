@@ -18,9 +18,9 @@ const geistMono = localFont({
 
 export default function Home() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-
+  const [isOpenKeywordCustomizer, setIsOpenKeywordCustomizer] = useState(false);
   return (
-    <>
+    <div className="relative overflow-hidden">
       <SpaceBackground />
       <main
         className={`${geistSans.variable} ${geistMono.variable}
@@ -33,13 +33,17 @@ export default function Home() {
           <IDEFunction
             isTerminalOpen={isTerminalOpen}
             setIsTerminalOpen={setIsTerminalOpen}
+            isOpenKeywordCustomizer={isOpenKeywordCustomizer}
+            setIsOpenKeywordCustomizer={setIsOpenKeywordCustomizer}
           />
         </section>
       </main>
       <Footer
         toggleTerminal={() => setIsTerminalOpen((old) => !old)}
-        isTerminalOpen={isTerminalOpen}
+        toggleKeywordCustomizer={() =>
+          setIsOpenKeywordCustomizer((old) => !old)
+        }
       />
-    </>
+    </div>
   );
 }

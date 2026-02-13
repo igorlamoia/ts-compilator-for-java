@@ -13,16 +13,28 @@ interface IDETerminalProps {
   isTerminalOpen: boolean;
 }
 
+export interface IDEFunctionProps extends IDETerminalProps {
+  isOpenKeywordCustomizer: boolean;
+  setIsOpenKeywordCustomizer: (value: boolean) => void;
+}
+import { KeywordCustomizer } from "@/components/keyword-customizer";
+
 export function IDEFunction({
   isTerminalOpen,
   setIsTerminalOpen,
-}: IDETerminalProps) {
+  isOpenKeywordCustomizer,
+  setIsOpenKeywordCustomizer,
+}: IDETerminalProps & IDEFunctionProps) {
   return (
     <EditorProvider>
       <KeywordProvider>
         <IDETerminal
           isTerminalOpen={isTerminalOpen}
           setIsTerminalOpen={setIsTerminalOpen}
+        />
+        <KeywordCustomizer
+          isOpen={isOpenKeywordCustomizer}
+          setIsOpen={setIsOpenKeywordCustomizer}
         />
       </KeywordProvider>
     </EditorProvider>
