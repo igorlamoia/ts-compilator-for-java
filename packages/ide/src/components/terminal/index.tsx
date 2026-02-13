@@ -69,21 +69,28 @@ export default function TerminalView({
     if (intermediateCode.length === 0) return;
 
     setIsExecuting(true);
+    let outputBuffer = "";
 
     const inputPromise = (): Promise<string> =>
       new Promise((resolve) => {
+        if (outputBuffer.length > 0) {
+          addLine(outputBuffer, "output");
+          outputBuffer = "";
+        }
         resolveInput.current = resolve;
       });
 
     const io = {
       stdout: (msg: string) => {
-        const cleanMsg = msg.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-        const parts = cleanMsg.split("\n");
-        parts.forEach((part, i) => {
-          if (part.trim() !== "" || i > 0) {
-            addLine(part, "output");
+        const normalizedMsg = msg.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        for (const char of normalizedMsg) {
+          if (char === "\n") {
+            addLine(outputBuffer, "output");
+            outputBuffer = "";
+          } else {
+            outputBuffer += char;
           }
-        });
+        }
       },
       stdin: inputPromise,
     };
@@ -96,10 +103,18 @@ export default function TerminalView({
 
     try {
       await interpreter.execute({ current: "" });
+      if (outputBuffer.length > 0) {
+        addLine(outputBuffer, "output");
+        outputBuffer = "";
+      }
       addLine("", "output");
       addLine("🟢  Finalizando execução do código...", "success");
       addLine("", "output");
     } catch (e: unknown) {
+      if (outputBuffer.length > 0) {
+        addLine(outputBuffer, "output");
+        outputBuffer = "";
+      }
       if (e instanceof Error) {
         addLine(`❌ Erro: ${e.message}`, "error");
       } else {
