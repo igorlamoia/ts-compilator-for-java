@@ -40,6 +40,8 @@ type KeywordContextType = {
     mappings: KeywordMapping[];
     /** Atualiza a palavra customizada de uma keyword original */
     updateKeyword: (original: string, custom: string) => void;
+    /** Substitui todos os mapeamentos de uma vez */
+    replaceKeywords: (nextMappings: KeywordMapping[]) => void;
     /** Restaura todos os mapeamentos para os valores padrão */
     resetKeywords: () => void;
     /** Retorna o keywordMap final (custom word → token ID) para enviar ao Lexer */
@@ -56,7 +58,8 @@ export function useKeywords() {
     return useContext(KeywordContext);
 }
 
-const STORAGE_KEY = "java--keyword-mappings";
+const STORAGE_KEY = "java-keyword-mappings";
+const LEGACY_STORAGE_KEY = "java--keyword-mappings";
 
 function getDefaultMappings(): KeywordMapping[] {
     return ORIGINAL_KEYWORDS.map((word) => ({
@@ -69,7 +72,9 @@ function getDefaultMappings(): KeywordMapping[] {
 function loadMappings(): KeywordMapping[] {
     if (typeof window === "undefined") return getDefaultMappings();
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored =
+            localStorage.getItem(STORAGE_KEY) ??
+            localStorage.getItem(LEGACY_STORAGE_KEY);
         if (!stored) return getDefaultMappings();
         const parsed = JSON.parse(stored) as KeywordMapping[];
         // Validar que contém todas as keywords esperadas
@@ -85,21 +90,29 @@ function loadMappings(): KeywordMapping[] {
     }
 }
 
+function persistMappings(mappings: KeywordMapping[]) {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
+}
+
 export function KeywordProvider({ children }: { children: ReactNode }) {
     const [mappings, setMappings] = useState<KeywordMapping[]>(getDefaultMappings);
+    const [isHydrated, setIsHydrated] = useState(false);
     const { monacoRef, retokenize } = useEditor();
 
     // Carregar do localStorage após montar no client
     useEffect(() => {
-        setMappings(loadMappings());
+        const loadedMappings = loadMappings();
+        setMappings(loadedMappings);
+        persistMappings(loadedMappings);
+        setIsHydrated(true);
     }, []);
 
     // Persistir no localStorage quando mudar
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
-        }
-    }, [mappings]);
+        if (!isHydrated) return;
+        persistMappings(mappings);
+    }, [mappings, isHydrated]);
 
     // Atualizar syntax highlighting do Monaco quando as keywords mudarem
     useEffect(() => {
@@ -137,6 +150,10 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         []
     );
 
+    const replaceKeywords = useCallback((nextMappings: KeywordMapping[]) => {
+        setMappings(nextMappings);
+    }, []);
+
     const resetKeywords = useCallback(() => {
         setMappings(getDefaultMappings());
     }, []);
@@ -154,6 +171,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
             value={{
                 mappings,
                 updateKeyword,
+                replaceKeywords,
                 resetKeywords,
                 buildKeywordMap,
                 validateKeyword,
