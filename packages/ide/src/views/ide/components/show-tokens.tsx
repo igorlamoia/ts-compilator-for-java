@@ -1,6 +1,5 @@
 import { MainButton } from "@/components/buttons/main";
 import { TokenCard } from "@/components/token-card";
-import { AnimatedList } from "@/components/ui/animated-list";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { TLexerAnalyseData } from "@/pages/api/lexer";
 import { Classification } from "@/utils/compiler/classification";
@@ -51,8 +50,9 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                 <motion.div
                   key={token.line + "c" + token.column + "sequence"}
                   initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.04 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ duration: 0.3 }}
                   style={{ flex: "1 1 20%" }}
                 >
                   <TokenCard token={token} styles={styles} />
@@ -89,7 +89,8 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                       <motion.div
                         key={token.line + "c" + token.column + "horizontaly"}
                         initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.25 }}
                         transition={{ duration: 0.3, delay: index * 0.04 }}
                         style={{ flex: "1 1 20%" }}
                       >
@@ -108,7 +109,8 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                       <motion.div
                         key={token.line + "c" + token.column + "verticaly"}
                         initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.25 }}
                         transition={{ duration: 0.3, delay: index * 0.04 }}
                         style={{ flex: "1 1 20%" }}
                       >
