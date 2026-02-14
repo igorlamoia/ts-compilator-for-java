@@ -1,6 +1,5 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useKeywords, KeywordMapping } from "@/contexts/KeywordContext";
-import { z } from "zod";
 
 export function KeywordCustomizer({
   isOpen,
@@ -9,7 +8,7 @@ export function KeywordCustomizer({
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
 }) {
-  const { mappings, replaceKeywords } = useKeywords();
+  const { mappings, replaceKeywords, validateKeyword } = useKeywords();
   const [draftMappings, setDraftMappings] =
     useState<KeywordMapping[]>(mappings);
   const [currentStep, setCurrentStep] = useState(0);
@@ -59,35 +58,7 @@ export function KeywordCustomizer({
     custom: string,
     mappingsToValidate: KeywordMapping[] = draftMappings,
   ) => {
-    const keywordSchema = z
-      .object({
-        original: z.string(),
-        custom: z
-          .string()
-          .trim()
-          .min(1, "A palavra não pode ser vazia.")
-          .regex(
-            /^[a-zA-Z]+$/,
-            "Use apenas letras (sem números, espaços ou símbolos).",
-          ),
-      })
-      .superRefine((value, ctx) => {
-        const conflict = mappingsToValidate.find(
-          (m) => m.original !== value.original && m.custom === value.custom,
-        );
-        if (conflict) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `"${value.custom}" já está sendo usada para "${conflict.original}".`,
-          });
-        }
-      });
-
-    const result = keywordSchema.safeParse({ original, custom });
-    if (!result.success) {
-      return result.error.issues[0]?.message ?? "Valor inválido.";
-    }
-    return null;
+    return validateKeyword(original, custom, mappingsToValidate);
   };
 
   const handleChange = (value: string) => {
