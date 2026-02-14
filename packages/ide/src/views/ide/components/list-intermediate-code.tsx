@@ -1,5 +1,7 @@
 import { TIntermediateCodeData } from "@/pages/api/intermediator";
+import { useRuntimeError } from "@/contexts/RuntimeErrorContext";
 import { motion } from "motion/react";
+import { useEffect } from "react";
 // import Instructions3D from "./matrix";
 
 export function ListIntermediateCode({
@@ -26,13 +28,46 @@ const Mixed = ({
 }: {
   instructions: TIntermediateCodeData["instructions"];
 }) => {
+  const { runtimeErrorInstructionPointer } = useRuntimeError();
+
+  useEffect(() => {
+    if (runtimeErrorInstructionPointer === null) return;
+    const target = document.getElementById(
+      `instruction-${runtimeErrorInstructionPointer + 1}`,
+    );
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.focus();
+  }, [runtimeErrorInstructionPointer]);
+
+  const getContainerClassName = (index: number) => {
+    if (runtimeErrorInstructionPointer === null)
+      return "bg-white/90 text-slate-900 dark:bg-slate-950/80 dark:text-slate-100 border border-cyan-400 shadow-cyan-500/40";
+    if (index < runtimeErrorInstructionPointer)
+      return "bg-yellow-50/95 text-yellow-950 dark:bg-yellow-950/40 dark:text-yellow-100 border border-yellow-400 shadow-yellow-500/30";
+    if (index === runtimeErrorInstructionPointer)
+      return "bg-red-50/95 text-red-950 dark:bg-red-950/40 dark:text-red-100 border border-red-500 shadow-red-500/40";
+    return "bg-white/90 text-slate-900 dark:bg-slate-950/80 dark:text-slate-100 border border-cyan-400 shadow-cyan-500/40";
+  };
+
+  const getDotClassName = (index: number) => {
+    if (runtimeErrorInstructionPointer === null)
+      return "bg-cyan-500 shadow-cyan-400";
+    if (index < runtimeErrorInstructionPointer)
+      return "bg-yellow-500 shadow-yellow-400";
+    if (index === runtimeErrorInstructionPointer) return "bg-red-500 shadow-red-400";
+    return "bg-cyan-500 shadow-cyan-400";
+  };
+
   return (
     <div className="mt-4">
       {instructions && instructions.length > 0 ? (
         <div className="relative border-l-4 border-cyan-500 ml-6 space-y-10">
           {instructions.map((instruction, index) => (
             <motion.div
-              key={`instruction-${index}`}
+              key={`instruction-${index + 1}`}
+              id={`instruction-${index + 1}`}
+              tabIndex={-1}
               className="relative pl-6 z-0 hover:z-40"
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -44,15 +79,14 @@ const Mixed = ({
             >
               {/* 🔵 Ponto neon na linha */}
               <span
-                className="absolute -left-[11px] top-6 w-5 h-5 bg-cyan-500
-                           rounded-full shadow-lg shadow-cyan-400 animate-pulse"
+                className={`absolute -left-[11px] top-6 w-5 h-5 rounded-full shadow-lg animate-pulse ${getDotClassName(index)}`}
               ></span>
 
               <div
-                className="bg-white/90 text-slate-900 dark:bg-slate-950/80 dark:text-slate-100 border border-cyan-400
-                       rounded-xl p-5 shadow-lg shadow-cyan-500/40
+                className={`${getContainerClassName(index)}
+                       rounded-xl p-5 shadow-lg
                        hover:scale-70 hover:translate-x-4
-                       transition-transform duration-300 font-mono"
+                       transition-transform duration-300 font-mono`}
               >
                 <IntermediateCard instruction={instruction} index={index} />
               </div>
