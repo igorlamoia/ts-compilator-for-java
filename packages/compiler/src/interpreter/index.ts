@@ -37,7 +37,7 @@ export class Interpreter {
     io: {
       stdout: (msg: string) => void;
       stdin: () => Promise<string>;
-    }
+    },
   ) {
     this.stdout = io.stdout;
     this.stdin = io.stdin;
@@ -85,18 +85,18 @@ export class Interpreter {
 
           if (typeof val1 !== "number" || typeof val2 !== "number")
             throw new Error(
-              `Arithmetic operation '${op}' requires numeric operands.`
+              `Arithmetic operation '${op}' requires numeric operands. between '${val1}' and '${val2}'`,
             );
 
           this.setVariable(
             result,
-            makeOperation(op as TArithmetics, val1, val2)
+            makeOperation(op as TArithmetics, val1, val2),
           );
         } else {
           const val1 = this.parseOrGetVariableWithScope(operand1);
           if (typeof val1 !== "number")
             throw new Error(
-              `Unary arithmetic operation '${op}' requires a numeric operand.`
+              `Unary arithmetic operation '${op}' requires a numeric operand. Received '${val1}'`,
             );
 
           if (op === "+") this.setVariable(result, +val1);
@@ -107,7 +107,9 @@ export class Interpreter {
       } else if (op === "unary+" || op === "unary-") {
         const val1 = this.parseOrGetVariableWithScope(operand1);
         if (typeof val1 !== "number")
-          throw new Error(`Unary operation '${op}' requires numeric operand.`);
+          throw new Error(
+            `Unary operation '${op}' requires numeric operand. Received '${val1}'`,
+          );
         this.setVariable(result, op === "unary+" ? +val1 : -val1);
         this.instructionPointer++;
       } else if (LOGICALS.includes(op as TLogical)) {
@@ -128,7 +130,7 @@ export class Interpreter {
         const val2 = this.parseOrGetVariableWithScope(operand2);
         this.setVariable(
           result,
-          makeRelation(op as TRelational, val1 as number, val2 as number)
+          makeRelation(op as TRelational, val1 as number, val2 as number),
         );
         this.instructionPointer++;
       } else if (op === "=") {
@@ -141,7 +143,9 @@ export class Interpreter {
         const labelFalse = operand2;
 
         if (typeof labelTrue !== "string" || typeof labelFalse !== "string")
-          throw new Error(`IF requires label names as operand1/operand2`);
+          throw new Error(
+            `IF requires label names as operand1/operand2. Received '${labelTrue}' and '${labelFalse}'`,
+          );
 
         if (Boolean(conditionVal))
           this.instructionPointer = this.getLabelIndex(labelTrue);
@@ -153,7 +157,7 @@ export class Interpreter {
         const callType = result.toUpperCase();
         if (callType === "PRINT") {
           let output = String(
-            operand1 ?? this.parseOrGetVariableWithScope(operand2)
+            operand1 ?? this.parseOrGetVariableWithScope(operand2),
           );
           // Remove surrounding double quotes from string literals
           if (output.startsWith('"') && output.endsWith('"')) {
@@ -163,7 +167,9 @@ export class Interpreter {
           this.instructionPointer++;
         } else if (callType === "SCAN") {
           if (typeof operand2 !== "string")
-            throw new Error(`SCAN requires a string variable name as operand1`);
+            throw new Error(
+              `SCAN requires a string variable name as operand1. Received '${operand2}'`,
+            );
 
           const userInput = await this.stdin();
           console.log("userInput", userInput);
@@ -179,14 +185,16 @@ export class Interpreter {
           const returnVar = operand2 as string;
 
           // Avaliar argumentos no escopo atual
-          const evaluatedArgs = args ? args.map(arg => this.parseOrGetVariableWithScope(arg)) : [];
+          const evaluatedArgs = args
+            ? args.map((arg) => this.parseOrGetVariableWithScope(arg))
+            : [];
 
           // Criar novo frame para a função
           const frame: CallFrame = {
             returnAddress: this.instructionPointer + 1,
             returnVariable: returnVar,
             localScope: new Map<string, unknown>(),
-            parameters: []
+            parameters: [],
           };
 
           this.callStack.push(frame);
@@ -202,7 +210,7 @@ export class Interpreter {
       } else if (op === "DECLARE") {
         if (typeof result !== "string")
           throw new Error(
-            `DECLARE requires a string variable name as result`
+            `DECLARE requires a string variable name as result. Received '${result}'`,
           );
 
         // Se estivermos em uma função e houver argumentos avaliados, atribuir aos parâmetros
@@ -244,13 +252,16 @@ export class Interpreter {
         this.instructionPointer = frame.returnAddress;
       } else
         throw new Error(
-          `Unknown operation '${op}' at Instruction Pointer = ${this.instructionPointer}`
+          `Unknown operation '${op}' at Instruction Pointer = ${this.instructionPointer}`,
         );
     }
   }
 
   private getLabelIndex(label: string): number {
-    if (!this.labels.has(label)) throw new Error(`Label '${label}' not found!`);
+    if (!this.labels.has(label))
+      throw new Error(
+        `Label '${label}' not found! Available labels: ${[...this.labels.keys()].join(", ")}`,
+      );
     return this.labels.get(label)!;
   }
 
@@ -282,7 +293,9 @@ export class Interpreter {
       return this.variables.get(name);
     }
 
-    throw new Error(`Variable '${name}' not found`);
+    throw new Error(
+      `Variable '${name}' not found. Available variables: ${[...this.variables.keys()].join(", ")}`,
+    );
   }
 
   private setVariable(name: string, value: unknown): void {
