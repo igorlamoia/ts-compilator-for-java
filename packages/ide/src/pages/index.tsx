@@ -24,7 +24,7 @@ export default function Home() {
       <SpaceBackground />
       <main
         className={`${geistSans.variable} ${geistMono.variable}
-          min-h-screen p-6 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]
+          min-h-screen p-6 gap-2 sm:p-8 font-(family-name:--font-geist-sans)
           z-100 relative
           `}
       >

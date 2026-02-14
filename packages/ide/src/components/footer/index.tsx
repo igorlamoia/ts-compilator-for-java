@@ -66,7 +66,7 @@ export function Footer({
 }: FooterProps) {
   return (
     <>
-      <footer className="pointer-events-none fixed bottom-3 left-0 right-0 z-50 flex justify-center">
+      <footer className="pointer-events-none fixed bottom-3 left-0 right-0 z-100 isolate flex justify-center">
         <TooltipProvider>
           <Dock
             direction="middle"
@@ -83,7 +83,7 @@ export function Footer({
                       aria-label={social.name}
                       className={cn(
                         buttonVariants({ variant: "ghost", size: "icon" }),
-                        "size-12 rounded-full",
+                        "size-12 rounded-full cursor-pointer",
                       )}
                     >
                       <social.icon className="size-4" />
@@ -104,7 +104,7 @@ export function Footer({
                     aria-label="Settings"
                     className={cn(
                       buttonVariants({ variant: "ghost", size: "icon" }),
-                      "size-12 rounded-full",
+                      "size-12 rounded-full cursor-pointer",
                     )}
                   >
                     <SettingsIcon className="size-4" />
@@ -123,7 +123,7 @@ export function Footer({
                     aria-label="Terminal"
                     className={cn(
                       buttonVariants({ variant: "ghost", size: "icon" }),
-                      "size-12 rounded-full",
+                      "size-12 rounded-full cursor-pointer",
                     )}
                   >
                     <TerminalIcon className="size-4" />
