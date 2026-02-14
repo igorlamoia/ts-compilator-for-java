@@ -123,14 +123,27 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   };
 
   const cleanIssues = () => {
-    if (!editorInstanceRef?.current && monacoRef.current) return;
-    const model = editorInstanceRef.current!.getModel();
+    const editor = editorInstanceRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) return;
+
+    const model = editor.getModel();
     if (!model) return;
-    monacoRef.current!.editor.setModelMarkers(model, "owner", []);
-    // editorInstanceRef.current!.trigger("keyboard", "closeWidget", {});
+
+    const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+    const owners = [...new Set(markers.map((marker) => marker.owner).filter(Boolean))];
+
+    if (owners.length === 0) {
+      monaco.editor.setModelMarkers(model, "owner", []);
+    } else {
+      owners.forEach((owner) => monaco.editor.setModelMarkers(model, owner, []));
+    }
+
+    editor.trigger("keyboard", "closeMarkersNavigation", {});
   };
 
   const getEditorCode = () => {
+    cleanIssues();
     const code = editorInstanceRef.current?.getValue() ?? "";
     localStorage.setItem(SOURCE_CODE_STORAGE_KEY, code);
     return code;
