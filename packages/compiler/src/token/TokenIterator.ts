@@ -26,6 +26,10 @@ export class TokenIterator {
     return this.tokens[this.index];
   }
 
+  peekAt(offset: number): Token | undefined {
+    return this.tokens[this.index + offset];
+  }
+
   next(): Token {
     if (!this.hasNext()) throw new Error("No more tokens available.");
     return this.tokens[this.index++];

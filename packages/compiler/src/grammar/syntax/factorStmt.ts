@@ -23,6 +23,20 @@ export function factorStmt(iterator: TokenIterator): string {
       return functionCallExpr(iterator, identifier.lexeme);
     }
 
+    // Postfix increment: identifier++
+    if (
+      iterator.peek().type === TOKENS.ARITHMETICS.plus &&
+      iterator.peek().lexeme === "++"
+    ) {
+      iterator.consume(TOKENS.ARITHMETICS.plus, "++");
+      const previous = iterator.emitter.newTemp();
+      const incremented = iterator.emitter.newTemp();
+      iterator.emitter.emit("=", previous, identifier.lexeme, null);
+      iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
+      iterator.emitter.emit("=", identifier.lexeme, incremented, null);
+      return previous;
+    }
+
     // Caso contrário, é apenas uma variável
     return identifier.lexeme;
   }

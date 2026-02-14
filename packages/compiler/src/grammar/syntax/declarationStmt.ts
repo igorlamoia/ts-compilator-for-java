@@ -1,7 +1,7 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
-import { exprStmt } from "./exprStmt";
+import { emitAssignmentChain } from "./attributeStmt";
 
 /**
  * Parses a variable declaration statement and emits declaration instructions.
@@ -20,8 +20,7 @@ export function declarationStmt(iterator: TokenIterator): void {
 
     if (iterator.match(TOKENS.ASSIGNMENTS.equal)) {
       iterator.consume(TOKENS.ASSIGNMENTS.equal);
-      const valueResult = exprStmt(iterator); // Retorna o resultado da expressão
-      emitter.emit("=", varName, valueResult, null);
+      emitAssignmentChain(iterator, varName);
     }
 
     if (!iterator.match(TOKENS.SYMBOLS.comma)) break;

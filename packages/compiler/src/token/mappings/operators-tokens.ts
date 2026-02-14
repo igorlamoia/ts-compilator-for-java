@@ -3,10 +3,12 @@ import { TTokenMap } from ".";
 
 const { ARITHMETICS, ASSIGNMENTS, RELATIONALS, LOGICALS } = TOKENS;
 export const OPERATORS_TOKENS_MAP: TTokenMap = {
-  "+": (lexer) =>
+  "+": (lexer) => {
+    if (lexer.matchAndAdvance("+")) return lexer.addToken(ARITHMETICS.plus);
     lexer.addToken(
       lexer.matchAndAdvance("=") ? ASSIGNMENTS.plus_equal : ARITHMETICS.plus
-    ),
+    );
+  },
   "-": (lexer) =>
     lexer.addToken(
       lexer.matchAndAdvance("=") ? ASSIGNMENTS.minus_equal : ARITHMETICS.minus
