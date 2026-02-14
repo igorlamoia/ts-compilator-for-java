@@ -1,5 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
+import { IssueError } from "../../issue";
 import { exprStmt } from "./exprStmt";
 import { functionCallExpr } from "./functionCallExpr";
 
@@ -39,7 +40,9 @@ export function factorStmt(iterator: TokenIterator): string {
     return inner;
   }
 
-  throw new Error(
-    `Unexpected token "${token.lexeme}" at line ${token.line}, column ${token.column}.`
+  throw new IssueError(
+    `Unexpected token "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+    token.line,
+    token.column
   );
 }

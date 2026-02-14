@@ -1,5 +1,6 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { IssueError } from "../../issue";
 import { forStmt } from "./forStmt";
 import { blockStmt } from "./blockStmt";
 import { attributeStmt } from "./attributeStmt";
@@ -51,7 +52,11 @@ export function stmt(iterator: TokenIterator): void {
     return;
   }
 
-  throw new Error(`Unexpected statement: ${token.lexeme}`);
+  throw new IssueError(
+    `Unexpected statement: ${token.lexeme}`,
+    token.line,
+    token.column
+  );
 }
 
 function attrbuteStmtVariant(iterator: TokenIterator): void {

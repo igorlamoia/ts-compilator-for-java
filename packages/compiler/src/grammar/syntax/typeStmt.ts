@@ -1,5 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
+import { IssueError } from "../../issue";
 
 /**
  * Parses a type declaration: `int`, `float`, `string`, or optionally `void`.
@@ -16,8 +17,10 @@ export function typeStmt(iterator: TokenIterator, allowVoid: boolean = false): s
     : [int, float, string];
 
   if (!validTypes.includes(token.type)) {
-    throw new Error(
-      `Unexpected type "${token.lexeme}" at line ${token.line}, column ${token.column}.`
+    throw new IssueError(
+      `Unexpected type "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+      token.line,
+      token.column
     );
   }
 
