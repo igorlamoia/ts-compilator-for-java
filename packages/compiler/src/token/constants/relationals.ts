@@ -11,7 +11,7 @@ export const RELATIONALS = {
 
 export const RELATIONALS_STYLE = {
   text: "text-yellow-500",
-  bg: "bg-yellow-100",
+  bg: "bg-yellow-100 dark:bg-amber-900/55",
   border: "border-yellow-500",
   transform: "hover:bg-yellow-200",
 };

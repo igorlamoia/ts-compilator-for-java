@@ -16,7 +16,7 @@ export const RESERVEDS = {
 
 export const RESERVEDS_STYLE = {
   text: "text-blue-500",
-  bg: "bg-blue-100",
+  bg: "bg-blue-100 dark:bg-sky-900/55",
   border: "border-blue-500",
   transform: "hover:bg-blue-200",
 };

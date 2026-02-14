@@ -28,29 +28,52 @@ export function TokenCard({ token, styles }: TokenCardProps) {
   return (
     <div
       className={`
-        ${styles.bg}
-        bg-opacity-80
+        group
         relative
-        w-full min-w-64 shadow-sm  rounded-sm p-4
+        isolate
+        w-full min-w-64
         cursor-pointer
-        ${styles.border} text-${styles.text} ${styles.transform}`}
+        overflow-hidden
+        rounded-xl
+        border
+        border-white/35 dark:border-white/20
+        ${styles.bg}
+        bg-opacity-45
+        p-4
+        shadow-lg shadow-black/5 dark:shadow-black/50
+        backdrop-blur-md
+        transition-all duration-300
+        hover:-translate-y-0.5
+        hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/65
+        hover:bg-opacity-60
+        ${styles.border}
+      `}
       onClick={handleTokenClick}
       style={{ flex: "1 1 20%", height: "100%" }}
     >
-      <div className={`${styles.text} mx-auto mb-2 text-center`}>
-        <strong>{token.custom}</strong>
+      <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-white/35 to-white/0 dark:from-white/14 dark:to-transparent" />
+      <div className="pointer-events-none absolute -top-10 right-8 h-24 w-24 rounded-full bg-white/30 blur-2xl dark:bg-cyan-200/15" />
+      <div className="pointer-events-none absolute -top-14 left-8 h-36 w-36 rounded-full bg-white/60 opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-cyan-100/30" />
+
+      <div className={`relative z-10 mx-auto mb-3 text-center ${styles.text}`}>
+        <strong className="tracking-wide">{token.custom}</strong>
       </div>
-      <div className="text-slate-600 grid grid-cols-12 text-sm">
-        <div className="col-span-5 ">
+      <div className="relative z-10 grid grid-cols-12 text-sm text-slate-700 dark:text-slate-100">
+        <div className="col-span-5">
           <strong>Line: </strong> <span>{token.line}</span>
         </div>
         <div
-          // absolute top-[-10] left-[108]
-
           className={`
             col-span-2
             text-center
-          rounded-md ${styles.bg} bg-opacity-80 py-0 px-2.5 border border-transparent text-sm text-slate-600 transition-all shadow-sm`}
+            rounded-full
+            border border-white/35 dark:border-white/20
+            bg-white/35 dark:bg-slate-950/60
+            px-2.5 py-0.5
+            text-sm
+            shadow-sm
+            backdrop-blur-sm
+          `}
         >
           <span className={styles.text}>
             <strong>{token.type}</strong>
@@ -61,7 +84,17 @@ export function TokenCard({ token, styles }: TokenCardProps) {
         </div>
       </div>
       <div
-        className={`ml-auto rounded-md ${styles.bg} mt-2 bg-opacity-30 py-1 px-2.5 border border-transparent text-sm text-slate-600 transition-all shadow-sm`}
+        className={`
+          relative z-10 mt-3
+          rounded-lg
+          border border-white/35 dark:border-white/20
+          bg-white/30 dark:bg-slate-950/55
+          px-2.5 py-1.5
+          text-sm
+          text-slate-700 dark:text-slate-100
+          shadow-sm
+          backdrop-blur-sm
+        `}
       >
         <strong>Lexeme: </strong>
         <span className={styles.text} style={{ whiteSpace: "pre-wrap" }}>

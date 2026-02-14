@@ -9,7 +9,7 @@ export const LITERALS = {
 
 export const LITERALS_STYLE = {
   text: "text-orange-500",
-  bg: "bg-orange-100",
+  bg: "bg-orange-100 dark:bg-orange-900/55",
   border: "border-orange-500",
   transform: "hover:bg-orange-200",
 };

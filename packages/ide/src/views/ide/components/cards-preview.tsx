@@ -12,19 +12,25 @@ type TTest = {
 };
 
 export function CardsPreview({ allFormattedTokens }: TTest) {
+  // Use higher repeat count for seamless infinite scrolling
+  const repeatCount = 10;
+
   return (
     <div
-      className="[--duration:25s] relative flex w-full flex-col items-center justify-center overflow-hidden py-6"
-      style={{
-        WebkitMaskImage:
-          "linear-gradient(to right, transparent, black 10%, black 90%, transparent), linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
-        WebkitMaskComposite: "source-in",
-        maskImage:
-          "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-      }}
+      className="relative flex w-full flex-col items-center justify-center overflow-hidden py-6"
+      style={
+        {
+          WebkitMaskImage:
+            "linear-gradient(to right, transparent, black 10%, black 90%, transparent), linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+          WebkitMaskComposite: "source-in",
+          maskImage:
+            "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+          "--duration": "30s",
+        } as React.CSSProperties
+      }
     >
       <div>
-        <Marquee pauseOnHover repeat={3} className="[--duration:25s]">
+        <Marquee pauseOnHover repeat={repeatCount}>
           {allFormattedTokens.slice(0, 3).map(({ token, info }) => (
             <div
               key={token.line + "c" + token.column + "marquee1"}
@@ -34,8 +40,8 @@ export function CardsPreview({ allFormattedTokens }: TTest) {
             </div>
           ))}
         </Marquee>
-        <Marquee pauseOnHover reverse repeat={3} className="[--duration:30s]">
-          {allFormattedTokens.slice(3, 6).map(({ token, info: { styles } }) => (
+        <Marquee pauseOnHover reverse repeat={repeatCount}>
+          {allFormattedTokens.slice(-3).map(({ token, info: { styles } }) => (
             <div
               key={token.line + "c" + token.column + "marquee2"}
               className="mx-2 min-w-64"

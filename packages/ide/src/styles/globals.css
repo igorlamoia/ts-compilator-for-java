@@ -38,7 +38,10 @@
     typewriter 2s steps(11) forwards, blink 1s steps(11) infinite 2s;
   --animate-meteor: meteor 5s linear infinite;
   --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-marquee-reverse: marquee var(--duration) linear infinite reverse;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-marquee-vertical-reverse: marquee-vertical var(--duration) linear
+    infinite reverse;
   --animate-blink-cursor: blink-cursor 1.2s step-end infinite;
 
   @keyframes typewriter {
@@ -80,20 +83,20 @@
   }
 
   @keyframes marquee {
-    from {
+    0% {
       transform: translateX(0);
     }
-    to {
-      transform: translateX(calc(-100% - var(--gap)));
+    100% {
+      transform: translateX(calc(-100% - 1rem));
     }
   }
 
   @keyframes marquee-vertical {
-    from {
+    0% {
       transform: translateY(0);
     }
-    to {
-      transform: translateY(calc(-100% - var(--gap)));
+    100% {
+      transform: translateY(calc(-100% - 1rem));
     }
   }
 
@@ -126,8 +129,16 @@
     animation: var(--animate-marquee);
   }
 
+  .animate-marquee-reverse {
+    animation: var(--animate-marquee-reverse);
+  }
+
   .animate-marquee-vertical {
     animation: var(--animate-marquee-vertical);
+  }
+
+  .animate-marquee-vertical-reverse {
+    animation: var(--animate-marquee-vertical-reverse);
   }
 
   .animate-blink-cursor {

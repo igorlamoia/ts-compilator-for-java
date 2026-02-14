@@ -42,27 +42,28 @@ const Mixed = ({
 
   const getContainerClassName = (index: number) => {
     if (runtimeErrorInstructionPointer === null)
-      return "bg-white/90 text-slate-900 dark:bg-slate-950/80 dark:text-slate-100 border border-cyan-400 shadow-cyan-500/40";
+      return "bg-cyan-50/65 text-slate-800 dark:bg-cyan-950/30 dark:text-slate-100 border border-cyan-200/70 dark:border-cyan-800/60 shadow-cyan-200/40 dark:shadow-cyan-950/35";
     if (index < runtimeErrorInstructionPointer)
-      return "bg-yellow-50/95 text-yellow-950 dark:bg-yellow-950/40 dark:text-yellow-100 border border-yellow-400 shadow-yellow-500/30";
+      return "bg-amber-50/65 text-amber-900 dark:bg-amber-950/30 dark:text-amber-100 border border-amber-200/70 dark:border-amber-800/60 shadow-amber-200/40 dark:shadow-amber-950/35";
     if (index === runtimeErrorInstructionPointer)
-      return "bg-red-50/95 text-red-950 dark:bg-red-950/40 dark:text-red-100 border border-red-500 shadow-red-500/40";
-    return "bg-white/90 text-slate-900 dark:bg-slate-950/80 dark:text-slate-100 border border-cyan-400 shadow-cyan-500/40";
+      return "bg-rose-50/70 text-rose-900 dark:bg-rose-950/35 dark:text-rose-100 border border-rose-300/75 dark:border-rose-800/70 shadow-rose-200/45 dark:shadow-rose-950/40";
+    return "bg-cyan-50/65 text-slate-800 dark:bg-cyan-950/30 dark:text-slate-100 border border-cyan-200/70 dark:border-cyan-800/60 shadow-cyan-200/40 dark:shadow-cyan-950/35";
   };
 
   const getDotClassName = (index: number) => {
     if (runtimeErrorInstructionPointer === null)
-      return "bg-cyan-500 shadow-cyan-400";
+      return "bg-cyan-400/90 shadow-cyan-300/70";
     if (index < runtimeErrorInstructionPointer)
-      return "bg-yellow-500 shadow-yellow-400";
-    if (index === runtimeErrorInstructionPointer) return "bg-red-500 shadow-red-400";
-    return "bg-cyan-500 shadow-cyan-400";
+      return "bg-amber-400/90 shadow-amber-300/70";
+    if (index === runtimeErrorInstructionPointer)
+      return "bg-rose-500/90 shadow-rose-400/70";
+    return "bg-cyan-400/90 shadow-cyan-300/70";
   };
 
   return (
     <div className="mt-4">
       {instructions && instructions.length > 0 ? (
-        <div className="relative border-l-4 border-cyan-500 ml-6 space-y-10">
+        <div className="relative ml-6 space-y-10 border-l-2 border-cyan-300/70 dark:border-cyan-700/60">
           {instructions.map((instruction, index) => (
             <motion.div
               key={`instruction-${index + 1}`}
@@ -77,16 +78,15 @@ const Mixed = ({
                 ease: "easeOut",
               }}
             >
-              {/* 🔵 Ponto neon na linha */}
               <span
-                className={`absolute -left-[11px] top-6 w-5 h-5 rounded-full shadow-lg animate-pulse ${getDotClassName(index)}`}
+                className={`absolute -left-[10px] top-6 h-4 w-4 rounded-full shadow-md ${getDotClassName(index)}`}
               ></span>
 
               <div
                 className={`${getContainerClassName(index)}
-                       rounded-xl p-5 shadow-lg
-                       hover:scale-70 hover:translate-x-4
-                       transition-transform duration-300 font-mono`}
+                       rounded-xl p-5 shadow-lg backdrop-blur-sm
+                       hover:translate-x-1.5 hover:-translate-y-0.5
+                       transition-all duration-300 font-mono`}
               >
                 <IntermediateCard instruction={instruction} index={index} />
               </div>
