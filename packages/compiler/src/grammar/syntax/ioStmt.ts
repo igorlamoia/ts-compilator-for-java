@@ -1,20 +1,20 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
-import { outListStmt } from "./outListStmt";
+import { argumentListStmt } from "./argumentListStmt";
 import { typeStmt } from "./typeStmt";
 
 const { RESERVEDS, SYMBOLS, LITERALS } = TOKENS;
 
 /**
- * Parses a print statement: `print(<outList>);`
+ * Parses a print statement: `print(<expr> { ',' <expr> });`
  *
- * @derivation `<printStmt> -> 'print' '(' <outList> ')' ';'`
+ * @derivation `<printStmt> -> 'print' '(' <argList> ')' ';'`
  */
 export function printStmt(iterator: TokenIterator): void {
   iterator.consume(RESERVEDS.print);
   iterator.consume(SYMBOLS.left_paren);
 
-  const values = outListStmt(iterator); // retorna string[]
+  const values = argumentListStmt(iterator);
 
   for (const val of values) {
     // Heurística simples: se for aspas, é string; se número, também é literal

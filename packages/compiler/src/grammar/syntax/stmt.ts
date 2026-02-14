@@ -1,8 +1,9 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { IssueError } from "../../issue";
 import { forStmt } from "./forStmt";
 import { blockStmt } from "./blockStmt";
-import { attributeStmt } from "./attributeStmt";
+import { attributeStmt, emitAssignmentChain } from "./attributeStmt";
 import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
 import { declarationStmt } from "./declarationStmt";
@@ -36,6 +37,7 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.return]: returnStmt,
     [RESERVEDS.break]: breakStmt,
     [RESERVEDS.continue]: continueStmt,
+    [TOKENS.ARITHMETICS.plus]: prefixIncrementStmtVariant,
   };
 
   const goToStmt = stmtsFactory[token.type];
@@ -51,26 +53,48 @@ export function stmt(iterator: TokenIterator): void {
     return;
   }
 
-  throw new Error(`Unexpected statement: ${token.lexeme}`);
+  throw new IssueError(
+    `Unexpected statement: ${token.lexeme}`,
+    token.line,
+    token.column
+  );
+}
+
+function prefixIncrementStmtVariant(iterator: TokenIterator): void {
+  const token = iterator.peek();
+  if (token.lexeme !== "++") {
+    throw new IssueError(
+      `Unexpected statement: ${token.lexeme}`,
+      token.line,
+      token.column
+    );
+  }
+
+  attributeStmt(iterator);
+  iterator.consume(TOKENS.SYMBOLS.semicolon);
 }
 
 function attrbuteStmtVariant(iterator: TokenIterator): void {
   // Consumir o identificador
   const identifier = iterator.consume(TOKENS.LITERALS.identifier);
+  const { plus } = TOKENS.ARITHMETICS;
 
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
   if (iterator.peek().type === TOKENS.SYMBOLS.left_paren) {
     // É uma chamada de função
     functionCallExpr(iterator, identifier.lexeme);
     iterator.consume(TOKENS.SYMBOLS.semicolon);
+  } else if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
+    // É um incremento pós-fixado
+    iterator.consume(plus, "++");
+    const incremented = iterator.emitter.newTemp();
+    iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
+    iterator.emitter.emit("=", identifier.lexeme, incremented, null);
+    iterator.consume(TOKENS.SYMBOLS.semicolon);
   } else {
     // É uma atribuição - precisa processar o '=' e o resto
     iterator.consume(TOKENS.ASSIGNMENTS.equal, "=");
-    const { exprStmt } = require("./exprStmt");
-    const value = exprStmt(iterator);
+    emitAssignmentChain(iterator, identifier.lexeme);
     iterator.consume(TOKENS.SYMBOLS.semicolon);
-
-    // Emitir atribuição
-    iterator.emitter.emit("=", identifier.lexeme, value, null);
   }
 }

@@ -1,4 +1,11 @@
-import { createContext, useRef, useState, useEffect, ReactNode, useCallback } from "react";
+import {
+  createContext,
+  useRef,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import loader from "@monaco-editor/loader";
 import type * as monacoEditor from "monaco-editor";
 import { INITIAL_CODE } from "@/utils/compiler/editor/initial-code";
@@ -10,13 +17,18 @@ import {
 } from "@/utils/compiler/editor/java-mm-language";
 import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
 
+const SOURCE_CODE_STORAGE_KEY = "source-code";
+
 // Create the EditorContext with default values
 export const EditorContext = createContext<TEditorContextType>(
   {} as TEditorContextType,
 );
 
 export function EditorProvider({ children }: { children: ReactNode }) {
-  const [sourceCode, setSourceCode] = useState(INITIAL_CODE);
+  const [sourceCode, setSourceCode] = useState(() => {
+    if (typeof window === "undefined") return INITIAL_CODE;
+    return localStorage.getItem(SOURCE_CODE_STORAGE_KEY) || INITIAL_CODE;
+  });
   const [config, setConfigState] = useState<TEditorConfig>(new ConfigEntity());
   const [loading, setLoading] = useState(true);
 
@@ -68,6 +80,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const updateSourceCode = (newCode: string) => {
     setSourceCode(newCode);
+    localStorage.setItem(SOURCE_CODE_STORAGE_KEY, newCode);
     editorInstanceRef.current?.setValue(newCode);
   };
 
@@ -110,15 +123,30 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   };
 
   const cleanIssues = () => {
-    if (!editorInstanceRef?.current && monacoRef.current) return;
-    const model = editorInstanceRef.current!.getModel();
+    const editor = editorInstanceRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) return;
+
+    const model = editor.getModel();
     if (!model) return;
-    monacoRef.current!.editor.setModelMarkers(model, "owner", []);
-    // editorInstanceRef.current!.trigger("keyboard", "closeWidget", {});
+
+    const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+    const owners = [...new Set(markers.map((marker) => marker.owner).filter(Boolean))];
+
+    if (owners.length === 0) {
+      monaco.editor.setModelMarkers(model, "owner", []);
+    } else {
+      owners.forEach((owner) => monaco.editor.setModelMarkers(model, owner, []));
+    }
+
+    editor.trigger("keyboard", "closeMarkersNavigation", {});
   };
 
   const getEditorCode = () => {
-    return editorInstanceRef.current?.getValue() ?? "";
+    cleanIssues();
+    const code = editorInstanceRef.current?.getValue() ?? "";
+    localStorage.setItem(SOURCE_CODE_STORAGE_KEY, code);
+    return code;
   };
 
   return (

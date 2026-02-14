@@ -1,4 +1,5 @@
 import { Token } from "../token";
+import { IssueError } from "../issue";
 
 export class Parser {
   tokens: Token[];
@@ -32,7 +33,8 @@ export class Parser {
 
   consume(type: number, message: string): Token {
     if (this.check(type)) return this.advance();
-    throw new Error(`${message} at token ${this.peek().lexeme}`);
+    const token = this.peek();
+    throw new IssueError(`${message} at token ${token.lexeme}`, token.line, token.column);
   }
 
   match(...types: number[]): boolean {

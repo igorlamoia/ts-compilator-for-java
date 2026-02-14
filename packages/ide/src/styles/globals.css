@@ -1,61 +1,156 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../../tailwind.config.ts";
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #7be5ec;
-  --primary-opaque: rgba(123, 229, 236, 0.3);
-  --secondary: #f9f9f9;
-  --shape: #f9f9f9;
-  --bgbutton: red;
-  /* --sha */
-}
-/* get the actual color in the body */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #7be5ec;
-    --secondary: #171717;
-    --shape: #171717;
-    --bgbutton: #0a0a0a;
-    --primary-opaque: rgba(123, 229, 236, 0.3);
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius: 0.5rem;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-typewriter: typewriter 2s steps(11) forwards;
+  --animate-caret:
+    typewriter 2s steps(11) forwards, blink 1s steps(11) infinite 2s;
+  --animate-meteor: meteor 5s linear infinite;
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-marquee-reverse: marquee var(--duration) linear infinite reverse;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-marquee-vertical-reverse: marquee-vertical var(--duration) linear
+    infinite reverse;
+  --animate-blink-cursor: blink-cursor 1.2s step-end infinite;
+
+  @keyframes typewriter {
+    to {
+      left: 100%;
+    }
+  }
+
+  @keyframes blink {
+    0% {
+      opacity: 0;
+    }
+    0.1% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    50.1% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes meteor {
+    0% {
+      transform: rotate(var(--angle)) translateX(0);
+      opacity: 1;
+    }
+    60% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateX(-120vmax);
+      opacity: 0;
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% - 1rem));
+    }
+  }
+
+  @keyframes marquee-vertical {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(calc(-100% - 1rem));
+    }
+  }
+
+  @keyframes blink-cursor {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
   }
 }
 
-html {
-  transition:
-    color 0.3s ease,
-    background-color 0.3s ease;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@keyframes meteor {
-  0% {
-    transform: rotate(var(--angle)) translateX(0);
-    opacity: 1;
+@layer utilities {
+  .animate-typewriter {
+    animation: var(--animate-typewriter);
   }
-  60% {
-    opacity: 0.6;
+
+  .animate-caret {
+    animation: var(--animate-caret);
   }
-  100% {
-    transform: rotate(var(--angle)) translateX(-120vmax);
-    opacity: 0;
+
+  .animate-meteor {
+    animation: var(--animate-meteor);
+  }
+
+  .animate-marquee {
+    animation: var(--animate-marquee);
+  }
+
+  .animate-marquee-reverse {
+    animation: var(--animate-marquee-reverse);
+  }
+
+  .animate-marquee-vertical {
+    animation: var(--animate-marquee-vertical);
+  }
+
+  .animate-marquee-vertical-reverse {
+    animation: var(--animate-marquee-vertical-reverse);
+  }
+
+  .animate-blink-cursor {
+    animation: var(--animate-blink-cursor);
+  }
+
+  .border-primary-opaque {
+    border-color: var(--primary-opaque);
   }
 }
 
 @layer base {
-  .theme {
-    --animate-meteor: meteor 5s linear infinite;
-    --animate-blink-cursor: blink-cursor 1.2s step-end infinite;
-  }
   :root {
     --duration: 20s;
     --background: 0 0% 100%;
@@ -64,8 +159,8 @@ body {
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 184 74% 70%;
+    --primary-foreground: 240 10% 3.9%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
@@ -82,11 +177,11 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
     --primary-opaque: rgba(123, 229, 236, 0.3);
     --shape: #f9f9f9;
     --bgbutton: red;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -94,8 +189,8 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 184 74% 70%;
+    --primary-foreground: 240 10% 3.9%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
@@ -116,27 +211,21 @@ body {
     --shape: #171717;
     --bgbutton: #0a0a0a;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    border-color: var(--color-border);
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
 
-@theme inline {
-  @keyframes blink-cursor {
-    0%,
-    49% {
-      opacity: 1;
-    }
-    50%,
-    100% {
-      opacity: 0;
-    }
+  html {
+    transition:
+      color 0.3s ease,
+      background-color 0.3s ease;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: Arial, Helvetica, sans-serif;
   }
 }
 

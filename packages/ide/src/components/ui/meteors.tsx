@@ -21,8 +21,8 @@ export const Meteors = ({
   className,
 }: MeteorsProps) => {
   const [meteorStyles, setMeteorStyles] = useState<Array<React.CSSProperties>>(
-    []
-  )
+    [],
+  );
 
   useEffect(() => {
     const styles = [...new Array(number)].map(() => ({
@@ -33,9 +33,9 @@ export const Meteors = ({
       animationDuration:
         Math.floor(Math.random() * (maxDuration - minDuration) + minDuration) +
         "s",
-    }))
-    setMeteorStyles(styles)
-  }, [number, minDelay, maxDelay, minDuration, maxDuration, angle])
+    }));
+    setMeteorStyles(styles);
+  }, [number, minDelay, maxDelay, minDuration, maxDuration, angle]);
 
   return (
     <>
@@ -45,14 +45,14 @@ export const Meteors = ({
           key={idx}
           style={{ ...style }}
           className={cn(
-            "animate-meteor pointer-events-none absolute size-0.5 rotate-[var(--angle)] rounded-full bg-[var(--primary)] shadow-[0_0_0_1px_#ffffff10]",
-            className
+            "animate-meteor pointer-events-none absolute size-0.5 rotate-[--angle] rounded-full bg-primary shadow-[0_0_0_1px_#ffffff10]",
+            className,
           )}
         >
           {/* Meteor Tail */}
-          <div className="pointer-events-none absolute top-1/2 -z-10 h-px w-[50px] -translate-y-1/2 bg-gradient-to-r from-[var(--primary)] to-transparent" />
+          <div className="pointer-events-none absolute top-1/2 -z-10 h-px w-12.5 -translate-y-1/2 bg-linear-to-r from-primary to-transparent" />
         </span>
       ))}
     </>
-  )
-}
+  );
+};

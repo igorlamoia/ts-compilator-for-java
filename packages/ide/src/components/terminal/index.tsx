@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState, useCallback, KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { Interpreter } from "@ts-compilator-for-java/compiler/interpreter";
+import { useRuntimeError } from "@/contexts/RuntimeErrorContext";
+import {
+  Interpreter,
+  RuntimeError,
+} from "@ts-compilator-for-java/compiler/interpreter";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 
 interface TerminalLine {
@@ -32,6 +36,7 @@ export default function TerminalView({
   toggleTerminal,
   intermediateCode,
 }: ITerminalViewProps) {
+  const { setRuntimeErrorInstructionPointer } = useRuntimeError();
   const [lines, setLines] = useState<TerminalLine[]>([
     createLine("Welcome to the Lamoia's Terminal!", "info"),
   ]);
@@ -68,6 +73,7 @@ export default function TerminalView({
   const runInterpreter = useCallback(async () => {
     if (intermediateCode.length === 0) return;
 
+    setRuntimeErrorInstructionPointer(null);
     setIsExecuting(true);
     let outputBuffer = "";
 
@@ -107,6 +113,7 @@ export default function TerminalView({
         addLine(outputBuffer, "output");
         outputBuffer = "";
       }
+      setRuntimeErrorInstructionPointer(null);
       addLine("", "output");
       addLine("🟢  Finalizando execução do código...", "success");
       addLine("", "output");
@@ -115,16 +122,21 @@ export default function TerminalView({
         addLine(outputBuffer, "output");
         outputBuffer = "";
       }
-      if (e instanceof Error) {
-        addLine(`❌ Erro: ${e.message}`, "error");
+      if (e instanceof RuntimeError) {
+        setRuntimeErrorInstructionPointer(e.instructionPointer);
+        addLine(`❌ Error: ${e.message}`, "error");
+      } else if (e instanceof Error) {
+        setRuntimeErrorInstructionPointer(null);
+        addLine(`❌ Error: ${e.message}`, "error");
       } else {
+        setRuntimeErrorInstructionPointer(null);
         addLine("❌ Erro: An unknown error occurred.", "error");
       }
     }
 
     setIsExecuting(false);
     resolveInput.current = null;
-  }, [intermediateCode, addLine]);
+  }, [intermediateCode, addLine, setRuntimeErrorInstructionPointer]);
 
   useEffect(() => {
     if (intermediateCode?.length > 0) runInterpreter();

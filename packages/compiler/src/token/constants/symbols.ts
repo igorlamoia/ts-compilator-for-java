@@ -10,7 +10,7 @@ export const SYMBOLS = {
 
 export const SYMBOLS_STYLE = {
   text: "text-gray-500",
-  bg: "bg-gray-100",
+  bg: "bg-gray-100 dark:bg-slate-800/60",
   border: "border-gray-500",
   transform: "hover:bg-gray-200",
 };

@@ -1,5 +1,6 @@
 import { Instruction } from "../interpreter/constants";
 import { functionCall } from "../grammar/syntax/function-call";
+import { IssueError } from "../issue";
 import { Emitter } from "../ir/emitter";
 import { Token } from "./";
 
@@ -25,6 +26,10 @@ export class TokenIterator {
     return this.tokens[this.index];
   }
 
+  peekAt(offset: number): Token | undefined {
+    return this.tokens[this.index + offset];
+  }
+
   next(): Token {
     if (!this.hasNext()) throw new Error("No more tokens available.");
     return this.tokens[this.index++];
@@ -35,9 +40,11 @@ export class TokenIterator {
     const isDifferentType = token.type !== expectedType;
     const isDifferentLexeme = expectedLexeme && token.lexeme !== expectedLexeme;
     if (isDifferentType || isDifferentLexeme)
-      throw new Error(
+      throw new IssueError(
         `Unexpected token at line ${token.line}, column ${token.column}. ` +
-          `Expected type ${expectedType}, but got type ${token.type}, lexeme "${token.lexeme}".`
+          `Expected type ${expectedType}, but got type ${token.type}, lexeme "${token.lexeme}".`,
+        token.line,
+        token.column
       );
     return this.next();
   }

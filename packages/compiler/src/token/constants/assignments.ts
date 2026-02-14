@@ -9,7 +9,7 @@ export const ASSIGNMENTS = {
 
 export const ASSIGNMENTS_STYLE = {
   text: "text-green-500",
-  bg: "bg-green-100",
+  bg: "bg-green-100 dark:bg-emerald-900/55",
   border: "border-green-500",
   transform: "hover:bg-green-200",
 };

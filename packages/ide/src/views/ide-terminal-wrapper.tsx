@@ -3,6 +3,7 @@ import { IDEView } from "./ide";
 import { useIntermediatorCode } from "./ide/useIntermediatorCode";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { KeywordProvider } from "@/contexts/KeywordContext";
+import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -28,14 +29,16 @@ export function IDEFunction({
   return (
     <EditorProvider>
       <KeywordProvider>
-        <IDETerminal
-          isTerminalOpen={isTerminalOpen}
-          setIsTerminalOpen={setIsTerminalOpen}
-        />
-        <KeywordCustomizer
-          isOpen={isOpenKeywordCustomizer}
-          setIsOpen={setIsOpenKeywordCustomizer}
-        />
+        <RuntimeErrorProvider>
+          <IDETerminal
+            isTerminalOpen={isTerminalOpen}
+            setIsTerminalOpen={setIsTerminalOpen}
+          />
+          <KeywordCustomizer
+            isOpen={isOpenKeywordCustomizer}
+            setIsOpen={setIsOpenKeywordCustomizer}
+          />
+        </RuntimeErrorProvider>
       </KeywordProvider>
     </EditorProvider>
   );
@@ -44,6 +47,7 @@ export function IDEFunction({
 function IDETerminal({ setIsTerminalOpen, isTerminalOpen }: IDETerminalProps) {
   const { handleIntermediateCodeGeneration, intermediateCode } =
     useIntermediatorCode();
+
   return (
     <>
       <IDEView
