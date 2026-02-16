@@ -1,5 +1,6 @@
 import { TToken, TTokenStyle } from "@/@types/token";
 import { useEditor } from "@/hooks/useEditor";
+import { TOKENS } from "@ts-compilator-for-java/compiler/src/token/constants";
 
 export type TokenCardProps = {
   token: TToken;
@@ -7,6 +8,7 @@ export type TokenCardProps = {
 };
 export function TokenCard({ token, styles }: TokenCardProps) {
   const { showLineIssues } = useEditor();
+  const tokenLabel = token.custom?.trim() || TOKENS.BY_ID[token.type] || token.lexeme;
 
   const handleTokenClick = () => {
     window.scrollTo({
@@ -56,7 +58,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
       <div className="pointer-events-none absolute -top-14 left-8 h-36 w-36 rounded-full bg-white/60 opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-cyan-100/30" />
 
       <div className={`relative z-10 mx-auto mb-3 text-center ${styles.text}`}>
-        <strong className="tracking-wide">{token.custom}</strong>
+        <strong className="tracking-wide">{tokenLabel}</strong>
       </div>
       <div className="relative z-10 grid grid-cols-12 text-sm text-slate-700 dark:text-slate-100">
         <div className="col-span-5">

@@ -30,10 +30,13 @@ const BY_DESCRIPTION = {
   ...LITERALS,
 };
 
-const BY_ID = Object.entries(BY_DESCRIPTION).reduce((acc, [key, value]) => {
-  acc[value] = key;
-  return acc;
-}, {} as Record<number, string>);
+const BY_ID = Object.entries(BY_DESCRIPTION).reduce(
+  (acc, [key, value]) => {
+    acc[value] = key;
+    return acc;
+  },
+  {} as Record<number, string>,
+);
 
 export const TOKENS = {
   ARITHMETICS,
