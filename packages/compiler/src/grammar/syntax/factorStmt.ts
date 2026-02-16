@@ -55,8 +55,9 @@ export function factorStmt(iterator: TokenIterator): string {
   }
 
   throw new IssueError(
-    `Unexpected token "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+    "grammar.unexpected_token",
     token.line,
-    token.column
+    token.column,
+    { lexeme: token.lexeme, line: token.line, column: token.column }
   );
 }

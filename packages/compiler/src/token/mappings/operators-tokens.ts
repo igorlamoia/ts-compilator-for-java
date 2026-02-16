@@ -47,9 +47,9 @@ export const OPERATORS_TOKENS_MAP: TTokenMap = {
   "|": (lexer) =>
     lexer.matchAndAdvance("|")
       ? lexer.addToken(LOGICALS.logical_or)
-      : lexer.error("Unexpected character '|'"),
+      : lexer.error("lexer.unexpected_pipe"),
   "&": (lexer) =>
     lexer.matchAndAdvance("&")
       ? lexer.addToken(LOGICALS.logical_and)
-      : lexer.error("Unexpected character '&'"),
+      : lexer.error("lexer.unexpected_ampersand"),
 };

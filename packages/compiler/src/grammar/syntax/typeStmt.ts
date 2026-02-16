@@ -18,9 +18,10 @@ export function typeStmt(iterator: TokenIterator, allowVoid: boolean = false): s
 
   if (!validTypes.includes(token.type)) {
     throw new IssueError(
-      `Unexpected type "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+      "grammar.unexpected_type",
       token.line,
-      token.column
+      token.column,
+      { lexeme: token.lexeme, line: token.line, column: token.column }
     );
   }
 

@@ -1,6 +1,8 @@
 import { TToken, TTokenStyle } from "@/@types/token";
 import { useEditor } from "@/hooks/useEditor";
+import { t, translateTokenDescription } from "@/i18n";
 import { TOKENS } from "@ts-compilator-for-java/compiler/src/token/constants";
+import { useRouter } from "next/router";
 
 export type TokenCardProps = {
   token: TToken;
@@ -8,7 +10,11 @@ export type TokenCardProps = {
 };
 export function TokenCard({ token, styles }: TokenCardProps) {
   const { showLineIssues } = useEditor();
-  const tokenLabel = token.custom?.trim() || TOKENS.BY_ID[token.type] || token.lexeme;
+  const { locale } = useRouter();
+  const tokenName = TOKENS.BY_ID[token.type];
+  const tokenLabel =
+    token.custom?.trim() ||
+    (tokenName ? translateTokenDescription(locale, tokenName) : token.lexeme);
 
   const handleTokenClick = () => {
     window.scrollTo({
@@ -21,7 +27,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
         startColumn: token.column + 1,
         endLineNumber: token.line,
         endColumn: token.column + 1 + token.lexeme.length,
-        message: "You have selected this token: " + token.lexeme,
+        message: t(locale, "ui.token_selected", { lexeme: token.lexeme }),
         severity: 2,
       },
     ]);
@@ -62,7 +68,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
       </div>
       <div className="relative z-10 grid grid-cols-12 text-sm text-slate-700 dark:text-slate-100">
         <div className="col-span-5">
-          <strong>Line: </strong> <span>{token.line}</span>
+          <strong>{t(locale, "ui.line")}: </strong> <span>{token.line}</span>
         </div>
         <div
           className={`
@@ -82,7 +88,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
           </span>
         </div>
         <div className="col-span-5 text-end">
-          <strong>Column: </strong> <span>{token.column}</span>
+          <strong>{t(locale, "ui.column")}: </strong> <span>{token.column}</span>
         </div>
       </div>
       <div
@@ -98,7 +104,7 @@ export function TokenCard({ token, styles }: TokenCardProps) {
           backdrop-blur-sm
         `}
       >
-        <strong>Lexeme: </strong>
+        <strong>{t(locale, "ui.lexeme")}: </strong>
         <span className={styles.text} style={{ whiteSpace: "pre-wrap" }}>
           {token.lexeme}
         </span>

@@ -1,7 +1,9 @@
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import {
   FileCodeIcon,
+  LanguagesIcon,
   MonitorIcon,
   TerminalIcon,
   SettingsIcon,
@@ -17,6 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Dock, DockIcon } from "@/components/ui/dock";
+import { SUPPORTED_LOCALES, t } from "@/i18n";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -64,6 +67,9 @@ export function Footer({
   toggleTerminal,
   toggleKeywordCustomizer,
 }: FooterProps) {
+  const router = useRouter();
+  const { locale, pathname, query } = router;
+
   return (
     <>
       <footer className="pointer-events-none fixed bottom-3 left-0 right-0 z-100 isolate flex justify-center">
@@ -111,7 +117,7 @@ export function Footer({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                  <p>Personalização</p>
+                  <p>{t(locale, "footer.settings")}</p>
                 </TooltipContent>
               </Tooltip>
             </DockIcon>
@@ -130,7 +136,41 @@ export function Footer({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                  <p>Terminal</p>
+                  <p>{t(locale, "footer.terminal")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </DockIcon>
+            <DockIcon>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    aria-label={t(locale, "footer.language")}
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "icon" }),
+                      "size-12 rounded-full cursor-default",
+                    )}
+                  >
+                    <LanguagesIcon className="size-4" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                  <div className="flex gap-1">
+                    {SUPPORTED_LOCALES.map((targetLocale) => (
+                      <Link
+                        key={targetLocale}
+                        href={{ pathname, query }}
+                        locale={targetLocale}
+                        className={cn(
+                          "rounded px-1.5 py-0.5 text-xs border border-transparent",
+                          targetLocale === locale
+                            ? "bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white"
+                            : "hover:border-current",
+                        )}
+                      >
+                        {targetLocale}
+                      </Link>
+                    ))}
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </DockIcon>

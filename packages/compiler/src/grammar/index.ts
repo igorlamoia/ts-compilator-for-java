@@ -34,7 +34,12 @@ export class Parser {
   consume(type: number, message: string): Token {
     if (this.check(type)) return this.advance();
     const token = this.peek();
-    throw new IssueError(`${message} at token ${token.lexeme}`, token.line, token.column);
+    throw new IssueError(
+      "parser.consume_expected",
+      token.line,
+      token.column,
+      { expected: message, lexeme: token.lexeme }
+    );
   }
 
   match(...types: number[]): boolean {

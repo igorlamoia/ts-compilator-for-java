@@ -8,9 +8,12 @@ import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
 import { TToken } from "@/@types/token";
+import { t } from "@/i18n";
+import { useRouter } from "next/router";
 
 export function useIntermediatorCode() {
   const { showToast } = useToast();
+  const { locale } = useRouter();
   // const [isLoading, setIsLoading] = useState(false);
   const { showLineIssues, cleanIssues } = useEditor();
   const [intermediateCode, setIntermediateCode] =
@@ -27,7 +30,7 @@ export function useIntermediatorCode() {
       const issues = [...data.warnings, ...data.infos];
       setIntermediateCode(data);
       showToast({
-        message: data.message || "Intermediate code generation completed",
+        message: t(locale, "toast.intermediate_completed"),
         type: issues.length ? "warning" : "success",
       });
       if (issues.length) handleIssues(issues);
@@ -39,7 +42,13 @@ export function useIntermediatorCode() {
           {}) as TIntermediateCodeData;
         if (lexerError) handleIssues([lexerError as IssueDetails], true);
         showToast({
-          message: message || "An error occurred",
+          message: lexerError
+            ? t(
+                locale,
+                (lexerError as IssueDetails).message,
+                (lexerError as IssueDetails).params,
+              )
+            : message || t(locale, "toast.error_occurred"),
           type: "error",
         });
         return false;
@@ -56,7 +65,7 @@ export function useIntermediatorCode() {
 
   const handleIssues = (data: IssueDetails[], showDetails: boolean = false) => {
     const allLineIssues: TLineAlert[] = data.map((issue) => ({
-      message: issue.message,
+      message: t(locale, issue.message, issue.params),
       startLineNumber: issue.line,
       endLineNumber: issue.line,
       startColumn: issue.column,
