@@ -95,7 +95,7 @@ export function Footer({
                       <social.icon className="size-4" />
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                  <TooltipContent>
                     <p>{name}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -116,7 +116,7 @@ export function Footer({
                     <SettingsIcon className="size-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                <TooltipContent>
                   <p>{t(locale, "footer.settings")}</p>
                 </TooltipContent>
               </Tooltip>
@@ -135,7 +135,7 @@ export function Footer({
                     <TerminalIcon className="size-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                <TooltipContent>
                   <p>{t(locale, "footer.terminal")}</p>
                 </TooltipContent>
               </Tooltip>
@@ -153,21 +153,21 @@ export function Footer({
                     <LanguagesIcon className="size-4" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                <TooltipContent>
                   <div className="flex gap-1">
                     {SUPPORTED_LOCALES.map((targetLocale) => (
                       <Link
-                        key={targetLocale}
+                        key={targetLocale.code}
                         href={{ pathname, query }}
-                        locale={targetLocale}
+                        locale={targetLocale.code}
                         className={cn(
                           "rounded px-1.5 py-0.5 text-xs border border-transparent",
-                          targetLocale === locale
+                          targetLocale.code === locale
                             ? "bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white"
                             : "hover:border-current",
                         )}
                       >
-                        {targetLocale}
+                        {targetLocale.flag} {targetLocale.code}
                       </Link>
                     ))}
                   </div>

@@ -31,8 +31,17 @@ import ptPtToast from "./locales/pt-PT/toast";
 import ptPtToken from "./locales/pt-PT/token";
 import ptPtUi from "./locales/pt-PT/ui";
 
-export const SUPPORTED_LOCALES = ["pt-BR", "pt-PT", "es", "en"] as const;
-export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+export const SUPPORTED_LOCALES = [
+  { code: "pt-BR", flag: "🇧🇷" },
+  { code: "pt-PT", flag: "🇵🇹" },
+  { code: "es", flag: "🇪🇸" },
+  { code: "en", flag: "🇺🇸" },
+] as const;
+export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]["code"];
+
+const SUPPORTED_LOCALE_CODES = SUPPORTED_LOCALES.map(
+  (locale) => locale.code,
+) as readonly SupportedLocale[];
 
 type TranslationParams = Record<
   string,
@@ -86,7 +95,7 @@ const LOCALES: Record<SupportedLocale, TranslationTree> = {
 
 export function resolveLocale(locale: string | undefined): SupportedLocale {
   if (!locale) return "pt-BR";
-  if ((SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
+  if ((SUPPORTED_LOCALE_CODES as readonly string[]).includes(locale)) {
     return locale as SupportedLocale;
   }
 

@@ -20,13 +20,13 @@ const TooltipContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-[10001] rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]",
+        "bg-white/90 dark:bg-neutral-900/30 border-neutral-200 dark:border-neutral-700 backdrop-blur-sm z-1000 rounded-md px-3 py-1.5 text-xs border animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]",
         className,
       )}
       {...props}
     >
       {props.children}
-      <TooltipPrimitive.Arrow className="fill-neutral-900 dark:fill-white" />
+      <TooltipPrimitive.Arrow className="fill-white/90 stroke-neutral-200 stroke-2 [paint-order:stroke_fill] dark:fill-neutral-900/30 dark:stroke-neutral-700" />
     </TooltipPrimitive.Content>
   </TooltipPrimitive.Portal>
 ));
