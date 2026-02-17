@@ -165,7 +165,7 @@ export function SideExplorer({
   );
 
   return (
-    <div className="flex flex-col border-r border-white/10">
+    <>
       <div className="flex items-center justify-between px-3 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
         Explorer
         <span className="rounded-full bg-white/10 px-2 py-1 text-[10px]">
@@ -173,6 +173,6 @@ export function SideExplorer({
         </span>
       </div>
       <div className="flex-1 overflow-auto px-2 pb-4">{renderTree(tree)}</div>
-    </div>
+    </>
   );
 }

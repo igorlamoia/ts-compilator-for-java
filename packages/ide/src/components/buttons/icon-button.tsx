@@ -20,7 +20,7 @@ export default function IconButton({
           <button
             className={cn(
               buttonVariants({ variant: "ghost", size: "icon" }),
-              "size-8 rounded-xl cursor-pointer",
+              "size-8 rounded-xl cursor-pointer px-2",
               selected && "bg-white/10",
               className,
             )}

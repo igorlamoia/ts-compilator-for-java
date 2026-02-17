@@ -33,7 +33,7 @@ export function MainSection({
     }
   };
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full w-full overflow-hidden">
       <OpenFIlesList
         openTabs={openTabs}
         activeFile={activeFile}

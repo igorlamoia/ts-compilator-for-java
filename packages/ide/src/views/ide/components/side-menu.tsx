@@ -9,7 +9,7 @@ interface SideMenuProps {
 
 export function SideMenu({ isExplorerOpen, setIsExplorerOpen }: SideMenuProps) {
   return (
-    <div className="flex sm:flex-col px-4 py-2 items-center gap-4 border-r border-white/10 sm:py-4">
+    <div className="flex  flex-1 sm:flex-col h-full px-4 py-2 sm:w-12 items-center gap-4 border-b sm:border-r border-white/10 sm:py-4">
       <IconButton
         selected={isExplorerOpen}
         onClick={() => setIsExplorerOpen(!isExplorerOpen)}
