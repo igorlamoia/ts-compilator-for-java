@@ -121,13 +121,16 @@
 
   --color-color-2: var(--color-2);
 
-  --color-color-1: var(--color-1)
-;
+  --color-color-1: var(--color-1);
   @keyframes rainbow {
-  0% {
-    background-position: 0%;}
-  100% {
-    background-position: 200%;}}}
+    0% {
+      background-position: 0%;
+    }
+    100% {
+      background-position: 200%;
+    }
+  }
+}
 
 @layer utilities {
   .animate-typewriter {
@@ -259,6 +262,11 @@
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+/* Terminal scrollbar gutter to prevent layout shift */
+.terminal-scroll {
+  scrollbar-gutter: stable;
 }
 
 :root {

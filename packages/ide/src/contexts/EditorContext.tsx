@@ -89,6 +89,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       editorInstanceRef.current = monacoRef.current.editor.create(container, {
         value: sourceCode,
         automaticLayout: true,
+        minimap: { enabled: true },
         ...config,
       });
     }

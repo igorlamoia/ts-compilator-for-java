@@ -10,6 +10,7 @@ import { SideMenu } from "./components/side-menu";
 import { useTerminalContext } from "@/pages";
 import { MainSection } from "./components/main-section";
 import { BorderBeam } from "@/components/ui/border-beam";
+import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts";
 
 export function IDEView({
   handleIntermediateCodeGeneration,
@@ -36,8 +37,10 @@ export function IDEView({
     setIsTerminalOpen(true);
   };
 
-  const [isExplorerOpen, setIsExplorerOpen] = useState(false);
-
+  const [isExplorerOpen, setIsExplorerOpen] = useState(true);
+  const toggleTerminal = () => setIsTerminalOpen(!isTerminalOpen);
+  useKeyboardShortcuts(toggleTerminal, isTerminalOpen, setIsExplorerOpen);
+  console.log(isTerminalOpen, isExplorerOpen);
   return (
     <>
       <div className="relative rounded-2xl">
@@ -63,7 +66,7 @@ export function IDEView({
               openTabs={openTabs}
               setOpenTabs={setOpenTabs}
               isTerminalOpen={isTerminalOpen}
-              setIsTerminalOpen={setIsTerminalOpen}
+              toggleTerminal={toggleTerminal}
               intermediateCode={intermediateCode}
             />
           </div>

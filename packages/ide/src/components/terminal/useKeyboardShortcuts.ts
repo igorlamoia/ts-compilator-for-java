@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 export function useKeyboardShortcuts(
   toggleTerminal: () => void,
   isTerminalOpen: boolean,
+  setIsExplorerOpen?: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
   // Atalhos globais (ctrl+', ctrl+j, Escape)
   useEffect(() => {
@@ -17,6 +18,18 @@ export function useKeyboardShortcuts(
       } else if (event.key === "Escape" && isTerminalOpen) {
         toggleTerminal();
       }
+
+      // Atalho para abrir/fechar o explorer (ctrl+e)
+      if (
+        (event.ctrlKey && event.code === "KeyE") ||
+        (event.ctrlKey && event.code === "KeyB")
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (setIsExplorerOpen) {
+          setIsExplorerOpen((prev) => !prev);
+        }
+      }
     };
 
     document.addEventListener("keydown", handleGlobalKeyDown, {
@@ -26,5 +39,5 @@ export function useKeyboardShortcuts(
       document.removeEventListener("keydown", handleGlobalKeyDown, {
         capture: true,
       });
-  }, [toggleTerminal, isTerminalOpen]);
+  }, [toggleTerminal, isTerminalOpen, setIsExplorerOpen]);
 }

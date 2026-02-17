@@ -12,7 +12,7 @@ interface MainSectionProps {
   setActiveFile: (file: string) => void;
   setOpenTabs: (paths: string[] | ((prev: string[]) => string[])) => void;
   isTerminalOpen: boolean;
-  setIsTerminalOpen: (isOpen: boolean) => void;
+  toggleTerminal: () => void;
   intermediateCode?: { instructions: any[] };
 }
 
@@ -22,7 +22,7 @@ export function MainSection({
   setActiveFile,
   setOpenTabs,
   isTerminalOpen,
-  setIsTerminalOpen,
+  toggleTerminal,
   intermediateCode,
 }: MainSectionProps) {
   const closeTab = (path: string) => {
@@ -33,21 +33,19 @@ export function MainSection({
     }
   };
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full overflow-hidden">
       <OpenFIlesList
         openTabs={openTabs}
         activeFile={activeFile}
         closeTab={closeTab}
       />
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-x-auto">
         <Editor />
-        <div className="absolute left-0 bottom-0 w-full">
-          <TerminalView
-            intermediateCode={intermediateCode?.instructions || []}
-            isTerminalOpen={isTerminalOpen}
-            toggleTerminal={() => setIsTerminalOpen(!isTerminalOpen)}
-          />
-        </div>
+        <TerminalView
+          intermediateCode={intermediateCode?.instructions || []}
+          isTerminalOpen={isTerminalOpen}
+          toggleTerminal={toggleTerminal}
+        />
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
-import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 import { Body } from "./body";
 import { Header } from "./header";
 
@@ -35,7 +34,7 @@ export default function TerminalView({
   intermediateCode,
 }: ITerminalViewProps) {
   const [lines, setLines] = useState<TerminalLine[]>([
-    createLine("Welcome to the Lamoia's Terminal!", "info"),
+    createLine("Van Hohenheim! O Henheim da luz", "info"),
   ]);
   const [currentInput, setCurrentInput] = useState("");
   const [isExecuting, setIsExecuting] = useState(false);
@@ -47,8 +46,6 @@ export default function TerminalView({
       inputRef.current.focus();
     }
   }, [isTerminalOpen]);
-
-  useKeyboardShortcuts(toggleTerminal, isTerminalOpen);
 
   return (
     <>

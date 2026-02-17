@@ -207,7 +207,7 @@ export function Body(props: BodyProps) {
   return (
     <div
       ref={scrollRef}
-      className={`overflow-y-auto overflow-x-hidden p-4 font-mono text-sm scrollbar-none h-65`}
+      className="overflow-y-auto overflow-x-hidden p-4 font-mono text-sm h-65 terminal-scroll"
     >
       {lines.map((line, index) => (
         <motion.div
