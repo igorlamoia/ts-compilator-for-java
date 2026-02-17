@@ -19,11 +19,11 @@ export function IDEFunction({
       <KeywordProvider>
         <RuntimeErrorProvider>
           <IDETerminal />
-          <KeywordCustomizer
-            isOpen={isOpenKeywordCustomizer}
-            setIsOpen={setIsOpenKeywordCustomizer}
-          />
         </RuntimeErrorProvider>
+        <KeywordCustomizer
+          isOpen={isOpenKeywordCustomizer}
+          setIsOpen={setIsOpenKeywordCustomizer}
+        />
       </KeywordProvider>
     </EditorProvider>
   );
