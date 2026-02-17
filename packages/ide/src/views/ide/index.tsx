@@ -44,10 +44,10 @@ export function IDEView({
   return (
     <>
       <div className="relative rounded-2xl">
-        <div className="rounded-2xl border border-white/10 bg-neutral-950/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)] overflow-hidden">
+        <div className="rounded-2xl border border-white/10 bg-neutral-950/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
           <Menu handleRun={handleRun} runAll={runAll} />
           <div
-            className={`grid h-[70vh] ${isExplorerOpen ? "sm:grid-cols-[48px_240px_1fr]" : "sm:grid-cols-[48px_1fr]"}`}
+            className={`grid h-[70vh] ${isExplorerOpen ? "sm:grid-cols-[48px_240px_1fr]" : "sm:grid-cols-[48px_1fr] "} `}
           >
             <SideMenu
               isExplorerOpen={isExplorerOpen}

@@ -1,5 +1,14 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useKeywords, KeywordMapping } from "@/contexts/KeywordContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 export function KeywordCustomizer({
   isOpen,
@@ -128,84 +137,65 @@ export function KeywordCustomizer({
   if (!currentMapping) return null;
 
   return (
-    <>
-      {/* Modal overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[3px]"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsOpen(false);
-          }}
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="mx-4">
+        <form
+          onSubmit={handleSubmitCurrentStep}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="keyword-customizer-title"
+          aria-describedby="keyword-customizer-description"
+          className="flex flex-col h-full"
         >
-          <form
-            className="
-              w-full max-w-lg mx-4 rounded-xl shadow-2xl
-              dark:bg-slate-900 bg-white
-              border dark:border-slate-700 border-gray-200
-              max-h-[85vh] flex flex-col
-            "
-            onSubmit={handleSubmitCurrentStep}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="keyword-customizer-title"
-            aria-describedby="keyword-customizer-description"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b dark:border-slate-700 border-gray-200">
-              <div>
-                <h2
-                  id="keyword-customizer-title"
-                  className="text-lg font-bold dark:text-white text-gray-900"
-                >
-                  Personalização Interativa de Comandos
-                </h2>
-                <p
-                  id="keyword-customizer-description"
-                  className="text-sm dark:text-gray-400 text-gray-500 mt-1"
-                >
-                  Responda uma pergunta por vez e salve no final
-                </p>
-              </div>
-              <button
-                type="button"
-                aria-label="Fechar personalizador de keywords"
-                onClick={() => setIsOpen(false)}
-                className="p-1 rounded-md hover:dark:bg-slate-700 hover:bg-gray-100 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+          {/* Header */}
+          <DialogHeader>
+            <div>
+              <DialogTitle id="keyword-customizer-title">
+                Personalização Interativa de Comandos
+              </DialogTitle>
+              <DialogDescription id="keyword-customizer-description">
+                Responda uma pergunta por vez e salve no final
+              </DialogDescription>
             </div>
+            <DialogClose
+              type="button"
+              aria-label="Fechar personalizador de keywords"
+              className="p-1 rounded-md hover:dark:bg-slate-700 hover:bg-gray-100 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </DialogClose>
+          </DialogHeader>
 
-            {/* Content */}
-            <div className="overflow-y-auto p-5 flex-1">
-              <div className="mb-6">
-                <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500 mb-2">
-                  Comandos Atuais
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {draftMappings.map((mapping, index) => (
-                    <button
-                      key={`current-${mapping.original}`}
-                      type="button"
-                      onClick={() => {
-                        setCurrentStep(index);
-                        setCurrentError(null);
-                      }}
-                      aria-label={`Ir para a configuração do comando ${mapping.original}`}
-                      className={`
+          {/* Content */}
+          <div className="overflow-y-auto p-5 flex-1">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500 mb-2">
+                Comandos Atuais
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {draftMappings.map((mapping, index) => (
+                  <button
+                    key={`current-${mapping.original}`}
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(index);
+                      setCurrentError(null);
+                    }}
+                    aria-label={`Ir para a configuração do comando ${mapping.original}`}
+                    className={`
                         px-2.5 py-1 rounded-md text-xs font-mono border
                         transition-colors
                         hover:dark:bg-slate-700 hover:bg-gray-100
@@ -218,77 +208,76 @@ export function KeywordCustomizer({
                               : "dark:border-slate-600 border-gray-300 dark:bg-slate-800 bg-gray-50"
                         }
                       `}
-                    >
-                      <span className="dark:text-gray-300 text-gray-700">
-                        {mapping.original}
-                      </span>
-                      <span className="dark:text-gray-500 text-gray-400 mx-1">
-                        →
-                      </span>
-                      <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
-                        {mapping.custom}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                  >
+                    <span className="dark:text-gray-300 text-gray-700">
+                      {mapping.original}
+                    </span>
+                    <span className="dark:text-gray-500 text-gray-400 mx-1">
+                      →
+                    </span>
+                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
+                      {mapping.custom}
+                    </span>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
-                  Pergunta {currentStep + 1} de {draftMappings.length}
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Pergunta {currentStep + 1} de {draftMappings.length}
+              </span>
+              <span className="text-xs dark:text-gray-500 text-gray-400">
+                {Math.round(((currentStep + 1) / draftMappings.length) * 100)}%
+              </span>
+            </div>
+
+            <div className="w-full rounded-md h-2 dark:bg-slate-800 bg-gray-100 mb-6 overflow-hidden">
+              <div
+                className="h-2 bg-cyan-600 transition-all"
+                style={{
+                  width: `${((currentStep + 1) / draftMappings.length) * 100}%`,
+                }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label
+                htmlFor="keyword-custom-input"
+                className="dark:text-gray-200 text-gray-800 text-base"
+              >
+                Como você quer escrever o comando{" "}
+                <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">
+                  {currentMapping.original}
                 </span>
-                <span className="text-xs dark:text-gray-500 text-gray-400">
-                  {Math.round(((currentStep + 1) / draftMappings.length) * 100)}
-                  %
-                </span>
-              </div>
+                ?
+              </label>
+              <p
+                id="keyword-explanation"
+                className="text-sm dark:text-gray-400 text-gray-500"
+              >
+                {KEYWORD_EXPLANATIONS[currentMapping.original]}
+              </p>
+              <p
+                id="keyword-enter-hint"
+                className="text-xs dark:text-gray-500 text-gray-400"
+              >
+                Pressione Enter para avançar.
+              </p>
 
-              <div className="w-full rounded-md h-2 dark:bg-slate-800 bg-gray-100 mb-6 overflow-hidden">
-                <div
-                  className="h-2 bg-cyan-600 transition-all"
-                  style={{
-                    width: `${((currentStep + 1) / draftMappings.length) * 100}%`,
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <label
-                  htmlFor="keyword-custom-input"
-                  className="dark:text-gray-200 text-gray-800 text-base"
-                >
-                  Como você quer escrever o comando{" "}
-                  <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">
-                    {currentMapping.original}
-                  </span>
-                  ?
-                </label>
-                <p
-                  id="keyword-explanation"
-                  className="text-sm dark:text-gray-400 text-gray-500"
-                >
-                  {KEYWORD_EXPLANATIONS[currentMapping.original]}
-                </p>
-                <p
-                  id="keyword-enter-hint"
-                  className="text-xs dark:text-gray-500 text-gray-400"
-                >
-                  Pressione Enter para avançar.
-                </p>
-
-                <input
-                  id="keyword-custom-input"
-                  ref={inputRef}
-                  type="text"
-                  value={currentMapping.custom}
-                  onChange={(e) => handleChange(e.target.value)}
-                  aria-invalid={Boolean(currentError)}
-                  aria-describedby={
-                    currentError
-                      ? "keyword-explanation keyword-enter-hint keyword-error"
-                      : "keyword-explanation keyword-enter-hint"
-                  }
-                  className={`
+              <input
+                id="keyword-custom-input"
+                ref={inputRef}
+                type="text"
+                value={currentMapping.custom}
+                onChange={(e) => handleChange(e.target.value)}
+                aria-invalid={Boolean(currentError)}
+                aria-describedby={
+                  currentError
+                    ? "keyword-explanation keyword-enter-hint keyword-error"
+                    : "keyword-explanation keyword-enter-hint"
+                }
+                className={`
                     w-full px-3 py-2 rounded-md text-sm font-mono
                     dark:bg-slate-800 bg-gray-50
                     dark:text-gray-200 text-gray-800
@@ -302,25 +291,25 @@ export function KeywordCustomizer({
                           : "dark:border-slate-600 border-gray-300"
                     }
                   `}
-                  placeholder={currentMapping.original}
-                  spellCheck={false}
-                />
+                placeholder={currentMapping.original}
+                spellCheck={false}
+              />
 
-                {currentError && (
-                  <span id="keyword-error" className="text-xs text-red-500">
-                    {currentError}
-                  </span>
-                )}
-              </div>
+              {currentError && (
+                <span id="keyword-error" className="text-xs text-red-500">
+                  {currentError}
+                </span>
+              )}
             </div>
+          </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between p-5 border-t dark:border-slate-700 border-gray-200">
-              <button
-                onClick={handleResetDraft}
-                type="button"
-                disabled={!hasChanges}
-                className={`
+          {/* Footer */}
+          <DialogFooter>
+            <button
+              onClick={handleResetDraft}
+              type="button"
+              disabled={!hasChanges}
+              className={`
                   px-4 py-2 rounded-md text-sm font-medium transition-colors
                   ${
                     hasChanges
@@ -328,16 +317,16 @@ export function KeywordCustomizer({
                       : "dark:text-gray-600 text-gray-300 cursor-not-allowed"
                   }
                 `}
-              >
-                Restaurar Padrão
-              </button>
+            >
+              Restaurar Padrão
+            </button>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={goToPrevious}
-                  type="button"
-                  disabled={currentStep === 0}
-                  className={`
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPrevious}
+                type="button"
+                disabled={currentStep === 0}
+                className={`
                     px-4 py-2 rounded-md text-sm font-medium transition-colors
                     ${
                       currentStep === 0
@@ -345,38 +334,37 @@ export function KeywordCustomizer({
                         : "dark:text-gray-300 text-gray-600 hover:dark:bg-slate-700 hover:bg-gray-100"
                     }
                   `}
-                >
-                  Anterior
-                </button>
+              >
+                Anterior
+              </button>
 
-                {currentStep < draftMappings.length - 1 ? (
-                  <button
-                    type="submit"
-                    className="
+              {currentStep < draftMappings.length - 1 ? (
+                <button
+                  type="submit"
+                  className="
                       px-6 py-2 rounded-md text-sm font-medium
                       bg-cyan-600 text-white hover:bg-cyan-700
                       transition-colors
                     "
-                  >
-                    Próxima
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="
+                >
+                  Próxima
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="
                       px-6 py-2 rounded-md text-sm font-medium
                       bg-emerald-600 text-white hover:bg-emerald-700
                       transition-colors
                     "
-                  >
-                    Salvar e Aplicar
-                  </button>
-                )}
-              </div>
+                >
+                  Salvar e Aplicar
+                </button>
+              )}
             </div>
-          </form>
-        </div>
-      )}
-    </>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
