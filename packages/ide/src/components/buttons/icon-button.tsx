@@ -6,20 +6,22 @@ import { buttonVariants } from "../ui/button";
 
 export default function IconButton({
   children,
+  selected,
   className,
   ...rest
 }: {
   children: React.ReactNode;
+  selected?: boolean;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            aria-label="Settings"
             className={cn(
               buttonVariants({ variant: "ghost", size: "icon" }),
               "size-8 rounded-xl cursor-pointer",
+              selected && "bg-white/10",
               className,
             )}
             {...rest}
