@@ -14,7 +14,7 @@ import { ConfigEntity } from "@/entities/editor-config";
 import {
   registerJavaMMLanguage,
   JAVAMM_LANGUAGE_ID,
-} from "@/utils/compiler/editor/java-mm-language";
+} from "@/utils/compiler/editor/editor-language";
 import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
 
 const SOURCE_CODE_STORAGE_KEY = "source-code";
@@ -41,6 +41,42 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       monacoRef.current = monaco;
       // Registrar a linguagem Java-- com as keywords padrão
       registerJavaMMLanguage(monaco, ORIGINAL_KEYWORDS);
+      monaco.editor.defineTheme("editor-glass-dark", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [],
+        colors: {
+          "editor.background": "#00000000",
+          "editorGutter.background": "#00000000",
+          "editorLineNumber.foreground": "#a7a7a7aa",
+          "editorLineNumber.activeForeground": "#ffffffcc",
+          "editorCursor.foreground": "#ffffffd9", // cursor piscando
+          "editor.lineHighlightBackground": "#ffffff0f", // linha atual
+          "editor.selectionBackground": "#ffffff26", // seleção de texto
+          "minimap.background": "#0b0f1499",
+          "minimapSlider.background": "#ffffff14",
+          "minimapSlider.hoverBackground": "#ffffff26",
+          "minimapSlider.activeBackground": "#ffffff3d",
+        },
+      });
+      monaco.editor.defineTheme("editor-glass-light", {
+        base: "vs",
+        inherit: true,
+        rules: [],
+        colors: {
+          "editor.background": "#00000000",
+          "editorGutter.background": "#00000000",
+          "editorLineNumber.foreground": "#1a1a1a66",
+          "editorLineNumber.activeForeground": "#1a1a1acc",
+          "editorCursor.foreground": "#1a1a1ad9",
+          "editor.lineHighlightBackground": "#0000000a",
+          "editor.selectionBackground": "#0000001f",
+          "minimap.background": "#e6eef799",
+          "minimapSlider.background": "#1a1a1a14",
+          "minimapSlider.hoverBackground": "#1a1a1a26",
+          "minimapSlider.activeBackground": "#1a1a1a3d",
+        },
+      });
       setLoading(false);
     });
   }, []);
@@ -131,12 +167,16 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     if (!model) return;
 
     const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-    const owners = [...new Set(markers.map((marker) => marker.owner).filter(Boolean))];
+    const owners = [
+      ...new Set(markers.map((marker) => marker.owner).filter(Boolean)),
+    ];
 
     if (owners.length === 0) {
       monaco.editor.setModelMarkers(model, "owner", []);
     } else {
-      owners.forEach((owner) => monaco.editor.setModelMarkers(model, owner, []));
+      owners.forEach((owner) =>
+        monaco.editor.setModelMarkers(model, owner, []),
+      );
     }
 
     editor.trigger("keyboard", "closeMarkersNavigation", {});

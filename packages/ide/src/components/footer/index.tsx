@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Dock, DockIcon } from "@/components/ui/dock";
 import { SUPPORTED_LOCALES, t } from "@/i18n";
+import { useTerminalContext } from "@/pages";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -59,16 +60,16 @@ const DATA = {
 };
 
 interface FooterProps {
-  toggleTerminal: () => void;
   toggleKeywordCustomizer: () => void;
 }
 
-export function Footer({
-  toggleTerminal,
-  toggleKeywordCustomizer,
-}: FooterProps) {
+export function Footer({ toggleKeywordCustomizer }: FooterProps) {
   const router = useRouter();
   const { locale, pathname, query } = router;
+
+  const { setIsTerminalOpen } = useTerminalContext();
+
+  const toggleTerminal = () => setIsTerminalOpen((old: boolean) => !old);
 
   return (
     <>

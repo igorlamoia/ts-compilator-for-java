@@ -8,7 +8,7 @@ import {
 } from "react";
 import { z } from "zod";
 import { useEditor } from "@/hooks/useEditor";
-import { updateJavaMMKeywords } from "@/utils/compiler/editor/java-mm-language";
+import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
 
 /** As 13 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {

@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { useRuntimeError } from "@/contexts/RuntimeErrorContext";
-import {
-  Interpreter,
-  RuntimeError,
-} from "@ts-compilator-for-java/compiler/interpreter";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
+import { Body } from "./body";
+import { Header } from "./header";
 
-interface TerminalLine {
+export interface TerminalLine {
   id: number;
   content: string;
   type: "output" | "input" | "error" | "success" | "info" | "prompt";
@@ -24,7 +22,7 @@ interface ITerminalViewProps {
 
 let lineIdCounter = 0;
 
-function createLine(
+export function createLine(
   content: string,
   type: TerminalLine["type"] = "output",
 ): TerminalLine {
@@ -36,31 +34,12 @@ export default function TerminalView({
   toggleTerminal,
   intermediateCode,
 }: ITerminalViewProps) {
-  const { setRuntimeErrorInstructionPointer } = useRuntimeError();
   const [lines, setLines] = useState<TerminalLine[]>([
     createLine("Welcome to the Lamoia's Terminal!", "info"),
   ]);
   const [currentInput, setCurrentInput] = useState("");
   const [isExecuting, setIsExecuting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const resolveInput = useRef<((value: string) => void) | null>(null);
-  const commandHistory = useRef<string[]>([]);
-  const historyPointer = useRef<number>(0);
-
-  const addLine = useCallback(
-    (content: string, type: TerminalLine["type"] = "output") => {
-      setLines((prev) => [...prev, createLine(content, type)]);
-    },
-    [],
-  );
-
-  // Auto-scroll ao adicionar novas linhas
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [lines]);
 
   // Focar no input quando o terminal abrir
   useEffect(() => {
@@ -69,296 +48,42 @@ export default function TerminalView({
     }
   }, [isTerminalOpen]);
 
-  // Executar interpretador quando receber código intermediário
-  const runInterpreter = useCallback(async () => {
-    if (intermediateCode.length === 0) return;
-
-    setRuntimeErrorInstructionPointer(null);
-    setIsExecuting(true);
-    let outputBuffer = "";
-
-    const inputPromise = (): Promise<string> =>
-      new Promise((resolve) => {
-        if (outputBuffer.length > 0) {
-          addLine(outputBuffer, "output");
-          outputBuffer = "";
-        }
-        resolveInput.current = resolve;
-      });
-
-    const io = {
-      stdout: (msg: string) => {
-        const normalizedMsg = msg.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-        for (const char of normalizedMsg) {
-          if (char === "\n") {
-            addLine(outputBuffer, "output");
-            outputBuffer = "";
-          } else {
-            outputBuffer += char;
-          }
-        }
-      },
-      stdin: inputPromise,
-    };
-
-    addLine("", "output");
-    addLine("🟢  Iniciando execução do código...", "success");
-    addLine("", "output");
-
-    const interpreter = new Interpreter(intermediateCode, io);
-
-    try {
-      await interpreter.execute({ current: "" });
-      if (outputBuffer.length > 0) {
-        addLine(outputBuffer, "output");
-        outputBuffer = "";
-      }
-      setRuntimeErrorInstructionPointer(null);
-      addLine("", "output");
-      addLine("🟢  Finalizando execução do código...", "success");
-      addLine("", "output");
-    } catch (e: unknown) {
-      if (outputBuffer.length > 0) {
-        addLine(outputBuffer, "output");
-        outputBuffer = "";
-      }
-      if (e instanceof RuntimeError) {
-        setRuntimeErrorInstructionPointer(e.instructionPointer);
-        addLine(`❌ Error: ${e.message}`, "error");
-      } else if (e instanceof Error) {
-        setRuntimeErrorInstructionPointer(null);
-        addLine(`❌ Error: ${e.message}`, "error");
-      } else {
-        setRuntimeErrorInstructionPointer(null);
-        addLine("❌ Erro: An unknown error occurred.", "error");
-      }
-    }
-
-    setIsExecuting(false);
-    resolveInput.current = null;
-  }, [intermediateCode, addLine, setRuntimeErrorInstructionPointer]);
-
-  useEffect(() => {
-    if (intermediateCode?.length > 0) runInterpreter();
-  }, [intermediateCode, runInterpreter]);
-
-  // Processar comandos internos
-  const processCommand = useCallback(
-    (command: string) => {
-      const trimmed = command.trim().toLowerCase();
-
-      // Se o interpretador está esperando input, resolve a promise
-      if (resolveInput.current) {
-        addLine(`$ ${command}`, "input");
-        resolveInput.current(command);
-        resolveInput.current = null;
-        return;
-      }
-
-      addLine(`$ ${command}`, "input");
-
-      switch (trimmed) {
-        case "clear":
-        case "cls":
-          setLines([]);
-          break;
-        case "help":
-          addLine(
-            "Available commands: ping, clear, cls, help, exit, 'ctrl+j' to toggle terminal",
-            "info",
-          );
-          break;
-        case "ping":
-          addLine("Pong! 🏓", "output");
-          break;
-        case "exit":
-          addLine("❌  Exiting terminal...", "output");
-          setTimeout(() => {
-            setLines([createLine("Welcome to the Lamoia's Terminal!", "info")]);
-            toggleTerminal();
-          }, 1000);
-          break;
-        default:
-          if (trimmed !== "")
-            addLine(`Comando não reconhecido: ${command}`, "error");
-          break;
-      }
-    },
-    [addLine, toggleTerminal],
-  );
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    // console.log('mama aqui victor');
-    // e.preventDefault();
-    // e.stopPropagation();
-    // if (e.ctrlKey && e.key.toLowerCase() === "j") {
-    //   console.log('Custom save triggered');
-
-    //   // Your custom logic here
-    // }
-    if (e.key === "Enter") {
-      const command = currentInput;
-      if (command.trim() !== "") {
-        commandHistory.current.push(command);
-        historyPointer.current = commandHistory.current.length;
-      }
-      processCommand(command);
-      setCurrentInput("");
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      if (historyPointer.current > 0) {
-        historyPointer.current -= 1;
-        setCurrentInput(commandHistory.current[historyPointer.current] || "");
-      }
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      if (historyPointer.current < commandHistory.current.length - 1) {
-        historyPointer.current += 1;
-        setCurrentInput(commandHistory.current[historyPointer.current] || "");
-      } else {
-        historyPointer.current = commandHistory.current.length;
-        setCurrentInput("");
-      }
-    } else if (e.ctrlKey && e.key === "c") {
-      addLine("Process interrupted.", "error");
-      setCurrentInput("");
-      resolveInput.current = null;
-    }
-  };
-
-  // Atalhos globais (ctrl+', ctrl+j, Escape)
-  useEffect(() => {
-    const handleGlobalKeyDown = (event: globalThis.KeyboardEvent) => {
-      const isToggleShortcut =
-        event.ctrlKey && ["Quote", "KeyJ"].includes(event.code);
-
-      if (isToggleShortcut) {
-        event.preventDefault();
-        event.stopPropagation();
-        toggleTerminal();
-      } else if (event.key === "Escape" && isTerminalOpen) {
-        toggleTerminal();
-      }
-    };
-
-    document.addEventListener("keydown", handleGlobalKeyDown, {
-      capture: true,
-    });
-    return () =>
-      document.removeEventListener("keydown", handleGlobalKeyDown, {
-        capture: true,
-      });
-  }, [toggleTerminal, isTerminalOpen]);
-
-  const getLineColor = (type: TerminalLine["type"]) => {
-    switch (type) {
-      case "error":
-        return "text-red-400";
-      case "success":
-        return "text-green-400";
-      case "info":
-        return "text-cyan-400";
-      case "input":
-        return "text-cyan-300";
-      case "prompt":
-        return "text-yellow-400";
-      default:
-        return "text-gray-200";
-    }
-  };
+  useKeyboardShortcuts(toggleTerminal, isTerminalOpen);
 
   return (
-    <AnimatePresence>
-      {isTerminalOpen && (
-        <motion.div
-          initial={{ y: "100%", opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: "100%", opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className={cn(
-            "fixed bottom-0 left-0 right-0 z-50 w-full",
-            "backdrop-blur-xl bg-black/70 border-t border-white/10",
-          )}
-          onClick={() => inputRef.current?.focus()}
-        >
-          {/* Header com bolinhas estilo macOS */}
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-            <div className="flex items-center gap-2">
-              <div className="flex gap-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleTerminal();
-                  }}
-                  className="h-3 w-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
-                  aria-label="Close terminal"
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLines([]);
-                  }}
-                  className="h-3 w-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors"
-                  aria-label="Clear terminal"
-                />
-                <div className="h-3 w-3 rounded-full bg-green-500" />
-              </div>
-              <span className="ml-3 text-xs text-gray-400 font-mono select-none">
-                lamoia-terminal
-              </span>
-            </div>
-            {isExecuting && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs text-green-400 font-mono"
-              >
-                ● executing...
-              </motion.span>
+    <>
+      <AnimatePresence>
+        {isTerminalOpen && (
+          <motion.div
+            initial={{ y: "50%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "50%", opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={cn(
+              "absolute left-0 right-0 bottom-0 z-50 backdrop-blur-[5px]",
+              "bg-neutral-950/70 shadow-[0_-20px_60px_-40px_rgba(0,0,0,0.9)]",
             )}
-          </div>
-
-          {/* Corpo do terminal */}
-          <div
-            ref={scrollRef}
-            className="h-[260px] overflow-y-auto overflow-x-hidden p-4 font-mono text-sm scrollbar-none"
+            onClick={() => inputRef.current?.focus()}
           >
-            {lines.map((line, index) => (
-              <motion.div
-                key={line.id}
-                initial={
-                  index >= lines.length - 3
-                    ? { opacity: 0, y: -5 }
-                    : { opacity: 1, y: 0 }
-                }
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.15 }}
-                className={cn(
-                  "whitespace-pre-wrap break-all leading-relaxed",
-                  getLineColor(line.type),
-                )}
-              >
-                {line.content || "\u00A0"}
-              </motion.div>
-            ))}
+            <Header
+              toggleTerminal={toggleTerminal}
+              setLines={setLines}
+              isExecuting={isExecuting}
+            />
 
-            {/* Linha de input */}
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-cyan-400 select-none">$</span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1 bg-transparent text-gray-200 outline-none caret-cyan-400 font-mono text-sm"
-                spellCheck={false}
-                autoComplete="off"
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <Body
+              lines={lines}
+              intermediateCode={intermediateCode}
+              currentInput={currentInput}
+              inputRef={inputRef}
+              setIsExecuting={setIsExecuting}
+              setCurrentInput={setCurrentInput}
+              setLines={setLines}
+              toggleTerminal={toggleTerminal}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

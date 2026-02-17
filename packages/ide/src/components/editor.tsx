@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { useEditor } from "@/hooks/useEditor";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function Editor() {
   const { initializeEditor, setConfig } = useEditor();
@@ -14,14 +14,9 @@ export function Editor() {
   }, [initializeEditor]);
 
   useEffect(() => {
-    if (darkMode) return setConfig({ theme: "vs-dark" });
-    setConfig({ theme: "hc-light" });
+    if (darkMode) return setConfig({ theme: "editor-glass-dark" });
+    setConfig({ theme: "editor-glass-light" });
   }, [darkMode, setConfig]);
 
-  return (
-    <div
-      ref={editorContainerRef}
-      className="w-full h-full overflow-hidden rounded-sm border-2 border-primary-opaque"
-    />
-  );
+  return <div ref={editorContainerRef} className="w-full h-full" />;
 }
