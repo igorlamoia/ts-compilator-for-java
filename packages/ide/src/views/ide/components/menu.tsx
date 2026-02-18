@@ -15,7 +15,7 @@ export function Menu({ handleRun, runAll }: MenuProps) {
   const { locale } = useRouter();
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-1.5">
+    <div className="flex items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 px-4 py-1.5">
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span className="rounded-full bg-white/10 px-3 py-1 text-foreground">
           Estúdio

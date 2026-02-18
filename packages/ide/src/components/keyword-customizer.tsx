@@ -9,6 +9,8 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+import { BorderBeam } from "./ui/border-beam";
 
 export function KeywordCustomizer({
   isOpen,
@@ -147,7 +149,6 @@ export function KeywordCustomizer({
           aria-describedby="keyword-customizer-description"
           className="flex flex-col h-full"
         >
-          {/* Header */}
           <DialogHeader>
             <div>
               <DialogTitle id="keyword-customizer-title">
@@ -160,26 +161,12 @@ export function KeywordCustomizer({
             <DialogClose
               type="button"
               aria-label="Fechar personalizador de keywords"
-              className="p-1 rounded-md hover:dark:bg-slate-700 hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-md hover:dark:bg-slate-700 hover:bg-gray-100 transition-colors cursor-pointer"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <X />
             </DialogClose>
           </DialogHeader>
 
-          {/* Content */}
           <div className="overflow-y-auto p-5 flex-1">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500 mb-2">
@@ -198,7 +185,7 @@ export function KeywordCustomizer({
                     className={`
                         px-2.5 py-1 rounded-md text-xs font-mono border
                         transition-colors
-                        hover:dark:bg-slate-700 hover:bg-gray-100
+                        hover:dark:bg-slate-700 hover:bg-gray-100 cursor-pointer
                         focus:outline-none focus:ring-2 focus:ring-cyan-500/50
                         ${
                           index === currentStep
@@ -215,7 +202,7 @@ export function KeywordCustomizer({
                     <span className="dark:text-gray-500 text-gray-400 mx-1">
                       →
                     </span>
-                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
+                    <span className="text-cyan-600 dark:text-(--color-primary) font-semibold">
                       {mapping.custom}
                     </span>
                   </button>
@@ -247,7 +234,7 @@ export function KeywordCustomizer({
                 className="dark:text-gray-200 text-gray-800 text-base"
               >
                 Como você quer escrever o comando{" "}
-                <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">
+                <span className="font-mono font-bold text-cyan-600 dark:text-(--color-primary)">
                   {currentMapping.original}
                 </span>
                 ?
@@ -303,14 +290,13 @@ export function KeywordCustomizer({
             </div>
           </div>
 
-          {/* Footer */}
           <DialogFooter>
             <button
               onClick={handleResetDraft}
               type="button"
               disabled={!hasChanges}
               className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition-colors
+                  px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer
                   ${
                     hasChanges
                       ? "dark:text-gray-300 text-gray-600 hover:dark:bg-slate-700 hover:bg-gray-100"
@@ -327,7 +313,7 @@ export function KeywordCustomizer({
                 type="button"
                 disabled={currentStep === 0}
                 className={`
-                    px-4 py-2 rounded-md text-sm font-medium transition-colors
+                    px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer
                     ${
                       currentStep === 0
                         ? "dark:text-gray-600 text-gray-300 cursor-not-allowed"
@@ -342,6 +328,7 @@ export function KeywordCustomizer({
                 <button
                   type="submit"
                   className="
+                    cursor-pointer
                       px-6 py-2 rounded-md text-sm font-medium
                       bg-cyan-600 text-white hover:bg-cyan-700
                       transition-colors
@@ -353,6 +340,7 @@ export function KeywordCustomizer({
                 <button
                   type="submit"
                   className="
+                  cursor-pointer
                       px-6 py-2 rounded-md text-sm font-medium
                       bg-emerald-600 text-white hover:bg-emerald-700
                       transition-colors
@@ -364,6 +352,13 @@ export function KeywordCustomizer({
             </div>
           </DialogFooter>
         </form>
+        <BorderBeam
+          duration={6}
+          delay={3}
+          size={400}
+          borderWidth={2}
+          className="from-transparent via-(--color-primary) to-transparent"
+        />
       </DialogContent>
     </Dialog>
   );

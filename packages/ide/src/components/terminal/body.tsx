@@ -230,14 +230,14 @@ export function Body(props: BodyProps) {
 
       {/* Linha de input */}
       <div className="flex items-center gap-1 mt-1">
-        <span className="text-cyan-400 select-none">$</span>
+        <span className="text-(--color-primary) select-none">$</span>
         <input
           ref={inputRef}
           type="text"
           value={currentInput}
           onChange={(e) => setCurrentInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent text-gray-200 outline-none caret-cyan-400 font-mono text-sm"
+          className="flex-1 bg-transparent text-gray-500 dark:text-gray-200 outline-none caret-(--color-primary) font-mono text-sm"
           spellCheck={false}
           autoComplete="off"
         />

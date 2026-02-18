@@ -9,7 +9,7 @@ export function useKeyboardShortcuts(
   useEffect(() => {
     const handleGlobalKeyDown = (event: globalThis.KeyboardEvent) => {
       const isToggleShortcut =
-        event.ctrlKey && ["Quote", "KeyJ"].includes(event.code);
+        event.ctrlKey && ["Backquote", "KeyJ"].includes(event.code);
 
       if (isToggleShortcut) {
         event.preventDefault();
@@ -20,10 +20,7 @@ export function useKeyboardShortcuts(
       }
 
       // Atalho para abrir/fechar o explorer (ctrl+e)
-      if (
-        (event.ctrlKey && event.code === "KeyE") ||
-        (event.ctrlKey && event.code === "KeyB")
-      ) {
+      if (event.ctrlKey && ["KeyE", "KeyB"].includes(event.code)) {
         event.preventDefault();
         event.stopPropagation();
         if (setIsExplorerOpen) {

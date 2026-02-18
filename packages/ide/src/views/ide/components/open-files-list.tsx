@@ -8,7 +8,7 @@ export function OpenFIlesList({
   closeTab: (path: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto border-b border-white/10 bg-white/5 px-2 py-2">
+    <div className="flex items-center gap-2 overflow-x-auto border-b border-black/10 dark:border-white/10 bg-white/5 px-2 py-2">
       {openTabs.map((tab) => (
         <div
           key={tab}

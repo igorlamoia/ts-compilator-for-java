@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export function Header({ toggleTerminal, setLines, isExecuting }: HeaderProps) {
   return (
-    <div className="flex items-center border-t rounded-t-lg justify-between border-b border-white/10 px-4 py-2">
+    <div className="flex items-center border-t rounded-t-lg justify-between border-b border-black/10 dark:border-white/10 px-4 py-2">
       <div className="flex items-center gap-2">
         <div className="flex gap-x-2">
           <button

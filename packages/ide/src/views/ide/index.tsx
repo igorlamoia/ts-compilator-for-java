@@ -1,6 +1,6 @@
-import { ShowTokens } from "./components/show-tokens";
+import { ShowTokens } from "../tokens/show-tokens";
 import { useLexerAnalyse } from "./useLexerAnalyse";
-import { ListIntermediateCode } from "./components/list-intermediate-code";
+import { ListIntermediateCode } from "../tokens/list-intermediate-code";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 import { TToken } from "@/@types/token";
 import { useState } from "react";
@@ -45,9 +45,9 @@ export function IDEView({
   return (
     <>
       <div className="relative rounded-2xl">
-        <div className="rounded-2xl border border-white/10 bg-neutral-950/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100/70 dark:bg-neutral-950/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
           <Menu handleRun={handleRun} runAll={runAll} />
-          <div className={`flex h-[70vh]`}>
+          <div className={`flex h-[70vh] overflow-hidden rounded-b-2xl`}>
             <AnimatePresence>
               <div className={`flex flex-1 flex-col sm:flex-row h-full w-full`}>
                 <SideMenu
@@ -58,7 +58,7 @@ export function IDEView({
                   <motion.div
                     initial={{ x: "-5%", opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    className="flex flex-col border-r border-white/10 sm:w-70"
+                    className="flex flex-col border-r border-black/10 dark:border-white/10 sm:w-70"
                     transition={{
                       type: "spring",
                       damping: 20,
@@ -106,7 +106,7 @@ export function IDEView({
         className="from-transparent via-slate-600 to-transparent"
       /> */}
       </div>
-      <div className="flex flex-col gap-4 ">
+      <div className="flex flex-col gap-4">
         <ShowTokens analyseData={analyseData} />
         <div className="flex flex-col gap-2">
           <ListIntermediateCode instructions={intermediateCode.instructions} />

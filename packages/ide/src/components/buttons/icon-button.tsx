@@ -21,7 +21,7 @@ export default function IconButton({
             className={cn(
               buttonVariants({ variant: "ghost", size: "icon" }),
               "size-8 rounded-xl cursor-pointer px-2",
-              selected && "bg-white/10",
+              selected && "bg-black/10 dark:bg-white/10",
               className,
             )}
             {...rest}

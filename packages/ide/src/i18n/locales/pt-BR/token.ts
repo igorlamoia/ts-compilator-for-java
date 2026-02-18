@@ -45,6 +45,15 @@ const token = {
   float_literal: "literal float",
   hex_literal: "literal hexadecimal",
   octal_literal: "literal octal",
+
+  // types
+  LITERALS: "literais",
+  ARITHMETICS: "aritméticos",
+  ASSIGNMENTS: "atribuições",
+  LOGICALS: "lógicos",
+  RELATIONALS: "relacionais",
+  RESERVEDS: "reservadas",
+  SYMBOLS: "símbolos",
 };
 
 export default token;

@@ -86,16 +86,16 @@ export const COLORS = {
 export const getLineColor = (type: TerminalLine["type"]) => {
   switch (type) {
     case "error":
-      return "text-red-400";
+      return "text-red-600/80 dark:text-red-400";
     case "success":
-      return "text-green-400";
+      return "text-green-900/80 dark:text-green-400";
     case "info":
-      return "text-cyan-400";
+      return "text-cyan-700/80 dark:text-(--color-primary)";
     case "input":
-      return "text-cyan-300";
+      return "text-cyan-700/80 dark:text-(--color-primary)";
     case "prompt":
-      return "text-yellow-400";
+      return "text-yellow-700/80 dark:text-yellow-400";
     default:
-      return "text-gray-200";
+      return "text-gray-500 dark:text-gray-200";
   }
 };
