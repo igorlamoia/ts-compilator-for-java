@@ -164,8 +164,8 @@ export function Footer({ toggleKeywordCustomizer }: FooterProps) {
                         className={cn(
                           "rounded px-1.5 py-0.5 text-xs border border-transparent",
                           targetLocale.code === locale
-                            ? "bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white"
-                            : "hover:border-current",
+                            ? "bg-gray-200 text-neutral-900 dark:bg-neutral-700/50 dark:text-white"
+                            : "dark:hover:bg-neutral-700/50 text-neutral-700 dark:text-neutral-300 hover:bg-gray-200",
                         )}
                       >
                         {targetLocale.flag} {targetLocale.code}
