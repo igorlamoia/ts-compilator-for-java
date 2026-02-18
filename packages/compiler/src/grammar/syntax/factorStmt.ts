@@ -1,6 +1,5 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
-import { IssueError } from "../../issue";
 import { exprStmt } from "./exprStmt";
 import { functionCallExpr } from "./functionCallExpr";
 
@@ -54,10 +53,9 @@ export function factorStmt(iterator: TokenIterator): string {
     return inner;
   }
 
-  throw new IssueError(
-    "grammar.unexpected_token",
-    token.line,
-    token.column,
-    { lexeme: token.lexeme, line: token.line, column: token.column }
-  );
+  iterator.throwError("grammar.unexpected_token", token.line, token.column, {
+    lexeme: token.lexeme,
+    line: token.line,
+    column: token.column,
+  });
 }

@@ -17,11 +17,11 @@ export type TIntermediateCodeData = {
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<TIntermediateCodeData>
+  res: NextApiResponse<TIntermediateCodeData>,
 ) {
   try {
-    const { tokens } = req.body as { tokens: Token[] };
-    const iterator = new TokenIterator(tokens);
+    const { tokens, locale } = req.body as { tokens: Token[]; locale?: string };
+    const iterator = new TokenIterator(tokens, locale);
     const instructions = iterator.generateIntermediateCode();
     res.status(200).json({
       instructions,

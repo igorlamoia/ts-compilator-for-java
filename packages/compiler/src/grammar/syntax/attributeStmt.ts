@@ -1,6 +1,5 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
-import { IssueError } from "../../issue";
 import { exprStmt } from "./exprStmt";
 /**
  * Processes an attribute statement by first parsing an identifier token,
@@ -33,10 +32,11 @@ export function attributeStmt(iterator: TokenIterator): void {
   }
 
   if (!Object.values(TOKENS.ASSIGNMENTS).includes(iterator.peek().type))
-    throw new IssueError(
-      `Invalid assignment operator "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+    iterator.throwError(
+      "grammar.invalid_assignment_operator",
       token.line,
-      token.column
+      token.column,
+      { lexeme: token.lexeme, line: token.line, column: token.column },
     );
   const assignmentType = iterator.peek().type;
   iterator.consume(assignmentType);
@@ -46,7 +46,7 @@ export function attributeStmt(iterator: TokenIterator): void {
 export function emitAssignmentChain(
   iterator: TokenIterator,
   firstTarget: string,
-  firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal
+  firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal,
 ): void {
   const { equal } = TOKENS.ASSIGNMENTS;
   const targets: string[] = [firstTarget];

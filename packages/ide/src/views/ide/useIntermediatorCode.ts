@@ -26,6 +26,7 @@ export function useIntermediatorCode() {
       cleanIssues();
       const { data } = await api.post<TIntermediateCodeData>("/intermediator", {
         tokens: tokens,
+        locale: locale,
       });
       const issues = [...data.warnings, ...data.infos];
       setIntermediateCode(data);
@@ -43,11 +44,7 @@ export function useIntermediatorCode() {
         if (lexerError) handleIssues([lexerError as IssueDetails], true);
         showToast({
           message: lexerError
-            ? t(
-                locale,
-                (lexerError as IssueDetails).message,
-                (lexerError as IssueDetails).params,
-              )
+            ? (lexerError as IssueDetails).message
             : message || t(locale, "toast.error_occurred"),
           type: "error",
         });
@@ -65,7 +62,7 @@ export function useIntermediatorCode() {
 
   const handleIssues = (data: IssueDetails[], showDetails: boolean = false) => {
     const allLineIssues: TLineAlert[] = data.map((issue) => ({
-      message: t(locale, issue.message, issue.params),
+      message: issue.message,
       startLineNumber: issue.line,
       endLineNumber: issue.line,
       startColumn: issue.column,

@@ -1,6 +1,5 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
-import { IssueError } from "../../issue";
 
 /**
  * Parses a break statement and emits a JUMP to the current loop's break label.
@@ -13,10 +12,10 @@ export function breakStmt(iterator: TokenIterator): void {
 
   const breakLabel = iterator.getCurrentBreakLabel();
   if (!breakLabel) {
-    throw new IssueError(
-      "break statement outside of loop",
+    iterator.throwError(
+      "grammar.break_outside_loop",
       breakToken.line,
-      breakToken.column
+      breakToken.column,
     );
   }
 

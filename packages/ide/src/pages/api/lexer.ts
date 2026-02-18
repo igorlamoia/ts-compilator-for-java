@@ -17,11 +17,12 @@ export type TLexerAnalyseData = {
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<TLexerAnalyseData>
+  res: NextApiResponse<TLexerAnalyseData>,
 ) {
   try {
     const keywordMap: KeywordMap | undefined = req.body.keywordMap;
-    const lexer = new Lexer(req.body.sourceCode, keywordMap);
+    const locale: string | undefined = req.body.locale;
+    const lexer = new Lexer(req.body.sourceCode, keywordMap, locale);
     const tokens = lexer.scanTokens();
     res.status(200).json({
       message:

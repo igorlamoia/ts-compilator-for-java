@@ -3,6 +3,7 @@ import { functionCall } from "../grammar/syntax/function-call";
 import { IssueError } from "../issue";
 import { Emitter } from "../ir/emitter";
 import { Token } from "./";
+import { translate } from "../i18n";
 
 interface LoopContext {
   breakLabel: string;
@@ -14,12 +15,14 @@ export class TokenIterator {
   private index: number;
   public readonly emitter: Emitter;
   private loopStack: LoopContext[];
+  private locale: string | undefined;
 
-  constructor(tokens: Token[]) {
+  constructor(tokens: Token[], locale?: string) {
     this.tokens = tokens;
     this.index = 0;
     this.emitter = new Emitter();
     this.loopStack = [];
+    this.locale = locale;
   }
 
   peek(): Token {
@@ -33,11 +36,9 @@ export class TokenIterator {
   next(): Token {
     if (!this.hasNext()) {
       const last = this.tokens[this.tokens.length - 1];
-      throw new IssueError(
-        "iterator.no_more_tokens",
-        last?.line ?? 1,
-        last?.column ?? 1,
-      );
+      const code = "iterator.no_more_tokens";
+      const message = translate(this.locale, code);
+      throw new IssueError(code, message, last?.line ?? 1, last?.column ?? 1);
     }
     return this.tokens[this.index++];
   }
@@ -46,19 +47,18 @@ export class TokenIterator {
     const token = this.peek();
     const isDifferentType = token.type !== expectedType;
     const isDifferentLexeme = expectedLexeme && token.lexeme !== expectedLexeme;
-    if (isDifferentType || isDifferentLexeme)
-      throw new IssueError(
-        "iterator.unexpected_token",
-        token.line,
-        token.column,
-        {
-          line: token.line,
-          column: token.column,
-          expectedType,
-          actualType: token.type,
-          lexeme: token.lexeme,
-        }
-      );
+    if (isDifferentType || isDifferentLexeme) {
+      const code = "iterator.unexpected_token";
+      const params = {
+        line: token.line,
+        column: token.column,
+        expectedType,
+        actualType: token.type,
+        lexeme: token.lexeme,
+      };
+      const message = translate(this.locale, code, params);
+      throw new IssueError(code, message, token.line, token.column, params);
+    }
     return this.next();
   }
 
@@ -97,5 +97,15 @@ export class TokenIterator {
   getCurrentContinueLabel(): string | null {
     if (this.loopStack.length === 0) return null;
     return this.loopStack[this.loopStack.length - 1].continueLabel;
+  }
+
+  throwError(
+    code: string,
+    line: number,
+    column: number,
+    params?: Record<string, string | number | boolean>,
+  ): never {
+    const message = translate(this.locale, code, params);
+    throw new IssueError(code, message, line, column, params);
   }
 }

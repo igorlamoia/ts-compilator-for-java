@@ -1,6 +1,5 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
-import { IssueError } from "../../issue";
 import { forStmt } from "./forStmt";
 import { blockStmt } from "./blockStmt";
 import { attributeStmt, emitAssignmentChain } from "./attributeStmt";
@@ -53,22 +52,22 @@ export function stmt(iterator: TokenIterator): void {
     return;
   }
 
-  throw new IssueError(
+  iterator.throwError(
     "grammar.unexpected_statement",
     token.line,
     token.column,
-    { lexeme: token.lexeme }
+    { lexeme: token.lexeme },
   );
 }
 
 function prefixIncrementStmtVariant(iterator: TokenIterator): void {
   const token = iterator.peek();
   if (token.lexeme !== "++") {
-    throw new IssueError(
+    iterator.throwError(
       "grammar.unexpected_statement",
       token.line,
       token.column,
-      { lexeme: token.lexeme }
+      { lexeme: token.lexeme },
     );
   }
 

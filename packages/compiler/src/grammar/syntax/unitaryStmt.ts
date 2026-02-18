@@ -2,7 +2,6 @@ import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { factorStmt } from "./factorStmt";
 import { TUnaryArithmetics } from "../../interpreter/constants";
-import { IssueError } from "../../issue";
 
 /**
  * Parses a unary expression or factor.
@@ -26,10 +25,11 @@ export function unitaryStmt(iterator: TokenIterator): string {
 
   if (token.type === plus || token.type === minus) {
     if (token.lexeme === "++") {
-      throw new IssueError(
-        `Invalid unary increment usage "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+      iterator.throwError(
+        "grammar.invalid_unary_increment",
         token.line,
-        token.column
+        token.column,
+        { lexeme: token.lexeme, line: token.line, column: token.column },
       );
     }
     const operator = token.type === plus ? "unary+" : "unary-";

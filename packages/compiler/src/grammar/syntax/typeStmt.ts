@@ -1,6 +1,5 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
-import { IssueError } from "../../issue";
 
 /**
  * Parses a type declaration: `int`, `float`, `string`, or optionally `void`.
@@ -9,7 +8,10 @@ import { IssueError } from "../../issue";
  * @param allowVoid - Whether to allow `void` type (default: false)
  * @returns The type name as a string ("int", "float", "string", or "void")
  */
-export function typeStmt(iterator: TokenIterator, allowVoid: boolean = false): string {
+export function typeStmt(
+  iterator: TokenIterator,
+  allowVoid: boolean = false,
+): string {
   const { int, float, string, void: voidType } = TOKENS.RESERVEDS;
   const token = iterator.peek();
   const validTypes = allowVoid
@@ -17,12 +19,11 @@ export function typeStmt(iterator: TokenIterator, allowVoid: boolean = false): s
     : [int, float, string];
 
   if (!validTypes.includes(token.type)) {
-    throw new IssueError(
-      "grammar.unexpected_type",
-      token.line,
-      token.column,
-      { lexeme: token.lexeme, line: token.line, column: token.column }
-    );
+    iterator.throwError("grammar.unexpected_type", token.line, token.column, {
+      lexeme: token.lexeme,
+      line: token.line,
+      column: token.column,
+    });
   }
 
   return iterator.consume(token.type).lexeme; // retorna "int", "float", "string", ou "void"

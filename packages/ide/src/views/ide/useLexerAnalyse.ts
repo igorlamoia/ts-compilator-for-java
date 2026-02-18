@@ -30,6 +30,7 @@ export function useLexerAnalyse() {
       const { data } = await api.post<TLexerAnalyseData>("/lexer", {
         sourceCode: code,
         keywordMap: buildKeywordMap(),
+        locale: locale,
       });
       const issues = [...data.warnings, ...data.infos];
       setAnalyseData(data);
@@ -54,7 +55,7 @@ export function useLexerAnalyse() {
         if (lexerError) handleIssues([lexerError], true);
         showToast({
           message: lexerError
-            ? t(locale, lexerError.message, lexerError.params)
+            ? lexerError.message
             : message || t(locale, "toast.error_occurred"),
           type: "error",
         });
@@ -72,7 +73,7 @@ export function useLexerAnalyse() {
 
   const handleIssues = (data: IssueDetails[], showDetails: boolean = false) => {
     const allLineIssues: TLineAlert[] = data.map((issue) => ({
-      message: t(locale, issue.message, issue.params),
+      message: issue.message,
       startLineNumber: issue.line,
       endLineNumber: issue.line,
       startColumn: issue.column,

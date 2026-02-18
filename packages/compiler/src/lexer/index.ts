@@ -4,6 +4,7 @@ import { isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
 import { IssueWarning, IssueInfo, IssueError } from "../issue";
 import { TIssueParams } from "../issue/details";
+import { translate } from "../i18n";
 
 export type KeywordMap = Record<string, number>;
 
@@ -17,10 +18,12 @@ export class Lexer {
   warnings: IssueWarning[] = [];
   infos: IssueInfo[] = [];
   keywordMap: KeywordMap;
+  locale: string | undefined;
 
-  constructor(source: string, customKeywords?: KeywordMap) {
+  constructor(source: string, customKeywords?: KeywordMap, locale?: string) {
     this.source = source;
     this.keywordMap = customKeywords ?? (TOKENS.RESERVEDS as KeywordMap);
+    this.locale = locale;
   }
 
   public scanTokens(): Token[] {
@@ -76,7 +79,7 @@ export class Lexer {
     const text =
       lexeme || this.source.substring(this.scannerBegin, this.current);
     this.tokens.push(
-      new Token(type, text, this.line, this.column - text.length + addedChars)
+      new Token(type, text, this.line, this.column - text.length + addedChars),
     );
   }
 
@@ -100,15 +103,22 @@ export class Lexer {
     this.column = 1;
   }
 
-  public error(message: string, params?: TIssueParams) {
-    throw new IssueError(message, this.line, this.column, params);
+  public error(code: string, params?: TIssueParams) {
+    const message = translate(this.locale, code, params);
+    throw new IssueError(code, message, this.line, this.column, params);
   }
 
-  public warning(message: string, params?: TIssueParams) {
-    this.warnings.push(new IssueWarning(message, this.line, this.column, params));
+  public warning(code: string, params?: TIssueParams) {
+    const message = translate(this.locale, code, params);
+    this.warnings.push(
+      new IssueWarning(code, message, this.line, this.column, params),
+    );
   }
 
-  public info(message: string, params?: TIssueParams) {
-    this.infos.push(new IssueInfo(message, this.line, this.column, params));
+  public info(code: string, params?: TIssueParams) {
+    const message = translate(this.locale, code, params);
+    this.infos.push(
+      new IssueInfo(code, message, this.line, this.column, params),
+    );
   }
 }
