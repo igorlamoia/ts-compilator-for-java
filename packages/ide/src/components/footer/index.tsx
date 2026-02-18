@@ -69,7 +69,7 @@ export function Footer({ toggleKeywordCustomizer }: FooterProps) {
 
   const { setIsTerminalOpen } = useTerminalContext();
 
-  const toggleTerminal = () => setIsTerminalOpen((old: boolean) => !old);
+  const toggleTerminal = () => setIsTerminalOpen((isOpen) => !isOpen);
 
   return (
     <>

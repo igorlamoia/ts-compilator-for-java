@@ -13,8 +13,7 @@ import { cn } from "@/lib/utils";
 interface BodyProps {
   lines: TerminalLine[];
   currentInput: string;
-  handleKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   setCurrentInput: React.Dispatch<React.SetStateAction<string>>;
   intermediateCode: Instruction[];
   setIsExecuting: React.Dispatch<React.SetStateAction<boolean>>;

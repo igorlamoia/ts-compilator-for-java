@@ -18,7 +18,7 @@ const geistMono = localFont({
 
 type TerminalContextType = {
   isTerminalOpen: boolean;
-  setIsTerminalOpen: (isOpen: boolean) => void;
+  setIsTerminalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const TerminalContext = createContext<TerminalContextType>(
