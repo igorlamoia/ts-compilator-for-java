@@ -1,3 +1,5 @@
+import { TerminalLine } from "@/components/terminal";
+
 const ARITHMETICS = {
   text: "text-yellow-500",
   bg: "bg-yellow-100 dark:bg-amber-900/55",
@@ -79,4 +81,21 @@ export const COLORS = {
   COMMENTS,
   ERRORS,
   DEFAULT,
+};
+
+export const getLineColor = (type: TerminalLine["type"]) => {
+  switch (type) {
+    case "error":
+      return "text-red-600/80 dark:text-red-400";
+    case "success":
+      return "text-green-900/80 dark:text-green-400";
+    case "info":
+      return "text-cyan-700/80 dark:text-(--color-primary)";
+    case "input":
+      return "text-cyan-700/80 dark:text-(--color-primary)";
+    case "prompt":
+      return "text-yellow-700/80 dark:text-yellow-400";
+    default:
+      return "text-gray-500 dark:text-gray-200";
+  }
 };

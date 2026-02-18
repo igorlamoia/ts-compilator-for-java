@@ -8,14 +8,17 @@ import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
+import { t } from "@/i18n";
+import { useRouter } from "next/router";
 
 export function useLexerAnalyse() {
   const { showToast } = useToast();
+  const { locale } = useRouter();
   // const [isLoading, setIsLoading] = useState(false);
   const { getEditorCode, showLineIssues, cleanIssues } = useEditor();
   const { buildKeywordMap } = useKeywords();
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
-    {} as TLexerAnalyseData
+    {} as TLexerAnalyseData,
   );
   const handleRun = async (): Promise<
     TLexerAnalyseData["tokens"] | undefined
@@ -31,7 +34,9 @@ export function useLexerAnalyse() {
       const issues = [...data.warnings, ...data.infos];
       setAnalyseData(data);
       showToast({
-        message: data.message || "Lexical Analysis completed",
+        message: issues.length
+          ? t(locale, "toast.lexer_completed_with_warnings")
+          : t(locale, "toast.lexer_completed"),
         type: issues.length ? "warning" : "success",
       });
       window.scrollTo({
@@ -46,9 +51,11 @@ export function useLexerAnalyse() {
       if (error instanceof AxiosError) {
         const { error: lexerError, message } = (error?.response?.data ||
           {}) as TLexerAnalyseData;
-        handleIssues([lexerError as IssueDetails], true);
+        if (lexerError) handleIssues([lexerError], true);
         showToast({
-          message: message || "An error occurred",
+          message: lexerError
+            ? t(locale, lexerError.message, lexerError.params)
+            : message || t(locale, "toast.error_occurred"),
           type: "error",
         });
         return;
@@ -65,7 +72,7 @@ export function useLexerAnalyse() {
 
   const handleIssues = (data: IssueDetails[], showDetails: boolean = false) => {
     const allLineIssues: TLineAlert[] = data.map((issue) => ({
-      message: issue.message,
+      message: t(locale, issue.message, issue.params),
       startLineNumber: issue.line,
       endLineNumber: issue.line,
       startColumn: issue.column,

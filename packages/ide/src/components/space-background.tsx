@@ -1,15 +1,14 @@
-import { useTheme } from "@/contexts/ThemeContext";
 import { Meteors } from "./ui/meteors";
 import { Particles } from "@/components/ui/particles";
 
 export function SpaceBackground() {
-  const { darkMode } = useTheme();
-  const background = darkMode
-    ? "radial-gradient(ellipse at bottom, #0d1d31 0%, #0c0d13 100%)"
-    : "radial-gradient(ellipse at bottom, #cfddf3 0%, #ffffff 100%)";
-
   return (
-    <div style={{ background }} className="overflow-hidden flex inset-0 fixed">
+    <div
+      className="overflow-hidden flex inset-0 fixed
+      bg-linear-to-t from-[#cfddf3] to-[#ffffff]
+      dark:bg-linear-to-t dark:from-neutral-950 dark:to-slate-950
+    "
+    >
       <Meteors number={5} />
       <Particles />
     </div>

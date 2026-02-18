@@ -8,6 +8,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CardsPreview } from "./cards-preview";
 import { useKeywords } from "@/contexts/KeywordContext";
+import { useRouter } from "next/router";
+import { t } from "@/i18n";
 
 interface IShowTokensProps {
   analyseData: TLexerAnalyseData;
@@ -17,6 +19,7 @@ const TokenClassification = new Classification();
 
 export function ShowTokens({ analyseData }: IShowTokensProps) {
   const { mappings } = useKeywords();
+  const { locale } = useRouter();
 
   const keyTypeIndexs = mappings.reduce(
     (acc, { original, custom, tokenId }) => {
@@ -48,15 +51,15 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
   return (
     <>
       <p className="text-xl font-medium whitespace-pre-wrap text-center">
-        <NumberTicker value={tokens.length} startValue={0} delay={1} /> Tokens
-        Generated
+        <NumberTicker value={tokens.length} startValue={0} delay={1} />{" "}
+        {t(locale, "ui.total_tokens")}
       </p>
       <div className="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw]">
         <CardsPreview allFormattedTokens={allFormattedTokens} />
       </div>
 
       <MainButton onClick={() => setHideAllTokens((old) => !old)}>
-        Show Sequence Tokens
+        {t(locale, "ui.show_tokens")}
       </MainButton>
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false}>
@@ -69,8 +72,10 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
               transition={{ duration: 0.24, ease: "easeOut" }}
               className="flex flex-col gap-2"
             >
-              <h2 className="text-xl font-bold">Sequence Tokens</h2>
-              <div className="flex gap-2 flex-wrap w-full">
+              <h2 className="text-xl font-bold">
+                {t(locale, "ui.sequence_tokens")}
+              </h2>
+              <div className="flex gap-2 flex-wrap w-full bg-transparent">
                 {allFormattedTokens.map(({ token, info: { styles } }) => (
                   <motion.div
                     key={token.line + "c" + token.column + "sequence"}
@@ -88,7 +93,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
           )}
         </AnimatePresence>
         <MainButton onClick={() => setHideTokensByType((old) => !old)}>
-          Show Token Types
+          {t(locale, "ui.type_tokens")}
         </MainButton>
 
         <AnimatePresence initial={false}>
@@ -106,20 +111,22 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                   className="flex-1"
                   onClick={() => setOrientation("horizontaly")}
                 >
-                  Horizontally
+                  Horizontal
                 </MainButton>
                 <MainButton
                   className="flex-1"
                   onClick={() => setOrientation("verticaly")}
                 >
-                  Vertically
+                  Vertical
                 </MainButton>
               </div>
 
               {orientation === "horizontaly" ? (
                 Object.entries(formattedTokens).map(([key, values]) => (
                   <div key={key}>
-                    <h3 className="text-lg font-bold">{key}</h3>
+                    <h3 className="text-lg font-bold capitalize">
+                      {t(locale, `token.${key}`)}
+                    </h3>
                     <div className="flex gap-2 flex-wrap w-full">
                       {values.map(({ token, info: { styles } }) => (
                         <motion.div
@@ -140,7 +147,9 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
                 <div className="flex-1 md:flex gap-2 flex-wrap w-full md:items-start">
                   {Object.entries(formattedTokens).map(([key, values]) => (
                     <div key={key} className="flex flex-col gap-2">
-                      <h3 className="text-lg font-bold">{key}</h3>
+                      <h3 className="text-lg font-bold capitalize">
+                        {t(locale, `token.${key}`)}
+                      </h3>
                       {values.map(({ token, info: { styles } }) => (
                         <motion.div
                           key={token.line + "c" + token.column + "verticaly"}

@@ -31,7 +31,14 @@ export class TokenIterator {
   }
 
   next(): Token {
-    if (!this.hasNext()) throw new Error("No more tokens available.");
+    if (!this.hasNext()) {
+      const last = this.tokens[this.tokens.length - 1];
+      throw new IssueError(
+        "iterator.no_more_tokens",
+        last?.line ?? 1,
+        last?.column ?? 1,
+      );
+    }
     return this.tokens[this.index++];
   }
 
@@ -41,10 +48,16 @@ export class TokenIterator {
     const isDifferentLexeme = expectedLexeme && token.lexeme !== expectedLexeme;
     if (isDifferentType || isDifferentLexeme)
       throw new IssueError(
-        `Unexpected token at line ${token.line}, column ${token.column}. ` +
-          `Expected type ${expectedType}, but got type ${token.type}, lexeme "${token.lexeme}".`,
+        "iterator.unexpected_token",
         token.line,
-        token.column
+        token.column,
+        {
+          line: token.line,
+          column: token.column,
+          expectedType,
+          actualType: token.type,
+          lexeme: token.lexeme,
+        }
       );
     return this.next();
   }

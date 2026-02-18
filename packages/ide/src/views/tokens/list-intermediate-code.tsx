@@ -2,6 +2,8 @@ import { TIntermediateCodeData } from "@/pages/api/intermediator";
 import { useRuntimeError } from "@/contexts/RuntimeErrorContext";
 import { motion } from "motion/react";
 import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { t } from "@/i18n";
 // import Instructions3D from "./matrix";
 
 export function ListIntermediateCode({
@@ -9,13 +11,17 @@ export function ListIntermediateCode({
 }: {
   instructions: TIntermediateCodeData["instructions"];
 }) {
+  const { locale } = useRouter();
   if (!instructions) return null;
 
   return (
     <div className="mt-4">
       <h2 className="text-center  text-2xl font-bold mb-6 font-mono drop-shadow-lg text-foreground">
-        Intermediate Code Instructions - Execution Timeline
+        {t(locale, "ui.intermediate_code_title")}
       </h2>
+      <p className="text-center text-muted-foreground mb-10  mx-auto">
+        {t(locale, "ui.intermediate_code_description")}
+      </p>
 
       <Mixed instructions={instructions} />
       {/* <Instructions3D instructions={instructions} /> */}
@@ -52,12 +58,12 @@ const Mixed = ({
 
   const getDotClassName = (index: number) => {
     if (runtimeErrorInstructionPointer === null)
-      return "bg-cyan-400/90 shadow-cyan-300/70";
+      return "bg-(--color-primary)/90 shadow-cyan-300/70";
     if (index < runtimeErrorInstructionPointer)
       return "bg-amber-400/90 shadow-amber-300/70";
     if (index === runtimeErrorInstructionPointer)
       return "bg-rose-500/90 shadow-rose-400/70";
-    return "bg-cyan-400/90 shadow-cyan-300/70";
+    return "bg-(--color-primary)/90 shadow-cyan-300/70";
   };
 
   return (

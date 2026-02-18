@@ -16,7 +16,7 @@ export function Toast(props: ToastProps) {
       className={`flex
       fixed
       backdrop-blur-sm
-      z-50
+      z-1000
       ${props.classes}
       transition-all duration-500 ease-out transform ${
         props.open ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-20"

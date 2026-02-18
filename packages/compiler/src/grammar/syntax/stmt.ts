@@ -54,9 +54,10 @@ export function stmt(iterator: TokenIterator): void {
   }
 
   throw new IssueError(
-    `Unexpected statement: ${token.lexeme}`,
+    "grammar.unexpected_statement",
     token.line,
-    token.column
+    token.column,
+    { lexeme: token.lexeme }
   );
 }
 
@@ -64,9 +65,10 @@ function prefixIncrementStmtVariant(iterator: TokenIterator): void {
   const token = iterator.peek();
   if (token.lexeme !== "++") {
     throw new IssueError(
-      `Unexpected statement: ${token.lexeme}`,
+      "grammar.unexpected_statement",
       token.line,
-      token.column
+      token.column,
+      { lexeme: token.lexeme }
     );
   }
 

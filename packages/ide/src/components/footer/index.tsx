@@ -1,7 +1,9 @@
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import {
   FileCodeIcon,
+  LanguagesIcon,
   MonitorIcon,
   TerminalIcon,
   SettingsIcon,
@@ -17,6 +19,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Dock, DockIcon } from "@/components/ui/dock";
+import { SUPPORTED_LOCALES, t } from "@/i18n";
+import { useTerminalContext } from "@/pages";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -56,14 +60,17 @@ const DATA = {
 };
 
 interface FooterProps {
-  toggleTerminal: () => void;
   toggleKeywordCustomizer: () => void;
 }
 
-export function Footer({
-  toggleTerminal,
-  toggleKeywordCustomizer,
-}: FooterProps) {
+export function Footer({ toggleKeywordCustomizer }: FooterProps) {
+  const router = useRouter();
+  const { locale, pathname, query } = router;
+
+  const { setIsTerminalOpen } = useTerminalContext();
+
+  const toggleTerminal = () => setIsTerminalOpen((isOpen) => !isOpen);
+
   return (
     <>
       <footer className="pointer-events-none fixed bottom-3 left-0 right-0 z-100 isolate flex justify-center">
@@ -89,7 +96,7 @@ export function Footer({
                       <social.icon className="size-4" />
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
+                  <TooltipContent>
                     <p>{name}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -110,8 +117,8 @@ export function Footer({
                     <SettingsIcon className="size-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                  <p>Personalização</p>
+                <TooltipContent>
+                  <p>{t(locale, "footer.settings")}</p>
                 </TooltipContent>
               </Tooltip>
             </DockIcon>
@@ -129,8 +136,42 @@ export function Footer({
                     <TerminalIcon className="size-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                  <p>Terminal</p>
+                <TooltipContent>
+                  <p>{t(locale, "footer.terminal")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </DockIcon>
+            <DockIcon>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    aria-label={t(locale, "footer.language")}
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "icon" }),
+                      "size-12 rounded-full cursor-default",
+                    )}
+                  >
+                    <LanguagesIcon className="size-4" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="flex gap-1">
+                    {SUPPORTED_LOCALES.map((targetLocale) => (
+                      <Link
+                        key={targetLocale.code}
+                        href={{ pathname, query }}
+                        locale={targetLocale.code}
+                        className={cn(
+                          "rounded px-1.5 py-0.5 text-xs border border-transparent",
+                          targetLocale.code === locale
+                            ? "bg-gray-200 text-neutral-900 dark:bg-neutral-700/50 dark:text-white"
+                            : "dark:hover:bg-neutral-700/50 text-neutral-700 dark:text-neutral-300 hover:bg-gray-200",
+                        )}
+                      >
+                        {targetLocale.flag} {targetLocale.code}
+                      </Link>
+                    ))}
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </DockIcon>

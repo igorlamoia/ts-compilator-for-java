@@ -1,11 +1,16 @@
-import { IssueDetails } from "./details";
+import { IssueDetails, TIssueParams } from "./details";
 
 export class IssueError extends Error {
   details: IssueDetails;
 
-  constructor(message: string, line: number, column: number) {
+  constructor(
+    message: string,
+    line: number,
+    column: number,
+    params?: TIssueParams
+  ) {
     super(message);
-    this.details = new IssueDetails(message, line, column, "error");
+    this.details = new IssueDetails(message, line, column, "error", params);
 
     // Object.setPrototypeOf(this, IssueError.prototype);
   }

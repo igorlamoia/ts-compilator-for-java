@@ -51,8 +51,8 @@ export function CardsPreview({ allFormattedTokens }: TTest) {
           ))}
         </Marquee>
       </div>
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-neutral-50 dark:from-neutral-950" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-neutral-50 dark:from-neutral-950" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-neutral-50 dark:from-neutral-950" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l from-neutral-50 dark:from-neutral-950" />
     </div>
   );
 }

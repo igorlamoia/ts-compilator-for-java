@@ -9,9 +9,7 @@ export default class NumberScanner extends LexerScanner {
     if (numberStr === ".") {
       numberStr = "0.";
       const addedChars = 1;
-      this.lexer.warning(
-        "Poorly written float number, 0 added at the beginning"
-      );
+      this.lexer.warning("lexer.poorly_written_float_beginning");
       return this.scanFloat(numberStr, addedChars);
     }
 
@@ -30,22 +28,32 @@ export default class NumberScanner extends LexerScanner {
   private scanFloat(numberStr: string, addedChars: number = 0): void {
     numberStr += this.lexer.peekAndAdvance();
     while (isDigit(this.lexer.peek())) numberStr += this.lexer.peekAndAdvance();
-    this.isValidSintaxe(this.lexer.peek(), true, "Invalid float number");
+    this.isValidSintaxe(
+      this.lexer.peek(),
+      true,
+      "lexer.invalid_float_number"
+    );
     if (numberStr.endsWith(".")) {
       numberStr += "0";
       addedChars = 1;
-      this.lexer.warning("Poorly written float number, 0 added at the end");
+      this.lexer.warning("lexer.poorly_written_float_end");
     }
     this.lexer.addToken(LITERALS.float_literal, numberStr, addedChars);
   }
 
   private scanHex(): void {
     if (this.lexer.peekAndAdvance() === "X")
-      return this.lexer.error("The X in hex numbers must be lowercase");
+      return this.lexer.error(
+        "lexer.hex_uppercase_x"
+      );
     let numberStr = "0x";
     while (isHexDigit(this.lexer.peek()))
       numberStr += this.lexer.peekAndAdvance();
-    this.isValidSintaxe(this.lexer.peek(), true, "Invalid hex number");
+    this.isValidSintaxe(
+      this.lexer.peek(),
+      true,
+      "lexer.invalid_hex_number"
+    );
     this.lexer.addToken(LITERALS.hex_literal, numberStr);
   }
 
@@ -53,14 +61,18 @@ export default class NumberScanner extends LexerScanner {
     let numberStr = "0";
     while (isOctalDigit(this.lexer.peek()))
       numberStr += this.lexer.peekAndAdvance();
-    this.isValidSintaxe(this.lexer.peek(), true, "Invalid octal number");
+    this.isValidSintaxe(
+      this.lexer.peek(),
+      true,
+      "lexer.invalid_octal_number"
+    );
     this.lexer.addToken(LITERALS.octal_literal, numberStr);
   }
 
   private isValidSintaxe(
     c: string,
     throws: boolean = false,
-    message: string = "Invalid number"
+    message: string = "lexer.invalid_number"
   ): boolean {
     const isAllowed = ALLOWED_BEFORE_AFTER.includes(c);
     if (!isAllowed && throws) this.lexer.error(message);

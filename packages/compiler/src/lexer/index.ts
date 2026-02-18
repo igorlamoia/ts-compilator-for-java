@@ -3,6 +3,7 @@ import { TOKENS } from "../token/constants";
 import { isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
 import { IssueWarning, IssueInfo, IssueError } from "../issue";
+import { TIssueParams } from "../issue/details";
 
 export type KeywordMap = Record<string, number>;
 
@@ -40,7 +41,7 @@ export class Lexer {
     const scanner = LexerScannerFactory.getInstance(char, this);
     if (scanner) return scanner.run();
 
-    this.error(`Caractere inesperado '${char}'`);
+    this.error("lexer.unexpected_character", { char });
   }
 
   public isAtEnd(): boolean {
@@ -99,15 +100,15 @@ export class Lexer {
     this.column = 1;
   }
 
-  public error(message: string) {
-    throw new IssueError(message, this.line, this.column);
+  public error(message: string, params?: TIssueParams) {
+    throw new IssueError(message, this.line, this.column, params);
   }
 
-  public warning(message: string) {
-    this.warnings.push(new IssueWarning(message, this.line, this.column));
+  public warning(message: string, params?: TIssueParams) {
+    this.warnings.push(new IssueWarning(message, this.line, this.column, params));
   }
 
-  public info(message: string) {
-    this.infos.push(new IssueInfo(message, this.line, this.column));
+  public info(message: string, params?: TIssueParams) {
+    this.infos.push(new IssueInfo(message, this.line, this.column, params));
   }
 }
