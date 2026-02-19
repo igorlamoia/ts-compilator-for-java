@@ -12,6 +12,7 @@ import { MainSection } from "./components/main-section";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts";
 import { AnimatePresence, motion } from "motion/react";
+import { ScrollArrow } from "@/components/scroll-arrow";
 
 export function IDEView({
   handleIntermediateCodeGeneration,
@@ -20,7 +21,8 @@ export function IDEView({
   handleIntermediateCodeGeneration: (tokens: TToken[]) => Promise<boolean>;
   intermediateCode: { instructions: Instruction[] };
 }) {
-  const { handleRun, analyseData } = useLexerAnalyse();
+  const { handleRun, analyseData, showScrollArrow, setShowScrollArrow } =
+    useLexerAnalyse();
   const { isTerminalOpen, setIsTerminalOpen } = useTerminalContext();
 
   const [activeFile, setActiveFile] = useState("src/main.?");
@@ -28,6 +30,14 @@ export function IDEView({
     "src/main.?",
     "src/grammar/stmt.?",
   ]);
+
+  const scrollToResults = () => {
+    window.scrollTo({
+      top: 700,
+      behavior: "smooth",
+    });
+    setShowScrollArrow(false);
+  };
 
   const runAll = async () => {
     const tokens = await handleRun();
@@ -87,25 +97,26 @@ export function IDEView({
           </div>
         </div>
 
-        <BorderBeam
+        {/* <BorderBeam
           duration={8}
           size={100}
           colorFrom="var(--color-primary)"
           colorTo="var(--color-slate-600)"
+        /> */}
+        <BorderBeam
+          duration={6}
+          size={400}
+          className="from-transparent via-(--color-primary) to-transparent"
         />
-        {/* <BorderBeam
-        duration={6}
-        size={400}
-        className="from-transparent via-(--color-primary) to-transparent"
-      />
-      <BorderBeam
-        duration={6}
-        delay={3}
-        size={400}
-        borderWidth={2}
-        className="from-transparent via-slate-600 to-transparent"
-      /> */}
+        <BorderBeam
+          duration={6}
+          delay={3}
+          size={400}
+          borderWidth={2}
+          className="from-transparent via-slate-600 to-transparent"
+        />
       </div>
+      <ScrollArrow show={showScrollArrow} onClick={scrollToResults} />
       <div className="flex flex-col gap-4">
         <ShowTokens analyseData={analyseData} />
         <div className="flex flex-col gap-2">

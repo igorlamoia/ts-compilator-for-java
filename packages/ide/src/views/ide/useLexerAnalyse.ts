@@ -20,6 +20,7 @@ export function useLexerAnalyse() {
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
     {} as TLexerAnalyseData,
   );
+  const [showScrollArrow, setShowScrollArrow] = useState(false);
   const handleRun = async (): Promise<
     TLexerAnalyseData["tokens"] | undefined
   > => {
@@ -40,10 +41,7 @@ export function useLexerAnalyse() {
           : t(locale, "toast.lexer_completed"),
         type: issues.length ? "warning" : "success",
       });
-      window.scrollTo({
-        top: 700,
-        behavior: "smooth",
-      });
+      setShowScrollArrow(true);
       if (issues.length) handleIssues(issues);
 
       return data.tokens;
@@ -86,5 +84,7 @@ export function useLexerAnalyse() {
   return {
     analyseData,
     handleRun,
+    showScrollArrow,
+    setShowScrollArrow,
   };
 }

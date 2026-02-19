@@ -58,6 +58,29 @@ const config: Config = {
         md: "var(--radius-md)",
         sm: "var(--radius-sm)",
       },
+      animation: {
+        "bounce-down": "bounce-down 2s ease-in-out infinite",
+        "fade-in": "fade-in 0.5s ease-out forwards",
+      },
+      keyframes: {
+        "bounce-down": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+            opacity: "1",
+          },
+          "50%": {
+            transform: "translateY(8px)",
+          },
+        },
+        "fade-in": {
+          from: {
+            opacity: "0",
+          },
+          to: {
+            opacity: "1",
+          },
+        },
+      },
     },
   },
   plugins: [animatePlugin],
