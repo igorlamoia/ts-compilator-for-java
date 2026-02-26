@@ -237,6 +237,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         sourceCode,
         config,
         currentFilePath,
+        fileSystem,
         updateSourceCode,
         setConfig,
         showLineIssues,

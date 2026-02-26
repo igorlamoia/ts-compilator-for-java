@@ -24,11 +24,13 @@ export type TEditorConfig = {
 
 import type * as monacoEditor from "monaco-editor";
 import type { MutableRefObject } from "react";
+import type { useFileSystem } from "@/hooks/useFileSystem";
 
 export type TEditorContextType = {
   sourceCode: string;
   config: TEditorConfig;
   currentFilePath: string;
+  fileSystem: ReturnType<typeof useFileSystem>;
   updateSourceCode: (newCode: string) => void;
   setConfig: (newConfig: Partial<TEditorConfig>) => void;
   showLineIssues: (errors: TLineAlert[], showDetails?: boolean) => void;

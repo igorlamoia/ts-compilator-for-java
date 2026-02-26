@@ -1,7 +1,6 @@
-import { HeroButton } from "@/components/buttons/hero";
 import IconButton from "@/components/buttons/icon-button";
 import { TooltipContent } from "@/components/ui/tooltip";
-import { Play, StepForward } from "lucide-react";
+import { StepForward } from "lucide-react";
 import { useRouter } from "next/router";
 import { t } from "@/i18n";
 import { RainbowButton } from "@/components/ui/rainbow-button";
@@ -9,9 +8,10 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 interface MenuProps {
   handleRun: () => void;
   runAll: () => void;
+  toggleTerminal: () => void;
 }
 
-export function Menu({ handleRun, runAll }: MenuProps) {
+export function Menu({ handleRun, runAll, toggleTerminal }: MenuProps) {
   const { locale } = useRouter();
 
   return (
@@ -23,8 +23,9 @@ export function Menu({ handleRun, runAll }: MenuProps) {
         <div className="hidden items-center gap-3 md:flex">
           <button className="hover:text-foreground">File</button>
           <button className="hover:text-foreground">Edit</button>
-          <button className="hover:text-foreground">View</button>
-          <button className="hover:text-foreground">Run</button>
+          <button className="hover:text-foreground" onClick={toggleTerminal}>
+            Terminal
+          </button>
           <button className="hover:text-foreground">Help</button>
         </div>
       </div>

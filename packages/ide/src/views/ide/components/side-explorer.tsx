@@ -1,19 +1,21 @@
 import {
+  ChevronsDownUp,
   ChevronRight,
   FileCode2,
+  FilePlus2,
   FileText,
   Folder,
+  FolderPlus,
   FolderOpen,
 } from "lucide-react";
-import { useMemo, useState, useContext } from "react";
-import { EditorContext } from "@/contexts/EditorContext";
-
-type TreeNode = {
-  type: "folder" | "file";
-  name: string;
-  path: string;
-  children?: TreeNode[];
-};
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useExplorer } from "@/hooks/useExplorer";
+import type { TreeNode } from "@/hooks/useExplorer";
 
 interface SideExplorerProps {
   activeFile: string;
@@ -26,41 +28,120 @@ export function SideExplorer({
   setActiveFile,
   setOpenTabs,
 }: SideExplorerProps) {
-  const editorContext = useContext(EditorContext);
-  const [openFolders, setOpenFolders] = useState<string[]>([
-    "src",
-    "src/grammar",
-  ]);
+  const explorer = useExplorer({
+    activeFile,
+    setActiveFile,
+    setOpenTabs,
+  });
 
-  const toggleFolder = (path: string) => {
-    setOpenFolders((prev) =>
-      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path],
-    );
-  };
-
-  const openFile = (path: string) => {
-    // Save current file before switching
-    if (activeFile && activeFile !== path) {
-      editorContext.saveCurrentFile(activeFile);
-    }
-
-    // Switch to new file
-    setActiveFile(path);
-    setOpenTabs((prev: string[]) =>
-      prev.includes(path) ? prev : [...prev, path],
+  const renderInlineEntry = (parentPath: string, depth: number) => {
+    if (
+      !explorer.pendingEntry ||
+      explorer.pendingEntry.parentPath !== parentPath
+    )
+      return null;
+    const isFile = explorer.pendingEntry.type === "file";
+    return (
+      <div
+        className="flex w-full items-start gap-2 rounded-md px-2 py-1 text-left text-xs"
+        style={{ paddingLeft: depth * 12 + 24 }}
+      >
+        {isFile ? (
+          <FileCode2 className="h-3.5 w-3.5 text-emerald-300" />
+        ) : (
+          <Folder className="h-3.5 w-3.5 text-cyan-300" />
+        )}
+        <div className="flex w-full flex-col">
+          <InlineNameInput
+            defaultValue={explorer.pendingEntry.name}
+            onSubmit={explorer.submitCreate}
+            onCancel={explorer.cancelInlineEdit}
+          />
+          {explorer.inlineError && (
+            <span className="mt-1 text-[10px] text-rose-400">
+              {explorer.inlineError}
+            </span>
+          )}
+        </div>
+      </div>
     );
   };
 
   const renderTree = (nodes: TreeNode[], depth = 0) =>
     nodes.map((node) => {
       if (node.type === "folder") {
-        const isOpen = openFolders.includes(node.path);
+        const isOpen = explorer.openFolders.includes(node.path);
+
+        if (explorer.renameTarget && explorer.renameTarget.path === node.path) {
+          return (
+            <div
+              key={node.path}
+              className="flex w-full items-start gap-2 rounded-md px-2 py-1 text-left text-xs"
+              style={{ paddingLeft: depth * 12 + 8 }}
+            >
+              <Folder className="h-3.5 w-3.5 text-cyan-300" />
+              <div className="flex w-full flex-col">
+                <InlineNameInput
+                  defaultValue={explorer.renameTarget.name}
+                  onSubmit={explorer.submitRename}
+                  onCancel={explorer.cancelInlineEdit}
+                />
+                {explorer.inlineError && (
+                  <span className="mt-1 text-[10px] text-rose-400">
+                    {explorer.inlineError}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div key={node.path}>
             <button
               type="button"
-              onClick={() => toggleFolder(node.path)}
-              className="group flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
+              draggable
+              onClick={() => explorer.toggleFolder(node.path)}
+              onDragStart={(event) => {
+                event.dataTransfer.setData("text/plain", `folder:${node.path}`);
+                event.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const data = event.dataTransfer.getData("text/plain");
+                if (!data) return;
+
+                if (data.startsWith("folder:")) {
+                  const sourcePath = data.substring(7);
+                  explorer.moveFolder(sourcePath, node.path);
+                } else {
+                  const fileName = explorer
+                    .normalizePath(data)
+                    .split("/")
+                    .filter(Boolean)
+                    .pop();
+                  if (!fileName) return;
+                  const targetPath = `${node.path}/${fileName}`;
+                  explorer.moveFile(data, targetPath);
+                }
+              }}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                explorer.setContextMenu({
+                  x: event.clientX,
+                  y: event.clientY,
+                  filePath: node.path,
+                });
+              }}
+              className={`group flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors ${
+                explorer.selectedItem === node.path
+                  ? "bg-white/10 text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
               style={{ paddingLeft: depth * 12 + 8 }}
             >
               <ChevronRight
@@ -75,11 +156,40 @@ export function SideExplorer({
               )}
               <span className="truncate">{node.name}</span>
             </button>
-            {isOpen && node.children && (
+            {isOpen && (
               <div className="mt-0.5">
-                {renderTree(node.children, depth + 1)}
+                {renderInlineEntry(node.path, depth + 1)}
+                {node.children && renderTree(node.children, depth + 1)}
               </div>
             )}
+          </div>
+        );
+      }
+
+      if (explorer.renameTarget && explorer.renameTarget.path === node.path) {
+        return (
+          <div
+            key={node.path}
+            className="flex w-full items-start gap-2 rounded-md px-2 py-1 text-left text-xs"
+            style={{ paddingLeft: depth * 12 + 24 }}
+          >
+            {node.name.endsWith(".md") ? (
+              <FileText className="h-3.5 w-3.5 text-amber-300" />
+            ) : (
+              <FileCode2 className="h-3.5 w-3.5 text-emerald-300" />
+            )}
+            <div className="flex w-full flex-col">
+              <InlineNameInput
+                defaultValue={explorer.renameTarget.name}
+                onSubmit={explorer.submitRename}
+                onCancel={explorer.cancelInlineEdit}
+              />
+              {explorer.inlineError && (
+                <span className="mt-1 text-[10px] text-rose-400">
+                  {explorer.inlineError}
+                </span>
+              )}
+            </div>
           </div>
         );
       }
@@ -88,7 +198,20 @@ export function SideExplorer({
         <button
           key={node.path}
           type="button"
-          onClick={() => openFile(node.path)}
+          onClick={() => explorer.openFile(node.path)}
+          draggable
+          onDragStart={(event) => {
+            event.dataTransfer.setData("text/plain", node.path);
+            event.dataTransfer.effectAllowed = "move";
+          }}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            explorer.setContextMenu({
+              x: event.clientX,
+              y: event.clientY,
+              filePath: node.path,
+            });
+          }}
           className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors ${
             activeFile === node.path
               ? "bg-white/10 text-foreground"
@@ -106,81 +229,169 @@ export function SideExplorer({
       );
     });
 
-  const tree = useMemo<TreeNode[]>(
-    () => [
-      {
-        type: "folder",
-        name: "src",
-        path: "src",
-        children: [
-          {
-            type: "file",
-            name: "main.?",
-            path: "src/main.?",
-          },
-          {
-            type: "folder",
-            name: "grammar",
-            path: "src/grammar",
-            children: [
-              {
-                type: "file",
-                name: "stmt.?",
-                path: "src/grammar/stmt.?",
-              },
-              {
-                type: "file",
-                name: "expr.?",
-                path: "src/grammar/expr.?",
-              },
-              {
-                type: "file",
-                name: "token.?",
-                path: "src/grammar/token.?",
-              },
-            ],
-          },
-          {
-            type: "folder",
-            name: "ir",
-            path: "src/ir",
-            children: [
-              { type: "file", name: "emitter.ts", path: "src/ir/emitter.ts" },
-              {
-                type: "file",
-                name: "interpreter.ts",
-                path: "src/ir/interpreter.ts",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "folder",
-        name: "tests",
-        path: "tests",
-        children: [
-          {
-            type: "file",
-            name: "lexer.spec.ts",
-            path: "tests/lexer.spec.ts",
-          },
-        ],
-      },
-      { type: "file", name: "README.md", path: "README.md" },
-    ],
-    [],
-  );
-
   return (
     <>
-      <div className="flex items-center justify-between px-3 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-        Explorer
-        <span className="rounded-full bg-white/10 px-2 py-1 text-[10px]">
-          Java--
-        </span>
+      <div className="group flex h-full flex-col">
+        <div className="flex items-center justify-between px-3 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Explorer
+          <HoverFunction
+            onCollapseAll={explorer.collapseAll}
+            onCreateFile={explorer.createFile}
+            onCreateFolder={explorer.createFolder}
+          />
+        </div>
+        <div className="flex-1 overflow-auto px-2 pb-4">
+          {renderInlineEntry("", 0)}
+          {renderTree(explorer.tree)}
+        </div>
       </div>
-      <div className="flex-1 overflow-auto px-2 pb-4">{renderTree(tree)}</div>
+      {explorer.contextMenu && (
+        <ContextMenu
+          x={explorer.contextMenu.x}
+          y={explorer.contextMenu.y}
+          onRename={() => {
+            if (explorer.folderExists(explorer.contextMenu!.filePath)) {
+              explorer.renameFolder(explorer.contextMenu!.filePath);
+            } else {
+              explorer.renameFile(explorer.contextMenu!.filePath);
+            }
+          }}
+          onDelete={() => {
+            if (explorer.folderExists(explorer.contextMenu!.filePath)) {
+              explorer.deleteFolder(explorer.contextMenu!.filePath);
+            } else {
+              explorer.deleteFile(explorer.contextMenu!.filePath);
+            }
+          }}
+        />
+      )}
     </>
+  );
+}
+
+function InlineNameInput({
+  defaultValue,
+  onSubmit,
+  onCancel,
+}: {
+  defaultValue: string;
+  onSubmit: (value: string) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <input
+      type="text"
+      defaultValue={defaultValue}
+      autoFocus
+      onFocus={(event) => event.currentTarget.select()}
+      onBlur={(event) => onSubmit(event.currentTarget.value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          onSubmit(event.currentTarget.value);
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onCancel();
+        }
+      }}
+      className="w-full rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-foreground outline-none focus:border-white/30"
+    />
+  );
+}
+
+function ContextMenu({
+  x,
+  y,
+  onRename,
+  onDelete,
+}: {
+  x: number;
+  y: number;
+  onRename: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div
+      className="fixed z-50 min-w-40 rounded-md border border-white/10 bg-neutral-900/95 py-1 shadow-lg backdrop-blur-sm"
+      style={{ left: x, top: y }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={onRename}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground hover:bg-white/10"
+      >
+        Renomear
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-rose-400 hover:bg-white/10"
+      >
+        Deletar
+      </button>
+    </div>
+  );
+}
+
+function HoverFunction({
+  onCollapseAll,
+  onCreateFile,
+  onCreateFolder,
+}: {
+  onCollapseAll: () => void;
+  onCreateFile: () => void;
+  onCreateFolder: () => void;
+}) {
+  return (
+    <TooltipProvider>
+      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label="Criar arquivo"
+              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+              onClick={onCreateFile}
+            >
+              <FilePlus2 className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Criar arquivo</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label="Criar pasta"
+              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+              onClick={onCreateFolder}
+            >
+              <FolderPlus className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Criar pasta</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label="Minimizar"
+              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+              onClick={onCollapseAll}
+            >
+              <ChevronsDownUp className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Minimizar</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
   );
 }

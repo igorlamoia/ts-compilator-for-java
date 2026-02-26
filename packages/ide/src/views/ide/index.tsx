@@ -14,7 +14,6 @@ import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts
 import { AnimatePresence, motion } from "motion/react";
 import { ScrollArrow } from "@/components/scroll-arrow";
 import { EditorContext } from "@/contexts/EditorContext";
-import { useFileSystem } from "@/hooks/useFileSystem";
 
 export function IDEView({
   handleIntermediateCodeGeneration,
@@ -27,13 +26,10 @@ export function IDEView({
     useLexerAnalyse();
   const { isTerminalOpen, setIsTerminalOpen } = useTerminalContext();
   const editorContext = useContext(EditorContext);
-  const fileSystem = useFileSystem();
+  const { fileSystem } = editorContext;
 
   const [activeFile, setActiveFile] = useState("src/main.?");
-  const [openTabs, setOpenTabs] = useState<string[]>([
-    "src/main.?",
-    "src/grammar/stmt.?",
-  ]);
+  const [openTabs, setOpenTabs] = useState<string[]>(["src/main.?"]);
 
   // Initialize default files on first load
   useEffect(() => {
@@ -97,7 +93,11 @@ export function IDEView({
     <>
       <div className="relative rounded-2xl">
         <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100/70 dark:bg-neutral-950/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
-          <Menu handleRun={handleRun} runAll={runAll} />
+          <Menu
+            handleRun={handleRun}
+            runAll={runAll}
+            toggleTerminal={toggleTerminal}
+          />
           <div className={`flex h-[70vh] overflow-hidden rounded-b-2xl`}>
             <AnimatePresence>
               <div className={`flex flex-1 flex-col sm:flex-row h-full w-full`}>
