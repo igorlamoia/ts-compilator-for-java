@@ -63,8 +63,7 @@ export function useKeywords() {
   return useContext(KeywordContext);
 }
 
-const STORAGE_KEY = "java-keyword-mappings";
-const LEGACY_STORAGE_KEY = "java--keyword-mappings";
+const STORAGE_KEY = "keyword-mappings";
 function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
   return z
     .object({
@@ -102,9 +101,7 @@ function getDefaultMappings(): KeywordMapping[] {
 function loadMappings(): KeywordMapping[] {
   if (typeof window === "undefined") return getDefaultMappings();
   try {
-    const stored =
-      localStorage.getItem(STORAGE_KEY) ??
-      localStorage.getItem(LEGACY_STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return getDefaultMappings();
     const parsed = JSON.parse(stored) as KeywordMapping[];
     // Validar que contém todas as keywords esperadas

@@ -3,7 +3,7 @@ import { useLexerAnalyse } from "./useLexerAnalyse";
 import { ListIntermediateCode } from "../tokens/list-intermediate-code";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 import { TToken } from "@/@types/token";
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Menu } from "./components/menu";
 import { SideExplorer } from "./components/side-explorer";
 import { SideMenu } from "./components/side-menu";
@@ -13,6 +13,8 @@ import { BorderBeam } from "@/components/ui/border-beam";
 import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts";
 import { AnimatePresence, motion } from "motion/react";
 import { ScrollArrow } from "@/components/scroll-arrow";
+import { EditorContext } from "@/contexts/EditorContext";
+import { useFileSystem } from "@/hooks/useFileSystem";
 
 export function IDEView({
   handleIntermediateCodeGeneration,
@@ -24,12 +26,51 @@ export function IDEView({
   const { handleRun, analyseData, showScrollArrow, setShowScrollArrow } =
     useLexerAnalyse();
   const { isTerminalOpen, setIsTerminalOpen } = useTerminalContext();
+  const editorContext = useContext(EditorContext);
+  const fileSystem = useFileSystem();
 
   const [activeFile, setActiveFile] = useState("src/main.?");
   const [openTabs, setOpenTabs] = useState<string[]>([
     "src/main.?",
     "src/grammar/stmt.?",
   ]);
+
+  // Initialize default files on first load
+  useEffect(() => {
+    if (!fileSystem.isLoaded) return;
+
+    const DEFAULT_FILES = [
+      { path: "src/main.?", initialCode: "// Main file\n" },
+      { path: "src/grammar/stmt.?", initialCode: "// Grammar stmt\n" },
+      { path: "src/grammar/expr.?", initialCode: "// Grammar expr\n" },
+      { path: "src/grammar/token.?", initialCode: "// Grammar token\n" },
+      { path: "src/ir/emitter.ts", initialCode: "// IR Emitter\n" },
+      { path: "src/ir/interpreter.ts", initialCode: "// Interpreter\n" },
+      { path: "tests/lexer.spec.ts", initialCode: "// Lexer tests\n" },
+      { path: "README.md", initialCode: "# Project README\n" },
+    ];
+
+    DEFAULT_FILES.forEach(({ path, initialCode }) => {
+      if (!fileSystem.fileExists(path)) {
+        fileSystem.createOrUpdateFile(path, initialCode);
+      }
+    });
+
+    // Load the initial active file
+    editorContext.loadFileContent(activeFile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileSystem.isLoaded]);
+
+  // Handle active file changes
+  useEffect(() => {
+    if (!fileSystem.isLoaded) return;
+
+    const fileData = fileSystem.getFile(activeFile);
+    if (fileData) {
+      editorContext.loadFileContent(activeFile);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFile]);
 
   const scrollToResults = () => {
     window.scrollTo({

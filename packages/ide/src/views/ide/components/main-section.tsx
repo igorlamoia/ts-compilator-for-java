@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 import { OpenFIlesList } from "./open-files-list";
 import { Editor } from "@/components/editor";
+import { useContext } from "react";
+import { EditorContext } from "@/contexts/EditorContext";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -25,15 +27,24 @@ export function MainSection({
   toggleTerminal,
   intermediateCode,
 }: MainSectionProps) {
+  const editorContext = useContext(EditorContext);
+
   const closeTab = (path: string) => {
+    // Save file before closing
+    editorContext.saveCurrentFile(path);
+
     setOpenTabs((prev) => prev.filter((tab) => tab !== path));
     if (activeFile === path) {
       const fallback = openTabs.find((tab) => tab !== path);
-      setActiveFile(fallback ?? "src/main.?");
+      if (fallback) {
+        setActiveFile(fallback);
+      } else {
+        setActiveFile("src/main.?");
+      }
     }
   };
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
+    <div className="flex flex-col h-full w-full overflow-x-auto">
       <OpenFIlesList
         openTabs={openTabs}
         activeFile={activeFile}

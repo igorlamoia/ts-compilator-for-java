@@ -5,7 +5,8 @@ import {
   Folder,
   FolderOpen,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useContext } from "react";
+import { EditorContext } from "@/contexts/EditorContext";
 
 type TreeNode = {
   type: "folder" | "file";
@@ -25,6 +26,7 @@ export function SideExplorer({
   setActiveFile,
   setOpenTabs,
 }: SideExplorerProps) {
+  const editorContext = useContext(EditorContext);
   const [openFolders, setOpenFolders] = useState<string[]>([
     "src",
     "src/grammar",
@@ -37,6 +39,12 @@ export function SideExplorer({
   };
 
   const openFile = (path: string) => {
+    // Save current file before switching
+    if (activeFile && activeFile !== path) {
+      editorContext.saveCurrentFile(activeFile);
+    }
+
+    // Switch to new file
     setActiveFile(path);
     setOpenTabs((prev: string[]) =>
       prev.includes(path) ? prev : [...prev, path],

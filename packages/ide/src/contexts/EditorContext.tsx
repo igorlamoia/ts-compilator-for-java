@@ -16,8 +16,10 @@ import {
   JAVAMM_LANGUAGE_ID,
 } from "@/utils/compiler/editor/editor-language";
 import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
+import { useFileSystem } from "@/hooks/useFileSystem";
 
-const SOURCE_CODE_STORAGE_KEY = "source-code";
+const getSourceCodeStorageKey = (fileName: string) => `source-code-${fileName}`;
+const DEFAULT_FILE_NAME = "main.?";
 
 // Create the EditorContext with default values
 export const EditorContext = createContext<TEditorContextType>(
@@ -25,9 +27,13 @@ export const EditorContext = createContext<TEditorContextType>(
 );
 
 export function EditorProvider({ children }: { children: ReactNode }) {
+  const [currentFilePath, setCurrentFilePath] = useState(DEFAULT_FILE_NAME);
   const [sourceCode, setSourceCode] = useState(() => {
     if (typeof window === "undefined") return INITIAL_CODE;
-    return localStorage.getItem(SOURCE_CODE_STORAGE_KEY) || INITIAL_CODE;
+    return (
+      localStorage.getItem(getSourceCodeStorageKey(DEFAULT_FILE_NAME)) ||
+      INITIAL_CODE
+    );
   });
   const [config, setConfigState] = useState<TEditorConfig>(new ConfigEntity());
   const [loading, setLoading] = useState(true);
@@ -35,6 +41,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const monacoRef = useRef<typeof monacoEditor | null>(null);
   const editorInstanceRef =
     useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
+
+  const fileSystem = useFileSystem();
 
   useEffect(() => {
     loader.init().then((monaco) => {
@@ -117,7 +125,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const updateSourceCode = (newCode: string) => {
     setSourceCode(newCode);
-    localStorage.setItem(SOURCE_CODE_STORAGE_KEY, newCode);
+    localStorage.setItem(getSourceCodeStorageKey(currentFilePath), newCode);
     editorInstanceRef.current?.setValue(newCode);
   };
 
@@ -186,15 +194,49 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const getEditorCode = () => {
     cleanIssues();
     const code = editorInstanceRef.current?.getValue() ?? "";
-    localStorage.setItem(SOURCE_CODE_STORAGE_KEY, code);
+    localStorage.setItem(getSourceCodeStorageKey(currentFilePath), code);
     return code;
   };
+
+  const loadFileContent = useCallback(
+    (filePath: string, initialCode?: string) => {
+      const fileData = fileSystem.getFile(filePath);
+      const storageKey = getSourceCodeStorageKey(filePath);
+      const storedCode = localStorage.getItem(storageKey);
+      const content =
+        fileData?.content ?? storedCode ?? initialCode ?? INITIAL_CODE;
+
+      setCurrentFilePath(filePath);
+      setSourceCode(content);
+      editorInstanceRef.current?.setValue(content);
+
+      // Ensure file exists in storage
+      if (!fileData) {
+        fileSystem.createOrUpdateFile(filePath, content);
+      }
+
+      // Update localStorage for this file
+      localStorage.setItem(storageKey, content);
+    },
+    [fileSystem],
+  );
+
+  const saveCurrentFile = useCallback(
+    (filePath: string) => {
+      const code = editorInstanceRef.current?.getValue() ?? sourceCode;
+      fileSystem.createOrUpdateFile(filePath, code);
+      localStorage.setItem(getSourceCodeStorageKey(filePath), code);
+      setCurrentFilePath(filePath);
+    },
+    [sourceCode, fileSystem],
+  );
 
   return (
     <EditorContext.Provider
       value={{
         sourceCode,
         config,
+        currentFilePath,
         updateSourceCode,
         setConfig,
         showLineIssues,
@@ -203,6 +245,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         cleanIssues,
         monacoRef,
         retokenize,
+        loadFileContent,
+        saveCurrentFile,
       }}
     >
       {loading ? <div>Loading Editor...</div> : children}

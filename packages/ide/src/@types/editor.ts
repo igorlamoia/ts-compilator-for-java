@@ -28,6 +28,7 @@ import type { MutableRefObject } from "react";
 export type TEditorContextType = {
   sourceCode: string;
   config: TEditorConfig;
+  currentFilePath: string;
   updateSourceCode: (newCode: string) => void;
   setConfig: (newConfig: Partial<TEditorConfig>) => void;
   showLineIssues: (errors: TLineAlert[], showDetails?: boolean) => void;
@@ -36,4 +37,7 @@ export type TEditorContextType = {
   cleanIssues: () => void;
   monacoRef: MutableRefObject<typeof monacoEditor | null>;
   retokenize: () => void;
+  // File management methods
+  loadFileContent: (filePath: string, initialCode?: string) => void;
+  saveCurrentFile: (filePath: string) => void;
 };
