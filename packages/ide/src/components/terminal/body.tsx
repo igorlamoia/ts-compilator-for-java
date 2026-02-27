@@ -9,6 +9,7 @@ import { motion } from "motion/react";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 import { getLineColor } from "@/utils/compiler/styles";
 import { cn } from "@/lib/utils";
+import { PerfectScrollbar } from "../ui/perfect-scrollbar";
 
 interface BodyProps {
   lines: TerminalLine[];
@@ -204,9 +205,9 @@ export function Body(props: BodyProps) {
   const resolveInput = useRef<((value: string) => void) | null>(null);
 
   return (
-    <div
+    <PerfectScrollbar
       ref={scrollRef}
-      className="overflow-y-auto overflow-x-hidden p-4 font-mono text-sm h-65 terminal-scroll"
+      className="overflow-x-hidden p-4 font-mono text-sm h-65 terminal-scroll"
     >
       {lines.map((line, index) => (
         <motion.div
@@ -241,6 +242,6 @@ export function Body(props: BodyProps) {
           autoComplete="off"
         />
       </div>
-    </div>
+    </PerfectScrollbar>
   );
 }

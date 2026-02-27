@@ -137,6 +137,56 @@
     animation: var(--animate-typewriter);
   }
 
+  .perfect-scrollbar-x {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .perfect-scrollbar-y {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .perfect-scrollbar-both {
+    overflow: auto;
+  }
+
+  .perfect-scrollbar::-webkit-scrollbar,
+  .perfect-scrollbar-x::-webkit-scrollbar,
+  .perfect-scrollbar-y::-webkit-scrollbar,
+  .perfect-scrollbar-both::-webkit-scrollbar {
+    width: var(--perfect-scrollbar-size, 4px);
+    height: var(--perfect-scrollbar-size, 4px);
+  }
+
+  .perfect-scrollbar::-webkit-scrollbar-track,
+  .perfect-scrollbar-x::-webkit-scrollbar-track,
+  .perfect-scrollbar-y::-webkit-scrollbar-track,
+  .perfect-scrollbar-both::-webkit-scrollbar-track {
+    background-color: var(--color-gray-100);
+  }
+
+  .perfect-scrollbar::-webkit-scrollbar-thumb,
+  .perfect-scrollbar-x::-webkit-scrollbar-thumb,
+  .perfect-scrollbar-y::-webkit-scrollbar-thumb,
+  .perfect-scrollbar-both::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-300);
+  }
+
+  .dark .perfect-scrollbar::-webkit-scrollbar-track,
+  .dark .perfect-scrollbar-x::-webkit-scrollbar-track,
+  .dark .perfect-scrollbar-y::-webkit-scrollbar-track,
+  .dark .perfect-scrollbar-both::-webkit-scrollbar-track {
+    background-color: var(--color-neutral-700);
+  }
+
+  .dark .perfect-scrollbar::-webkit-scrollbar-thumb,
+  .dark .perfect-scrollbar-x::-webkit-scrollbar-thumb,
+  .dark .perfect-scrollbar-y::-webkit-scrollbar-thumb,
+  .dark .perfect-scrollbar-both::-webkit-scrollbar-thumb {
+    background-color: var(--color-neutral-500);
+  }
+
   .animate-caret {
     animation: var(--animate-caret);
   }

@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { EditorContext } from "@/contexts/EditorContext";
+import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 
 export function OpenFIlesList({
   openTabs,
@@ -22,14 +23,9 @@ export function OpenFIlesList({
   };
 
   return (
-    <div
-      className="flex
-    [&::-webkit-scrollbar]:h-1
-  [&::-webkit-scrollbar-track]:bg-gray-100
-  [&::-webkit-scrollbar-thumb]:bg-gray-300
-  dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-  dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500
-    items-center gap-2 overflow-x-auto border-b border-black/10 dark:border-white/10 bg-white/5 px-2 py-2"
+    <PerfectScrollbar
+      height={4}
+      className="flex items-center gap-2 border-b border-black/10 bg-white/5 px-2 py-2 dark:border-white/10"
     >
       {openTabs.map((tab) => (
         <button
@@ -55,6 +51,6 @@ export function OpenFIlesList({
           </button>
         </button>
       ))}
-    </div>
+    </PerfectScrollbar>
   );
 }

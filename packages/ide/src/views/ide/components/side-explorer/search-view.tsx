@@ -7,6 +7,7 @@ import {
   Regex,
   WholeWord,
 } from "lucide-react";
+import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 
 interface SearchResult {
   filePath: string;
@@ -35,6 +36,15 @@ export function SearchView({ onFileSelect }: SearchViewProps) {
   const [wholeWord, setWholeWord] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Search through all files
   useEffect(() => {
@@ -152,6 +162,7 @@ export function SearchView({ onFileSelect }: SearchViewProps) {
         <div className="relative">
           <input
             ref={searchInputRef}
+            autoFocus
             type="text"
             placeholder="Buscar..."
             value={query}
@@ -218,7 +229,7 @@ export function SearchView({ onFileSelect }: SearchViewProps) {
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-auto px-2 pb-4">
+      <PerfectScrollbar axis="y" className="flex-1 overflow-auto px-2 pb-4">
         {results.length === 0 && query.trim() && (
           <div className="p-4 text-center text-xs text-muted-foreground">
             Nenhum resultado encontrado
@@ -286,7 +297,7 @@ export function SearchView({ onFileSelect }: SearchViewProps) {
             </div>
           );
         })}
-      </div>
+      </PerfectScrollbar>
     </div>
   );
 }
