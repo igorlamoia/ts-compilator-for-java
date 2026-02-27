@@ -5,7 +5,10 @@ import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/consta
 import { TToken } from "@/@types/token";
 import { useState, useEffect, useContext } from "react";
 import { Menu } from "./components/menu";
-import { SideExplorer } from "./components/side-explorer";
+import {
+  SidebarPanel,
+  SidebarView,
+} from "./components/side-explorer/sidebar-panel";
 import { SideMenu } from "./components/side-menu";
 import { useTerminalContext } from "@/pages";
 import { MainSection } from "./components/main-section";
@@ -85,9 +88,15 @@ export function IDEView({
     setIsTerminalOpen(true);
   };
 
-  const [isExplorerOpen, setIsExplorerOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeView, setActiveView] = useState<SidebarView>("explorer");
   const toggleTerminal = () => setIsTerminalOpen(!isTerminalOpen);
-  useKeyboardShortcuts(toggleTerminal, isTerminalOpen, setIsExplorerOpen);
+  useKeyboardShortcuts(
+    toggleTerminal,
+    isTerminalOpen,
+    setIsSidebarOpen,
+    setActiveView,
+  );
 
   return (
     <>
@@ -102,10 +111,12 @@ export function IDEView({
             <AnimatePresence>
               <div className={`flex flex-1 flex-col sm:flex-row h-full w-full`}>
                 <SideMenu
-                  isExplorerOpen={isExplorerOpen}
-                  setIsExplorerOpen={setIsExplorerOpen}
+                  isSidebarOpen={isSidebarOpen}
+                  setIsSidebarOpen={setIsSidebarOpen}
+                  activeView={activeView}
+                  setActiveView={setActiveView}
                 />
-                {isExplorerOpen && (
+                {isSidebarOpen && (
                   <motion.div
                     initial={{ x: "-5%", opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -117,7 +128,8 @@ export function IDEView({
                       stiffness: 300,
                     }}
                   >
-                    <SideExplorer
+                    <SidebarPanel
+                      activeView={activeView}
                       activeFile={activeFile}
                       setActiveFile={setActiveFile}
                       setOpenTabs={setOpenTabs}

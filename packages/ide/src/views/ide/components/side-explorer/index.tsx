@@ -1,21 +1,13 @@
 import {
-  ChevronsDownUp,
   ChevronRight,
   FileCode2,
-  FilePlus2,
   FileText,
   Folder,
-  FolderPlus,
   FolderOpen,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useExplorer } from "@/hooks/useExplorer";
 import type { TreeNode } from "@/hooks/useExplorer";
+import { HoverOptions } from "./hover-options";
 
 interface SideExplorerProps {
   activeFile: string;
@@ -234,7 +226,7 @@ export function SideExplorer({
       <div className="group flex h-full flex-col">
         <div className="flex items-center justify-between px-3 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Explorer
-          <HoverFunction
+          <HoverOptions
             onCollapseAll={explorer.collapseAll}
             onCreateFile={explorer.createFile}
             onCreateFolder={explorer.createFolder}
@@ -331,67 +323,5 @@ function ContextMenu({
         Deletar
       </button>
     </div>
-  );
-}
-
-function HoverFunction({
-  onCollapseAll,
-  onCreateFile,
-  onCreateFolder,
-}: {
-  onCollapseAll: () => void;
-  onCreateFile: () => void;
-  onCreateFolder: () => void;
-}) {
-  return (
-    <TooltipProvider>
-      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Criar arquivo"
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-              onClick={onCreateFile}
-            >
-              <FilePlus2 className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Criar arquivo</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Criar pasta"
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-              onClick={onCreateFolder}
-            >
-              <FolderPlus className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Criar pasta</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Minimizar"
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-              onClick={onCollapseAll}
-            >
-              <ChevronsDownUp className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Minimizar</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
   );
 }
