@@ -8,6 +8,7 @@ import {
 import { useExplorer } from "@/hooks/useExplorer";
 import type { TreeNode } from "@/hooks/useExplorer";
 import { HoverOptions } from "./hover-options";
+import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 
 interface SideExplorerProps {
   activeFile: string;
@@ -232,10 +233,10 @@ export function SideExplorer({
             onCreateFolder={explorer.createFolder}
           />
         </div>
-        <div className="flex-1 overflow-auto px-2 pb-4">
+        <PerfectScrollbar className="flex-1 overflow-auto px-2 pb-4">
           {renderInlineEntry("", 0)}
           {renderTree(explorer.tree)}
-        </div>
+        </PerfectScrollbar>
       </div>
       {explorer.contextMenu && (
         <ContextMenu

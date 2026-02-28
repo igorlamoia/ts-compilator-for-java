@@ -12,10 +12,12 @@ export function OpenFIlesList({
   openTabs,
   activeFile,
   closeTab,
+  onActiveFileChange,
 }: {
   openTabs: string[];
   activeFile: string;
   closeTab: (path: string) => void;
+  onActiveFileChange: (path: string) => void;
 }) {
   const editorContext = useContext(EditorContext);
 
@@ -25,6 +27,8 @@ export function OpenFIlesList({
       editorContext.saveCurrentFile(activeFile);
       // Load the new file - this will update activeFile via parent
       editorContext.loadFileContent(tab);
+      // Notify parent to update the active file
+      onActiveFileChange(tab);
     }
   };
 

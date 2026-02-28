@@ -50,6 +50,7 @@ export function MainSection({
         openTabs={openTabs}
         activeFile={activeFile}
         closeTab={closeTab}
+        onActiveFileChange={setActiveFile}
       />
       <div className="relative flex-1 overflow-x-auto">
         <Editor />

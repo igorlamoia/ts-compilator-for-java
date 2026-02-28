@@ -66,6 +66,30 @@ export function useExplorer({
     localStorage.setItem("folders-storage", JSON.stringify(extraFolders));
   }, [extraFolders]);
 
+  // Auto-expand parent folders when activeFile changes from external source
+  useEffect(() => {
+    if (!activeFile) return;
+
+    // Get parent paths of the active file
+    const parts = activeFile
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "")
+      .replace(/\/+$/, "")
+      .split("/")
+      .filter(Boolean);
+    const parents: string[] = [];
+    for (let i = 1; i < parts.length; i += 1) {
+      parents.push(parts.slice(0, i).join("/"));
+    }
+
+    if (parents.length > 0) {
+      setOpenFolders((prev) => {
+        const newFolders = new Set([...prev, ...parents]);
+        return Array.from(newFolders);
+      });
+    }
+  }, [activeFile]);
+
   const normalizePath = (path: string) =>
     path.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
 
@@ -91,6 +115,13 @@ export function useExplorer({
     if (activeFile && activeFile !== path) {
       editorContext.saveCurrentFile(activeFile);
     }
+
+    // Expand all parent folders
+    const parentPaths = getParentPaths(path);
+    setOpenFolders((prev) => {
+      const newFolders = new Set([...prev, ...parentPaths]);
+      return Array.from(newFolders);
+    });
 
     // Switch to new file
     setActiveFile(path);
