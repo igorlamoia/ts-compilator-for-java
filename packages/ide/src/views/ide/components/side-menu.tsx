@@ -1,5 +1,4 @@
 import IconButton from "@/components/buttons/icon-button";
-import { TooltipContent } from "@/components/ui/tooltip";
 import { FileCode2, GitBranch, Search, Settings } from "lucide-react";
 import type { SidebarView } from "./side-explorer/sidebar-panel";
 
@@ -30,30 +29,30 @@ export function SideMenu({
       <IconButton
         selected={isSidebarOpen && activeView === "explorer"}
         onClick={() => handleViewClick("explorer")}
+        tooltip="Explorador de arquivos"
       >
         <FileCode2 className="h-4 w-4" />
-        <TooltipContent>Explorador de arquivos</TooltipContent>
       </IconButton>
       <IconButton
         selected={isSidebarOpen && activeView === "search"}
         onClick={() => handleViewClick("search")}
+        tooltip="Buscar"
       >
         <Search className="h-4 w-4" />
-        <TooltipContent>Buscar</TooltipContent>
       </IconButton>
       <IconButton
         selected={isSidebarOpen && activeView === "source-control"}
         onClick={() => handleViewClick("source-control")}
+        tooltip="Controle de fonte"
       >
         <GitBranch className="h-4 w-4" />
-        <TooltipContent>Controle de fonte</TooltipContent>
       </IconButton>
       <IconButton
         selected={isSidebarOpen && activeView === "settings"}
         onClick={() => handleViewClick("settings")}
+        tooltip="Configurações"
       >
         <Settings className="h-4 w-4" />
-        <TooltipContent>Configurações</TooltipContent>
       </IconButton>
     </div>
   );

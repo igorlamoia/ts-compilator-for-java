@@ -3,6 +3,7 @@ import { OpenFIlesList } from "./open-files-list";
 import { Editor } from "@/components/editor";
 import { useContext } from "react";
 import { EditorContext } from "@/contexts/EditorContext";
+import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -15,7 +16,7 @@ interface MainSectionProps {
   setOpenTabs: (paths: string[] | ((prev: string[]) => string[])) => void;
   isTerminalOpen: boolean;
   toggleTerminal: () => void;
-  intermediateCode?: { instructions: any[] };
+  intermediateCode?: { instructions: Instruction[] };
 }
 
 export function MainSection({

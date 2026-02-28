@@ -1,5 +1,5 @@
 import { IDEView } from "./ide";
-import { useIntermediatorCode } from "./ide/useIntermediatorCode";
+import { useIntermediatorCode } from "../hooks/useIntermediatorCode";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { KeywordProvider } from "@/contexts/KeywordContext";
 import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";

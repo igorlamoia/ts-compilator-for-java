@@ -1,10 +1,5 @@
 import { ChevronsDownUp, FilePlus2, FolderPlus } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import IconButton from "@/components/buttons/icon-button";
 
 export function HoverOptions({
   onCollapseAll,
@@ -16,54 +11,31 @@ export function HoverOptions({
   onCreateFolder: () => void;
 }) {
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Criar arquivo"
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-              onClick={onCreateFile}
-            >
-              <FilePlus2 className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Criar arquivo</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Criar pasta"
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-              onClick={onCreateFolder}
-            >
-              <FolderPlus className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Criar pasta</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Minimizar"
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-              onClick={onCollapseAll}
-            >
-              <ChevronsDownUp className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Minimizar</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
+    <div className="flex items-center  opacity-0 transition-opacity group-hover:opacity-100">
+      <IconButton
+        tooltip="Criar arquivo"
+        aria-label="Criar arquivo"
+        onClick={onCreateFile}
+        className="size-6 p-3.5 "
+      >
+        <FilePlus2 />
+      </IconButton>
+      <IconButton
+        tooltip="Criar pasta"
+        aria-label="Criar pasta"
+        onClick={onCreateFolder}
+        className="size-6 p-3.5 "
+      >
+        <FolderPlus />
+      </IconButton>
+      <IconButton
+        tooltip="Minimizar"
+        aria-label="Minimizar"
+        onClick={onCollapseAll}
+        className="size-6 p-3.5 "
+      >
+        <ChevronsDownUp />
+      </IconButton>
+    </div>
   );
 }

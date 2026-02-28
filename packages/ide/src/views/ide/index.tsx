@@ -1,5 +1,5 @@
 import { ShowTokens } from "../tokens/show-tokens";
-import { useLexerAnalyse } from "./useLexerAnalyse";
+import { useLexerAnalyse } from "../../hooks/useLexerAnalyse";
 import { ListIntermediateCode } from "../tokens/list-intermediate-code";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 import { TToken } from "@/@types/token";

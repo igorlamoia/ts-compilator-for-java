@@ -1,5 +1,4 @@
 import IconButton from "@/components/buttons/icon-button";
-import { TooltipContent } from "@/components/ui/tooltip";
 import { StepForward } from "lucide-react";
 import { useRouter } from "next/router";
 import { t } from "@/i18n";
@@ -30,11 +29,12 @@ export function Menu({ handleRun, runAll, toggleTerminal }: MenuProps) {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <IconButton onClick={handleRun}>
+        <IconButton
+          onClick={handleRun}
+          tooltip={t(locale, "ui.run_lexer")}
+          className="size-3 p-3 rounded-lg"
+        >
           <StepForward />
-          <TooltipContent>
-            <p>{t(locale, "ui.run_lexer")}</p>
-          </TooltipContent>
         </IconButton>
         <RainbowButton variant="outline" onClick={runAll}>
           {t(locale, "ui.run_all")}
