@@ -13,7 +13,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             where: { classId },
             include: {
                 submissions: {
-                    where: { studentId: userId }
+                    where: { studentId: userId },
+                    orderBy: { submittedAt: 'desc' },
+                    take: 1,
+                    select: {
+                        id: true,
+                        status: true,
+                        score: true,
+                        teacherFeedback: true,
+                        submittedAt: true,
+                    }
                 }
             }
         })
