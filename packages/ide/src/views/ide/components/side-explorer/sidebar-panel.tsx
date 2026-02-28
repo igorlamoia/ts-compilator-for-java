@@ -1,5 +1,5 @@
 import { SideExplorer } from "./index";
-import { SearchView } from "./search-view";
+import { SearchPanel } from "./search-panel";
 
 export type SidebarView = "explorer" | "search" | "source-control" | "settings";
 
@@ -36,7 +36,7 @@ export function SidebarPanel({
         />
       );
     case "search":
-      return <SearchView onFileSelect={handleFileSelect} />;
+      return <SearchPanel onFileSelect={handleFileSelect} />;
     case "source-control":
       return (
         <div className="flex h-full items-center justify-center p-4 text-xs text-muted-foreground">

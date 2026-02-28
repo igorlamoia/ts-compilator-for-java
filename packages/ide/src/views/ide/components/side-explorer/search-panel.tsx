@@ -6,6 +6,7 @@ import {
   CaseSensitive,
   Regex,
   WholeWord,
+  ReplaceAll,
 } from "lucide-react";
 import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 
@@ -18,11 +19,11 @@ interface SearchResult {
   }[];
 }
 
-interface SearchViewProps {
+interface SearchPanelProps {
   onFileSelect: (filePath: string) => void;
 }
 
-export function SearchView({ onFileSelect }: SearchViewProps) {
+export function SearchPanel({ onFileSelect }: SearchPanelProps) {
   const editorContext = useContext(EditorContext);
   const { fileSystem } = editorContext;
 
@@ -141,6 +142,48 @@ export function SearchView({ onFileSelect }: SearchViewProps) {
     void line;
   };
 
+  const handleReplaceAll = () => {
+    if (!query.trim() || !replaceQuery) return;
+
+    results.forEach((result) => {
+      const file = fileSystem.getFile(result.filePath);
+      if (!file) return;
+
+      let newContent = file.content;
+
+      if (useRegex) {
+        const flags = caseSensitive ? "g" : "gi";
+        const regex = new RegExp(query, flags);
+        newContent = newContent.replace(regex, replaceQuery);
+      } else if (wholeWord) {
+        const flags = caseSensitive ? "g" : "gi";
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`\\b${escapedQuery}\\b`, flags);
+        newContent = newContent.replace(regex, replaceQuery);
+      } else {
+        const lines = file.content.split("\n");
+        newContent = lines
+          .map((line) => {
+            if (caseSensitive) {
+              return line.replaceAll(query, replaceQuery);
+            } else {
+              const regex = new RegExp(
+                query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+                "gi",
+              );
+              return line.replace(regex, replaceQuery);
+            }
+          })
+          .join("\n");
+      }
+
+      fileSystem.createOrUpdateFile(result.filePath, newContent, file.language);
+    });
+
+    // Trigger a new search to update results
+    setQuery(query);
+  };
+
   const totalMatches = results.reduce((acc, r) => acc + r.matches.length, 0);
 
   return (
@@ -214,8 +257,24 @@ export function SearchView({ onFileSelect }: SearchViewProps) {
               placeholder="Substituir..."
               value={replaceQuery}
               onChange={(e) => setReplaceQuery(e.target.value)}
-              className="w-full rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-foreground outline-none transition-colors focus:border-white/30 focus:bg-white/10"
+              className="w-full rounded border border-white/10 bg-white/5 pl-3 pr-10 py-1.5 text-xs text-foreground outline-none transition-colors focus:border-white/30 focus:bg-white/10"
             />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+              <button
+                onClick={handleReplaceAll}
+                disabled={
+                  !query.trim() || !replaceQuery || results.length === 0
+                }
+                className={`rounded p-1 text-xs transition-colors ${
+                  query.trim() && replaceQuery && results.length > 0
+                    ? "text-foreground hover:bg-white/10"
+                    : "text-muted-foreground/30 cursor-not-allowed"
+                }`}
+                title="Substituir tudo"
+              >
+                <ReplaceAll className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         )}
 

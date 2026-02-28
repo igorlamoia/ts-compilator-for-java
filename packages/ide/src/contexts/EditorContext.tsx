@@ -98,6 +98,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         value: sourceCode,
         automaticLayout: true,
         minimap: { enabled: true },
+        scrollbar: {
+          vertical: "auto",
+          horizontal: "auto",
+          verticalScrollbarSize: 10,
+          horizontalScrollbarSize: 10,
+          alwaysConsumeMouseWheel: false,
+        },
+        scrollBeyondLastLine: false,
         ...config,
       });
     }

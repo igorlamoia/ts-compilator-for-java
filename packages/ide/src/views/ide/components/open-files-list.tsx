@@ -1,6 +1,12 @@
 import { useContext } from "react";
 import { EditorContext } from "@/contexts/EditorContext";
 import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export function OpenFIlesList({
   openTabs,
@@ -22,34 +28,64 @@ export function OpenFIlesList({
     }
   };
 
+  const handleCloseToRight = (filePath: string) => {
+    const currentIndex = openTabs.indexOf(filePath);
+    if (currentIndex === -1) return;
+
+    // Close all tabs to the right of the selected tab
+    const tabsToClose = openTabs.slice(currentIndex + 1);
+    tabsToClose.forEach((tab) => closeTab(tab));
+  };
+
+  const handleCloseAll = () => {
+    openTabs.forEach((tab) => closeTab(tab));
+  };
+
   return (
     <PerfectScrollbar
       height={4}
       className="flex items-center gap-2 border-b border-black/10 bg-white/5 px-2 py-2 dark:border-white/10"
     >
       {openTabs.map((tab) => (
-        <button
-          key={tab}
-          type="button"
-          onClick={() => handleTabClick(tab)}
-          className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs transition-colors ${
-            activeFile === tab
-              ? "bg-white/15 text-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-          }`}
-        >
-          <span className="truncate">{tab}</span>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              closeTab(tab);
-            }}
-            className="ml-1 text-muted-foreground hover:text-foreground"
-          >
-            ×
-          </button>
-        </button>
+        <ContextMenu key={tab}>
+          <ContextMenuTrigger asChild>
+            <button
+              type="button"
+              onClick={() => handleTabClick(tab)}
+              className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs transition-colors ${
+                activeFile === tab
+                  ? "bg-white/15 text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              <span className="truncate">{tab}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeTab(tab);
+                }}
+                className="ml-1 text-muted-foreground hover:text-foreground"
+              >
+                ×
+              </button>
+            </button>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onSelect={() => closeTab(tab)}>
+              Fechar
+            </ContextMenuItem>
+            <ContextMenuItem
+              onSelect={() => handleCloseToRight(tab)}
+              disabled={tab === openTabs[openTabs.length - 1]}
+            >
+              Fechar à Direita
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={handleCloseAll}>
+              Fechar Tudo
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       ))}
     </PerfectScrollbar>
   );

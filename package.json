@@ -5,5 +5,8 @@
   ],
   "keywords": [],
   "author": "Igor Lamoia",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@radix-ui/react-context-menu": "^2.2.16"
+  }
 }
