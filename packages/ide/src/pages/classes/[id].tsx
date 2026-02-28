@@ -100,7 +100,7 @@ export default function ClassDetail() {
                                         ) : (
                                             <div className="space-y-3">
                                                 {submissions[ex.id].map((sub: any) => (
-                                                    <div key={sub.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                                                    <Link href={`/submissions/${sub.id}`} key={sub.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 hover:border-[#0dccf2]/30 transition-all cursor-pointer">
                                                         <div>
                                                             <span className="text-sm font-medium text-white">{sub.student?.name || sub.studentId}</span>
                                                             <span className="text-xs text-slate-500 ml-3">{formatDate(sub.submittedAt)}</span>
@@ -110,8 +110,9 @@ export default function ClassDetail() {
                                                                 {sub.status === 'GRADED' ? 'Corrigido' : sub.status === 'SUBMITTED' ? 'Enviado' : 'Pendente'}
                                                             </span>
                                                             {sub.score != null && <span className="text-sm font-bold text-[#0dccf2]">{sub.score}</span>}
+                                                            <span className="text-xs text-slate-500">Corrigir →</span>
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 ))}
                                             </div>
                                         )}
