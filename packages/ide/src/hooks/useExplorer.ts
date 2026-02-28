@@ -194,9 +194,9 @@ export function useExplorer({
   const deleteFile = async (currentPath: string) => {
     setContextMenu(null);
     const confirmed = await showAlert({
-      title: "Deletar arquivo",
-      description: `Tem certeza que deseja deletar "${currentPath}"?`,
-      confirmText: "Deletar",
+      title: "Excluir arquivo",
+      description: `Tem certeza que deseja excluir "${currentPath}"?`,
+      confirmText: "Excluir",
       cancelText: "Cancelar",
       variant: "destructive",
     });
@@ -230,15 +230,15 @@ export function useExplorer({
       return filePath.startsWith(`${normalized}/`);
     });
 
-    let confirmMsg = `Tem certeza que deseja deletar a pasta "${currentPath}"?`;
+    let confirmMsg = `Tem certeza que deseja excluir a pasta "${currentPath}"?`;
     if (childFiles.length > 0) {
-      confirmMsg = `Tem certeza que deseja deletar a pasta "${currentPath}" e ${childFiles.length} arquivo(s) dentro?`;
+      confirmMsg = `Tem certeza que deseja excluir a pasta "${currentPath}" e ${childFiles.length} arquivo(s) dentro?`;
     }
 
     const confirmed = await showAlert({
-      title: "Deletar pasta",
+      title: "Excluir pasta",
       description: confirmMsg,
-      confirmText: "Deletar",
+      confirmText: "Excluir",
       cancelText: "Cancelar",
       variant: "destructive",
     });

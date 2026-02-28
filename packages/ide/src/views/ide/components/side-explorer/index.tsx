@@ -5,6 +5,7 @@ import {
   Folder,
   FolderOpen,
 } from "lucide-react";
+import { useState, useRef } from "react";
 import { useExplorer } from "@/hooks/useExplorer";
 import type { TreeNode } from "@/hooks/useExplorer";
 import { HoverOptions } from "./hover-options";
@@ -21,6 +22,9 @@ export function SideExplorer({
   setActiveFile,
   setOpenTabs,
 }: SideExplorerProps) {
+  const [dragOverPath, setDragOverPath] = useState<string | null>(null);
+  const dragTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const explorer = useExplorer({
     activeFile,
     setActiveFile,
@@ -60,8 +64,8 @@ export function SideExplorer({
     );
   };
 
-  const renderTree = (nodes: TreeNode[], depth = 0) =>
-    nodes.map((node) => {
+  const renderTree = (nodes: TreeNode[], depth = 0) => {
+    const treeElements = nodes.map((node) => {
       if (node.type === "folder") {
         const isOpen = explorer.openFolders.includes(node.path);
 
@@ -102,9 +106,42 @@ export function SideExplorer({
               onDragOver={(event) => {
                 event.preventDefault();
                 event.dataTransfer.dropEffect = "move";
+                setDragOverPath(node.path);
+                // Clear any existing timer
+                if (dragTimerRef.current) {
+                  clearTimeout(dragTimerRef.current);
+                }
+                // Set timer to open folder after 500ms
+                if (!isOpen) {
+                  dragTimerRef.current = setTimeout(() => {
+                    explorer.toggleFolder(node.path);
+                  }, 200);
+                }
+              }}
+              onDragLeave={(event) => {
+                // Only clear if we're actually leaving the button element
+                if (
+                  event.target === event.currentTarget ||
+                  !(event.currentTarget as HTMLElement).contains(
+                    event.relatedTarget as Node,
+                  )
+                ) {
+                  setDragOverPath(null);
+                  // Clear timer when leaving
+                  if (dragTimerRef.current) {
+                    clearTimeout(dragTimerRef.current);
+                    dragTimerRef.current = null;
+                  }
+                }
               }}
               onDrop={(event) => {
                 event.preventDefault();
+                setDragOverPath(null);
+                // Clear timer on drop
+                if (dragTimerRef.current) {
+                  clearTimeout(dragTimerRef.current);
+                  dragTimerRef.current = null;
+                }
                 const data = event.dataTransfer.getData("text/plain");
                 if (!data) return;
 
@@ -130,10 +167,16 @@ export function SideExplorer({
                   filePath: node.path,
                 });
               }}
-              className={`group flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors ${
+              className={`group relative flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors ${
                 explorer.selectedItem === node.path
                   ? "bg-white/10 text-foreground"
                   : "text-muted-foreground hover:text-foreground"
+              } ${
+                dragOverPath === node.path
+                  ? "bg-cyan-500/20 border-l-2 border-cyan-500"
+                  : dragOverPath && dragOverPath.startsWith(node.path + "/")
+                    ? "border-l-2 border-cyan-500/40"
+                    : ""
               }`}
               style={{ paddingLeft: depth * 12 + 8 }}
             >
@@ -150,9 +193,48 @@ export function SideExplorer({
               <span className="truncate">{node.name}</span>
             </button>
             {isOpen && (
-              <div className="mt-0.5">
-                {renderInlineEntry(node.path, depth + 1)}
-                {node.children && renderTree(node.children, depth + 1)}
+              <div
+                className="pointer-events-none"
+                onDragEnter={(event) => {
+                  event.stopPropagation();
+                  setDragOverPath(node.path);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  event.dataTransfer.dropEffect = "move";
+                  setDragOverPath(node.path);
+                }}
+                onDragLeave={(event) => {
+                  event.stopPropagation();
+                  setDragOverPath(null);
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setDragOverPath(null);
+                  const data = event.dataTransfer.getData("text/plain");
+                  if (!data) return;
+
+                  if (data.startsWith("folder:")) {
+                    const sourcePath = data.substring(7);
+                    explorer.moveFolder(sourcePath, node.path);
+                  } else {
+                    const fileName = explorer
+                      .normalizePath(data)
+                      .split("/")
+                      .filter(Boolean)
+                      .pop();
+                    if (!fileName) return;
+                    const targetPath = `${node.path}/${fileName}`;
+                    explorer.moveFile(data, targetPath);
+                  }
+                }}
+              >
+                <div className="pointer-events-auto">
+                  {renderInlineEntry(node.path, depth + 1)}
+                  {node.children && renderTree(node.children, depth + 1)}
+                </div>
               </div>
             )}
           </div>
@@ -222,6 +304,9 @@ export function SideExplorer({
       );
     });
 
+    return treeElements;
+  };
+
   return (
     <>
       <div className="group flex h-full flex-col">
@@ -233,9 +318,57 @@ export function SideExplorer({
             onCreateFolder={explorer.createFolder}
           />
         </div>
-        <PerfectScrollbar className="flex-1 overflow-auto px-2 pb-4">
-          {renderInlineEntry("", 0)}
-          {renderTree(explorer.tree)}
+        <PerfectScrollbar
+          className={`flex-1 overflow-auto px-2 pb-4 transition-colors ${
+            dragOverPath === "" ? "bg-cyan-500/5" : ""
+          }`}
+        >
+          <div
+            className="min-h-full"
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+              // Only set dragOverPath to empty string if we're not over a folder
+              if (!dragOverPath || !dragOverPath.includes("/")) {
+                setDragOverPath("");
+              }
+            }}
+            onDragLeave={(event) => {
+              if (event.currentTarget === event.target) {
+                setDragOverPath(null);
+              }
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragOverPath(null);
+              // Clear timer on drop
+              if (dragTimerRef.current) {
+                clearTimeout(dragTimerRef.current);
+                dragTimerRef.current = null;
+              }
+              const data = event.dataTransfer.getData("text/plain");
+              if (!data) return;
+
+              if (data.startsWith("folder:")) {
+                const sourcePath = data.substring(7);
+                // Extract folder name and move to root
+                const folderName = sourcePath.split("/").pop();
+                if (!folderName) return;
+                explorer.moveFolder(sourcePath, folderName);
+              } else {
+                const fileName = explorer
+                  .normalizePath(data)
+                  .split("/")
+                  .filter(Boolean)
+                  .pop();
+                if (!fileName) return;
+                explorer.moveFile(data, fileName);
+              }
+            }}
+          >
+            {renderInlineEntry("", 0)}
+            {renderTree(explorer.tree)}
+          </div>
         </PerfectScrollbar>
       </div>
       {explorer.contextMenu && (
@@ -321,7 +454,7 @@ function ContextMenu({
         onClick={onDelete}
         className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-rose-400 hover:bg-white/10"
       >
-        Deletar
+        Excluir
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { OpenFIlesList } from "./open-files-list";
 import { Editor } from "@/components/editor";
+import { HomeScreen } from "@/components/home-screen";
 import { useContext } from "react";
 import { EditorContext } from "@/contexts/EditorContext";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
@@ -40,20 +41,25 @@ export function MainSection({
       if (fallback) {
         setActiveFile(fallback);
       } else {
-        setActiveFile("src/main.?");
+        setActiveFile("");
       }
     }
   };
   return (
     <div className="flex flex-col h-full w-full overflow-x-auto">
-      <OpenFIlesList
-        openTabs={openTabs}
-        activeFile={activeFile}
-        closeTab={closeTab}
-        onActiveFileChange={setActiveFile}
-      />
+      {openTabs.length > 0 && (
+        <OpenFIlesList
+          openTabs={openTabs}
+          activeFile={activeFile}
+          closeTab={closeTab}
+          onActiveFileChange={setActiveFile}
+        />
+      )}
       <div className="relative flex-1 overflow-x-auto">
-        <Editor />
+        <div className={openTabs.length === 0 ? "hidden" : "h-full w-full"}>
+          <Editor />
+        </div>
+        {openTabs.length === 0 && <HomeScreen />}
         <TerminalView
           intermediateCode={intermediateCode?.instructions || []}
           isTerminalOpen={isTerminalOpen}
