@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+  classes   Class[]
+}
+
+model User {
+  id             String        @id @default(uuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  role           UserRole      @default(STUDENT)
+  email          String        @unique
+  name           String
+  avatarUrl      String?
+  bio            String?
+  classesTaught  Class[]       @relation("TeacherToClass")
+  memberships    ClassMember[]
+  submissions    Submission[]
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+model Class {
+  id             String        @id @default(uuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  teacherId      String
+  teacher        User          @relation("TeacherToClass", fields: [teacherId], references: [id])
+  name           String
+  description    String
+  accessCode     String        @unique
+  createdAt      DateTime      @default(now())
+  status         ClassStatus   @default(ACTIVE)
+  members        ClassMember[]
+  exercises      Exercise[]
+}
+
+enum ClassStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model ClassMember {
+  classId   String
+  studentId String
+  class     Class    @relation(fields: [classId], references: [id])
+  student   User     @relation(fields: [studentId], references: [id])
+  joinedAt  DateTime @default(now())
+
+  @@id([classId, studentId])
+}
+
+model Exercise {
+  id             String       @id @default(uuid())
+  classId        String
+  class          Class        @relation(fields: [classId], references: [id])
+  title          String
+  description    String
+  attachments    String
+  deadline       DateTime
+  gradeWeight    Float
+  status         ExerciseStatus @default(DRAFT)
+  submissions    Submission[]
+}
+
+enum ExerciseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Submission {
+  id              String           @id @default(uuid())
+  exerciseId      String
+  exercise        Exercise         @relation(fields: [exerciseId], references: [id])
+  studentId       String
+  student         User             @relation(fields: [studentId], references: [id])
+  codeSnapshot    String
+  status          SubmissionStatus @default(PENDING)
+  score           Float?
+  teacherFeedback String?
+  submittedAt     DateTime         @default(now())
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+  LATE
+}
