@@ -32,8 +32,11 @@ export function MainSection({
   const editorContext = useContext(EditorContext);
 
   const closeTab = (path: string) => {
-    // Save file before closing
-    editorContext.saveCurrentFile(path);
+    // Only save if closing the currently active file
+    // Non-active files are already saved when they were last active
+    if (activeFile === path) {
+      editorContext.saveCurrentFile(path);
+    }
 
     setOpenTabs((prev) => prev.filter((tab) => tab !== path));
     if (activeFile === path) {
