@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 description,
                 deadline: new Date(deadline),
                 gradeWeight: Number(gradeWeight),
-                attachments: []
+                attachments: ''
             }
         })
         return res.status(201).json(exercise)
