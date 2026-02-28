@@ -142,14 +142,14 @@ export default function Dashboard() {
             <header className="relative z-20 w-full border-b border-white/5 bg-[#101f22]/80 backdrop-blur-3xl">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 group">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center text-[#101f22] shadow-[0_0_15px_rgba(13,204,242,0.4)] group-hover:shadow-[0_0_25px_rgba(13,204,242,0.6)] transition-all duration-300">
+                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center text-[#101f22] shadow-[0_0_15px_rgba(13,204,242,0.4)] group-hover:shadow-[0_0_25px_rgba(13,204,242,0.6)] transition-all duration-300">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
                         </div>
                         <h1 className="text-2xl font-black text-white tracking-tight">Java<span className="text-[#0dccf2] drop-shadow-[0_0_8px_rgba(13,204,242,0.8)]">--</span></h1>
                     </Link>
                     <div className="flex items-center gap-6">
                         <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#0dccf2] to-[#10b981] p-[1px]">
+                            <div className="w-6 h-6 rounded-full bg-linear-to-r from-[#0dccf2] to-[#10b981] p-px">
                                 <div className="w-full h-full rounded-full bg-[#101f22] flex items-center justify-center">
                                     <span className="text-[10px] font-bold text-[#0dccf2]">{user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}</span>
                                 </div>
@@ -185,7 +185,7 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
                     <div>
                         <h2 className="text-4xl font-black tracking-tight">
-                            <span className="bg-gradient-to-r from-[#0dccf2] to-[#10b981] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(13,204,242,0.3)]">
+                            <span className="bg-linear-to-r from-[#0dccf2] to-[#10b981] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(13,204,242,0.3)]">
                                 {isTeacher ? 'Painel do Professor' : 'Meu Aprendizado'}
                             </span>
                         </h2>
@@ -193,12 +193,12 @@ export default function Dashboard() {
                     </div>
                     <div className="flex gap-4">
                         {isTeacher ? (
-                            <button onClick={() => setShowCreateClass(true)} className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] shadow-[0_0_20px_rgba(13,204,242,0.3)] hover:shadow-[0_0_30px_rgba(13,204,242,0.5)] hover:scale-[1.02] transition-all duration-300">
+                            <button onClick={() => setShowCreateClass(true)} className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] shadow-[0_0_20px_rgba(13,204,242,0.3)] hover:shadow-[0_0_30px_rgba(13,204,242,0.5)] hover:scale-[1.02] transition-all duration-300">
                                 <svg className="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                                 Nova Turma
                             </button>
                         ) : (
-                            <button onClick={() => setShowJoinClass(true)} className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] shadow-[0_0_20px_rgba(13,204,242,0.3)] hover:shadow-[0_0_30px_rgba(13,204,242,0.5)] hover:scale-[1.02] transition-all duration-300">
+                            <button onClick={() => setShowJoinClass(true)} className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] shadow-[0_0_20px_rgba(13,204,242,0.3)] hover:shadow-[0_0_30px_rgba(13,204,242,0.5)] hover:scale-[1.02] transition-all duration-300">
                                 <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Entrar em Turma
                             </button>
@@ -213,8 +213,8 @@ export default function Dashboard() {
                         <span className="font-medium tracking-wide">Carregando turmas...</span>
                     </div>
                 ) : classes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 bg-white/[0.02] rounded-3xl border border-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-                        <div className="w-24 h-24 mb-6 rounded-full bg-gradient-to-br from-[#0dccf2]/10 to-[#10b981]/10 flex items-center justify-center border border-white/10 shadow-[inner_0_0_20px_rgba(13,204,242,0.1)]">
+                    <div className="flex flex-col items-center justify-center py-24 bg-white/2 rounded-3xl border border-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+                        <div className="w-24 h-24 mb-6 rounded-full bg-linear-to-br from-[#0dccf2]/10 to-[#10b981]/10 flex items-center justify-center border border-white/10 shadow-[inner_0_0_20px_rgba(13,204,242,0.1)]">
                             <span className="text-5xl opacity-80 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">📚</span>
                         </div>
                         <p className="text-slate-200 text-xl font-bold tracking-tight">Nenhuma turma encontrada</p>
@@ -225,9 +225,9 @@ export default function Dashboard() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {classes.map((cls: any) => (
-                            <div key={cls.id} className="group relative bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full">
+                            <div key={cls.id} className="group relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full">
                                 {/* Top gradient accent */}
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#0dccf2] to-[#10b981] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-3xl shadow-[0_0_10px_rgba(13,204,242,0.5)]" />
+                                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#0dccf2] to-[#10b981] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-3xl shadow-[0_0_10px_rgba(13,204,242,0.5)]" />
 
                                 <div className="flex justify-between items-start mb-4">
                                     <h3 className="text-xl font-bold text-white group-hover:text-[#0dccf2] transition-colors leading-tight pr-4">{cls.name}</h3>
@@ -255,7 +255,7 @@ export default function Dashboard() {
                                         <span>{cls._count?.exercises || 0} exercícios</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center text-[10px] font-bold text-[#101f22]">
+                                        <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center text-[10px] font-bold text-[#101f22]">
                                             {(cls.teacher?.name || 'P')[0].toUpperCase()}
                                         </div>
                                         <span>{cls.teacher?.name || 'Professor'}</span>
@@ -269,7 +269,7 @@ export default function Dashboard() {
                                     {isTeacher && (
                                         <button
                                             onClick={() => { setSelectedClassId(cls.id); setShowCreateExercise(true); }}
-                                            className="flex flex-1 justify-center items-center py-3 rounded-xl bg-gradient-to-r from-[#0dccf2] to-[#10b981] hover:opacity-90 text-[#101f22] text-sm font-bold shadow-[0_0_15px_rgba(13,204,242,0.2)] hover:shadow-[0_0_20px_rgba(13,204,242,0.4)] transition-all duration-300 gap-1"
+                                            className="flex flex-1 justify-center items-center py-3 rounded-xl bg-linear-to-r from-[#0dccf2] to-[#10b981] hover:opacity-90 text-[#101f22] text-sm font-bold shadow-[0_0_15px_rgba(13,204,242,0.2)] hover:shadow-[0_0_20px_rgba(13,204,242,0.4)] transition-all duration-300 gap-1"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
                                             Exercício
