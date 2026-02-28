@@ -1,9 +1,12 @@
 import { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { IDEFunction } from "@/views/ide-terminal-wrapper";
 import { SpaceBackground } from "@/components/space-background";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext, EditorProvider } from "@/contexts/EditorContext";
+import { KeywordProvider } from "@/contexts/KeywordContext";
+import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
+import { IDEView } from "@/views/ide";
+import { useIntermediatorCode } from "@/views/ide/useIntermediatorCode";
 
 function WorkspaceContent({ exercise, userId }: { exercise: any; userId: string }) {
     const { getEditorCode } = useContext(EditorContext);
@@ -170,13 +173,20 @@ function WorkspaceContent({ exercise, userId }: { exercise: any; userId: string 
 
                 {/* Right: Monaco IDE */}
                 <div className="flex-1 relative">
-                    <IDEFunction
-                        isOpenKeywordCustomizer={isOpenKeywordCustomizer}
-                        setIsOpenKeywordCustomizer={setIsOpenKeywordCustomizer}
-                    />
+                    <IDETerminalInner />
                 </div>
             </div>
         </>
+    );
+}
+
+function IDETerminalInner() {
+    const { handleIntermediateCodeGeneration, intermediateCode } = useIntermediatorCode();
+    return (
+        <IDEView
+            handleIntermediateCodeGeneration={handleIntermediateCodeGeneration}
+            intermediateCode={intermediateCode}
+        />
     );
 }
 
@@ -226,7 +236,13 @@ export default function ExerciseWorkspace({ exerciseId }: { exerciseId: string }
     return (
         <div className="relative min-h-screen bg-[#101f22] text-slate-100 flex flex-col overflow-hidden font-sans">
             <SpaceBackground />
-            <WorkspaceContent exercise={exercise} userId={userId!} />
+            <EditorProvider>
+                <KeywordProvider>
+                    <RuntimeErrorProvider>
+                        <WorkspaceContent exercise={exercise} userId={userId!} />
+                    </RuntimeErrorProvider>
+                </KeywordProvider>
+            </EditorProvider>
         </div>
     );
 }
