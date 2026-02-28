@@ -20,7 +20,6 @@ export function Menu({ handleRun, runAll, toggleTerminal }: MenuProps) {
           Estúdio
         </span>
         <div className="hidden items-center gap-3 md:flex">
-          <button className="hover:text-foreground">File</button>
           <button className="hover:text-foreground">Edit</button>
           <button className="hover:text-foreground" onClick={toggleTerminal}>
             Terminal

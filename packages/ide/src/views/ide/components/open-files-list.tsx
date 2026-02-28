@@ -7,6 +7,8 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { motion, AnimatePresence } from "motion/react";
+import { ClosedCaption, ClosedCaptionIcon, X } from "lucide-react";
 
 export function OpenFIlesList({
   openTabs,
@@ -50,47 +52,57 @@ export function OpenFIlesList({
       height={4}
       className="flex items-center gap-2 border-b border-black/10 bg-white/5 px-2 py-2 dark:border-white/10"
     >
-      {openTabs.map((tab) => (
-        <ContextMenu key={tab}>
-          <ContextMenuTrigger asChild>
-            <button
-              type="button"
-              onClick={() => handleTabClick(tab)}
-              className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs transition-colors ${
-                activeFile === tab
-                  ? "bg-white/15 text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-              }`}
-            >
-              <span className="truncate">{tab}</span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeTab(tab);
-                }}
-                className="ml-1 text-muted-foreground hover:text-foreground"
-              >
-                ×
-              </button>
-            </button>
-          </ContextMenuTrigger>
-          <ContextMenuContent>
-            <ContextMenuItem onSelect={() => closeTab(tab)}>
-              Fechar
-            </ContextMenuItem>
-            <ContextMenuItem
-              onSelect={() => handleCloseToRight(tab)}
-              disabled={tab === openTabs[openTabs.length - 1]}
-            >
-              Fechar à Direita
-            </ContextMenuItem>
-            <ContextMenuItem onSelect={handleCloseAll}>
-              Fechar Tudo
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
-      ))}
+      <AnimatePresence mode="popLayout" initial={false}>
+        {openTabs.map((tab) => (
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => handleTabClick(tab)}
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
+                    activeFile === tab
+                      ? "bg-white/15 text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                  }`}
+                >
+                  <span className="truncate">{tab}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeTab(tab);
+                    }}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </button>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem onSelect={() => closeTab(tab)}>
+                  Fechar
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onSelect={() => handleCloseToRight(tab)}
+                  disabled={tab === openTabs[openTabs.length - 1]}
+                >
+                  Fechar à Direita
+                </ContextMenuItem>
+                <ContextMenuItem onSelect={handleCloseAll}>
+                  Fechar Tudo
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </PerfectScrollbar>
   );
 }

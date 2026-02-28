@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useContext, useCallback } from "react";
 import { EditorContext } from "@/contexts/EditorContext";
+import { useAlert } from "@/components/alert";
 import type { FileData } from "@/hooks/useFileSystem";
 
 export type TreeNode = {
@@ -22,6 +23,7 @@ export function useExplorer({
 }: UseExplorerProps) {
   const editorContext = useContext(EditorContext);
   const { fileSystem } = editorContext;
+  const { showAlert, showMessage } = useAlert();
 
   const [openFolders, setOpenFolders] = useState<string[]>(["src"]);
   const [extraFolders, setExtraFolders] = useState<string[]>([]);
@@ -157,7 +159,7 @@ export function useExplorer({
   const moveFile = (currentPath: string, targetPath: string) => {
     if (currentPath === targetPath) return;
     if (fileSystem.fileExists(targetPath)) {
-      window.alert("Ja existe um arquivo com esse nome na pasta.");
+      showMessage("Ja existe um arquivo com esse nome na pasta.");
       return;
     }
 
@@ -189,9 +191,17 @@ export function useExplorer({
     setRenameTarget({ path: currentPath, name });
   };
 
-  const deleteFile = (currentPath: string) => {
+  const deleteFile = async (currentPath: string) => {
     setContextMenu(null);
-    if (!window.confirm(`Deletar "${currentPath}"?`)) return;
+    const confirmed = await showAlert({
+      title: "Deletar arquivo",
+      description: `Tem certeza que deseja deletar "${currentPath}"?`,
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+
+    if (!confirmed) return;
 
     fileSystem.deleteFile(currentPath);
     setOpenTabs((prev) => {
@@ -212,7 +222,7 @@ export function useExplorer({
     setRenameTarget({ path: currentPath, name });
   };
 
-  const deleteFolder = (currentPath: string) => {
+  const deleteFolder = async (currentPath: string) => {
     setContextMenu(null);
     const normalized = normalizePath(currentPath);
     const childFiles = fileSystem.getAllFiles().filter((file) => {
@@ -220,12 +230,20 @@ export function useExplorer({
       return filePath.startsWith(`${normalized}/`);
     });
 
-    let confirmMsg = `Deletar pasta "${currentPath}"?`;
+    let confirmMsg = `Tem certeza que deseja deletar a pasta "${currentPath}"?`;
     if (childFiles.length > 0) {
-      confirmMsg = `Deletar pasta "${currentPath}" e ${childFiles.length} arquivo(s) dentro?`;
+      confirmMsg = `Tem certeza que deseja deletar a pasta "${currentPath}" e ${childFiles.length} arquivo(s) dentro?`;
     }
 
-    if (!window.confirm(confirmMsg)) return;
+    const confirmed = await showAlert({
+      title: "Deletar pasta",
+      description: confirmMsg,
+      confirmText: "Deletar",
+      cancelText: "Cancelar",
+      variant: "destructive",
+    });
+
+    if (!confirmed) return;
 
     // Delete all files inside the folder
     childFiles.forEach((file) => {
@@ -270,12 +288,12 @@ export function useExplorer({
 
     if (normalized === newPath) return;
     if (newPath.startsWith(`${normalized}/`)) {
-      window.alert("Nao pode mover uma pasta para dentro dela mesma.");
+      showMessage("Nao pode mover uma pasta para dentro dela mesma.");
       return;
     }
 
     if (folderExists(newPath)) {
-      window.alert("Ja existe uma pasta com esse nome.");
+      showMessage("Ja existe uma pasta com esse nome.");
       return;
     }
 
