@@ -3,10 +3,11 @@ import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
 import { TIntermediateCodeData } from "@/pages/api/intermediator";
 import { api } from "@/utils/axios";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
+import { EditorContext } from "@/contexts/EditorContext";
 import { TToken } from "@/@types/token";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
@@ -16,6 +17,7 @@ export function useIntermediatorCode() {
   const { locale } = useRouter();
   // const [isLoading, setIsLoading] = useState(false);
   const { showLineIssues, cleanIssues } = useEditor();
+  const { currentFilePath, saveCurrentFile } = useContext(EditorContext);
   const [intermediateCode, setIntermediateCode] =
     useState<TIntermediateCodeData>({} as TIntermediateCodeData);
   const handleIntermediateCodeGeneration = async (
@@ -35,6 +37,12 @@ export function useIntermediatorCode() {
         type: issues.length ? "warning" : "success",
       });
       if (issues.length) handleIssues(issues);
+
+      // Save the file after successful intermediate code generation
+      if (currentFilePath) {
+        saveCurrentFile(currentFilePath);
+      }
+
       return true;
     } catch (error) {
       setIntermediateCode({} as TIntermediateCodeData);

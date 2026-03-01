@@ -8,7 +8,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { motion, AnimatePresence } from "motion/react";
-import { ClosedCaption, ClosedCaptionIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 
 export function OpenFIlesList({
   openTabs,

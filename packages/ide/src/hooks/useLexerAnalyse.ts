@@ -3,11 +3,12 @@ import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
 import { TLexerAnalyseData } from "@/pages/api/lexer";
 import { api } from "@/utils/axios";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
+import { EditorContext } from "@/contexts/EditorContext";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
 
@@ -17,6 +18,7 @@ export function useLexerAnalyse() {
   // const [isLoading, setIsLoading] = useState(false);
   const { getEditorCode, showLineIssues, cleanIssues } = useEditor();
   const { buildKeywordMap } = useKeywords();
+  const { currentFilePath, saveCurrentFile } = useContext(EditorContext);
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
     {} as TLexerAnalyseData,
   );
@@ -43,6 +45,11 @@ export function useLexerAnalyse() {
       });
       setShowScrollArrow(true);
       if (issues.length) handleIssues(issues);
+
+      // Save the file after successful lexer run
+      if (currentFilePath) {
+        saveCurrentFile(currentFilePath);
+      }
 
       return data.tokens;
     } catch (error) {

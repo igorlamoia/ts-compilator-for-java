@@ -6,10 +6,24 @@ export function useKeyboardShortcuts(
   isTerminalOpen: boolean,
   setIsSidebarOpen?: React.Dispatch<React.SetStateAction<boolean>>,
   setActiveView?: React.Dispatch<React.SetStateAction<SidebarView>>,
+  setIsQuickSearchOpen?: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
-  // Atalhos globais (ctrl+', ctrl+j, Escape, ctrl+e, ctrl+shift+f)
+  // Atalhos globais (ctrl+p, ctrl+', ctrl+j, Escape, ctrl+e, ctrl+shift+f)
   useEffect(() => {
     const handleGlobalKeyDown = (event: globalThis.KeyboardEvent) => {
+      // Quick file search (Ctrl+P)
+      const isQuickSearchShortcut =
+        event.ctrlKey && event.code === "KeyP" && !event.shiftKey;
+
+      if (isQuickSearchShortcut) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (setIsQuickSearchOpen) {
+          setIsQuickSearchOpen(true);
+        }
+        return;
+      }
+
       const isToggleShortcut =
         event.ctrlKey && ["Backquote", "KeyJ"].includes(event.code);
 
@@ -57,5 +71,11 @@ export function useKeyboardShortcuts(
       document.removeEventListener("keydown", handleGlobalKeyDown, {
         capture: true,
       });
-  }, [toggleTerminal, isTerminalOpen, setIsSidebarOpen, setActiveView]);
+  }, [
+    toggleTerminal,
+    isTerminalOpen,
+    setIsSidebarOpen,
+    setActiveView,
+    setIsQuickSearchOpen,
+  ]);
 }

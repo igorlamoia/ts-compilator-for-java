@@ -19,6 +19,7 @@ import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts
 import { AnimatePresence, motion } from "motion/react";
 import { ScrollArrow } from "@/components/scroll-arrow";
 import { EditorContext } from "@/contexts/EditorContext";
+import { QuickFileSearch } from "@/components/quick-file-search";
 
 export function IDEView({
   handleIntermediateCodeGeneration,
@@ -92,12 +93,14 @@ export function IDEView({
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<SidebarView>("explorer");
+  const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
   const toggleTerminal = () => setIsTerminalOpen(!isTerminalOpen);
   useKeyboardShortcuts(
     toggleTerminal,
     isTerminalOpen,
     setIsSidebarOpen,
     setActiveView,
+    setIsQuickSearchOpen,
   );
 
   return (
@@ -172,6 +175,16 @@ export function IDEView({
         />
       </div>
       <ScrollArrow show={showScrollArrow} onClick={scrollToResults} />
+      <QuickFileSearch
+        isOpen={isQuickSearchOpen}
+        onClose={() => setIsQuickSearchOpen(false)}
+        onSelectFile={(filePath) => {
+          setActiveFile(filePath);
+          if (!openTabs.includes(filePath)) {
+            setOpenTabs([...openTabs, filePath]);
+          }
+        }}
+      />
       <div className="flex flex-col gap-4">
         <ShowTokens analyseData={analyseData} />
         <div className="flex flex-col gap-2">
