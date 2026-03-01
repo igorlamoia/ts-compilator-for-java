@@ -1,9 +1,10 @@
 import localFont from "next/font/local";
 import { Footer } from "@/components/footer";
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
 import { HomeHero } from "@/components/heros/home";
 import { IDEFunction } from "@/views/ide-terminal-wrapper";
+import { TerminalContext, TerminalProvider } from "@/contexts/TerminalContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,26 +17,12 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-type TerminalContextType = {
-  isTerminalOpen: boolean;
-  setIsTerminalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-const TerminalContext = createContext<TerminalContextType>(
-  {} as TerminalContextType,
-);
-
-export function useTerminalContext() {
-  return useContext(TerminalContext);
-}
-
 export default function Home() {
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isOpenKeywordCustomizer, setIsOpenKeywordCustomizer] = useState(false);
   return (
     <div className="relative overflow-hidden">
       <SpaceBackground />
-      <TerminalContext.Provider value={{ isTerminalOpen, setIsTerminalOpen }}>
+      <TerminalProvider>
         <main
           className={`${geistSans.variable} ${geistMono.variable}
           min-h-screen p-6 gap-2 sm:p-8 font-(family-name:--font-geist-sans)
@@ -55,7 +42,7 @@ export default function Home() {
             setIsOpenKeywordCustomizer((old) => !old)
           }
         />
-      </TerminalContext.Provider>
+      </TerminalProvider>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { ShowTokens } from "../tokens/show-tokens";
 import { useLexerAnalyse } from "../../hooks/useLexerAnalyse";
 import { ListIntermediateCode } from "../tokens/list-intermediate-code";
@@ -10,7 +12,7 @@ import {
   SidebarView,
 } from "./components/side-explorer/sidebar-panel";
 import { SideMenu } from "./components/side-menu";
-import { useTerminalContext } from "@/pages";
+import { useTerminalContext } from "@/contexts/TerminalContext";
 import { MainSection } from "./components/main-section";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts";

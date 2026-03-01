@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Dock, DockIcon } from "@/components/ui/dock";
 import { SUPPORTED_LOCALES, t } from "@/i18n";
-import { useTerminalContext } from "@/pages";
+import { useTerminalContext } from "@/contexts/TerminalContext";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
