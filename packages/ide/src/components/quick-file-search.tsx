@@ -55,7 +55,7 @@ export function QuickFileSearch({
         case "ArrowDown":
           event.preventDefault();
           setSelectedIndex((prev) =>
-            Math.min(prev + 1, filteredFiles.length - 1)
+            Math.min(prev + 1, filteredFiles.length - 1),
           );
           break;
         case "ArrowUp":
@@ -86,7 +86,7 @@ export function QuickFileSearch({
         <div className="flex flex-col">
           {/* Search Input */}
           <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/10">
-            <Search className="mr-3 size-4 text-muted-foreground flex-shrink-0" />
+            <Search className="mr-3 size-4 text-muted-foreground shrink-0" />
             <Input
               autoFocus
               placeholder="Search files by name..."
@@ -117,10 +117,10 @@ export function QuickFileSearch({
                     "px-4 py-2 text-sm cursor-pointer flex items-center gap-2 transition-colors",
                     index === selectedIndex
                       ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                      : "hover:bg-black/5 dark:hover:bg-white/5"
+                      : "hover:bg-black/5 dark:hover:bg-white/5",
                   )}
                 >
-                  <FileText className="size-4 flex-shrink-0" />
+                  <FileText className="size-4 shrink-0" />
                   <span className="truncate">{file}</span>
                 </div>
               ))
@@ -131,7 +131,8 @@ export function QuickFileSearch({
           {filteredFiles.length > 0 && (
             <div className="px-4 py-2 border-t border-black/10 dark:border-white/10 text-xs text-muted-foreground flex justify-between">
               <span>
-                {filteredFiles.length} file{filteredFiles.length !== 1 ? "s" : ""}
+                {filteredFiles.length} file
+                {filteredFiles.length !== 1 ? "s" : ""}
               </span>
               <span className="text-xs">
                 <kbd className="px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10">

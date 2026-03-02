@@ -4,7 +4,12 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { CodeXml } from "lucide-react";
+import { CodeXml, LogIn } from "lucide-react";
+import { Title } from "@/components/text/title";
+import { GradientText } from "@/components/text/gradient";
+import { Subtitle } from "@/components/text/subtitle";
+import { Input } from "@/components/ui/input";
+import { HeroButton } from "@/components/buttons/hero";
 
 export default function Login() {
   const router = useRouter();
@@ -67,22 +72,22 @@ export default function Login() {
       <main className="grow flex items-center justify-center relative z-10 p-6">
         {/* Login Card */}
         <div className="relative z-10 w-full max-w-120">
-          <div className="bg-[#182f34]/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8 md:p-10 relative overflow-hidden">
+          <div className="relative bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
             <BorderBeam
-              colorFrom="#0dccf2"
-              colorTo="#34d399"
+              colorFrom="var(--color-primary)"
+              colorTo="var(--color-secondary)"
               duration={8}
               size={80}
             />
 
             {/* Header */}
             <div className="mb-10 text-center">
-              <h2 className="text-3xl font-bold mb-2 bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent inline-block">
-                Bem-vindo de Volta
-              </h2>
-              <p className="text-slate-400 text-sm">
-                Insira suas credenciais para acessar o LMS Java--
-              </p>
+              <Title>
+                <GradientText>Bem-vindo de Volta</GradientText>
+              </Title>
+              <Subtitle className="mt-1 text-sm">
+                Insira suas credenciais para acessar o LMS
+              </Subtitle>
             </div>
 
             {/* Form */}
@@ -96,8 +101,8 @@ export default function Login() {
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">
                   Endereço de E-mail
                 </label>
-                <input
-                  className="w-full bg-[#101f22]/80 border border-white/10 rounded-xl h-12 pl-4 pr-4 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#0dccf2] focus:ring-1 focus:ring-[#0dccf2] transition-all duration-300"
+                <Input
+                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
                   placeholder="nome@empresa.com"
                   type="email"
                   value={email}
@@ -119,8 +124,8 @@ export default function Login() {
                     Esqueceu a senha?
                   </Link>
                 </div>
-                <input
-                  className="w-full bg-[#101f22]/80 border border-white/10 rounded-xl h-12 pl-4 pr-4 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#0dccf2] focus:ring-1 focus:ring-[#0dccf2] transition-all duration-300"
+                <Input
+                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
                   placeholder="••••••••"
                   type="password"
                   value={password}
@@ -130,32 +135,10 @@ export default function Login() {
               </div>
 
               {/* Submit Button */}
-              <ShimmerButton
-                type="submit"
-                className="w-full h-12 font-bold mt-2 rounded-xl"
-                shimmerColor="#0dccf2"
-                shimmerDuration="2.5s"
-                borderRadius="0.75rem"
-                background="rgba(13, 40, 45, 0.95)"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2 text-[#0dccf2]">
-                  Entrar no Painel
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </svg>
-                </span>
-              </ShimmerButton>
+              <HeroButton type="submit">
+                Entrar no Painel
+                <LogIn />
+              </HeroButton>
             </form>
 
             {/* Divider */}

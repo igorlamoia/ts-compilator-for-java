@@ -194,7 +194,7 @@ function WorkspaceContent({
 
       <div className="relative z-10 flex flex-1 h-[calc(100vh-64px)] overflow-hidden">
         {/* Left: Instructions */}
-        <div className="w-[360px] flex-shrink-0 border-r border-white/5 bg-[#0d1a1d]/60 backdrop-blur-md overflow-y-auto">
+        <div className="w-[360px] shrink-0 border-r border-white/5 bg-[#0d1a1d]/60 backdrop-blur-md overflow-y-auto">
           <div className="p-6">
             <h2 className="text-sm font-semibold text-[#0dccf2] uppercase tracking-wider mb-4">
               Instruções

@@ -59,7 +59,7 @@ function Icon(props: { type: TTyperToast }) {
   return (
     <div>
       {props.type === "success" && (
-        <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
+        <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
           <svg
             className="w-5 h-5"
             aria-hidden="true"
@@ -73,7 +73,7 @@ function Icon(props: { type: TTyperToast }) {
         </div>
       )}
       {props.type === "error" && (
-        <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+        <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
           <svg
             className="w-5 h-5"
             aria-hidden="true"
@@ -87,7 +87,7 @@ function Icon(props: { type: TTyperToast }) {
         </div>
       )}
       {(props.type === "info" || props.type === "warning") && (
-        <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
+        <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
           <svg
             className="w-5 h-5"
             aria-hidden="true"
