@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
 import { HomeHero } from "@/components/heros/home";
 import { IDEFunction } from "@/views/ide-terminal-wrapper";
-import { TerminalContext, TerminalProvider } from "@/contexts/TerminalContext";
+import { TerminalProvider } from "@/contexts/TerminalContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
