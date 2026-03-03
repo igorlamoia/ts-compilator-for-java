@@ -23,6 +23,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         teacherFeedback: true,
                         submittedAt: true,
                     }
+                },
+                testCases: {
+                    orderBy: { orderIndex: 'asc' }
                 }
             }
         })
@@ -30,7 +33,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'POST') {
-        const { classId, title, description, deadline, gradeWeight } = req.body
+        const { classId, title, description, deadline, gradeWeight, testCases } = req.body
+
+        const testCasesData = Array.isArray(testCases)
+            ? testCases
+                .filter((tc: any) => tc.input?.trim() || tc.expectedOutput?.trim())
+                .map((tc: any, index: number) => ({
+                    label: tc.label || '',
+                    input: tc.input || '',
+                    expectedOutput: tc.expectedOutput || '',
+                    orderIndex: index,
+                }))
+            : []
 
         const exercise = await prisma.exercise.create({
             data: {
@@ -39,8 +53,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 description,
                 deadline: new Date(deadline),
                 gradeWeight: Number(gradeWeight),
-                attachments: ''
-            }
+                attachments: '',
+                ...(testCasesData.length > 0 && {
+                    testCases: { create: testCasesData }
+                })
+            },
+            include: { testCases: true }
         })
         return res.status(201).json(exercise)
     }

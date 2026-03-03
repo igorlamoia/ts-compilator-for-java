@@ -89,15 +89,52 @@ input-code.java → Lexer → Token[] → TokenIterator → Grammar/Parser (w/ E
 ```
 
 ### IDE Architecture
-- **Monaco Editor Integration**: Custom language support for Java-- with syntax highlighting
-- **API Routes** (`packages/ide/src/pages/api/`):
-  - `/api/lexer`: Accepts source code, returns token analysis
-  - `/api/intermediator`: Accepts source code, returns intermediate code instructions
-- **Hooks**:
-  - `useLexerAnalyse`: Handles lexical analysis requests
-  - `useIntermediatorCode`: Handles intermediate code generation
-  - `useEditor`: Manages Monaco Editor state and configuration
-- The IDE imports the compiler package directly as a dependency
+The IDE is a Next.js (Pages Router) app using Tailwind CSS v4, shadcn/radix-ui components, and React 19.
+
+**Pages:**
+- `/` — Home/landing page
+- `/login`, `/register` — Auth pages
+- `/dashboard` — User dashboard
+- `/exercises/workspace` — Main IDE workspace (Monaco Editor)
+- `/exercises/[id]`, `/classes/[id]`, `/submissions/[id]` — LMS entity pages
+
+**API Routes** (`src/pages/api/`):
+- `/api/lexer` — Accepts source code + optional keyword map, returns token analysis
+- `/api/intermediator` — Returns intermediate code instructions
+- `/api/auth/login`, `/api/auth/register`, `/api/auth/me` — Auth (no password hashing; email lookup only for local dev)
+- `/api/classes/`, `/api/exercises/`, `/api/submissions/` — LMS CRUD and `/submissions/validate`
+
+**Database:** Prisma with SQLite (`prisma/dev.db`). Models: `Organization`, `User` (roles: ADMIN/TEACHER/STUDENT), `Class`, `ClassMember`, `Exercise`, `Submission`.
+```bash
+cd packages/ide
+npx prisma generate       # Regenerate Prisma client after schema changes
+npx prisma migrate dev    # Apply migrations (dev)
+npx prisma studio         # Open Prisma database GUI
+```
+
+**React Contexts** (`src/contexts/`) — All provided in `_app.tsx`:
+- `EditorContext` — Monaco editor instance, source code, file loading/saving, line markers
+- `KeywordContext` — Customizable Java-- keywords (13 keywords remappable, persisted in localStorage); `buildKeywordMap()` returns the map sent to the lexer API
+- `TerminalContext` — Terminal open/close state
+- `ThemeContext`, `ToastContext`, `RuntimeErrorContext`
+
+**Hooks** (`src/hooks/`):
+- `useEditor` — Consumes `EditorContext`
+- `useFileSystem` — Client-side virtual file system backed by `localStorage` (key: `files-storage`)
+- `useEditorWithFileSystem` — Combines editor + file system
+- `useLexerAnalyse`, `useIntermediatorCode` — Compiler API calls
+- `useExplorer`, `useSearch` — Side explorer panel state
+
+**Component Structure:**
+- `src/components/ui/` — shadcn-style base components (Button, Dialog, Tooltip, etc.)
+- `src/components/` — Feature components (terminal, token-card, keyword-customizer, etc.)
+- `src/views/` — Page-level layout compositions (IDE view, token views)
+
+**i18n:** Next.js built-in i18n with locales `pt-BR` (default), `pt-PT`, `es`, `en`. Locale files under `src/i18n/locales/<locale>/`.
+
+**Monaco Language:** Registered as `java-mm` via `src/utils/compiler/editor/editor-language.ts`. Themes `editor-glass-dark` and `editor-glass-light` are defined in `EditorContext`. Keywords update dynamically via `KeywordContext`.
+
+- The IDE imports the compiler package directly as a local dependency (`@ts-compilator-for-java/compiler`).
 
 ### Key Design Patterns
 - **Scanner Factory Pattern**: `LexerScannerFactory.getInstance()` returns appropriate scanner based on character

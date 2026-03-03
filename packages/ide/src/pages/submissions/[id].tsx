@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
+import { TestCaseResults } from "@/components/test-case-results";
+import type { TTestCaseResult } from "@/pages/api/submissions/validate";
 
 export default function GradeSubmission() {
     const router = useRouter();
@@ -57,7 +59,7 @@ export default function GradeSubmission() {
         setCompiling(true); setCompileResult(null);
 
         try {
-            const res = await fetch('/api/submissions/validate', {
+            const res = await fetch('/api/submissions/validate?dryRun=true', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-user-id': userId! },
                 body: JSON.stringify({
@@ -176,6 +178,17 @@ export default function GradeSubmission() {
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Test Case Results */}
+                        {compileResult?.testCaseResults && compileResult.testCaseResults.length > 0 && (
+                            <div className="bg-[#182f34]/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                                <TestCaseResults
+                                    results={compileResult.testCaseResults}
+                                    passed={compileResult.testCasesPassed ?? 0}
+                                    total={compileResult.testCasesTotal ?? 0}
+                                />
                             </div>
                         )}
 

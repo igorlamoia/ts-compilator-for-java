@@ -8,6 +8,8 @@ import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
 import { IDEView } from "@/views/ide";
 import { useIntermediatorCode } from "@/hooks/useIntermediatorCode";
 import { TerminalProvider } from "@/contexts/TerminalContext";
+import { TestCaseResults } from "@/components/test-case-results";
+import type { TTestCaseResult } from "@/pages/api/submissions/validate";
 
 function WorkspaceContent({
   exercise,
@@ -23,6 +25,9 @@ function WorkspaceContent({
   const [compileErrors, setCompileErrors] = useState<string[]>([]);
   const [compileWarnings, setCompileWarnings] = useState<string[]>([]);
   const [showCompilePanel, setShowCompilePanel] = useState(false);
+  const [testCaseResults, setTestCaseResults] = useState<TTestCaseResult[] | null>(null);
+  const [testCasesPassed, setTestCasesPassed] = useState(0);
+  const [testCasesTotal, setTestCasesTotal] = useState(0);
 
   const lastSubmission = exercise?.submissions?.[0];
   const isAlreadySubmitted =
@@ -34,6 +39,7 @@ function WorkspaceContent({
     setCompileErrors([]);
     setCompileWarnings([]);
     setShowCompilePanel(false);
+    setTestCaseResults(null);
 
     const code = getEditorCode();
     if (!code || code.trim().length < 5) {
@@ -65,6 +71,13 @@ function WorkspaceContent({
       // Compilation succeeded, submission created
       if (data.warnings?.length > 0) {
         setCompileWarnings(data.warnings);
+      }
+      if (data.testCaseResults) {
+        setTestCaseResults(data.testCaseResults);
+        setTestCasesPassed(data.testCasesPassed ?? 0);
+        setTestCasesTotal(data.testCasesTotal ?? 0);
+        setShowCompilePanel(true);
+      } else if (data.warnings?.length > 0) {
         setShowCompilePanel(true);
       }
       setSubmitted(true);
@@ -186,6 +199,15 @@ function WorkspaceContent({
                     {warn}
                   </div>
                 ))}
+              </div>
+            )}
+            {testCaseResults && testCaseResults.length > 0 && (
+              <div className="mt-3">
+                <TestCaseResults
+                  results={testCaseResults}
+                  passed={testCasesPassed}
+                  total={testCasesTotal}
+                />
               </div>
             )}
           </div>

@@ -48,6 +48,12 @@ export default function Dashboard() {
   const [exDesc, setExDesc] = useState("");
   const [exDeadline, setExDeadline] = useState("");
   const [exWeight, setExWeight] = useState("1");
+  const [showTestCases, setShowTestCases] = useState(false);
+  const [testCases, setTestCases] = useState([
+    { label: "", input: "", expectedOutput: "" },
+    { label: "", input: "", expectedOutput: "" },
+    { label: "", input: "", expectedOutput: "" },
+  ]);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -170,6 +176,9 @@ export default function Dashboard() {
           description: exDesc,
           deadline: exDeadline,
           gradeWeight: exWeight,
+          testCases: testCases.filter(
+            (tc) => tc.input.trim() || tc.expectedOutput.trim()
+          ),
         }),
       });
       if (!res.ok) {
@@ -181,6 +190,12 @@ export default function Dashboard() {
       setExDesc("");
       setExDeadline("");
       setExWeight("1");
+      setShowTestCases(false);
+      setTestCases([
+        { label: "", input: "", expectedOutput: "" },
+        { label: "", input: "", expectedOutput: "" },
+        { label: "", input: "", expectedOutput: "" },
+      ]);
       setShowCreateExercise(false);
       fetchClasses();
     } catch {
@@ -521,7 +536,7 @@ export default function Dashboard() {
       {/* Create Exercise Modal */}
       {showCreateExercise && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#182f34] border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl">
+          <div className="bg-[#182f34] border border-white/10 rounded-2xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-white mb-6">
               Criar Exercício
             </h3>
@@ -579,6 +594,95 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
+              {/* Test Cases Section */}
+              <div className="border border-white/10 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowTestCases(!showTestCases)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/8 transition-colors text-sm"
+                >
+                  <span className="font-medium text-slate-300">
+                    Casos de Teste (Opcional)
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {showTestCases ? "▲ Recolher" : "▼ Expandir"}
+                  </span>
+                </button>
+                {showTestCases && (
+                  <div className="p-4 space-y-4 border-t border-white/10">
+                    <p className="text-xs text-slate-500">
+                      Defina pares de entrada/saída esperada para validação
+                      automática do código do aluno.
+                    </p>
+                    {testCases.map((tc, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-black/20 rounded-lg border border-white/5 space-y-2"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold text-[#0dccf2]">
+                            #{idx + 1}
+                          </span>
+                          <input
+                            value={tc.label}
+                            onChange={(e) => {
+                              const updated = [...testCases];
+                              updated[idx] = {
+                                ...updated[idx],
+                                label: e.target.value,
+                              };
+                              setTestCases(updated);
+                            }}
+                            className="flex-1 px-3 py-1.5 bg-black/30 border border-white/10 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 transition-all text-xs"
+                            placeholder="Nome do caso (opcional)"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">
+                              Entrada (stdin)
+                            </label>
+                            <textarea
+                              value={tc.input}
+                              onChange={(e) => {
+                                const updated = [...testCases];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  input: e.target.value,
+                                };
+                                setTestCases(updated);
+                              }}
+                              rows={3}
+                              className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 transition-all text-xs font-mono resize-none"
+                              placeholder="Uma linha por entrada..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 mb-1">
+                              Saída esperada (stdout)
+                            </label>
+                            <textarea
+                              value={tc.expectedOutput}
+                              onChange={(e) => {
+                                const updated = [...testCases];
+                                updated[idx] = {
+                                  ...updated[idx],
+                                  expectedOutput: e.target.value,
+                                };
+                                setTestCases(updated);
+                              }}
+                              rows={3}
+                              className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 transition-all text-xs font-mono resize-none"
+                              placeholder="Saída esperada..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
