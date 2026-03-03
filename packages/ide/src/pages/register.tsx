@@ -5,42 +5,62 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { HeroButton } from "@/components/buttons/hero";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import axios, { isAxiosError } from "axios";
+import { Navbar } from "@/components/navbar";
+
+const registerSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  role: z.enum(["teacher", "student"]),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "student",
+    },
+  });
+
+  const handleRegister = async (values: RegisterFormValues) => {
+    setServerError("");
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Falha ao cadastrar");
-        return;
-      }
+      const { data } = await axios.post("/auth/register", values);
 
       localStorage.setItem("lms_user_id", data.user.id);
       localStorage.setItem("lms_org_id", data.user.organizationId);
 
       router.push("/dashboard");
-    } catch (err) {
-      setError("Erro de conexão");
+    } catch (error) {
+      if (isAxiosError(error))
+        return setServerError(
+          error.response?.data?.error || "Erro de rede. Tente novamente.",
+        );
+      setServerError("Ocorreu um erro. Com os dados fornecidos.");
     }
   };
 
@@ -48,40 +68,7 @@ export default function Register() {
     <div className="relative min-h-screen text-slate-100 font-sans flex flex-col overflow-hidden">
       <SpaceBackground />
 
-      {/* Navbar */}
-      <header className="w-full border-b border-white/5 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#0dccf2] to-emerald-400 flex items-center justify-center text-[#101f22]">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                />
-              </svg>
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
-              Java<span className="text-[#0dccf2]">--</span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-            >
-              Entrar
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar links={[{ label: "Entrar", href: "/login" }]} hasAuth={false} />
 
       {/* Main Content */}
       <main className="relative z-10 grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -104,116 +91,130 @@ export default function Register() {
               </p>
             </div>
 
-            <form className="space-y-5" onSubmit={handleRegister}>
-              {error && (
-                <div className="text-red-400 text-sm text-center">{error}</div>
-              )}
-
-              {/* Role Selector */}
-              <div className="flex p-1 bg-black/20 rounded-lg border border-white/5">
-                <label className="flex-1 relative cursor-pointer">
-                  <input
-                    className="peer sr-only"
-                    name="role"
-                    type="radio"
-                    value="teacher"
-                    checked={role === "teacher"}
-                    onChange={() => setRole("teacher")}
-                  />
-                  <div className="flex items-center justify-center gap-2 py-2 px-3 rounded text-sm font-medium text-slate-400 transition-all peer-checked:bg-white/10 peer-checked:text-[#0dccf2] peer-checked:shadow-sm">
-                    <GraduationCap className="w-4 h-4" />
-                    <span>Professor</span>
+            <Form {...form}>
+              <form
+                className="space-y-5"
+                onSubmit={form.handleSubmit(handleRegister)}
+              >
+                {serverError && (
+                  <div className="text-red-400 text-sm text-center">
+                    {serverError}
                   </div>
-                </label>
-                <label className="flex-1 relative cursor-pointer">
-                  <input
-                    className="peer sr-only"
-                    name="role"
-                    type="radio"
-                    value="student"
-                    checked={role === "student"}
-                    onChange={() => setRole("student")}
-                  />
-                  <div className="flex items-center justify-center gap-2 py-2 px-3 rounded text-sm font-medium text-slate-400 transition-all peer-checked:bg-white/10 peer-checked:text-[#0dccf2] peer-checked:shadow-sm">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                    <span>Aluno</span>
-                  </div>
-                </label>
-              </div>
+                )}
 
-              {/* Input: Full Name */}
-              <div className="space-y-1.5 text-left">
-                <label
-                  className="block text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1"
-                  htmlFor="name"
-                >
-                  Nome Completo
-                </label>
-                <Input
-                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
-                  id="name"
-                  placeholder="Digite seu nome completo"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
+                {/* Role Selector */}
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex p-1 bg-black/20 rounded-lg border border-white/5">
+                          {(
+                            [
+                              {
+                                value: "teacher",
+                                label: "Professor",
+                                Icon: GraduationCap,
+                              },
+                              { value: "student", label: "Aluno", Icon: User },
+                            ] as const
+                          ).map(({ value, label, Icon }) => (
+                            <label
+                              key={value}
+                              className="flex-1 relative cursor-pointer"
+                            >
+                              <input
+                                className="peer sr-only"
+                                type="radio"
+                                value={value}
+                                checked={field.value === value}
+                                onChange={() => field.onChange(value)}
+                              />
+                              <div className="flex items-center justify-center gap-2 py-2 px-3 rounded text-sm font-medium text-slate-400 transition-all peer-checked:bg-white/10 peer-checked:text-[#0dccf2] peer-checked:shadow-sm">
+                                <Icon className="w-4 h-4" />
+                                <span>{label}</span>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              {/* Input: Email */}
-              <div className="space-y-1.5 text-left">
-                <label
-                  className="block text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1"
-                  htmlFor="email"
-                >
-                  Endereço de E-mail
-                </label>
-                <Input
-                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
-                  id="email"
-                  placeholder="voce@exemplo.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                {/* Input: Full Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">
+                        Nome Completo
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
+                          placeholder="Digite seu nome completo"
+                          type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              {/* Input: Password */}
-              <div className="space-y-1.5 text-left">
-                <label
-                  className="block text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1"
-                  htmlFor="password"
-                >
-                  Senha
-                </label>
-                <Input
-                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
-                  id="password"
-                  placeholder="Crie uma senha forte"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                {/* Input: Email */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">
+                        Endereço de E-mail
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
+                          placeholder="voce@exemplo.com"
+                          type="email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <HeroButton type="submit" className="w-full h-12 mt-2">
-                Cadastrar
-              </HeroButton>
-            </form>
+                {/* Input: Password */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">
+                        Senha
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
+                          placeholder="Crie uma senha forte"
+                          type="password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <HeroButton type="submit" className="w-full h-12 mt-2">
+                  Cadastrar
+                </HeroButton>
+              </form>
+            </Form>
 
             <div className="mt-6 flex flex-col items-center gap-4">
               <div className="relative w-full flex items-center">

@@ -1,44 +1,67 @@
 import { SpaceBackground } from "@/components/space-background";
 import { BorderBeam } from "@/components/ui/border-beam";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { CodeXml, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { Title } from "@/components/text/title";
 import { GradientText } from "@/components/text/gradient";
 import { Subtitle } from "@/components/text/subtitle";
 import { Input } from "@/components/ui/input";
 import { HeroButton } from "@/components/buttons/hero";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Navbar } from "@/components/navbar";
+
+const loginSchema = z.object({
+  email: z.email("E-mail inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleLogin = async (values: LoginFormValues) => {
+    setServerError("");
 
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(values),
       });
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Falha ao entrar");
+        setServerError(data.error || "Falha ao entrar");
         return;
       }
 
       localStorage.setItem("lms_user_id", data.user.id);
       localStorage.setItem("lms_org_id", data.user.organizationId);
       router.push("/dashboard");
-    } catch (err) {
-      setError("Erro de conexão");
+    } catch {
+      setServerError("Erro de conexão");
     }
   };
 
@@ -46,27 +69,10 @@ export default function Login() {
     <div className="relative min-h-screen text-slate-100 font-sans flex flex-col overflow-hidden">
       <SpaceBackground />
 
-      {/* Navbar */}
-      <header className="w-full border-b border-white/5 bg-[#101f22]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#0dccf2] to-emerald-400 flex items-center justify-center text-[#101f22]">
-              <CodeXml className="w-4.5 h-4.5" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
-              Java<span className="text-[#0dccf2]">--</span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/register"
-              className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-            >
-              Cadastre-se
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar
+        links={[{ label: "Cadastre-se", href: "/register" }]}
+        hasAuth={false}
+      />
 
       {/* Main Content */}
       <main className="grow flex items-center justify-center relative z-10 p-6">
@@ -91,55 +97,72 @@ export default function Login() {
             </div>
 
             {/* Form */}
-            <form className="flex flex-col gap-6" onSubmit={handleLogin}>
-              {error && (
-                <div className="text-red-400 text-sm text-center">{error}</div>
-              )}
+            <Form {...form}>
+              <form
+                className="flex flex-col gap-6"
+                onSubmit={form.handleSubmit(handleLogin)}
+              >
+                {serverError && (
+                  <div className="text-red-400 text-sm text-center">
+                    {serverError}
+                  </div>
+                )}
 
-              {/* Email Field */}
-              <div className="space-y-2 text-left">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">
-                  Endereço de E-mail
-                </label>
-                <Input
-                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
-                  placeholder="nome@empresa.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                {/* Email Field */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel>Endereço de E-mail</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="nome@empresa.com"
+                          type="email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              {/* Password Field */}
-              <div className="space-y-2 text-left">
-                <div className="flex justify-between items-center ml-1">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Senha
-                  </label>
-                  <Link
-                    href="#"
-                    className="text-xs text-[#0dccf2] hover:text-emerald-400 transition-colors"
-                  >
-                    Esqueceu a senha?
-                  </Link>
-                </div>
-                <Input
-                  className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
-                  placeholder="••••••••"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                {/* Password Field */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <div className="flex justify-between items-center ml-1">
+                        <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                          Senha
+                        </FormLabel>
+                        <Link
+                          href="#"
+                          className="text-xs text-[#0dccf2] hover:text-emerald-400 transition-colors"
+                        >
+                          Esqueceu a senha?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <Input
+                          placeholder="••••••••"
+                          type="password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              {/* Submit Button */}
-              <HeroButton type="submit">
-                Entrar no Painel
-                <LogIn />
-              </HeroButton>
-            </form>
+                {/* Submit Button */}
+                <HeroButton type="submit" className="py-3">
+                  Entrar no Painel
+                  <LogIn />
+                </HeroButton>
+              </form>
+            </Form>
 
             {/* Divider */}
             <div className="relative flex py-4 items-center">

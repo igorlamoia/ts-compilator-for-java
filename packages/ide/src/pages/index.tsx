@@ -5,6 +5,7 @@ import { SpaceBackground } from "@/components/space-background";
 import { HomeHero } from "@/components/heros/home";
 import { IDEFunction } from "@/views/ide-terminal-wrapper";
 import { TerminalProvider } from "@/contexts/TerminalContext";
+import { Navbar } from "@/components/navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -22,6 +23,7 @@ export default function Home() {
   return (
     <div className="relative overflow-hidden">
       <SpaceBackground />
+      <Navbar />
       <TerminalProvider>
         <main
           className={`${geistSans.variable} ${geistMono.variable}
