@@ -21,7 +21,7 @@
     "@react-three/drei": "^10.7.4",
     "@react-three/fiber": "^9.3.0",
     "@ts-compilator-for-java/compiler": "1.0.0",
-    "axios": "^1.7.7",
+    "axios": "^1.13.6",
     "babel-loader": "^9.2.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
