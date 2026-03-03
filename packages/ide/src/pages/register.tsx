@@ -85,7 +85,7 @@ export default function Register() {
 
       {/* Main Content */}
       <main className="relative z-10 grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
           {/* Card */}
           <div className="relative bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
             <BorderBeam
@@ -223,20 +223,7 @@ export default function Register() {
                 </span>
                 <div className="grow border-t border-white/10"></div>
               </div>
-              <div className="flex gap-4 w-full">
-                <button
-                  className="flex-1 flex justify-center items-center py-2.5 px-4 border border-white/10 hover:border-[#0dccf2]/30 rounded-xl bg-white/5 hover:bg-white/10 transition-all text-slate-300 hover:text-white text-sm font-medium"
-                  type="button"
-                >
-                  GitHub
-                </button>
-                <button
-                  className="flex-1 flex justify-center items-center py-2.5 px-4 border border-white/10 hover:border-[#0dccf2]/30 rounded-xl bg-white/5 hover:bg-white/10 transition-all text-slate-300 hover:text-white text-sm font-medium"
-                  type="button"
-                >
-                  Google
-                </button>
-              </div>
+              <SocialLogin />
 
               <p className="mt-4 text-center text-sm text-slate-400">
                 Já tem uma conta?{" "}
@@ -255,6 +242,27 @@ export default function Register() {
           </p>
         </div>
       </main>
+    </div>
+  );
+}
+
+function SocialLogin() {
+  return (
+    <div className="grid grid-cols-2 gap-4 w-full">
+      <HeroButton
+        variant="outline"
+        className="bg-white/5 border font-medium"
+        type="button"
+      >
+        Google
+      </HeroButton>
+      <HeroButton
+        variant="outline"
+        className="bg-white/5 border font-medium"
+        type="button"
+      >
+        GitHub
+      </HeroButton>
     </div>
   );
 }

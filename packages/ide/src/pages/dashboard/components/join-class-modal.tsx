@@ -1,14 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import axios from "axios";
+import { HeroButton } from "@/components/buttons/hero";
+
+const joinClassSchema = z.object({
+  joinCode: z
+    .string()
+    .min(1, "Código de acesso é obrigatório")
+    .max(6, "Código deve ter no máximo 6 caracteres"),
+});
+
+type JoinClassFormValues = z.infer<typeof joinClassSchema>;
 
 interface JoinClassModalProps {
   open: boolean;
@@ -25,80 +50,100 @@ export function JoinClassModal({
   onSuccess,
   onError,
 }: JoinClassModalProps) {
-  const [joinCode, setJoinCode] = useState("");
-  const [loading, setLoading] = useState(false);
+  const form = useForm<JoinClassFormValues>({
+    resolver: zodResolver(joinClassSchema),
+    defaultValues: {
+      joinCode: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
+  const handleSubmit = async (values: JoinClassFormValues) => {
+    form.clearErrors();
 
     try {
-      const res = await fetch("/api/classes/join", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": userId,
+      await api.post(
+        "/classes/join",
+        { accessCode: values.joinCode.toUpperCase() },
+        {
+          headers: { "x-user-id": userId },
         },
-        body: JSON.stringify({ accessCode: joinCode }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        onError?.(data.error || "Código inválido");
-        return;
-      }
+      );
 
       onSuccess?.("Você entrou na turma!");
-      setJoinCode("");
+      form.reset();
       onOpenChange(false);
-    } catch {
-      onError?.("Erro de conexão");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      const message =
+        axios.isAxiosError(error) &&
+        typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Código inválido";
+      onError?.(message);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#182f34] border-white/10 text-white">
-        <DialogHeader>
+        <DialogHeader className="flex flex-col">
           <DialogTitle>Entrar em Turma</DialogTitle>
           <DialogDescription className="text-slate-400">
             Digite o código de acesso fornecido por seu professor
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4 px-6">
-          <div>
-            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-              Código de Acesso
-            </label>
-            <input
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              required
-              maxLength={6}
-              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm font-mono text-center text-lg tracking-widest uppercase"
-              placeholder="EX: A3F9K2"
+        <Form {...form}>
+          <form
+            id="join-class-form"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4 px-6"
+          >
+            <FormField
+              control={form.control}
+              name="joinCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Código de Acesso</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onChange={(event) =>
+                        field.onChange(event.target.value.toUpperCase())
+                      }
+                      maxLength={6}
+                      placeholder="EX: A3F9K2"
+                      className="h-12 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50 font-mono text-center text-base tracking-widest uppercase"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-        </form>
+          </form>
+        </Form>
 
         <DialogFooter className="bg-white/5 border-t border-white/10">
-          <button
+          <HeroButton
             type="button"
+            variant="outline"
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-slate-300 transition-all"
+            className="border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
           >
             Cancelar
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2.5 rounded-lg bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
+          </HeroButton>
+          <HeroButton
+            type="submit"
+            form="join-class-form"
+            disabled={form.formState.isSubmitting}
+            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] hover:opacity-90"
           >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
+            {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
+          </HeroButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

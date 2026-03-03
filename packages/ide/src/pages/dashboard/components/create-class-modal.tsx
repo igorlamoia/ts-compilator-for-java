@@ -1,14 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import axios from "axios";
+import { HeroButton } from "@/components/buttons/hero";
+
+const createClassSchema = z.object({
+  className: z.string().min(1, "Nome da turma é obrigatório"),
+  classDesc: z.string().min(1, "Descrição é obrigatória"),
+});
+
+type CreateClassFormValues = z.infer<typeof createClassSchema>;
 
 interface CreateClassModalProps {
   open: boolean;
@@ -27,44 +51,51 @@ export function CreateClassModal({
   onSuccess,
   onError,
 }: CreateClassModalProps) {
-  const [className, setClassName] = useState("");
-  const [classDesc, setClassDesc] = useState("");
-  const [loading, setLoading] = useState(false);
+  const form = useForm<CreateClassFormValues>({
+    resolver: zodResolver(createClassSchema),
+    defaultValues: {
+      className: "",
+      classDesc: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
+  const handleSubmit = async (values: CreateClassFormValues) => {
+    form.clearErrors();
 
     const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
     try {
-      const res = await fetch("/api/classes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": userId,
-          "x-org-id": orgId || "",
-        },
-        body: JSON.stringify({
-          name: className,
-          description: classDesc,
+      await api.post(
+        "/classes",
+        {
+          name: values.className,
+          description: values.classDesc,
           accessCode,
-        }),
-      });
-
-      if (!res.ok) {
-        onError?.("Erro ao criar turma");
-        return;
-      }
+        },
+        {
+          headers: {
+            "x-user-id": userId,
+            "x-org-id": orgId || "",
+          },
+        },
+      );
 
       onSuccess?.(`Turma criada! Código de acesso: ${accessCode}`, accessCode);
-      setClassName("");
-      setClassDesc("");
+      form.reset();
       onOpenChange(false);
-    } catch {
-      onError?.("Erro de conexão");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      const message =
+        axios.isAxiosError(error) &&
+        typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Erro ao criar turma";
+      onError?.(message);
     }
   };
 
@@ -77,54 +108,68 @@ export function CreateClassModal({
             Preencha os dados da sua turma
           </DialogDescription>
         </DialogHeader>
+        <Form {...form}>
+          <form
+            id="create-class-form"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4 flex-1 overflow-y-auto max-h-[60vh] px-6"
+          >
+            <FormField
+              control={form.control}
+              name="className"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome da Turma</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ex: Programação Java-- 2024"
+                      className="h-12 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex-1 overflow-y-auto max-h-[60vh] px-6"
-        >
-          <div>
-            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-              Nome da Turma
-            </label>
-            <input
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm"
-              placeholder="Ex: Programação Java-- 2024"
+            <FormField
+              control={form.control}
+              name="classDesc"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      rows={3}
+                      placeholder="Descreva a turma..."
+                      className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-              Descrição
-            </label>
-            <textarea
-              value={classDesc}
-              onChange={(e) => setClassDesc(e.target.value)}
-              required
-              rows={3}
-              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm resize-none"
-              placeholder="Descreva a turma..."
-            />
-          </div>
-        </form>
+          </form>
+        </Form>
 
         <DialogFooter className="bg-white/5 border-t border-white/10">
-          <button
+          <HeroButton
             type="button"
+            variant="outline"
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-slate-300 transition-all"
+            className="border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
           >
             Cancelar
-          </button>
-          <button
+          </HeroButton>
+          <HeroButton
             type="submit"
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2.5 rounded-lg bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
+            form="create-class-form"
+            disabled={form.formState.isSubmitting}
+            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] hover:opacity-90"
           >
-            {loading ? "Criando..." : "Criar Turma"}
-          </button>
+            {form.formState.isSubmitting ? "Criando..." : "Criar Turma"}
+          </HeroButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

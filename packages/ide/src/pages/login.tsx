@@ -151,20 +151,7 @@ export default function Login() {
             </div>
 
             {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                className="flex items-center justify-center gap-2 h-11 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#0dccf2]/30 rounded-xl transition-all text-slate-300 hover:text-white text-sm font-medium"
-                type="button"
-              >
-                Google
-              </button>
-              <button
-                className="flex items-center justify-center gap-2 h-11 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#0dccf2]/30 rounded-xl transition-all text-slate-300 hover:text-white text-sm font-medium"
-                type="button"
-              >
-                GitHub
-              </button>
-            </div>
+            <SocialLogin />
 
             {/* Footer Link */}
             <div className="mt-8 text-center border-t border-white/10 pt-6">
@@ -181,6 +168,27 @@ export default function Login() {
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+function SocialLogin() {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <HeroButton
+        variant="outline"
+        className="bg-white/5 border font-medium"
+        type="button"
+      >
+        Google
+      </HeroButton>
+      <HeroButton
+        variant="outline"
+        className="bg-white/5 border font-medium"
+        type="button"
+      >
+        GitHub
+      </HeroButton>
     </div>
   );
 }

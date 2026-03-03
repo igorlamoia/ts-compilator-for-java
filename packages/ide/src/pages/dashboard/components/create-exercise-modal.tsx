@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import axios from "axios";
 import { HeroButton } from "@/components/buttons/hero";
 
 interface TestCase {
@@ -16,6 +32,28 @@ interface TestCase {
   input: string;
   expectedOutput: string;
 }
+
+const testCaseSchema = z.object({
+  label: z.string(),
+  input: z.string(),
+  expectedOutput: z.string(),
+});
+
+const createExerciseSchema = z.object({
+  exTitle: z.string().min(1, "Título é obrigatório"),
+  exDesc: z.string().min(1, "Descrição é obrigatória"),
+  exDeadline: z.string().min(1, "Prazo é obrigatório"),
+  exWeight: z.string().min(1, "Peso é obrigatório"),
+  testCases: z.array(testCaseSchema),
+});
+
+type CreateExerciseFormValues = z.infer<typeof createExerciseSchema>;
+
+const defaultTestCases: TestCase[] = [
+  { label: "", input: "", expectedOutput: "" },
+  { label: "", input: "", expectedOutput: "" },
+  { label: "", input: "", expectedOutput: "" },
+];
 
 interface CreateExerciseModalProps {
   open: boolean;
@@ -34,77 +72,74 @@ export function CreateExerciseModal({
   onSuccess,
   onError,
 }: CreateExerciseModalProps) {
-  const [exTitle, setExTitle] = useState("");
-  const [exDesc, setExDesc] = useState("");
-  const [exDeadline, setExDeadline] = useState("");
-  const [exWeight, setExWeight] = useState("1");
   const [showTestCases, setShowTestCases] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [testCases, setTestCases] = useState<TestCase[]>([
-    { label: "", input: "", expectedOutput: "" },
-    { label: "", input: "", expectedOutput: "" },
-    { label: "", input: "", expectedOutput: "" },
-  ]);
+  const form = useForm<CreateExerciseFormValues>({
+    resolver: zodResolver(createExerciseSchema),
+    defaultValues: {
+      exTitle: "",
+      exDesc: "",
+      exDeadline: "",
+      exWeight: "1",
+      testCases: defaultTestCases,
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const { fields } = useFieldArray({
+    control: form.control,
+    name: "testCases",
+  });
+
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+  }, [open]);
+
+  const handleSubmit = async (values: CreateExerciseFormValues) => {
+    form.clearErrors();
 
     try {
-      const res = await fetch("/api/exercises", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": userId,
-        },
-        body: JSON.stringify({
+      await api.post(
+        "/exercises",
+        {
           classId,
-          title: exTitle,
-          description: exDesc,
-          deadline: exDeadline,
-          gradeWeight: exWeight,
-          testCases: testCases.filter(
+          title: values.exTitle,
+          description: values.exDesc,
+          deadline: values.exDeadline,
+          gradeWeight: values.exWeight,
+          testCases: values.testCases.filter(
             (tc) => tc.input.trim() || tc.expectedOutput.trim(),
           ),
-        }),
-      });
-
-      if (!res.ok) {
-        onError?.("Erro ao criar exercício");
-        return;
-      }
+        },
+        {
+          headers: {
+            "x-user-id": userId,
+          },
+        },
+      );
 
       onSuccess?.("Exercício criado com sucesso!");
       resetForm();
       onOpenChange(false);
-    } catch {
-      onError?.("Erro de conexão");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      const message =
+        axios.isAxiosError(error) &&
+        typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Erro ao criar exercício";
+      onError?.(message);
     }
   };
 
   const resetForm = () => {
-    setExTitle("");
-    setExDesc("");
-    setExDeadline("");
-    setExWeight("1");
+    form.reset({
+      exTitle: "",
+      exDesc: "",
+      exDeadline: "",
+      exWeight: "1",
+      testCases: defaultTestCases,
+    });
     setShowTestCases(false);
-    setTestCases([
-      { label: "", input: "", expectedOutput: "" },
-      { label: "", input: "", expectedOutput: "" },
-      { label: "", input: "", expectedOutput: "" },
-    ]);
-  };
-
-  const updateTestCase = (
-    idx: number,
-    field: keyof TestCase,
-    value: string,
-  ) => {
-    const updated = [...testCases];
-    updated[idx] = { ...updated[idx], [field]: value };
-    setTestCases(updated);
   };
 
   return (
@@ -116,161 +151,205 @@ export function CreateExerciseModal({
             Defina os detalhes e casos de teste para o exercício
           </DialogDescription>
         </DialogHeader>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6"
-        >
-          <div>
-            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-              Título
-            </label>
-            <input
-              value={exTitle}
-              onChange={(e) => setExTitle(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm"
-              placeholder="Ex: Hello World em Java--"
+        <Form {...form}>
+          <form
+            id="create-exercise-form"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6"
+          >
+            <FormField
+              control={form.control}
+              name="exTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ex: Hello World em Java--"
+                      className="h-12 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-              Descrição / Instruções
-            </label>
-            <textarea
-              value={exDesc}
-              onChange={(e) => setExDesc(e.target.value)}
-              required
-              rows={4}
-              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm resize-none"
-              placeholder="Descreva o exercício em detalhes..."
+            <FormField
+              control={form.control}
+              name="exDesc"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição / Instruções</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      rows={4}
+                      placeholder="Descreva o exercício em detalhes..."
+                      className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-                Prazo de Entrega
-              </label>
-              <input
-                type="datetime-local"
-                value={exDeadline}
-                onChange={(e) => setExDeadline(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-                Peso da Nota
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.1"
-                value={exWeight}
-                onChange={(e) => setExWeight(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 focus:border-[#0dccf2]/50 transition-all text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Test Cases Section */}
-          <div className="border border-white/10 rounded-xl overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setShowTestCases(!showTestCases)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/8 transition-colors text-sm"
-            >
-              <span className="font-medium text-slate-300">
-                Casos de Teste (Opcional)
-              </span>
-              <span className="text-xs text-slate-500">
-                {showTestCases ? "▲ Recolher" : "▼ Expandir"}
-              </span>
-            </button>
-
-            {showTestCases && (
-              <div className="p-4 space-y-4 border-t border-white/10">
-                <p className="text-xs text-slate-500">
-                  Defina pares de entrada/saída esperada para validação
-                  automática do código do aluno.
-                </p>
-                {testCases.map((tc, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-black/20 rounded-lg border border-white/5 space-y-2"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-[#0dccf2]">
-                        #{idx + 1}
-                      </span>
-                      <input
-                        value={tc.label}
-                        onChange={(e) =>
-                          updateTestCase(idx, "label", e.target.value)
-                        }
-                        className="flex-1 px-3 py-1.5 bg-black/30 border border-white/10 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 transition-all text-xs"
-                        placeholder="Nome do caso (opcional)"
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="exDeadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prazo de Entrega</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="datetime-local"
+                        {...field}
+                        className="h-12 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
                       />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs text-slate-500 mb-1">
-                          Entrada (stdin)
-                        </label>
-                        <textarea
-                          value={tc.input}
-                          onChange={(e) =>
-                            updateTestCase(idx, "input", e.target.value)
-                          }
-                          rows={3}
-                          className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 transition-all text-xs font-mono resize-none"
-                          placeholder="Uma linha por entrada..."
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="exWeight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Peso da Nota</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        {...field}
+                        className="h-12 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="border border-white/10 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowTestCases(!showTestCases)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/8 transition-colors text-sm"
+              >
+                <span className="font-medium text-slate-300">
+                  Casos de Teste (Opcional)
+                </span>
+                <span className="text-xs text-slate-500">
+                  {showTestCases ? "▲ Recolher" : "▼ Expandir"}
+                </span>
+              </button>
+
+              {showTestCases && (
+                <div className="p-4 space-y-4 border-t border-white/10">
+                  <p className="text-xs text-slate-500">
+                    Defina pares de entrada/saída esperada para validação
+                    automática do código do aluno.
+                  </p>
+
+                  {fields.map((field, idx) => (
+                    <div
+                      key={field.id}
+                      className="p-3 bg-black/20 rounded-lg border border-white/5 space-y-2"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-[#0dccf2]">
+                          #{idx + 1}
+                        </span>
+
+                        <FormField
+                          control={form.control}
+                          name={`testCases.${idx}.label`}
+                          render={({ field: caseField }) => (
+                            <FormItem className="flex-1">
+                              <FormControl>
+                                <Input
+                                  {...caseField}
+                                  placeholder="Nome do caso (opcional)"
+                                  className="h-9 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs focus:border-[#0dccf2]/50"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
-                      <div>
-                        <label className="block text-xs text-slate-500 mb-1">
-                          Saída esperada (stdout)
-                        </label>
-                        <textarea
-                          value={tc.expectedOutput}
-                          onChange={(e) =>
-                            updateTestCase(
-                              idx,
-                              "expectedOutput",
-                              e.target.value,
-                            )
-                          }
-                          rows={3}
-                          className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#0dccf2]/50 transition-all text-xs font-mono resize-none"
-                          placeholder="Saída esperada..."
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField
+                          control={form.control}
+                          name={`testCases.${idx}.input`}
+                          render={({ field: caseField }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs normal-case tracking-normal text-slate-500">
+                                Entrada (stdin)
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  {...caseField}
+                                  rows={3}
+                                  placeholder="Uma linha por entrada..."
+                                  className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:border-[#0dccf2]/50"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`testCases.${idx}.expectedOutput`}
+                          render={({ field: caseField }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs normal-case tracking-normal text-slate-500">
+                                Saída esperada (stdout)
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  {...caseField}
+                                  rows={3}
+                                  placeholder="Saída esperada..."
+                                  className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:border-[#0dccf2]/50"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </form>
+                  ))}
+                </div>
+              )}
+            </div>
+          </form>
+        </Form>
 
         <DialogFooter className="bg-white/5 border-t border-white/10">
           <HeroButton
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2.5"
+            className="border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
           >
             Cancelar
           </HeroButton>
           <HeroButton
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2.5"
+            type="submit"
+            form="create-exercise-form"
+            disabled={form.formState.isSubmitting}
+            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] hover:opacity-90"
           >
-            {loading ? "Criando..." : "Criar Exercício"}
+            {form.formState.isSubmitting ? "Criando..." : "Criar Exercício"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

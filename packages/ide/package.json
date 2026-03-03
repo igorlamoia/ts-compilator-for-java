@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@babel/preset-typescript": "^7.26.0",
+    "@hookform/resolvers": "^5.2.2",
     "@monaco-editor/loader": "^1.4.0",
     "@prisma/client": "^6.19.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -31,6 +32,7 @@
     "next": "^16.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-hook-form": "^7.71.2",
     "sass": "^1.80.6",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
