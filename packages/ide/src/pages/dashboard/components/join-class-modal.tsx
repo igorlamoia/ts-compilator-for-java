@@ -140,7 +140,7 @@ export function JoinClassModal({
             type="submit"
             form="join-class-form"
             disabled={form.formState.isSubmitting}
-            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] hover:opacity-90"
+            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >
             {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
           </HeroButton>

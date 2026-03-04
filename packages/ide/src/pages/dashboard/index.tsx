@@ -285,7 +285,7 @@ export default function Dashboard() {
                     <span>{cls._count?.exercises || 0} exercícios</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center text-[10px] font-bold text-[#101f22]">
+                    <div className="w-5 h-5 rounded-full bg-linear-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center text-[10px] font-bold text-slate-800">
                       {(cls.teacher?.name || "P")[0].toUpperCase()}
                     </div>
                     <span>{cls.teacher?.name || "Professor"}</span>

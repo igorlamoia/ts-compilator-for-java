@@ -25,7 +25,9 @@ function WorkspaceContent({
   const [compileErrors, setCompileErrors] = useState<string[]>([]);
   const [compileWarnings, setCompileWarnings] = useState<string[]>([]);
   const [showCompilePanel, setShowCompilePanel] = useState(false);
-  const [testCaseResults, setTestCaseResults] = useState<TTestCaseResult[] | null>(null);
+  const [testCaseResults, setTestCaseResults] = useState<
+    TTestCaseResult[] | null
+  >(null);
   const [testCasesPassed, setTestCasesPassed] = useState(0);
   const [testCasesTotal, setTestCasesTotal] = useState(0);
 
@@ -148,7 +150,7 @@ function WorkspaceContent({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-5 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] shadow-[0_0_15px_rgba(13,204,242,0.3)] hover:shadow-[0_0_25px_rgba(13,204,242,0.5)] hover:opacity-90 transition-all disabled:opacity-50"
+              className="px-5 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 shadow-[0_0_15px_rgba(13,204,242,0.3)] hover:shadow-[0_0_25px_rgba(13,204,242,0.5)] hover:opacity-90 transition-all disabled:opacity-50"
             >
               {submitting ? "Compilando..." : "Compilar & Submeter"}
             </button>

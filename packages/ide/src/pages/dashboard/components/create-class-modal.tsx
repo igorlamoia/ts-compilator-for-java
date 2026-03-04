@@ -123,7 +123,7 @@ export function CreateClassModal({
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Ex: Programação Java-- 2024"
+                      placeholder="Ex: Programação para Iniciantes"
                       className="h-12 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
                     />
                   </FormControl>
@@ -166,7 +166,7 @@ export function CreateClassModal({
             type="submit"
             form="create-class-form"
             disabled={form.formState.isSubmitting}
-            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] hover:opacity-90"
+            className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >
             {form.formState.isSubmitting ? "Criando..." : "Criar Turma"}
           </HeroButton>

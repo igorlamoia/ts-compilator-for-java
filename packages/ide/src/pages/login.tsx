@@ -66,7 +66,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen text-slate-100 font-sans flex flex-col overflow-hidden">
+    <div className="relative min-h-screen flex flex-col overflow-hidden">
       <SpaceBackground />
 
       <Navbar
@@ -75,17 +75,16 @@ export default function Login() {
       />
 
       {/* Main Content */}
-      <main className="grow flex items-center justify-center relative z-10 p-6">
+      <main className="grow flex items-center justify-center relative z-10 p-6 font-sans text-slate-500 dark:text-slate-400">
         {/* Login Card */}
         <div className="relative z-10 w-full max-w-120">
-          <div className="relative bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
+          <div className="relative dark:bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
             <BorderBeam
               colorFrom="var(--color-primary)"
               colorTo="var(--color-secondary)"
               duration={8}
               size={80}
             />
-
             {/* Header */}
             <div className="mb-10 text-center">
               <Title>
@@ -95,7 +94,6 @@ export default function Login() {
                 Insira suas credenciais para acessar o LMS
               </Subtitle>
             </div>
-
             {/* Form */}
             <Form {...form}>
               <form
@@ -134,7 +132,7 @@ export default function Login() {
                   render={({ field }) => (
                     <FormItem className="text-left">
                       <div className="flex justify-between items-center ml-1">
-                        <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        <FormLabel className="text-xs font-semibold  uppercase tracking-wider">
                           Senha
                         </FormLabel>
                         <Link
@@ -163,7 +161,6 @@ export default function Login() {
                 </HeroButton>
               </form>
             </Form>
-
             {/* Divider */}
             <div className="relative flex py-4 items-center">
               <div className="grow border-t border-white/10"></div>
@@ -172,13 +169,11 @@ export default function Login() {
               </span>
               <div className="grow border-t border-white/10"></div>
             </div>
-
             {/* Social Login */}
             <SocialLogin />
-
             {/* Footer Link */}
             <div className="mt-8 text-center border-t border-white/10 pt-6">
-              <p className="text-slate-400 text-sm">
+              <p className=" text-sm">
                 Não tem uma conta?{" "}
                 <Link
                   href="/register"
@@ -200,14 +195,14 @@ function SocialLogin() {
     <div className="grid grid-cols-2 gap-4">
       <HeroButton
         variant="outline"
-        className="bg-white/5 border font-medium"
+        className="dark:bg-white/5 border font-medium"
         type="button"
       >
         Google
       </HeroButton>
       <HeroButton
         variant="outline"
-        className="bg-white/5 border font-medium"
+        className="dark:bg-white/5 border font-medium"
         type="button"
       >
         GitHub

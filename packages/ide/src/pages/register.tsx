@@ -8,7 +8,7 @@ import { Title } from "@/components/text/title";
 import { GraduationCap, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { HeroButton } from "@/components/buttons/hero";
-import { useForm } from "react-hook-form";
+import { Field, RegisterOptions, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -30,6 +30,15 @@ const registerSchema = z.object({
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
+
+const roleOptions = [
+  {
+    value: "teacher",
+    label: "Professor",
+    Icon: GraduationCap,
+  },
+  { value: "student", label: "Aluno", Icon: User },
+] as const;
 
 export default function Register() {
   const router = useRouter();
@@ -65,16 +74,16 @@ export default function Register() {
   };
 
   return (
-    <div className="relative min-h-screen text-slate-100 font-sans flex flex-col overflow-hidden">
+    <div className="relative min-h-screen text-slate-100 flex flex-col overflow-hidden">
       <SpaceBackground />
 
       <Navbar links={[{ label: "Entrar", href: "/login" }]} hasAuth={false} />
 
       {/* Main Content */}
-      <main className="relative z-10 grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <main className="relative font-sans z-10 grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-lg">
           {/* Card */}
-          <div className="relative bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
+          <div className="relative dark:bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
             <BorderBeam
               colorFrom="#0dccf2"
               colorTo="#34d399"
@@ -109,34 +118,8 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <div className="flex p-1 bg-black/20 rounded-lg border border-white/5">
-                          {(
-                            [
-                              {
-                                value: "teacher",
-                                label: "Professor",
-                                Icon: GraduationCap,
-                              },
-                              { value: "student", label: "Aluno", Icon: User },
-                            ] as const
-                          ).map(({ value, label, Icon }) => (
-                            <label
-                              key={value}
-                              className="flex-1 relative cursor-pointer"
-                            >
-                              <input
-                                className="peer sr-only"
-                                type="radio"
-                                value={value}
-                                checked={field.value === value}
-                                onChange={() => field.onChange(value)}
-                              />
-                              <div className="flex items-center justify-center gap-2 py-2 px-3 rounded text-sm font-medium text-slate-400 transition-all peer-checked:bg-white/10 peer-checked:text-[#0dccf2] peer-checked:shadow-sm">
-                                <Icon className="w-4 h-4" />
-                                <span>{label}</span>
-                              </div>
-                            </label>
-                          ))}
+                        <div className="flex p-1 dark:bg-black/20 bg-slate-300/20 rounded-lg border border-white/5">
+                          <RoleSelector roles={roleOptions} field={field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -226,7 +209,7 @@ export default function Register() {
               </div>
               <SocialLogin />
 
-              <p className="mt-4 text-center text-sm text-slate-400">
+              <p className="mt-4 text-center text-sm dark:text-slate-400 text-slate-500">
                 Já tem uma conta?{" "}
                 <Link
                   href="/login"
@@ -238,8 +221,8 @@ export default function Register() {
             </div>
           </div>
 
-          <p className="mt-8 text-center text-xs text-slate-600">
-            © 2024 Java--. Todos os direitos reservados.
+          <p className="mt-8 text-center text-xs dark:text-slate-500 text-slate-900">
+            © {new Date().getFullYear()}. Todos os direitos reservados.
           </p>
         </div>
       </main>
@@ -266,4 +249,28 @@ function SocialLogin() {
       </HeroButton>
     </div>
   );
+}
+
+function RoleSelector({
+  roles,
+  field,
+}: {
+  roles: typeof roleOptions;
+  field: RegisterOptions;
+}) {
+  return roles.map(({ value, label, Icon }) => (
+    <label key={value} className="flex-1 relative cursor-pointer">
+      <input
+        className="peer sr-only"
+        type="radio"
+        value={value}
+        checked={field.value === value}
+        onChange={() => field.onChange?.(value)}
+      />
+      <div className="flex items-center justify-center gap-2 py-2 px-3 rounded text-sm font-medium text-slate-400 transition-all peer-checked:bg-white/10 peer-checked:text-[#0dccf2] peer-checked:shadow-sm">
+        <Icon className="w-4 h-4" />
+        <span>{label}</span>
+      </div>
+    </label>
+  ));
 }
