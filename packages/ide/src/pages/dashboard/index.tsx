@@ -38,53 +38,34 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Load user info
-  useEffect(() => {
-    if (!userId) return;
-    api
-      .get("/auth/me", { headers: { "x-user-id": userId } })
-      .then(({ data }) => setUser(data))
-      .catch(() => {
-        showToast({
-          type: "warning",
-          message: "Não foi possível carregar o perfil completo.",
-        });
-        // Fallback minimal user shape when user profile fetch fails
-        setUser({
-          id: userId,
-          name: "",
-          email: "",
-          role: "STUDENT",
-          organizationId: organizationId || "",
-        });
-      });
-  }, [organizationId, showToast, userId]);
-
-  // Load classes
-  useEffect(() => {
-    if (!userId) return;
+  const onMount = async () => {
+    const { data } = await api.get("/auth/me", {
+      headers: { "x-user-id": userId },
+    });
+    setUser(data);
     fetchClasses();
-  }, [userId]);
-
-  const fetchClasses = () => {
-    setLoading(true);
-    api
-      .get("/classes", {
-        headers: { "x-user-id": userId!, "x-org-id": organizationId || "" },
-      })
-      .then(({ data }) => data)
-      .then((data) => {
-        if (Array.isArray(data)) setClasses(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        showToast({
-          type: "error",
-          message: "Erro ao carregar turmas.",
-        });
-        setLoading(false);
-      });
   };
+
+  const fetchClasses = async () => {
+    try {
+      const { data: classesData } = await api.get("/classes", {
+        headers: { "x-user-id": userId!, "x-org-id": organizationId || "" },
+      });
+      setClasses(classesData);
+      setLoading(false);
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error?.response?.data?.error || "Erro ao carregar turmas.",
+      });
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!userId) return;
+    onMount();
+  }, [userId]);
 
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
@@ -104,7 +85,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#101f22] text-slate-100 font-sans overflow-hidden">
+    <div className="relative min-h-screen font-sans overflow-hidden">
       <SpaceBackground />
 
       {/* Top Nav */}
@@ -161,7 +142,7 @@ export default function Dashboard() {
           </div>
         ) : classes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 bg-white/2 rounded-3xl border border-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-            <div className="w-24 h-24 mb-6 rounded-full bg-linear-to-br from-[#0dccf2]/10 to-[#10b981]/10 flex items-center justify-center border border-white/10 shadow-[inner_0_0_20px_rgba(13,204,242,0.1)]">
+            <div className="w-24 h-24 mb-6 rounded-full bg-linear-to-br from-[#0dccf2]/10 to-[#10b981]/10 flex items-center justify-center border border-white/10 dark:shadow-[inner_0_0_20px_rgba(13,204,242,0.1)]">
               <span className="text-5xl opacity-80 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                 📚
               </span>
@@ -176,17 +157,17 @@ export default function Dashboard() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
             {classes.map((cls: any) => (
               <div
                 key={cls.id}
-                className="group overflow-hidden relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full"
+                className="group shadow-[0_1px_10px_rgba(0,0,0,0.1)] dark:shadow-none overflow-hidden relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full"
               >
                 {/* Top gradient accent */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#0dccf2] to-[#10b981] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-3xl shadow-[0_0_10px_rgba(13,204,242,0.5)]" />
 
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-white group-hover:text-[#0dccf2] transition-colors leading-tight pr-4">
+                  <h3 className="capitalize text-xl font-bold  group-hover:text-[#0dccf2] transition-colors leading-tight pr-4">
                     {cls.name}
                   </h3>
                   {cls._count && (
@@ -203,11 +184,11 @@ export default function Dashboard() {
                 </p>
 
                 {isTeacher && (
-                  <div className="mb-6 p-4 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md flex items-center justify-between group/code cursor-copy">
+                  <div className="mb-6 p-4 bg-gray-400/20 rounded-2xl border border-white/5 backdrop-blur-md flex items-center justify-between group/code cursor-copy">
                     <span className="text-xs text-slate-400 font-semibold tracking-wider">
                       CÓDIGO:
                     </span>
-                    <span className="text-base font-mono font-bold text-[#0dccf2] tracking-widest drop-shadow-[0_0_8px_rgba(13,204,242,0.4)] group-hover/code:text-white transition-colors">
+                    <span className="text-base font-mono font-bold text-[#0dccf2] tracking-widest drop-shadow-[0_0_8px_rgba(13,204,242,0.4)] group-hover/code:text-accent-foreground transition-colors">
                       {cls.accessCode}
                     </span>
                   </div>

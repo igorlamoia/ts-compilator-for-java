@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { TerminalLine } from ".";
+import { Badge } from "../ui/badge";
 
 interface HeaderProps {
   toggleTerminal: () => void;
