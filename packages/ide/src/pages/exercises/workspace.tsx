@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
 import { EditorContext, EditorProvider } from "@/contexts/EditorContext";
@@ -10,6 +9,9 @@ import { useIntermediatorCode } from "@/hooks/useIntermediatorCode";
 import { TerminalProvider } from "@/contexts/TerminalContext";
 import { TestCaseResults } from "@/components/test-case-results";
 import type { TTestCaseResult } from "@/pages/api/submissions/validate";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { useToast } from "@/contexts/ToastContext";
 
 function WorkspaceContent({
   exercise,
@@ -18,6 +20,7 @@ function WorkspaceContent({
   exercise: any;
   userId: string;
 }) {
+  const { showToast } = useToast();
   const { getEditorCode } = useContext(EditorContext);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -51,15 +54,14 @@ function WorkspaceContent({
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/submissions/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": userId },
-        body: JSON.stringify({
+      const { data } = await api.post(
+        "/submissions/validate",
+        {
           exerciseId: exercise.id,
           sourceCode: code,
-        }),
-      });
-      const data = await res.json();
+        },
+        { headers: { "x-user-id": userId } },
+      );
 
       if (!data.valid) {
         // Compilation failed
@@ -86,6 +88,7 @@ function WorkspaceContent({
       setSubmitting(false);
     } catch {
       setError("Erro de conexão");
+      showToast({ type: "error", message: "Erro de conexão ao submeter." });
       setSubmitting(false);
     }
   };
@@ -281,39 +284,28 @@ export default function ExerciseWorkspace({
 }: {
   exerciseId: string;
 }) {
-  const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
+  const { userId } = useAuth();
+  const { showToast } = useToast();
   const [exercise, setExercise] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const id = localStorage.getItem("lms_user_id");
-    if (!id) {
-      router.push("/login");
-      return;
-    }
-    setUserId(id);
-  }, []);
-
-  useEffect(() => {
     if (!userId || !exerciseId) return;
-    fetch(`/api/exercises/${exerciseId}`, {
-      headers: { "x-user-id": userId },
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json();
+    api
+      .get(`/exercises/${exerciseId}`, {
+        headers: { "x-user-id": userId },
       })
-      .then((data) => {
+      .then(({ data }) => {
         setExercise(data);
         setLoading(false);
       })
       .catch(() => {
         setError("Exercício não encontrado");
+        showToast({ type: "error", message: "Exercício não encontrado." });
         setLoading(false);
       });
-  }, [userId, exerciseId]);
+  }, [exerciseId, showToast, userId]);
 
   if (loading) {
     return (

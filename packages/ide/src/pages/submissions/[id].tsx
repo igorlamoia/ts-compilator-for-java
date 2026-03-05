@@ -3,10 +3,15 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
 import { TestCaseResults } from "@/components/test-case-results";
-import type { TTestCaseResult } from "@/pages/api/submissions/validate";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { useToast } from "@/contexts/ToastContext";
+import { isAxiosError } from "axios";
 
 export default function GradeSubmission() {
   const router = useRouter();
+  const { userId } = useAuth();
+  const { showToast } = useToast();
   const { id } = router.query;
   const [submission, setSubmission] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -20,16 +25,13 @@ export default function GradeSubmission() {
   const [compileResult, setCompileResult] = useState<any>(null);
   const [compiling, setCompiling] = useState(false);
 
-  const userId =
-    typeof window !== "undefined" ? localStorage.getItem("lms_user_id") : null;
-
   useEffect(() => {
     if (!id || !userId) return;
-    fetch(`/api/submissions/${id}`, {
-      headers: { "x-user-id": userId },
-    })
-      .then((r) => r.json())
-      .then((data) => {
+    api
+      .get(`/submissions/${id}`, {
+        headers: { "x-user-id": userId },
+      })
+      .then(({ data }) => {
         setSubmission(data);
         if (data.score != null) setScore(String(data.score));
         if (data.teacherFeedback) setFeedback(data.teacherFeedback);
@@ -37,9 +39,10 @@ export default function GradeSubmission() {
       })
       .catch(() => {
         setError("Submissão não encontrada");
+        showToast({ type: "error", message: "Submissão não encontrada." });
         setLoading(false);
       });
-  }, [id, userId]);
+  }, [id, showToast, userId]);
 
   const handleGrade = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,23 +51,22 @@ export default function GradeSubmission() {
     setSaved(false);
 
     try {
-      const res = await fetch(`/api/submissions/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-user-id": userId! },
-        body: JSON.stringify({
+      await api.patch(
+        `/submissions/${id}`,
+        {
           score: Number(score),
           teacherFeedback: feedback,
-        }),
-      });
-      if (!res.ok) {
-        setError("Erro ao salvar nota");
-        setSaving(false);
-        return;
-      }
+        },
+        { headers: { "x-user-id": userId! } },
+      );
       setSaved(true);
       setSaving(false);
-    } catch {
-      setError("Erro de conexão");
+    } catch (error) {
+      const message = isAxiosError(error)
+        ? error.response?.data?.error || "Erro ao salvar nota"
+        : "Erro de conexão";
+      setError(message);
+      showToast({ type: "error", message });
       setSaving(false);
     }
   };
@@ -75,15 +77,17 @@ export default function GradeSubmission() {
     setCompileResult(null);
 
     try {
-      const res = await fetch("/api/submissions/validate?dryRun=true", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": userId! },
-        body: JSON.stringify({
+      const { data } = await api.post(
+        "/submissions/validate",
+        {
           exerciseId: submission.exerciseId,
           sourceCode: submission.codeSnapshot,
-        }),
-      });
-      const data = await res.json();
+        },
+        {
+          params: { dryRun: "true" },
+          headers: { "x-user-id": userId! },
+        },
+      );
       setCompileResult(data);
       setCompiling(false);
     } catch {
@@ -92,6 +96,7 @@ export default function GradeSubmission() {
         errors: ["Erro de conexão"],
         warnings: [],
       });
+      showToast({ type: "error", message: "Erro ao recompilar submissão." });
       setCompiling(false);
     }
   };
@@ -354,3 +359,5 @@ export default function GradeSubmission() {
     </div>
   );
 }
+
+GradeSubmission.requireAuth = true;

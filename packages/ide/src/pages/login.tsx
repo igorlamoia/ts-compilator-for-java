@@ -21,6 +21,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Navbar } from "@/components/navbar";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { isAxiosError } from "axios";
+import { useToast } from "@/contexts/ToastContext";
 
 const loginSchema = z.object({
   email: z.email("E-mail inválido"),
@@ -31,6 +35,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const router = useRouter();
+  const { login } = useAuth();
+  const { showToast } = useToast();
   const [serverError, setServerError] = useState("");
 
   const form = useForm<LoginFormValues>({
@@ -45,23 +51,19 @@ export default function Login() {
     setServerError("");
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+      const { data } = await api.post("/auth/login", values);
+      login({
+        userId: data.user.id,
+        organizationId: data.user.organizationId,
+        user: data.user,
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setServerError(data.error || "Falha ao entrar");
-        return;
-      }
-
-      localStorage.setItem("lms_user_id", data.user.id);
-      localStorage.setItem("lms_org_id", data.user.organizationId);
       router.push("/dashboard");
-    } catch {
-      setServerError("Erro de conexão");
+    } catch (error) {
+      const message = isAxiosError(error)
+        ? error.response?.data?.error || "Falha ao entrar"
+        : "Erro de conexão";
+      setServerError(message);
+      showToast({ type: "error", message });
     }
   };
 

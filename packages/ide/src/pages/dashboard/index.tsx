@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { SpaceBackground } from "@/components/space-background";
-import { ClipboardList, LogIn, LogOut, Plus, Users } from "lucide-react";
-import { Logo } from "@/components/logo";
+import { ClipboardList, LogIn, Plus, Users } from "lucide-react";
 import { HeroButton, HeroLink } from "@/components/buttons/hero";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
@@ -11,6 +9,10 @@ import { CreateClassModal } from "./components/create-class-modal";
 import { JoinClassModal } from "./components/join-class-modal";
 import { CreateExerciseModal } from "./components/create-exercise-modal";
 import { Alert } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { useToast } from "@/contexts/ToastContext";
+import { Navbar } from "@/components/navbar";
 
 type UserData = {
   id: string;
@@ -21,7 +23,8 @@ type UserData = {
 };
 
 export default function Dashboard() {
-  const router = useRouter();
+  const { userId, organizationId } = useAuth();
+  const { showToast } = useToast();
   const [user, setUser] = useState<UserData | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,31 +38,27 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const userId =
-    typeof window !== "undefined" ? localStorage.getItem("lms_user_id") : null;
-  const orgId =
-    typeof window !== "undefined" ? localStorage.getItem("lms_org_id") : null;
-
   // Load user info
   useEffect(() => {
-    if (!userId) {
-      router.push("/login");
-      return;
-    }
-    fetch(`/api/auth/me`, { headers: { "x-user-id": userId } })
-      .then((r) => r.json())
-      .then(setUser)
+    if (!userId) return;
+    api
+      .get("/auth/me", { headers: { "x-user-id": userId } })
+      .then(({ data }) => setUser(data))
       .catch(() => {
-        // fallback: build from localStorage
+        showToast({
+          type: "warning",
+          message: "Não foi possível carregar o perfil completo.",
+        });
+        // Fallback minimal user shape when user profile fetch fails
         setUser({
           id: userId,
           name: "",
           email: "",
           role: "STUDENT",
-          organizationId: orgId || "",
+          organizationId: organizationId || "",
         });
       });
-  }, []);
+  }, [organizationId, showToast, userId]);
 
   // Load classes
   useEffect(() => {
@@ -69,15 +68,22 @@ export default function Dashboard() {
 
   const fetchClasses = () => {
     setLoading(true);
-    fetch("/api/classes", {
-      headers: { "x-user-id": userId!, "x-org-id": orgId || "" },
-    })
-      .then((r) => r.json())
+    api
+      .get("/classes", {
+        headers: { "x-user-id": userId!, "x-org-id": organizationId || "" },
+      })
+      .then(({ data }) => data)
       .then((data) => {
         if (Array.isArray(data)) setClasses(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        showToast({
+          type: "error",
+          message: "Erro ao carregar turmas.",
+        });
+        setLoading(false);
+      });
   };
 
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
@@ -97,47 +103,12 @@ export default function Dashboard() {
     fetchClasses();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("lms_user_id");
-    localStorage.removeItem("lms_org_id");
-    router.push("/login");
-  };
-
   return (
     <div className="relative min-h-screen bg-[#101f22] text-slate-100 font-sans overflow-hidden">
       <SpaceBackground />
 
       {/* Top Nav */}
-      <header className="relative z-20 w-full border-b border-white/5 bg-[#101f22]/80 backdrop-blur-3xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Logo />
-          <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-              <div className="w-6 h-6 rounded-full bg-linear-to-r from-[#0dccf2] to-[#10b981] p-px">
-                <div className="w-full h-full rounded-full bg-[#101f22] flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-[#0dccf2]">
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
-                  </span>
-                </div>
-              </div>
-              <span className="text-sm font-medium text-slate-300">
-                {user?.name || user?.email}{" "}
-                <span className="mx-2 text-slate-600">|</span>{" "}
-                <span className="text-[#0dccf2] font-semibold tracking-wide uppercase text-xs">
-                  {isTeacher ? "Professor" : "Aluno"}
-                </span>
-              </span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="text-sm font-semibold text-slate-400 hover:text-red-400 transition-colors flex items-center gap-2"
-            >
-              Sair
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Alerts */}
@@ -287,7 +258,7 @@ export default function Dashboard() {
         open={showCreateClass}
         onOpenChange={setShowCreateClass}
         userId={userId!}
-        orgId={orgId || ""}
+        orgId={organizationId || ""}
         onSuccess={handleClassCreated}
         onError={setError}
       />
@@ -311,6 +282,8 @@ export default function Dashboard() {
     </div>
   );
 }
+
+Dashboard.requireAuth = true;
 
 function Header({ isTeacher }: { isTeacher: boolean }) {
   return (

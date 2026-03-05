@@ -19,10 +19,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { Navbar } from "@/components/navbar";
 import { RadioSelector } from "@/components/buttons/radio-selector";
 import { Copyright } from "@/components/copyright";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { useToast } from "@/contexts/ToastContext";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -35,6 +38,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const router = useRouter();
+  const { login } = useAuth();
+  const { showToast } = useToast();
   const [serverError, setServerError] = useState("");
 
   const form = useForm<RegisterFormValues>({
@@ -51,18 +56,21 @@ export default function Register() {
     setServerError("");
 
     try {
-      const { data } = await axios.post("/auth/register", values);
+      const { data } = await api.post("/auth/register", values);
 
-      localStorage.setItem("lms_user_id", data.user.id);
-      localStorage.setItem("lms_org_id", data.user.organizationId);
+      login({
+        userId: data.user.id,
+        organizationId: data.user.organizationId,
+        user: data.user,
+      });
 
       router.push("/dashboard");
     } catch (error) {
-      if (isAxiosError(error))
-        return setServerError(
-          error.response?.data?.error || "Erro de rede. Tente novamente.",
-        );
-      setServerError("Ocorreu um erro. Com os dados fornecidos.");
+      const message = isAxiosError(error)
+        ? error.response?.data?.error || "Erro de rede. Tente novamente."
+        : "Ocorreu um erro. Com os dados fornecidos.";
+      setServerError(message);
+      showToast({ type: "error", message });
     }
   };
 

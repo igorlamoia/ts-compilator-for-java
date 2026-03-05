@@ -9,3 +9,5 @@ export default function ExercisePage() {
 
     return <ExerciseWorkspace exerciseId={id} />;
 }
+
+ExercisePage.requireAuth = true;

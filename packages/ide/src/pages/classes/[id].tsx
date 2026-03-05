@@ -2,9 +2,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function ClassDetail() {
   const router = useRouter();
+  const { userId } = useAuth();
+  const { showToast } = useToast();
   const { id } = router.query;
   const [exercises, setExercises] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<Record<string, any[]>>({});
@@ -12,31 +17,35 @@ export default function ClassDetail() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
-  const userId =
-    typeof window !== "undefined" ? localStorage.getItem("lms_user_id") : null;
-
   // Load user info
   useEffect(() => {
     if (!userId) return;
-    fetch("/api/auth/me", { headers: { "x-user-id": userId } })
-      .then((r) => r.json())
-      .then(setUser)
-      .catch(() => {});
-  }, [userId]);
+    api
+      .get("/auth/me", { headers: { "x-user-id": userId } })
+      .then(({ data }) => setUser(data))
+      .catch(() => {
+        showToast({ type: "error", message: "Erro ao carregar usuário." });
+      });
+  }, [showToast, userId]);
 
   // Load exercises
   useEffect(() => {
     if (!id || !userId) return;
-    fetch(`/api/exercises?classId=${id}`, {
-      headers: { "x-user-id": userId },
-    })
-      .then((r) => r.json())
+    api
+      .get("/exercises", {
+        params: { classId: id },
+        headers: { "x-user-id": userId },
+      })
+      .then(({ data }) => data)
       .then((data) => {
         if (Array.isArray(data)) setExercises(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
-  }, [id, userId]);
+      .catch(() => {
+        showToast({ type: "error", message: "Erro ao carregar exercícios." });
+        setLoading(false);
+      });
+  }, [id, showToast, userId]);
 
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
@@ -48,12 +57,16 @@ export default function ClassDetail() {
     setExpandedEx(exerciseId);
     if (submissions[exerciseId]) return;
 
-    const res = await fetch(`/api/submissions?exerciseId=${exerciseId}`, {
-      headers: { "x-user-id": userId! },
-    });
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      setSubmissions((prev) => ({ ...prev, [exerciseId]: data }));
+    try {
+      const { data } = await api.get("/submissions", {
+        params: { exerciseId },
+        headers: { "x-user-id": userId! },
+      });
+      if (Array.isArray(data)) {
+        setSubmissions((prev) => ({ ...prev, [exerciseId]: data }));
+      }
+    } catch {
+      showToast({ type: "error", message: "Erro ao carregar submissões." });
     }
   };
 
@@ -431,3 +444,5 @@ export default function ClassDetail() {
     </div>
   );
 }
+
+ClassDetail.requireAuth = true;
