@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,10 +22,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import axios from "axios";
 import { HeroButton } from "@/components/buttons/hero";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface TestCase {
   label: string;
@@ -72,7 +77,6 @@ export function CreateExerciseModal({
   onSuccess,
   onError,
 }: CreateExerciseModalProps) {
-  const [showTestCases, setShowTestCases] = useState(false);
   const form = useForm<CreateExerciseFormValues>({
     resolver: zodResolver(createExerciseSchema),
     defaultValues: {
@@ -139,7 +143,6 @@ export function CreateExerciseModal({
       exWeight: "1",
       testCases: defaultTestCases,
     });
-    setShowTestCases(false);
   };
 
   return (
@@ -234,103 +237,100 @@ export function CreateExerciseModal({
               />
             </div>
 
-            <div className="border border-white/10 rounded-xl overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setShowTestCases(!showTestCases)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/8 transition-colors text-sm"
-              >
-                <span className="font-medium text-slate-300">
-                  Casos de Teste (Opcional)
-                </span>
-                <span className="text-xs text-slate-500">
-                  {showTestCases ? "▲ Recolher" : "▼ Expandir"}
-                </span>
-              </button>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="test-cases">
+                <AccordionTrigger>
+                  <div className="flex w-full items-center justify-between pr-2">
+                    <span>Casos de Teste (Opcional)</span>
+                    <span className="text-xs text-slate-500">
+                      Expandir para configurar
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4">
+                    <p className="text-xs text-slate-500">
+                      Defina pares de entrada/saída esperada para validação
+                      automática do código do aluno.
+                    </p>
 
-              {showTestCases && (
-                <div className="p-4 space-y-4 border-t border-white/10">
-                  <p className="text-xs text-slate-500">
-                    Defina pares de entrada/saída esperada para validação
-                    automática do código do aluno.
-                  </p>
+                    {fields.map((field, idx) => (
+                      <div
+                        key={field.id}
+                        className="p-3 bg-black/20 rounded-lg border border-white/5 space-y-2"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold text-[#0dccf2]">
+                            #{idx + 1}
+                          </span>
 
-                  {fields.map((field, idx) => (
-                    <div
-                      key={field.id}
-                      className="p-3 bg-black/20 rounded-lg border border-white/5 space-y-2"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-[#0dccf2]">
-                          #{idx + 1}
-                        </span>
+                          <FormField
+                            control={form.control}
+                            name={`testCases.${idx}.label`}
+                            render={({ field: caseField }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    {...caseField}
+                                    placeholder="Nome do caso (opcional)"
+                                    className="h-9 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs focus:border-[#0dccf2]/50"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
-                        <FormField
-                          control={form.control}
-                          name={`testCases.${idx}.label`}
-                          render={({ field: caseField }) => (
-                            <FormItem className="flex-1">
-                              <FormControl>
-                                <Input
-                                  {...caseField}
-                                  placeholder="Nome do caso (opcional)"
-                                  className="h-9 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs focus:border-[#0dccf2]/50"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField
+                            control={form.control}
+                            name={`testCases.${idx}.input`}
+                            render={({ field: caseField }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs normal-case tracking-normal text-slate-500">
+                                  Entrada (stdin)
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...caseField}
+                                    rows={3}
+                                    placeholder="Uma linha por entrada..."
+                                    className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:border-[#0dccf2]/50"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`testCases.${idx}.expectedOutput`}
+                            render={({ field: caseField }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs normal-case tracking-normal text-slate-500">
+                                  Saída esperada (stdout)
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...caseField}
+                                    rows={3}
+                                    placeholder="Saída esperada..."
+                                    className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:border-[#0dccf2]/50"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField
-                          control={form.control}
-                          name={`testCases.${idx}.input`}
-                          render={({ field: caseField }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs normal-case tracking-normal text-slate-500">
-                                Entrada (stdin)
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  {...caseField}
-                                  rows={3}
-                                  placeholder="Uma linha por entrada..."
-                                  className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:border-[#0dccf2]/50"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`testCases.${idx}.expectedOutput`}
-                          render={({ field: caseField }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs normal-case tracking-normal text-slate-500">
-                                Saída esperada (stdout)
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  {...caseField}
-                                  rows={3}
-                                  placeholder="Saída esperada..."
-                                  className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:border-[#0dccf2]/50"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </form>
         </Form>
 
