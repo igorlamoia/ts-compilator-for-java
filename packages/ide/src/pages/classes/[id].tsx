@@ -7,7 +7,6 @@ export default function ClassDetail() {
   const router = useRouter();
   const { id } = router.query;
   const [exercises, setExercises] = useState<any[]>([]);
-  const [classInfo, setClassInfo] = useState<any>(null);
   const [submissions, setSubmissions] = useState<Record<string, any[]>>({});
   const [expandedEx, setExpandedEx] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

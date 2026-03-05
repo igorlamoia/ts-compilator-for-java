@@ -24,7 +24,7 @@ import { Navbar } from "@/components/navbar";
 
 const loginSchema = z.object({
   email: z.email("E-mail inválido"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  password: z.string().min(4, "Senha deve ter pelo menos 4 caracteres"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -80,8 +80,8 @@ export default function Login() {
         <div className="relative z-10 w-full max-w-120">
           <div className="relative dark:bg-[#182f34]/40 backdrop-blur-[3px] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
             <BorderBeam
-              colorFrom="var(--color-primary)"
-              colorTo="var(--color-secondary)"
+              colorFrom="#0dccf2"
+              colorTo="#34d399"
               duration={8}
               size={80}
             />

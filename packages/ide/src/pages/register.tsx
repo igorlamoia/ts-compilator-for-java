@@ -8,7 +8,7 @@ import { Title } from "@/components/text/title";
 import { GraduationCap, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { HeroButton } from "@/components/buttons/hero";
-import { Field, RegisterOptions, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/form";
 import axios, { isAxiosError } from "axios";
 import { Navbar } from "@/components/navbar";
+import { RadioSelector } from "@/components/buttons/radio-selector";
+import { Copyright } from "@/components/copyright";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -30,15 +32,6 @@ const registerSchema = z.object({
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
-
-const roleOptions = [
-  {
-    value: "teacher",
-    label: "Professor",
-    Icon: GraduationCap,
-  },
-  { value: "student", label: "Aluno", Icon: User },
-] as const;
 
 export default function Register() {
   const router = useRouter();
@@ -95,8 +88,8 @@ export default function Register() {
               <Title>
                 <GradientText>Crie sua Conta</GradientText>
               </Title>
-              <p className="text-slate-400 text-sm">
-                Entre para o futuro da educação em programação com Java--.
+              <p className="text-slate-400 text-sm mt-1">
+                Entre para o futuro da educação em programação.
               </p>
             </div>
 
@@ -118,8 +111,18 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <div className="flex p-1 dark:bg-black/20 bg-slate-300/20 rounded-lg border border-white/5">
-                          <RoleSelector roles={roleOptions} field={field} />
+                        <div className="flex p-1 dark:bg-black/20 bg-slate-300/20 rounded-md border border-white/5">
+                          <RadioSelector
+                            options={[
+                              {
+                                value: "teacher",
+                                label: "Professor",
+                                Icon: GraduationCap,
+                              },
+                              { value: "student", label: "Aluno", Icon: User },
+                            ]}
+                            field={field}
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -138,7 +141,6 @@ export default function Register() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
                           placeholder="Digite seu nome completo"
                           type="text"
                           {...field}
@@ -160,7 +162,6 @@ export default function Register() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
                           placeholder="voce@exemplo.com"
                           type="email"
                           {...field}
@@ -182,7 +183,6 @@ export default function Register() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-0.5 focus:ring-[#0dccf2] focus:border-[#0dccf2] transition-all sm:text-sm"
                           placeholder="Crie uma senha forte"
                           type="password"
                           {...field}
@@ -221,8 +221,8 @@ export default function Register() {
             </div>
           </div>
 
-          <p className="mt-8 text-center text-xs dark:text-slate-500 text-slate-900">
-            © {new Date().getFullYear()}. Todos os direitos reservados.
+          <p className="mt-8">
+            <Copyright />
           </p>
         </div>
       </main>
@@ -249,28 +249,4 @@ function SocialLogin() {
       </HeroButton>
     </div>
   );
-}
-
-function RoleSelector({
-  roles,
-  field,
-}: {
-  roles: typeof roleOptions;
-  field: RegisterOptions;
-}) {
-  return roles.map(({ value, label, Icon }) => (
-    <label key={value} className="flex-1 relative cursor-pointer">
-      <input
-        className="peer sr-only"
-        type="radio"
-        value={value}
-        checked={field.value === value}
-        onChange={() => field.onChange?.(value)}
-      />
-      <div className="flex items-center justify-center gap-2 py-2 px-3 rounded text-sm font-medium text-slate-400 transition-all peer-checked:bg-white/10 peer-checked:text-[#0dccf2] peer-checked:shadow-sm">
-        <Icon className="w-4 h-4" />
-        <span>{label}</span>
-      </div>
-    </label>
-  ));
 }

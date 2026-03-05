@@ -11,36 +11,37 @@ import {
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { BorderBeam } from "./ui/border-beam";
+import { HeroButton } from "./buttons/hero";
 
-export function KeywordCustomizer({
-  isOpen,
-  setIsOpen,
-}: {
-  isOpen: boolean;
-  setIsOpen: (value: boolean) => void;
-}) {
-  const { mappings, replaceKeywords, validateKeyword } = useKeywords();
+const KEYWORD_EXPLANATIONS: Record<string, string> = {
+  int: "Tipo numérico para números inteiros.",
+  float: "Tipo numérico para números com casas decimais.",
+  string: "Tipo de texto.",
+  void: "Usado quando uma função não retorna valor.",
+  for: "Laço de repetição com início, condição e incremento.",
+  while: "Laço que repete enquanto a condição for verdadeira.",
+  break: "Interrompe imediatamente um laço.",
+  continue: "Pula para a próxima iteração do laço.",
+  if: "Executa um bloco quando a condição é verdadeira.",
+  else: "Executa o bloco alternativo do if.",
+  return: "Retorna um valor e encerra a função.",
+  print: "Comando para saída de dados na tela.",
+  scan: "Comando para leitura de dados de entrada.",
+};
+
+export function KeywordCustomizer() {
+  const {
+    mappings,
+    replaceKeywords,
+    validateKeyword,
+    isOpenKeywordCustomizer: isOpen,
+    setIsOpenKeywordCustomizer: setIsOpen,
+  } = useKeywords();
   const [draftMappings, setDraftMappings] =
     useState<KeywordMapping[]>(mappings);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const KEYWORD_EXPLANATIONS: Record<string, string> = {
-    int: "Tipo numérico para números inteiros.",
-    float: "Tipo numérico para números com casas decimais.",
-    string: "Tipo de texto.",
-    void: "Usado quando uma função não retorna valor.",
-    for: "Laço de repetição com início, condição e incremento.",
-    while: "Laço que repete enquanto a condição for verdadeira.",
-    break: "Interrompe imediatamente um laço.",
-    continue: "Pula para a próxima iteração do laço.",
-    if: "Executa um bloco quando a condição é verdadeira.",
-    else: "Executa o bloco alternativo do if.",
-    return: "Retorna um valor e encerra a função.",
-    print: "Comando para saída de dados na tela.",
-    scan: "Comando para leitura de dados de entrada.",
-  };
 
   useEffect(() => {
     if (isOpen) {
@@ -291,73 +292,42 @@ export function KeywordCustomizer({
           </div>
 
           <DialogFooter>
-            <button
+            <HeroButton
               onClick={handleResetDraft}
               type="button"
+              variant="outline"
               disabled={!hasChanges}
-              className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer
-                  ${
-                    hasChanges
-                      ? "dark:text-gray-300 text-gray-600 hover:dark:bg-slate-700 hover:bg-gray-100"
-                      : "dark:text-gray-600 text-gray-300 cursor-not-allowed"
-                  }
-                `}
             >
               Restaurar Padrão
-            </button>
+            </HeroButton>
 
             <div className="flex items-center gap-2">
-              <button
+              <HeroButton
+                variant="ghost"
                 onClick={goToPrevious}
                 type="button"
                 disabled={currentStep === 0}
-                className={`
-                    px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer
-                    ${
-                      currentStep === 0
-                        ? "dark:text-gray-600 text-gray-300 cursor-not-allowed"
-                        : "dark:text-gray-300 text-gray-600 hover:dark:bg-slate-700 hover:bg-gray-100"
-                    }
-                  `}
               >
                 Anterior
-              </button>
+              </HeroButton>
 
               {currentStep < draftMappings.length - 1 ? (
-                <button
-                  type="submit"
-                  className="
-                    cursor-pointer
-                      px-6 py-2 rounded-md text-sm font-medium
-                      bg-cyan-600 text-white hover:bg-cyan-700
-                      transition-colors
-                    "
-                >
+                <HeroButton type="submit" variant="ghost">
                   Próxima
-                </button>
+                </HeroButton>
               ) : (
-                <button
-                  type="submit"
-                  className="
-                  cursor-pointer
-                      px-6 py-2 rounded-md text-sm font-medium
-                      bg-emerald-600 text-white hover:bg-emerald-700
-                      transition-colors
-                    "
-                >
+                <HeroButton type="submit" className="">
                   Salvar e Aplicar
-                </button>
+                </HeroButton>
               )}
             </div>
           </DialogFooter>
         </form>
         <BorderBeam
-          duration={6}
-          delay={3}
-          size={400}
-          borderWidth={2}
-          className="from-transparent via-(--color-primary) to-transparent"
+          colorFrom="#0dccf2"
+          colorTo="#34d399"
+          duration={8}
+          size={80}
         />
       </DialogContent>
     </Dialog>

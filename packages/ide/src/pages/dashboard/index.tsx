@@ -349,7 +349,7 @@ export default function Dashboard() {
   );
 }
 
-export function Header({ isTeacher }: { isTeacher: boolean }) {
+function Header({ isTeacher }: { isTeacher: boolean }) {
   return (
     <div>
       <Title>

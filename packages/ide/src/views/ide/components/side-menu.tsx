@@ -1,6 +1,7 @@
 import IconButton from "@/components/buttons/icon-button";
 import { FileCode2, GitBranch, Search, Settings } from "lucide-react";
 import type { SidebarView } from "./side-explorer/sidebar-panel";
+import { useKeywords } from "@/contexts/KeywordContext";
 
 interface SideMenuProps {
   isSidebarOpen: boolean;
@@ -47,13 +48,19 @@ export function SideMenu({
       >
         <GitBranch className="h-4 w-4" />
       </IconButton>
-      <IconButton
-        selected={isSidebarOpen && activeView === "settings"}
-        onClick={() => handleViewClick("settings")}
-        tooltip="Configurações"
-      >
-        <Settings className="h-4 w-4" />
-      </IconButton>
+      <ConfigButton />
     </div>
+  );
+}
+
+function ConfigButton() {
+  const { setIsOpenKeywordCustomizer } = useKeywords();
+  return (
+    <IconButton
+      tooltip="Configurações"
+      onClick={() => setIsOpenKeywordCustomizer(true)}
+    >
+      <Settings className="h-4 w-4" />
+    </IconButton>
   );
 }

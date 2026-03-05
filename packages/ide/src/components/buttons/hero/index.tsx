@@ -4,22 +4,26 @@ import React from "react";
 
 interface HeroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: "primary" | "outline";
+  variant?: "primary" | "outline" | "ghost";
 }
 
 export function HeroButton(props: HeroButtonProps) {
-  const { children, variant = "primary", ...rest } = props;
+  const { children, disabled, variant = "primary", ...rest } = props;
 
   return (
     <button
       {...rest}
       className={cn(
-        "group inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-800 font-bold text-sm rounded-lg  transition-all duration-300 transform active:scale-[0.97]  hover:scale-[1.02] cursor-pointer",
+        "group inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-800 font-bold text-sm rounded-md  transition-all duration-300 transform active:scale-[0.97]  hover:scale-[1.02] cursor-pointer",
         variant === "primary" &&
           "bg-linear-to-r from-[#0dccf2] to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 shadow-[0_0_15px_rgba(13,204,242,0.25)] hover:shadow-[0_0_25px_rgba(13,204,242,0.45)]",
         variant === "outline" &&
           "border border-slate-700/20 dark:border-white/10 hover:border-[#0dccf2]/50 hover:bg-[#0dccf2]/5 dark:text-slate-300 hover:text-[#0dccf2]",
+        variant === "ghost" &&
+          "hover:bg-[#0dccf2]/5 dark:hover:bg-[#0dccf2]/5 text-slate-800 dark:text-slate-300 hover:text-[#0dccf2]",
         props.className,
+        disabled &&
+          "opacity-50 cursor-not-allowed hover:from-[#0dccf2] hover:to-emerald-300 hover:shadow-none hover:border-slate-700/20 hover:bg-transparent hover:text-slate-800 dark:hover:border-white/10 dark:hover:bg-transparent dark:hover:text-slate-300",
       )}
     >
       {children}
@@ -39,7 +43,7 @@ export function HeroLink(props: HeroLinkProps) {
     <Link
       {...rest}
       className={cn(
-        "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-800 font-bold text-sm rounded-xl  transition-all duration-300 transform active:scale-[0.97] hover:scale-[1.02]  cursor-pointer",
+        "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-800 font-bold text-sm rounded-md  transition-all duration-300 transform active:scale-[0.97] hover:scale-[1.02]  cursor-pointer",
         variant === "primary" &&
           "bg-linear-to-r from-[#0dccf2] to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 shadow-[0_0_15px_rgba(13,204,242,0.25)] hover:shadow-[0_0_25px_rgba(13,204,242,0.45)]",
         variant === "outline" &&
