@@ -118,7 +118,7 @@ export function IDE() {
     <>
       <RuntimeErrorProvider>
         <div className="relative rounded-2xl">
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100/70 dark:bg-gray-800/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100/70 dark:bg-black/20 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
             <Menu
               handleRun={handleRun}
               runAll={runAll}
