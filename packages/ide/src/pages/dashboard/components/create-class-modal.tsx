@@ -101,7 +101,7 @@ export function CreateClassModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#182f34] border-white/10 text-white">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Criar Nova Turma</DialogTitle>
           <DialogDescription className="text-slate-400">
@@ -112,7 +112,7 @@ export function CreateClassModal({
           <form
             id="create-class-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 flex-1 overflow-y-auto max-h-[60vh] px-6"
+            className="space-y-4 flex-1 overflow-y-auto max-h-[60vh] p-6"
           >
             <FormField
               control={form.control}

@@ -144,7 +144,7 @@ export function CreateExerciseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#182f34] border-white/10 text-white max-w-2xl max-h-[90vh]">
+      <DialogContent className="max-w-2xl backdrop-blur-3xl">
         <DialogHeader>
           <DialogTitle>Criar Exercício</DialogTitle>
           <DialogDescription className="text-slate-400">
@@ -155,7 +155,7 @@ export function CreateExerciseModal({
           <form
             id="create-exercise-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6"
+            className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] p-6"
           >
             <FormField
               control={form.control}

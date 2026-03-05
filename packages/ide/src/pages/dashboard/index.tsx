@@ -10,6 +10,7 @@ import { Subtitle } from "@/components/text/subtitle";
 import { CreateClassModal } from "./components/create-class-modal";
 import { JoinClassModal } from "./components/join-class-modal";
 import { CreateExerciseModal } from "./components/create-exercise-modal";
+import { Alert } from "@/components/ui/alert";
 
 type UserData = {
   id: string;
@@ -141,56 +142,18 @@ export default function Dashboard() {
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Alerts */}
         {error && (
-          <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm flex justify-between items-center backdrop-blur-md animate-fade-in shadow-[0_4px_20px_rgba(239,68,68,0.1)]">
-            <div className="flex items-center gap-3">
-              <svg
-                className="w-5 h-5 text-red-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {error}
-            </div>
-            <button
-              onClick={() => setError("")}
-              className="text-red-400 hover:text-red-200 p-1"
-            >
-              ✕
-            </button>
-          </div>
+          <Alert variant="error" onClose={() => setError("")} className="mb-8">
+            {error}
+          </Alert>
         )}
         {success && (
-          <div className="mb-8 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm flex justify-between items-center backdrop-blur-md animate-fade-in shadow-[0_4px_20px_rgba(16,185,129,0.1)]">
-            <div className="flex items-center gap-3">
-              <svg
-                className="w-5 h-5 text-emerald-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              {success}
-            </div>
-            <button
-              onClick={() => setSuccess("")}
-              className="text-emerald-400 hover:text-emerald-200 p-1"
-            >
-              ✕
-            </button>
-          </div>
+          <Alert
+            variant="success"
+            onClose={() => setSuccess("")}
+            className="mb-8"
+          >
+            {success}
+          </Alert>
         )}
 
         {/* Header Section */}

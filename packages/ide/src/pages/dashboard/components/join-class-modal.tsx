@@ -101,7 +101,7 @@ export function JoinClassModal({
           <form
             id="join-class-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 px-6"
+            className="space-y-4 p-6"
           >
             <FormField
               control={form.control}
