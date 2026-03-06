@@ -10,6 +10,7 @@ import {
 } from "@ts-compilator-for-java/compiler/issue";
 import { TToken } from "@/@types/token";
 import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
+import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 export type TLexerAnalyseData = {
   tokens: TToken[];

@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
+import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 /** As 13 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {

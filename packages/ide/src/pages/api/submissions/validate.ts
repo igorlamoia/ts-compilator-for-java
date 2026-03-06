@@ -10,6 +10,7 @@ import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
 import { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
 import prisma from '@/lib/prisma'
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
+import type { IDEGrammarConfig } from '@/entities/compiler-config'
 
 export type TTestCaseResult = {
     label: string;

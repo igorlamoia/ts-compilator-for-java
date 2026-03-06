@@ -6,6 +6,7 @@ import {
 import { TokenIterator } from "@ts-compilator-for-java/compiler/token/TokenIterator";
 import { Token } from "@ts-compilator-for-java/compiler/token";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 export type TIntermediateCodeData = {
   instructions: Instruction[];
