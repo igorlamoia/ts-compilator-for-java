@@ -9,7 +9,7 @@ export default class CommentScanner extends LexerScanner {
   private lineComment(): void {
     this.lexer.advance();
     while (!this.lexer.isAtEnd() && this.lexer.peekAndAdvance() !== "\n");
-    if (!this.lexer.isAtEnd()) this.lexer.goToNextLine();
+    if (!this.lexer.isAtEnd()) this.lexer.onNewline();
   }
 
   private multiLineComment(): void {

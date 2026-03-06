@@ -1,6 +1,6 @@
 import { Token } from "../token";
 import { TOKENS } from "../token/constants";
-import { isWhitespace } from "./lexer-helpers";
+import { isIndentationWhitespace, isWhitespace } from "./lexer-helpers";
 import { LexerScannerFactory } from "./scanners";
 import { IssueWarning, IssueInfo, IssueError } from "../issue";
 import { TIssueParams } from "../issue/details";
@@ -16,7 +16,9 @@ function isLexerConfig(value: unknown): value is LexerConfig {
   return (
     "customKeywords" in value ||
     "blockDelimiters" in value ||
-    "locale" in value
+    "locale" in value ||
+    "indentationBlock" in value ||
+    "tabWidth" in value
   );
 }
 
@@ -31,6 +33,11 @@ export class Lexer {
   infos: IssueInfo[] = [];
   keywordMap: KeywordMap;
   locale: string | undefined;
+  private indentationBlock: boolean;
+  private tabWidth: number;
+  private indentStack: number[] = [0];
+  private groupDepth = 0;
+  private explicitLineContinuation = false;
 
   constructor(
     source: string,
@@ -51,6 +58,8 @@ export class Lexer {
       ...(config.customKeywords ?? {}),
     };
     this.locale = config.locale;
+    this.indentationBlock = config.indentationBlock ?? false;
+    this.tabWidth = config.tabWidth ?? 4;
 
     const delimiters = config.blockDelimiters;
     if (delimiters) {
@@ -66,14 +75,26 @@ export class Lexer {
       this.scanToken();
     }
 
+    if (this.indentationBlock) {
+      this.emitDedentsUntil(0);
+    }
+
     // this.tokens.push(new Token(TOKENS.EOF, "", this.line, this.column));
     return this.tokens;
   }
 
   public scanToken() {
     const char = this.peekAndAdvance();
+    if (
+      this.indentationBlock &&
+      char === "\\" &&
+      (this.peek() === "\n" || (this.peek() === "\r" && this.peekNext() === "\n"))
+    ) {
+      this.explicitLineContinuation = true;
+      return;
+    }
     if (isWhitespace(char)) return;
-    if (char === "\n") return this.goToNextLine();
+    if (char === "\n") return this.onNewline();
 
     const scanner = LexerScannerFactory.getInstance(char, this);
     if (scanner) return scanner.run();
@@ -115,6 +136,14 @@ export class Lexer {
     this.tokens.push(
       new Token(type, text, this.line, this.column - text.length + addedChars),
     );
+    if (type === TOKENS.SYMBOLS.left_paren || type === TOKENS.SYMBOLS.left_brace) {
+      this.groupDepth++;
+    } else if (
+      (type === TOKENS.SYMBOLS.right_paren || type === TOKENS.SYMBOLS.right_brace) &&
+      this.groupDepth > 0
+    ) {
+      this.groupDepth--;
+    }
   }
 
   public peek(): string {
@@ -135,6 +164,64 @@ export class Lexer {
   public goToNextLine() {
     this.line++;
     this.column = 1;
+  }
+
+  public onNewline(): void {
+    this.goToNextLine();
+    if (!this.indentationBlock) return;
+    if (this.isStructuralSuppressed()) {
+      this.explicitLineContinuation = false;
+      return;
+    }
+
+    if (!this.isAtEnd()) {
+      const { depth, nextIndex } = this.readIndentDepth(this.current);
+      const currentDepth = this.indentStack[this.indentStack.length - 1];
+      const isBlankOrCommentLine = this.isBlankOrCommentLine(nextIndex);
+      if (isBlankOrCommentLine) return;
+
+      this.advance(nextIndex - this.current);
+      this.addToken(TOKENS.SYMBOLS.newline, "\n");
+
+      if (depth > currentDepth) {
+        this.indentStack.push(depth);
+        this.addToken(TOKENS.SYMBOLS.indent, "<INDENT>");
+        return;
+      }
+
+      if (depth < currentDepth) {
+        this.emitDedentsUntil(depth);
+      }
+    }
+  }
+
+  private readIndentDepth(start: number): { depth: number; nextIndex: number } {
+    let index = start;
+    let depth = 0;
+    while (index < this.source.length) {
+      const char = this.source[index];
+      if (!isIndentationWhitespace(char)) break;
+      depth += char === "\t" ? this.tabWidth : 1;
+      index++;
+    }
+    return { depth, nextIndex: index };
+  }
+
+  private emitDedentsUntil(depth: number): void {
+    while (this.indentStack.length > 1 && this.indentStack[this.indentStack.length - 1] > depth) {
+      this.indentStack.pop();
+      this.addToken(TOKENS.SYMBOLS.dedent, "<DEDENT>");
+    }
+  }
+
+  private isStructuralSuppressed(): boolean {
+    return this.groupDepth > 0 || this.explicitLineContinuation;
+  }
+
+  private isBlankOrCommentLine(index: number): boolean {
+    const char = this.source[index];
+    if (!char || char === "\n") return true;
+    return char === "/" && this.source[index + 1] === "/";
   }
 
   public error(code: string, params?: TIssueParams) {
