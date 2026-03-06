@@ -188,3 +188,35 @@ describe("Grammar For Semicolons", () => {
     ).toThrow(/Unexpected token/);
   });
 });
+
+describe("Grammar Required Semicolons", () => {
+  it("should require semicolon at end of line in strict mode", () => {
+    const source = `
+      int main() {
+        int a = 1
+        print(a);
+      }
+    `;
+
+    expect(() =>
+      compileToIr(source, {
+        grammar: { semicolonMode: "required" },
+      }),
+    ).toThrow(/Unexpected token/);
+  });
+
+  it("should allow the same source in optional mode", () => {
+    const source = `
+      int main() {
+        int a = 1
+        print(a);
+      }
+    `;
+
+    expect(() =>
+      compileToIr(source, {
+        grammar: { semicolonMode: "optional-eol" },
+      }),
+    ).not.toThrow();
+  });
+});
