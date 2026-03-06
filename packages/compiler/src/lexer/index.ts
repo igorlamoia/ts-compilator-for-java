@@ -60,9 +60,15 @@ export class Lexer {
     this.locale = config.locale;
     this.indentationBlock = config.indentationBlock ?? false;
     this.tabWidth = config.tabWidth ?? 4;
+    if (this.tabWidth <= 0) {
+      this.error("lexer.invalid_tab_width", { tabWidth: this.tabWidth });
+    }
 
     const delimiters = config.blockDelimiters;
     if (delimiters) {
+      if (this.indentationBlock) {
+        this.error("lexer.indentation_disallow_block_delimiters");
+      }
       validateBlockDelimiters(delimiters, TOKENS.RESERVEDS as KeywordMap);
       this.keywordMap[delimiters.open] = TOKENS.SYMBOLS.left_brace;
       this.keywordMap[delimiters.close] = TOKENS.SYMBOLS.right_brace;
@@ -131,6 +137,13 @@ export class Lexer {
    * @param addedChars Number of added chars to the lexeme string (default 0), used to calculate the column position of the beginning of the token
    */
   public addToken(type: number, lexeme?: string, addedChars: number = 0) {
+    if (
+      this.indentationBlock &&
+      (type === TOKENS.SYMBOLS.left_brace || type === TOKENS.SYMBOLS.right_brace)
+    ) {
+      this.error("lexer.indentation_disallow_braces");
+    }
+
     const text =
       lexeme || this.source.substring(this.scannerBegin, this.current);
     this.tokens.push(
@@ -181,9 +194,15 @@ export class Lexer {
       if (isBlankOrCommentLine) return;
 
       this.advance(nextIndex - this.current);
-      this.addToken(TOKENS.SYMBOLS.newline, "\n");
+      if (this.shouldEmitStructuralNewline()) {
+        this.addToken(TOKENS.SYMBOLS.newline, "\n");
+      }
 
       if (depth > currentDepth) {
+        const previous = this.getLastSignificantTokenType();
+        if (previous !== TOKENS.SYMBOLS.colon) {
+          this.error("lexer.unexpected_indent");
+        }
         this.indentStack.push(depth);
         this.addToken(TOKENS.SYMBOLS.indent, "<INDENT>");
         return;
@@ -198,11 +217,18 @@ export class Lexer {
   private readIndentDepth(start: number): { depth: number; nextIndex: number } {
     let index = start;
     let depth = 0;
+    let hasSpace = false;
+    let hasTab = false;
     while (index < this.source.length) {
       const char = this.source[index];
       if (!isIndentationWhitespace(char)) break;
+      hasSpace = hasSpace || char === " ";
+      hasTab = hasTab || char === "\t";
       depth += char === "\t" ? this.tabWidth : 1;
       index++;
+    }
+    if (hasSpace && hasTab) {
+      this.error("lexer.inconsistent_indentation");
     }
     return { depth, nextIndex: index };
   }
@@ -211,6 +237,9 @@ export class Lexer {
     while (this.indentStack.length > 1 && this.indentStack[this.indentStack.length - 1] > depth) {
       this.indentStack.pop();
       this.addToken(TOKENS.SYMBOLS.dedent, "<DEDENT>");
+    }
+    if (this.indentStack[this.indentStack.length - 1] !== depth) {
+      this.error("lexer.invalid_dedent");
     }
   }
 
@@ -222,6 +251,30 @@ export class Lexer {
     const char = this.source[index];
     if (!char || char === "\n") return true;
     return char === "/" && this.source[index + 1] === "/";
+  }
+
+  private shouldEmitStructuralNewline(): boolean {
+    if (this.tokens.length === 0) return false;
+    const lastType = this.tokens[this.tokens.length - 1].type;
+    return (
+      lastType !== TOKENS.SYMBOLS.newline &&
+      lastType !== TOKENS.SYMBOLS.indent &&
+      lastType !== TOKENS.SYMBOLS.dedent
+    );
+  }
+
+  private getLastSignificantTokenType(): number | null {
+    for (let i = this.tokens.length - 1; i >= 0; i--) {
+      const type = this.tokens[i].type;
+      if (
+        type !== TOKENS.SYMBOLS.newline &&
+        type !== TOKENS.SYMBOLS.indent &&
+        type !== TOKENS.SYMBOLS.dedent
+      ) {
+        return type;
+      }
+    }
+    return null;
   }
 
   public error(code: string, params?: TIssueParams) {
