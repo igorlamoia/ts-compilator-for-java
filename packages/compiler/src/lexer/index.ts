@@ -73,7 +73,10 @@ export class Lexer {
   public scanToken() {
     const char = this.peekAndAdvance();
     if (isWhitespace(char)) return;
-    if (char === "\n") return this.goToNextLine();
+    if (char === "\n") {
+      this.addToken(TOKENS.SYMBOLS.newline, "\\n", 1);
+      return this.goToNextLine();
+    }
 
     const scanner = LexerScannerFactory.getInstance(char, this);
     if (scanner) return scanner.run();
