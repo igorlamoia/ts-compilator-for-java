@@ -1,4 +1,4 @@
-import { KeywordMap } from "@ts-compilator-for-java/compiler/src/lexer";
+import { KeywordMap } from "@ts-compilator-for-java/compiler/src/lexer/config";
 import { TOKENS } from "@ts-compilator-for-java/compiler/src/token/constants";
 
 function isValidKeywordEntry(

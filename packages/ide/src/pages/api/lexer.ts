@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
-import type { KeywordMap } from "@ts-compilator-for-java/compiler/src/lexer";
+import type {
+  KeywordMap,
+  LexerBlockDelimiters,
+} from "@ts-compilator-for-java/compiler/src/lexer/config";
 import {
   IssueDetails,
   IssueError,
@@ -22,9 +25,15 @@ export default function handler(
 ) {
   try {
     const keywordMap: KeywordMap | undefined = req.body.keywordMap;
+    const blockDelimiters: LexerBlockDelimiters | undefined =
+      req.body.blockDelimiters;
     const locale: string | undefined = req.body.locale;
     const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap);
-    const lexer = new Lexer(req.body.sourceCode, effectiveKeywordMap, locale);
+    const lexer = new Lexer(req.body.sourceCode, {
+      customKeywords: effectiveKeywordMap,
+      blockDelimiters,
+      locale,
+    });
     const tokens = lexer.scanTokens();
     res.status(200).json({
       message:

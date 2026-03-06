@@ -1,5 +1,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useKeywords, KeywordMapping } from "@/contexts/KeywordContext";
+import {
+  useKeywords,
+  KeywordMapping,
+  BlockDelimiters,
+} from "@/contexts/KeywordContext";
 import {
   Dialog,
   DialogContent,
@@ -35,24 +39,32 @@ const KEYWORD_EXPLANATIONS: Record<string, string> = {
 export function KeywordCustomizer() {
   const {
     mappings,
+    blockDelimiters,
     replaceKeywords,
+    setBlockDelimiters,
     validateKeyword,
+    validateBlockDelimiters,
     isOpenKeywordCustomizer: isOpen,
     setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
   const [draftMappings, setDraftMappings] =
     useState<KeywordMapping[]>(mappings);
+  const [draftBlockDelimiters, setDraftBlockDelimiters] =
+    useState<BlockDelimiters>(blockDelimiters);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
+  const [delimiterError, setDelimiterError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setDraftMappings(mappings);
+      setDraftBlockDelimiters(blockDelimiters);
       setCurrentStep(0);
       setCurrentError(null);
+      setDelimiterError(null);
     }
-  }, [isOpen, mappings]);
+  }, [isOpen, mappings, blockDelimiters]);
 
   useEffect(() => {
     if (isOpen) {
@@ -62,8 +74,11 @@ export function KeywordCustomizer() {
   }, [isOpen, currentStep]);
 
   const hasChanges = useMemo(
-    () => draftMappings.some((m: KeywordMapping) => m.original !== m.custom),
-    [draftMappings],
+    () =>
+      draftMappings.some((m: KeywordMapping) => m.original !== m.custom) ||
+      draftBlockDelimiters.open !== blockDelimiters.open ||
+      draftBlockDelimiters.close !== blockDelimiters.close,
+    [draftMappings, draftBlockDelimiters, blockDelimiters],
   );
 
   const currentMapping = draftMappings[currentStep];
@@ -92,9 +107,13 @@ export function KeywordCustomizer() {
       ...mapping,
       custom: mapping.original,
     }));
+    const resetBlockDelimiters = { open: "", close: "" };
     setDraftMappings(resetMappings);
+    setDraftBlockDelimiters(resetBlockDelimiters);
     replaceKeywords(resetMappings);
+    setBlockDelimiters(resetBlockDelimiters);
     setCurrentError(null);
+    setDelimiterError(null);
   };
 
   const goToPrevious = () => {
@@ -126,9 +145,31 @@ export function KeywordCustomizer() {
         return;
       }
     }
+    const blockError = validateBlockDelimiters(draftBlockDelimiters);
+    if (blockError) {
+      setDelimiterError(blockError);
+      return;
+    }
     replaceKeywords(draftMappings);
+    setBlockDelimiters({
+      open: draftBlockDelimiters.open.trim(),
+      close: draftBlockDelimiters.close.trim(),
+    });
     setCurrentError(null);
+    setDelimiterError(null);
     setIsOpen(false);
+  };
+
+  const handleDelimiterChange = (
+    field: keyof BlockDelimiters,
+    value: string,
+  ) => {
+    const next = {
+      ...draftBlockDelimiters,
+      [field]: value,
+    };
+    setDraftBlockDelimiters(next);
+    setDelimiterError(validateBlockDelimiters(next));
   };
 
   const handleSubmitCurrentStep = (event: FormEvent<HTMLFormElement>) => {
@@ -290,6 +331,55 @@ export function KeywordCustomizer() {
                 <span id="keyword-error" className="text-xs text-red-500">
                   {currentError}
                 </span>
+              )}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Delimitadores de Bloco (Opcional)
+              </p>
+              <p className="text-sm dark:text-gray-400 text-gray-500">
+                Configure palavras para abrir/fechar blocos no lugar de {"{"} e
+                {"}"} (ex.: <code>begin</code> e <code>end</code>).
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  value={draftBlockDelimiters.open}
+                  onChange={(e) => handleDelimiterChange("open", e.target.value)}
+                  placeholder="Abertura (ex.: begin)"
+                  spellCheck={false}
+                  className={`
+                    w-full px-3 py-2 rounded-md text-sm font-mono
+                    dark:bg-slate-800 bg-gray-50
+                    dark:text-gray-200 text-gray-800
+                    border transition-colors outline-none
+                    focus:ring-2 focus:ring-cyan-500/50
+                    ${delimiterError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                  `}
+                />
+                <input
+                  type="text"
+                  value={draftBlockDelimiters.close}
+                  onChange={(e) =>
+                    handleDelimiterChange("close", e.target.value)
+                  }
+                  placeholder="Fechamento (ex.: end)"
+                  spellCheck={false}
+                  className={`
+                    w-full px-3 py-2 rounded-md text-sm font-mono
+                    dark:bg-slate-800 bg-gray-50
+                    dark:text-gray-200 text-gray-800
+                    border transition-colors outline-none
+                    focus:ring-2 focus:ring-cyan-500/50
+                    ${delimiterError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                  `}
+                />
+              </div>
+
+              {delimiterError && (
+                <span className="text-xs text-red-500">{delimiterError}</span>
               )}
             </div>
           </div>

@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Lexer } from '@ts-compilator-for-java/compiler/src/lexer'
-import type { KeywordMap } from '@ts-compilator-for-java/compiler/src/lexer'
+import type {
+    KeywordMap,
+    LexerBlockDelimiters,
+} from '@ts-compilator-for-java/compiler/src/lexer/config'
 import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
 import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
@@ -76,10 +79,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const userId = req.headers['x-user-id'] as string
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, sourceCode, keywordMap } = req.body as {
+    const { exerciseId, sourceCode, keywordMap, blockDelimiters } = req.body as {
         exerciseId: string
         sourceCode: string
         keywordMap?: KeywordMap
+        blockDelimiters?: LexerBlockDelimiters
     }
     const dryRun = req.query.dryRun === 'true'
 
@@ -94,7 +98,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // Step 1: Lexical Analysis
     try {
         const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap)
-        const lexer = new Lexer(sourceCode, effectiveKeywordMap)
+        const lexer = new Lexer(sourceCode, {
+            customKeywords: effectiveKeywordMap,
+            blockDelimiters,
+        })
         const tokens = lexer.scanTokens()
 
         if (lexer.warnings.length > 0) {

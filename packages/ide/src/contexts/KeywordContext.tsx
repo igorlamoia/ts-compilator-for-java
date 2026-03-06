@@ -39,6 +39,16 @@ export type KeywordMapping = {
   tokenId: number;
 };
 
+export type BlockDelimiters = {
+  open: string;
+  close: string;
+};
+
+type StoredKeywordCustomization = {
+  mappings: KeywordMapping[];
+  blockDelimiters: BlockDelimiters;
+};
+
 type KeywordContextType = {
   /** Mapeamentos atuais (original → custom) */
   mappings: KeywordMapping[];
@@ -50,6 +60,17 @@ type KeywordContextType = {
   resetKeywords: () => void;
   /** Retorna o keywordMap final (custom word → token ID) para enviar ao Lexer */
   buildKeywordMap: () => Record<string, number>;
+  /** Delimitadores de bloco customizados (open/close) */
+  blockDelimiters: BlockDelimiters;
+  /** Atualiza delimitadores customizados de bloco */
+  setBlockDelimiters: (value: BlockDelimiters) => void;
+  /** Valida delimitadores customizados de bloco */
+  validateBlockDelimiters: (value: BlockDelimiters) => string | null;
+  /** Retorna payload completo de customização para APIs do lexer */
+  buildLexerConfig: () => {
+    keywordMap: Record<string, number>;
+    blockDelimiters?: BlockDelimiters;
+  };
   /** Valida se uma palavra customizada é válida */
   validateKeyword: (
     original: string,
@@ -70,7 +91,10 @@ export function useKeywords() {
   return useContext(KeywordContext);
 }
 
-const STORAGE_KEY = "keyword-mappings";
+const LEGACY_STORAGE_KEY = "keyword-mappings";
+const STORAGE_KEY = "keyword-customization";
+const WORD_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
 function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
   return z
     .object({
@@ -105,33 +129,74 @@ function getDefaultMappings(): KeywordMapping[] {
   }));
 }
 
-function loadMappings(): KeywordMapping[] {
-  if (typeof window === "undefined") return getDefaultMappings();
+function isValidStoredMappings(parsed: KeywordMapping[]): boolean {
+  return (
+    parsed.length === ORIGINAL_KEYWORDS.length &&
+    ORIGINAL_KEYWORDS.every((kw) => parsed.some((m) => m.original === kw))
+  );
+}
+
+function getDefaultBlockDelimiters(): BlockDelimiters {
+  return {
+    open: "",
+    close: "",
+  };
+}
+
+function loadCustomization(): StoredKeywordCustomization {
+  const defaults: StoredKeywordCustomization = {
+    mappings: getDefaultMappings(),
+    blockDelimiters: getDefaultBlockDelimiters(),
+  };
+
+  if (typeof window === "undefined") return defaults;
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return getDefaultMappings();
-    const parsed = JSON.parse(stored) as KeywordMapping[];
-    // Validar que contém todas as keywords esperadas
-    if (
-      parsed.length !== ORIGINAL_KEYWORDS.length ||
-      !ORIGINAL_KEYWORDS.every((kw) => parsed.some((m) => m.original === kw))
-    ) {
-      return getDefaultMappings();
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<StoredKeywordCustomization>;
+      const mappings = Array.isArray(parsed.mappings) ? parsed.mappings : [];
+      const delimiters = parsed.blockDelimiters;
+
+      if (!isValidStoredMappings(mappings)) return defaults;
+
+      return {
+        mappings,
+        blockDelimiters:
+          delimiters &&
+          typeof delimiters.open === "string" &&
+          typeof delimiters.close === "string"
+            ? delimiters
+            : getDefaultBlockDelimiters(),
+      };
     }
-    return parsed;
+
+    const legacyStored = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!legacyStored) return defaults;
+
+    const parsedLegacy = JSON.parse(legacyStored) as KeywordMapping[];
+    if (!isValidStoredMappings(parsedLegacy)) return defaults;
+
+    return {
+      mappings: parsedLegacy,
+      blockDelimiters: getDefaultBlockDelimiters(),
+    };
   } catch {
-    return getDefaultMappings();
+    return defaults;
   }
 }
 
-function persistMappings(mappings: KeywordMapping[]) {
+function persistCustomization(customization: StoredKeywordCustomization) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(customization));
 }
 
 export function KeywordProvider({ children }: { children: ReactNode }) {
   const [mappings, setMappings] =
     useState<KeywordMapping[]>(getDefaultMappings);
+  const [blockDelimiters, setBlockDelimiters] = useState<BlockDelimiters>(
+    getDefaultBlockDelimiters(),
+  );
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
 
@@ -139,17 +204,18 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
 
   // Carregar do localStorage após montar no client
   useEffect(() => {
-    const loadedMappings = loadMappings();
-    setMappings(loadedMappings);
-    persistMappings(loadedMappings);
+    const loadedCustomization = loadCustomization();
+    setMappings(loadedCustomization.mappings);
+    setBlockDelimiters(loadedCustomization.blockDelimiters);
+    persistCustomization(loadedCustomization);
     setIsHydrated(true);
   }, []);
 
   // Persistir no localStorage quando mudar
   useEffect(() => {
     if (!isHydrated) return;
-    persistMappings(mappings);
-  }, [mappings, isHydrated]);
+    persistCustomization({ mappings, blockDelimiters });
+  }, [mappings, blockDelimiters, isHydrated]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -195,6 +261,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
 
   const resetKeywords = useCallback(() => {
     setMappings(getDefaultMappings());
+    setBlockDelimiters(getDefaultBlockDelimiters());
   }, []);
 
   const buildKeywordMap = useCallback((): Record<string, number> => {
@@ -205,6 +272,52 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     return map;
   }, [mappings]);
 
+  const validateBlockDelimiters = useCallback(
+    (value: BlockDelimiters): string | null => {
+      const open = value.open.trim();
+      const close = value.close.trim();
+
+      if (!open && !close) return null;
+      if (!open || !close) {
+        return "Preencha os delimitadores de abertura e fechamento.";
+      }
+
+      if (!WORD_REGEX.test(open) || !WORD_REGEX.test(close)) {
+        return "Use palavras válidas (letras, números e _, sem espaços).";
+      }
+
+      if (open === close) {
+        return "Os delimitadores de abertura e fechamento devem ser diferentes.";
+      }
+
+      if (ORIGINAL_KEYWORDS.includes(open) || ORIGINAL_KEYWORDS.includes(close)) {
+        return "Delimitadores não podem reutilizar palavras reservadas.";
+      }
+
+      return null;
+    },
+    [],
+  );
+
+  const buildLexerConfig = useCallback(() => {
+    const keywordMap = buildKeywordMap();
+    const open = blockDelimiters.open.trim();
+    const close = blockDelimiters.close.trim();
+    const isBlockDelimiterValid = !validateBlockDelimiters({ open, close });
+
+    return {
+      keywordMap,
+      ...(open && close && isBlockDelimiterValid
+        ? {
+            blockDelimiters: {
+              open,
+              close,
+            },
+          }
+        : {}),
+    };
+  }, [buildKeywordMap, blockDelimiters, validateBlockDelimiters]);
+
   return (
     <KeywordContext.Provider
       value={{
@@ -213,6 +326,10 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         replaceKeywords,
         resetKeywords,
         buildKeywordMap,
+        blockDelimiters,
+        setBlockDelimiters,
+        validateBlockDelimiters,
+        buildLexerConfig,
         validateKeyword,
         isOpenKeywordCustomizer,
         setIsOpenKeywordCustomizer,

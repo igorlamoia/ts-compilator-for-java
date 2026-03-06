@@ -17,7 +17,7 @@ export function useLexerAnalyse() {
   const { locale } = useRouter();
   // const [isLoading, setIsLoading] = useState(false);
   const { getEditorCode, showLineIssues, cleanIssues } = useEditor();
-  const { buildKeywordMap } = useKeywords();
+  const { buildLexerConfig } = useKeywords();
   const { currentFilePath, saveCurrentFile } = useContext(EditorContext);
   const [analyseData, setAnalyseData] = useState<TLexerAnalyseData>(
     {} as TLexerAnalyseData,
@@ -30,9 +30,11 @@ export function useLexerAnalyse() {
     setAnalyseData({} as TLexerAnalyseData);
     try {
       cleanIssues();
+      const lexerConfig = buildLexerConfig();
       const { data } = await api.post<TLexerAnalyseData>("/lexer", {
         sourceCode: code,
-        keywordMap: buildKeywordMap(),
+        keywordMap: lexerConfig.keywordMap,
+        blockDelimiters: lexerConfig.blockDelimiters,
         locale: locale,
       });
       const issues = [...data.warnings, ...data.infos];
