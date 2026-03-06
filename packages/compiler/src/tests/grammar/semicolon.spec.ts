@@ -50,4 +50,141 @@ describe("Grammar Optional Semicolons", () => {
 
     expect(() => compileToIr(source)).toThrow(/Unexpected token/);
   });
+
+  it("should allow assignment statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        int a = 1;
+        a = 2
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow function call statement without semicolon at end of line", () => {
+    const source = `
+      void ping() {}
+      int main() {
+        ping()
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow prefix increment statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        int a = 1;
+        ++a
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow postfix increment statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        int a = 1;
+        a++
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow print statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        print("ok")
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow scan statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        int x = 0;
+        scan(int, x)
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow return statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        return 1
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow break statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        while (1) {
+          break
+        }
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should allow continue statement without semicolon at end of line", () => {
+    const source = `
+      int main() {
+        while (1) {
+          continue
+        }
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+});
+
+describe("Grammar For Semicolons", () => {
+  it("should allow for(;;)", () => {
+    const source = `
+      int main() {
+        for (;;) {}
+      }
+    `;
+
+    expect(() => compileToIr(source)).not.toThrow();
+  });
+
+  it("should reject for(;;;)", () => {
+    const source = `
+      int main() {
+        for (;;;){}
+      }
+    `;
+
+    expect(() => compileToIr(source)).toThrow(/Unexpected token/);
+  });
+
+  it("should reject missing for separators in both semicolon modes", () => {
+    const source = `
+      int main() {
+        int i = 0;
+        for (i = 0 i < 10; i++) {}
+      }
+    `;
+
+    expect(() => compileToIr(source)).toThrow(/Unexpected token/);
+    expect(() =>
+      compileToIr(source, {
+        grammar: { semicolonMode: "required" },
+      }),
+    ).toThrow(/Unexpected token/);
+  });
 });
