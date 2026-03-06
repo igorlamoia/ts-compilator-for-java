@@ -12,6 +12,7 @@ import type { TTestCaseResult } from "@/pages/api/submissions/validate";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
+import { useKeywords } from "@/contexts/KeywordContext";
 
 function WorkspaceContent({
   exercise,
@@ -22,6 +23,7 @@ function WorkspaceContent({
 }) {
   const { showToast } = useToast();
   const { getEditorCode } = useContext(EditorContext);
+  const { buildKeywordMap } = useKeywords();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -59,6 +61,7 @@ function WorkspaceContent({
         {
           exerciseId: exercise.id,
           sourceCode: code,
+          keywordMap: buildKeywordMap(),
         },
         { headers: { "x-user-id": userId } },
       );

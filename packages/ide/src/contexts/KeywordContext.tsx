@@ -25,6 +25,9 @@ const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
   return: 30,
   print: 33,
   scan: 35,
+  switch: 50,
+  case: 51,
+  default: 52,
 };
 
 /** Lista ordenada das palavras originais customizáveis (para exibir no modal) */

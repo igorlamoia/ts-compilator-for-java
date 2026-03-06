@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Lexer } from '@ts-compilator-for-java/compiler/src/lexer'
+import type { KeywordMap } from '@ts-compilator-for-java/compiler/src/lexer'
 import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
 import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
 import { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
 import prisma from '@/lib/prisma'
+import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
 
 export type TTestCaseResult = {
     label: string;
@@ -74,7 +76,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const userId = req.headers['x-user-id'] as string
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, sourceCode } = req.body
+    const { exerciseId, sourceCode, keywordMap } = req.body as {
+        exerciseId: string
+        sourceCode: string
+        keywordMap?: KeywordMap
+    }
     const dryRun = req.query.dryRun === 'true'
 
     if (!exerciseId || !sourceCode) {
@@ -87,7 +93,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     // Step 1: Lexical Analysis
     try {
-        const lexer = new Lexer(sourceCode)
+        const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap)
+        const lexer = new Lexer(sourceCode, effectiveKeywordMap)
         const tokens = lexer.scanTokens()
 
         if (lexer.warnings.length > 0) {

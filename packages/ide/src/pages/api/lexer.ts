@@ -6,6 +6,7 @@ import {
   IssueError,
 } from "@ts-compilator-for-java/compiler/issue";
 import { TToken } from "@/@types/token";
+import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
 
 export type TLexerAnalyseData = {
   tokens: TToken[];
@@ -22,7 +23,8 @@ export default function handler(
   try {
     const keywordMap: KeywordMap | undefined = req.body.keywordMap;
     const locale: string | undefined = req.body.locale;
-    const lexer = new Lexer(req.body.sourceCode, keywordMap, locale);
+    const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap);
+    const lexer = new Lexer(req.body.sourceCode, effectiveKeywordMap, locale);
     const tokens = lexer.scanTokens();
     res.status(200).json({
       message:

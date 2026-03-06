@@ -27,6 +27,9 @@ const KEYWORD_EXPLANATIONS: Record<string, string> = {
   return: "Retorna um valor e encerra a função.",
   print: "Comando para saída de dados na tela.",
   scan: "Comando para leitura de dados de entrada.",
+  switch: "Seleciona um bloco com base no valor de uma expressão.",
+  case: "Define um ramo dentro do switch para um valor específico.",
+  default: "Executa quando nenhum case do switch corresponde.",
 };
 
 export function KeywordCustomizer() {
