@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import axios from "axios";
 import { HeroButton } from "@/components/buttons/hero";
@@ -112,7 +111,7 @@ export function CreateClassModal({
           <form
             id="create-class-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 flex-1 overflow-y-auto max-h-[60vh] p-6"
+            className="space-y-4 flex-1 overflow-y-auto max-h-[60vh] p-6 font-sans"
           >
             <FormField
               control={form.control}

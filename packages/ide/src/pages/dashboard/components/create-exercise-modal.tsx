@@ -158,7 +158,7 @@ export function CreateExerciseModal({
           <form
             id="create-exercise-form"
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] p-6"
+            className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] p-6 font-sans"
           >
             <FormField
               control={form.control}
