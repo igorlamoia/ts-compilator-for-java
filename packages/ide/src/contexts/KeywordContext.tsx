@@ -9,7 +9,11 @@ import {
 import { z } from "zod";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
-import type { IDEGrammarConfig } from "@/entities/compiler-config";
+import type {
+  IDEBlockMode,
+  IDECompilerConfigPayload,
+  IDESemicolonMode,
+} from "@/entities/compiler-config";
 
 /** As 13 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
@@ -48,6 +52,8 @@ export type BlockDelimiters = {
 type StoredKeywordCustomization = {
   mappings: KeywordMapping[];
   blockDelimiters: BlockDelimiters;
+  semicolonMode: IDESemicolonMode;
+  blockMode: IDEBlockMode;
 };
 
 type KeywordContextType = {
@@ -68,10 +74,15 @@ type KeywordContextType = {
   /** Valida delimitadores customizados de bloco */
   validateBlockDelimiters: (value: BlockDelimiters) => string | null;
   /** Retorna payload completo de customização para APIs do lexer */
-  buildLexerConfig: () => {
-    keywordMap: Record<string, number>;
-    blockDelimiters?: BlockDelimiters;
-  };
+  buildLexerConfig: () => IDECompilerConfigPayload;
+  /** Modo de ponto e vírgula da gramática */
+  semicolonMode: IDESemicolonMode;
+  /** Define modo de ponto e vírgula da gramática */
+  setSemicolonMode: (value: IDESemicolonMode) => void;
+  /** Modo de bloco da gramática */
+  blockMode: IDEBlockMode;
+  /** Define modo de bloco da gramática */
+  setBlockMode: (value: IDEBlockMode) => void;
   /** Valida se uma palavra customizada é válida */
   validateKeyword: (
     original: string,
@@ -144,10 +155,20 @@ function getDefaultBlockDelimiters(): BlockDelimiters {
   };
 }
 
+function getDefaultSemicolonMode(): IDESemicolonMode {
+  return "optional-eol";
+}
+
+function getDefaultBlockMode(): IDEBlockMode {
+  return "delimited";
+}
+
 function loadCustomization(): StoredKeywordCustomization {
   const defaults: StoredKeywordCustomization = {
     mappings: getDefaultMappings(),
     blockDelimiters: getDefaultBlockDelimiters(),
+    semicolonMode: getDefaultSemicolonMode(),
+    blockMode: getDefaultBlockMode(),
   };
 
   if (typeof window === "undefined") return defaults;
@@ -158,6 +179,15 @@ function loadCustomization(): StoredKeywordCustomization {
       const parsed = JSON.parse(stored) as Partial<StoredKeywordCustomization>;
       const mappings = Array.isArray(parsed.mappings) ? parsed.mappings : [];
       const delimiters = parsed.blockDelimiters;
+      const semicolonMode =
+        parsed.semicolonMode === "required" ||
+        parsed.semicolonMode === "optional-eol"
+          ? parsed.semicolonMode
+          : getDefaultSemicolonMode();
+      const blockMode =
+        parsed.blockMode === "delimited" || parsed.blockMode === "indentation"
+          ? parsed.blockMode
+          : getDefaultBlockMode();
 
       if (!isValidStoredMappings(mappings)) return defaults;
 
@@ -169,6 +199,8 @@ function loadCustomization(): StoredKeywordCustomization {
           typeof delimiters.close === "string"
             ? delimiters
             : getDefaultBlockDelimiters(),
+        semicolonMode,
+        blockMode,
       };
     }
 
@@ -181,6 +213,8 @@ function loadCustomization(): StoredKeywordCustomization {
     return {
       mappings: parsedLegacy,
       blockDelimiters: getDefaultBlockDelimiters(),
+      semicolonMode: getDefaultSemicolonMode(),
+      blockMode: getDefaultBlockMode(),
     };
   } catch {
     return defaults;
@@ -198,6 +232,10 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const [blockDelimiters, setBlockDelimiters] = useState<BlockDelimiters>(
     getDefaultBlockDelimiters(),
   );
+  const [semicolonMode, setSemicolonMode] = useState<IDESemicolonMode>(
+    getDefaultSemicolonMode(),
+  );
+  const [blockMode, setBlockMode] = useState<IDEBlockMode>(getDefaultBlockMode);
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
 
@@ -208,6 +246,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     const loadedCustomization = loadCustomization();
     setMappings(loadedCustomization.mappings);
     setBlockDelimiters(loadedCustomization.blockDelimiters);
+    setSemicolonMode(loadedCustomization.semicolonMode);
+    setBlockMode(loadedCustomization.blockMode);
     persistCustomization(loadedCustomization);
     setIsHydrated(true);
   }, []);
@@ -215,8 +255,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   // Persistir no localStorage quando mudar
   useEffect(() => {
     if (!isHydrated) return;
-    persistCustomization({ mappings, blockDelimiters });
-  }, [mappings, blockDelimiters, isHydrated]);
+    persistCustomization({ mappings, blockDelimiters, semicolonMode, blockMode });
+  }, [mappings, blockDelimiters, semicolonMode, blockMode, isHydrated]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -263,6 +303,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const resetKeywords = useCallback(() => {
     setMappings(getDefaultMappings());
     setBlockDelimiters(getDefaultBlockDelimiters());
+    setSemicolonMode(getDefaultSemicolonMode());
+    setBlockMode(getDefaultBlockMode());
   }, []);
 
   const buildKeywordMap = useCallback((): Record<string, number> => {
@@ -300,15 +342,21 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const buildLexerConfig = useCallback(() => {
+  const buildLexerConfig = useCallback((): IDECompilerConfigPayload => {
     const keywordMap = buildKeywordMap();
     const open = blockDelimiters.open.trim();
     const close = blockDelimiters.close.trim();
     const isBlockDelimiterValid = !validateBlockDelimiters({ open, close });
+    const grammar = {
+      semicolonMode,
+      blockMode,
+    };
 
     return {
       keywordMap,
-      ...(open && close && isBlockDelimiterValid
+      grammar,
+      indentationBlock: blockMode === "indentation",
+      ...(blockMode === "delimited" && open && close && isBlockDelimiterValid
         ? {
             blockDelimiters: {
               open,
@@ -317,7 +365,13 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
           }
         : {}),
     };
-  }, [buildKeywordMap, blockDelimiters, validateBlockDelimiters]);
+  }, [
+    buildKeywordMap,
+    blockDelimiters,
+    validateBlockDelimiters,
+    semicolonMode,
+    blockMode,
+  ]);
 
   return (
     <KeywordContext.Provider
@@ -331,6 +385,10 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         setBlockDelimiters,
         validateBlockDelimiters,
         buildLexerConfig,
+        semicolonMode,
+        setSemicolonMode,
+        blockMode,
+        setBlockMode,
         validateKeyword,
         isOpenKeywordCustomizer,
         setIsOpenKeywordCustomizer,
