@@ -2,6 +2,7 @@ import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 import { emitAssignmentChain } from "./attributeStmt";
+import { consumeStmtTerminator } from "./terminator";
 
 /**
  * Parses a variable declaration statement and emits declaration instructions.
@@ -27,7 +28,7 @@ export function declarationStmt(iterator: TokenIterator): void {
     iterator.consume(TOKENS.SYMBOLS.comma); // consume ","
   }
 
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 }
 
 // import { identListStmt } from "./identListStmt";

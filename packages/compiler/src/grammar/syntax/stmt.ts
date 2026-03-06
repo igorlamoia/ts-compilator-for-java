@@ -12,6 +12,7 @@ import { functionCallExpr } from "./functionCallExpr";
 import { breakStmt } from "./breakStmt";
 import { continueStmt } from "./continueStmt";
 import { switchStmt } from "./switchStmt";
+import { consumeStmtTerminator } from "./terminator";
 
 /**
  * Parses a statement by calling the appropriate function
@@ -92,7 +93,7 @@ function prefixIncrementStmtVariant(iterator: TokenIterator): void {
   }
 
   attributeStmt(iterator);
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 }
 
 function attrbuteStmtVariant(iterator: TokenIterator): void {
@@ -104,18 +105,18 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
   if (iterator.peek().type === TOKENS.SYMBOLS.left_paren) {
     // É uma chamada de função
     functionCallExpr(iterator, identifier.lexeme);
-    iterator.consume(TOKENS.SYMBOLS.semicolon);
+    consumeStmtTerminator(iterator);
   } else if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
     // É um incremento pós-fixado
     iterator.consume(plus, "++");
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
-    iterator.consume(TOKENS.SYMBOLS.semicolon);
+    consumeStmtTerminator(iterator);
   } else {
     // É uma atribuição - precisa processar o '=' e o resto
     iterator.consume(TOKENS.ASSIGNMENTS.equal, "=");
     emitAssignmentChain(iterator, identifier.lexeme);
-    iterator.consume(TOKENS.SYMBOLS.semicolon);
+    consumeStmtTerminator(iterator);
   }
 }

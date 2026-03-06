@@ -2,6 +2,7 @@ import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { argumentListStmt } from "./argumentListStmt";
 import { typeStmt } from "./typeStmt";
+import { consumeStmtTerminator } from "./terminator";
 
 const { RESERVEDS, SYMBOLS, LITERALS } = TOKENS;
 
@@ -26,7 +27,7 @@ export function printStmt(iterator: TokenIterator): void {
   }
 
   iterator.consume(SYMBOLS.right_paren);
-  iterator.consume(SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 }
 
 /**
@@ -43,7 +44,7 @@ export function scanStmt(iterator: TokenIterator): void {
 
   const ident = iterator.consume(LITERALS.identifier);
   iterator.consume(SYMBOLS.right_paren);
-  iterator.consume(SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 
   // Gera instrução de leitura
   iterator.emitter.emit("CALL", "SCAN", null, ident.lexeme);

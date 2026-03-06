@@ -1,5 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
+import { consumeStmtTerminator } from "./terminator";
 
 /**
  * Parses a break statement and emits a JUMP to the current loop's break label.
@@ -8,7 +9,7 @@ import { TOKENS } from "../../token/constants";
  */
 export function breakStmt(iterator: TokenIterator): void {
   const breakToken = iterator.consume(TOKENS.RESERVEDS.break);
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 
   const breakLabel = iterator.getCurrentBreakLabel();
   if (!breakLabel) {
