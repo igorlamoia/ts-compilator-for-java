@@ -14,6 +14,15 @@ interface SwitchContext {
   breakLabel: string;
 }
 
+export type GrammarConfig = {
+  semicolonMode?: "optional-eol" | "required";
+};
+
+type TokenIteratorConfig = {
+  locale?: string;
+  grammar?: GrammarConfig;
+};
+
 export class TokenIterator {
   private tokens: Token[];
   private index: number;
@@ -22,15 +31,22 @@ export class TokenIterator {
   private switchStack: SwitchContext[];
   private breakStack: string[];
   private locale: string | undefined;
+  private grammar: GrammarConfig | undefined;
 
-  constructor(tokens: Token[], locale?: string) {
+  constructor(tokens: Token[], localeOrConfig?: string | TokenIteratorConfig) {
+    const config: TokenIteratorConfig =
+      typeof localeOrConfig === "string"
+        ? { locale: localeOrConfig }
+        : (localeOrConfig ?? {});
+
     this.tokens = tokens;
     this.index = 0;
     this.emitter = new Emitter();
     this.loopStack = [];
     this.switchStack = [];
     this.breakStack = [];
-    this.locale = locale;
+    this.locale = config.locale;
+    this.grammar = config.grammar;
   }
 
   peek(): Token {
@@ -126,5 +142,9 @@ export class TokenIterator {
   ): never {
     const message = translate(this.locale, code, params);
     throw new IssueError(code, message, line, column, params);
+  }
+
+  getSemicolonMode(): "optional-eol" | "required" {
+    return this.grammar?.semicolonMode ?? "optional-eol";
   }
 }
