@@ -4,6 +4,10 @@ import {
   KeywordMapping,
   BlockDelimiters,
 } from "@/contexts/KeywordContext";
+import type {
+  IDEBlockMode,
+  IDESemicolonMode,
+} from "@/entities/compiler-config";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +48,10 @@ export function KeywordCustomizer() {
     setBlockDelimiters,
     validateKeyword,
     validateBlockDelimiters,
+    semicolonMode,
+    setSemicolonMode,
+    blockMode,
+    setBlockMode,
     isOpenKeywordCustomizer: isOpen,
     setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
@@ -51,6 +59,9 @@ export function KeywordCustomizer() {
     useState<KeywordMapping[]>(mappings);
   const [draftBlockDelimiters, setDraftBlockDelimiters] =
     useState<BlockDelimiters>(blockDelimiters);
+  const [draftSemicolonMode, setDraftSemicolonMode] =
+    useState<IDESemicolonMode>(semicolonMode);
+  const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
@@ -60,11 +71,13 @@ export function KeywordCustomizer() {
     if (isOpen) {
       setDraftMappings(mappings);
       setDraftBlockDelimiters(blockDelimiters);
+      setDraftSemicolonMode(semicolonMode);
+      setDraftBlockMode(blockMode);
       setCurrentStep(0);
       setCurrentError(null);
       setDelimiterError(null);
     }
-  }, [isOpen, mappings, blockDelimiters]);
+  }, [isOpen, mappings, blockDelimiters, semicolonMode, blockMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -73,12 +86,30 @@ export function KeywordCustomizer() {
     }
   }, [isOpen, currentStep]);
 
+  useEffect(() => {
+    if (draftBlockMode === "indentation") {
+      setDelimiterError(null);
+      return;
+    }
+    setDelimiterError(validateBlockDelimiters(draftBlockDelimiters));
+  }, [draftBlockMode, draftBlockDelimiters, validateBlockDelimiters]);
+
   const hasChanges = useMemo(
     () =>
       draftMappings.some((m: KeywordMapping) => m.original !== m.custom) ||
       draftBlockDelimiters.open !== blockDelimiters.open ||
-      draftBlockDelimiters.close !== blockDelimiters.close,
-    [draftMappings, draftBlockDelimiters, blockDelimiters],
+      draftBlockDelimiters.close !== blockDelimiters.close ||
+      draftSemicolonMode !== semicolonMode ||
+      draftBlockMode !== blockMode,
+    [
+      draftMappings,
+      draftBlockDelimiters,
+      blockDelimiters,
+      draftSemicolonMode,
+      semicolonMode,
+      draftBlockMode,
+      blockMode,
+    ],
   );
 
   const currentMapping = draftMappings[currentStep];
@@ -108,10 +139,16 @@ export function KeywordCustomizer() {
       custom: mapping.original,
     }));
     const resetBlockDelimiters = { open: "", close: "" };
+    const resetSemicolonMode: IDESemicolonMode = "optional-eol";
+    const resetBlockMode: IDEBlockMode = "delimited";
     setDraftMappings(resetMappings);
     setDraftBlockDelimiters(resetBlockDelimiters);
+    setDraftSemicolonMode(resetSemicolonMode);
+    setDraftBlockMode(resetBlockMode);
     replaceKeywords(resetMappings);
     setBlockDelimiters(resetBlockDelimiters);
+    setSemicolonMode(resetSemicolonMode);
+    setBlockMode(resetBlockMode);
     setCurrentError(null);
     setDelimiterError(null);
   };
@@ -145,12 +182,18 @@ export function KeywordCustomizer() {
         return;
       }
     }
-    const blockError = validateBlockDelimiters(draftBlockDelimiters);
-    if (blockError) {
-      setDelimiterError(blockError);
-      return;
+    if (draftBlockMode === "delimited") {
+      const blockError = validateBlockDelimiters(draftBlockDelimiters);
+      if (blockError) {
+        setDelimiterError(blockError);
+        return;
+      }
+    } else {
+      setDelimiterError(null);
     }
     replaceKeywords(draftMappings);
+    setSemicolonMode(draftSemicolonMode);
+    setBlockMode(draftBlockMode);
     setBlockDelimiters({
       open: draftBlockDelimiters.open.trim(),
       close: draftBlockDelimiters.close.trim(),
@@ -169,7 +212,11 @@ export function KeywordCustomizer() {
       [field]: value,
     };
     setDraftBlockDelimiters(next);
-    setDelimiterError(validateBlockDelimiters(next));
+    if (draftBlockMode === "delimited") {
+      setDelimiterError(validateBlockDelimiters(next));
+      return;
+    }
+    setDelimiterError(null);
   };
 
   const handleSubmitCurrentStep = (event: FormEvent<HTMLFormElement>) => {
@@ -336,6 +383,66 @@ export function KeywordCustomizer() {
 
             <div className="mt-8 flex flex-col gap-3">
               <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Ponto e Vírgula
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftSemicolonMode("optional-eol")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftSemicolonMode === "optional-eol"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Opcional no fim da linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftSemicolonMode("required")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftSemicolonMode === "required"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Obrigatório
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Bloco
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftBlockMode("delimited")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftBlockMode === "delimited"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Delimitadores de bloco
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftBlockMode("indentation")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftBlockMode === "indentation"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Indentação
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
                 Delimitadores de Bloco (Opcional)
               </p>
               <p className="text-sm dark:text-gray-400 text-gray-500">
@@ -348,6 +455,7 @@ export function KeywordCustomizer() {
                   type="text"
                   value={draftBlockDelimiters.open}
                   onChange={(e) => handleDelimiterChange("open", e.target.value)}
+                  disabled={draftBlockMode === "indentation"}
                   placeholder="Abertura (ex.: begin)"
                   spellCheck={false}
                   className={`
@@ -356,6 +464,7 @@ export function KeywordCustomizer() {
                     dark:text-gray-200 text-gray-800
                     border transition-colors outline-none
                     focus:ring-2 focus:ring-cyan-500/50
+                    disabled:opacity-50 disabled:cursor-not-allowed
                     ${delimiterError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
                   `}
                 />
@@ -365,6 +474,7 @@ export function KeywordCustomizer() {
                   onChange={(e) =>
                     handleDelimiterChange("close", e.target.value)
                   }
+                  disabled={draftBlockMode === "indentation"}
                   placeholder="Fechamento (ex.: end)"
                   spellCheck={false}
                   className={`
@@ -373,12 +483,13 @@ export function KeywordCustomizer() {
                     dark:text-gray-200 text-gray-800
                     border transition-colors outline-none
                     focus:ring-2 focus:ring-cyan-500/50
+                    disabled:opacity-50 disabled:cursor-not-allowed
                     ${delimiterError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
                   `}
                 />
               </div>
 
-              {delimiterError && (
+              {draftBlockMode === "delimited" && delimiterError && (
                 <span className="text-xs text-red-500">{delimiterError}</span>
               )}
             </div>
