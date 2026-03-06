@@ -9,6 +9,8 @@ export type LexerConfig = {
   customKeywords?: KeywordMap;
   blockDelimiters?: LexerBlockDelimiters;
   locale?: string;
+  indentationBlock?: boolean;
+  tabWidth?: number;
 };
 
 const WORD_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;

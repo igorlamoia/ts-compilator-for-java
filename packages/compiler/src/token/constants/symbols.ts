@@ -7,6 +7,9 @@ export const SYMBOLS = {
   right_paren: 41, // )
   dot: 42, // .
   colon: 53, // :
+  newline: 54,
+  indent: 55,
+  dedent: 56,
 };
 
 export const SYMBOLS_STYLE = {
