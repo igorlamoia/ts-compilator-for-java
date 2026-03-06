@@ -4,7 +4,7 @@ import { Instruction } from "../../interpreter/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 
 export function compileToIr(source: string): Instruction[] {
-  const lexer = new Lexer(source, undefined, "en");
+  const lexer = new Lexer(source, { locale: "en" });
   const tokens = lexer.scanTokens();
   const iterator = new TokenIterator(tokens, "en");
 

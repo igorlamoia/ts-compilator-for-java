@@ -5,8 +5,20 @@ import { LexerScannerFactory } from "./scanners";
 import { IssueWarning, IssueInfo, IssueError } from "../issue";
 import { TIssueParams } from "../issue/details";
 import { translate } from "../i18n";
+import {
+  LexerConfig,
+  validateBlockDelimiters,
+  type KeywordMap,
+} from "./config";
 
-export type KeywordMap = Record<string, number>;
+function isLexerConfig(value: unknown): value is LexerConfig {
+  if (!value || typeof value !== "object") return false;
+  return (
+    "customKeywords" in value ||
+    "blockDelimiters" in value ||
+    "locale" in value
+  );
+}
 
 export class Lexer {
   source: string;
@@ -20,10 +32,32 @@ export class Lexer {
   keywordMap: KeywordMap;
   locale: string | undefined;
 
-  constructor(source: string, customKeywords?: KeywordMap, locale?: string) {
+  constructor(
+    source: string,
+    configOrKeywords?: LexerConfig | KeywordMap,
+    locale?: string,
+  ) {
     this.source = source;
-    this.keywordMap = customKeywords ?? (TOKENS.RESERVEDS as KeywordMap);
-    this.locale = locale;
+
+    const config = isLexerConfig(configOrKeywords)
+      ? configOrKeywords
+      : {
+          customKeywords: configOrKeywords,
+          locale,
+        };
+
+    this.keywordMap = {
+      ...(TOKENS.RESERVEDS as KeywordMap),
+      ...(config.customKeywords ?? {}),
+    };
+    this.locale = config.locale;
+
+    const delimiters = config.blockDelimiters;
+    if (delimiters) {
+      validateBlockDelimiters(delimiters, TOKENS.RESERVEDS as KeywordMap);
+      this.keywordMap[delimiters.open] = TOKENS.SYMBOLS.left_brace;
+      this.keywordMap[delimiters.close] = TOKENS.SYMBOLS.right_brace;
+    }
   }
 
   public scanTokens(): Token[] {

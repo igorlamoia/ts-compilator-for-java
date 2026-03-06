@@ -7,6 +7,8 @@
 <function\*> -> <type> 'IDENT' '(' ')' <bloco> ;
 <type> -> 'int' | 'float' | 'string' ;
 <bloco> -> '{' <stmtList> '}' ;
+# Nota: o parser consome os tokens left_brace/right_brace.
+# Esses tokens podem vir de '{' e '}' ou de delimitadores por palavra configurados no lexer.
 <stmtList> -> <stmt> <stmtList> | & ;
 <stmt> -> <forStmt>
 | <printStmt>
@@ -59,6 +61,8 @@
 # comando switch
 
 <switchStmt> -> 'switch' '(' <expr> ')' '{' <caseList> <defaultOpt> '}' ;
+# Nota: em runtime, '{' e '}' representam left_brace/right_brace.
+# Portanto, switch também aceita delimitadores de bloco configurados no lexer.
 <caseList> -> <caseClause> <caseList> | & ;
 <caseClause> -> 'case' <caseLiteral> ':' <stmtList> ;
 <caseLiteral> -> 'NUMint' | 'NUMoct' | 'NUMhex' | 'STR' ;

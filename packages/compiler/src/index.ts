@@ -14,7 +14,7 @@ const sourceCode: string = fs.readFileSync(
 );
 
 function executeCode() {
-  const lexer = new Lexer(sourceCode);
+  const lexer = new Lexer(sourceCode, { locale: "en" });
   const tokens = lexer.scanTokens();
   const iterator = new TokenIterator(tokens);
   const instructions = iterator.generateIntermediateCode();
