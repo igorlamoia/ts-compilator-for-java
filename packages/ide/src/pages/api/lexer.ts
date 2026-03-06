@@ -1,40 +1,33 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
-import type { KeywordMap } from "@ts-compilator-for-java/compiler/src/lexer";
-import {
-  IssueDetails,
-  IssueError,
-} from "@ts-compilator-for-java/compiler/issue";
-import { TToken } from "@/@types/token";
-import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
+import type { NextApiRequest, NextApiResponse } from 'next'
+import type { KeywordMap } from '@ts-compilator-for-java/compiler/src/lexer'
+import { IssueError } from '@ts-compilator-for-java/compiler/issue'
+import type { IssueDetails } from '@ts-compilator-for-java/compiler/issue'
+import { runLexerUseCase } from '@/use-cases/compiler/run-lexer'
+import { TToken } from '@/@types/token'
 
 export type TLexerAnalyseData = {
-  tokens: TToken[];
-  warnings: IssueDetails[];
-  infos: IssueDetails[];
-  error: IssueDetails | null;
-  message?: string;
-};
+  tokens: TToken[]
+  warnings: IssueDetails[]
+  infos: IssueDetails[]
+  error: IssueDetails | null
+  message?: string
+}
 
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<TLexerAnalyseData>,
-) {
+export default function handler(req: NextApiRequest, res: NextApiResponse<TLexerAnalyseData>) {
   try {
-    const keywordMap: KeywordMap | undefined = req.body.keywordMap;
-    const locale: string | undefined = req.body.locale;
-    const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap);
-    const lexer = new Lexer(req.body.sourceCode, effectiveKeywordMap, locale);
-    const tokens = lexer.scanTokens();
+    const { sourceCode, keywordMap, locale } = req.body as {
+      sourceCode: string
+      keywordMap?: KeywordMap
+      locale?: string
+    }
+    const { tokens, warnings, infos } = runLexerUseCase({ sourceCode, keywordMap, locale })
     res.status(200).json({
-      message:
-        "Lexical Analysis completed" +
-        (lexer.warnings.length ? " with warnings" : ""),
+      message: 'Lexical Analysis completed' + (warnings.length ? ' with warnings' : ''),
       tokens,
-      warnings: lexer.warnings,
-      infos: lexer.infos,
+      warnings,
+      infos,
       error: null,
-    });
+    })
   } catch (error) {
     if (!(error instanceof IssueError)) {
       return res.status(500).json({
@@ -42,16 +35,9 @@ export default function handler(
         warnings: [],
         infos: [],
         error: null,
-        message: (error as Error).message || "Code not supported",
-      });
+        message: (error as Error).message || 'Code not supported',
+      })
     }
-
-    res.status(400).json({
-      message: error.message,
-      tokens: [],
-      warnings: [],
-      infos: [],
-      error: error.details,
-    });
+    res.status(400).json({ message: error.message, tokens: [], warnings: [], infos: [], error: error.details })
   }
 }
