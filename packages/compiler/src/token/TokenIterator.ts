@@ -10,11 +10,17 @@ interface LoopContext {
   continueLabel: string;
 }
 
+interface SwitchContext {
+  breakLabel: string;
+}
+
 export class TokenIterator {
   private tokens: Token[];
   private index: number;
   public readonly emitter: Emitter;
   private loopStack: LoopContext[];
+  private switchStack: SwitchContext[];
+  private breakStack: string[];
   private locale: string | undefined;
 
   constructor(tokens: Token[], locale?: string) {
@@ -22,6 +28,8 @@ export class TokenIterator {
     this.index = 0;
     this.emitter = new Emitter();
     this.loopStack = [];
+    this.switchStack = [];
+    this.breakStack = [];
     this.locale = locale;
   }
 
@@ -83,15 +91,26 @@ export class TokenIterator {
 
   pushLoopContext(breakLabel: string, continueLabel: string): void {
     this.loopStack.push({ breakLabel, continueLabel });
+    this.breakStack.push(breakLabel);
   }
 
   popLoopContext(): void {
     this.loopStack.pop();
+    this.breakStack.pop();
+  }
+
+  pushSwitchContext(breakLabel: string): void {
+    this.switchStack.push({ breakLabel });
+    this.breakStack.push(breakLabel);
+  }
+
+  popSwitchContext(): void {
+    this.switchStack.pop();
+    this.breakStack.pop();
   }
 
   getCurrentBreakLabel(): string | null {
-    if (this.loopStack.length === 0) return null;
-    return this.loopStack[this.loopStack.length - 1].breakLabel;
+    return this.breakStack[this.breakStack.length - 1] ?? null;
   }
 
   getCurrentContinueLabel(): string | null {

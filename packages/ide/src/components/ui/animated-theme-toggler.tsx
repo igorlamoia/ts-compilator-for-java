@@ -62,13 +62,11 @@ export const AnimatedThemeToggler = ({
   }, [isDark, duration]);
 
   return (
-    <>
     <div className="flex items-center justify-center">
       <Button className="sr-only" checked={darkMode} onClick={toggleTheme} />
       <span ref={buttonRef} className="sr-only">
         Toggle theme
       </span>
     </div>
-    </>
   );
 };

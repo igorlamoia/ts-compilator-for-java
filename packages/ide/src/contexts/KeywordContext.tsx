@@ -25,6 +25,9 @@ const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
   return: 30,
   print: 33,
   scan: 35,
+  switch: 50,
+  case: 51,
+  default: 52,
 };
 
 /** Lista ordenada das palavras originais customizáveis (para exibir no modal) */
@@ -53,6 +56,10 @@ type KeywordContextType = {
     custom: string,
     mappingsToValidate?: KeywordMapping[],
   ) => string | null;
+  /** Controla se o modal de customização de keywords está aberto */
+  isOpenKeywordCustomizer: boolean;
+  /** Define se o modal de customização de keywords está aberto */
+  setIsOpenKeywordCustomizer: (value: boolean) => void;
 };
 
 const KeywordContext = createContext<KeywordContextType>(
@@ -127,6 +134,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     useState<KeywordMapping[]>(getDefaultMappings);
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
+
+  const [isOpenKeywordCustomizer, setIsOpenKeywordCustomizer] = useState(false);
 
   // Carregar do localStorage após montar no client
   useEffect(() => {
@@ -205,6 +214,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         resetKeywords,
         buildKeywordMap,
         validateKeyword,
+        isOpenKeywordCustomizer,
+        setIsOpenKeywordCustomizer,
       }}
     >
       {children}

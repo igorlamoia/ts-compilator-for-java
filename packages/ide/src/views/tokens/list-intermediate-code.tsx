@@ -85,7 +85,7 @@ const Mixed = ({
               }}
             >
               <span
-                className={`absolute -left-[10px] top-6 h-4 w-4 rounded-full shadow-md ${getDotClassName(index)}`}
+                className={`absolute -left-2.5 top-6 h-4 w-4 rounded-full shadow-md ${getDotClassName(index)}`}
               ></span>
 
               <div

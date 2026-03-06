@@ -17,11 +17,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     where: { studentId: userId },
                     orderBy: { submittedAt: 'desc' },
                     take: 1
+                },
+                testCases: {
+                    orderBy: { orderIndex: 'asc' }
                 }
             }
         })
 
         if (!exercise) return res.status(404).json({ error: 'Exercise not found' })
+
+        const isTeacher = exercise.class.teacherId === userId
+
+        if (!isTeacher && exercise.testCases) {
+            exercise.testCases = exercise.testCases.map(tc => ({
+                ...tc,
+                expectedOutput: ''
+            }))
+        }
 
         return res.status(200).json(exercise)
     }

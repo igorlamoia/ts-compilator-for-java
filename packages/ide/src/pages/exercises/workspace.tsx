@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
 import { EditorContext, EditorProvider } from "@/contexts/EditorContext";
@@ -8,6 +7,12 @@ import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
 import { IDEView } from "@/views/ide";
 import { useIntermediatorCode } from "@/hooks/useIntermediatorCode";
 import { TerminalProvider } from "@/contexts/TerminalContext";
+import { TestCaseResults } from "@/components/test-case-results";
+import type { TTestCaseResult } from "@/pages/api/submissions/validate";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { useToast } from "@/contexts/ToastContext";
+import { useKeywords } from "@/contexts/KeywordContext";
 
 function WorkspaceContent({
   exercise,
@@ -16,13 +21,20 @@ function WorkspaceContent({
   exercise: any;
   userId: string;
 }) {
+  const { showToast } = useToast();
   const { getEditorCode } = useContext(EditorContext);
+  const { buildKeywordMap } = useKeywords();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [compileErrors, setCompileErrors] = useState<string[]>([]);
   const [compileWarnings, setCompileWarnings] = useState<string[]>([]);
   const [showCompilePanel, setShowCompilePanel] = useState(false);
+  const [testCaseResults, setTestCaseResults] = useState<
+    TTestCaseResult[] | null
+  >(null);
+  const [testCasesPassed, setTestCasesPassed] = useState(0);
+  const [testCasesTotal, setTestCasesTotal] = useState(0);
 
   const lastSubmission = exercise?.submissions?.[0];
   const isAlreadySubmitted =
@@ -34,6 +46,7 @@ function WorkspaceContent({
     setCompileErrors([]);
     setCompileWarnings([]);
     setShowCompilePanel(false);
+    setTestCaseResults(null);
 
     const code = getEditorCode();
     if (!code || code.trim().length < 5) {
@@ -43,15 +56,15 @@ function WorkspaceContent({
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/submissions/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": userId },
-        body: JSON.stringify({
+      const { data } = await api.post(
+        "/submissions/validate",
+        {
           exerciseId: exercise.id,
           sourceCode: code,
-        }),
-      });
-      const data = await res.json();
+          keywordMap: buildKeywordMap(),
+        },
+        { headers: { "x-user-id": userId } },
+      );
 
       if (!data.valid) {
         // Compilation failed
@@ -65,12 +78,20 @@ function WorkspaceContent({
       // Compilation succeeded, submission created
       if (data.warnings?.length > 0) {
         setCompileWarnings(data.warnings);
+      }
+      if (data.testCaseResults) {
+        setTestCaseResults(data.testCaseResults);
+        setTestCasesPassed(data.testCasesPassed ?? 0);
+        setTestCasesTotal(data.testCasesTotal ?? 0);
+        setShowCompilePanel(true);
+      } else if (data.warnings?.length > 0) {
         setShowCompilePanel(true);
       }
       setSubmitted(true);
       setSubmitting(false);
     } catch {
       setError("Erro de conexão");
+      showToast({ type: "error", message: "Erro de conexão ao submeter." });
       setSubmitting(false);
     }
   };
@@ -135,7 +156,7 @@ function WorkspaceContent({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-5 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-[#101f22] shadow-[0_0_15px_rgba(13,204,242,0.3)] hover:shadow-[0_0_25px_rgba(13,204,242,0.5)] hover:opacity-90 transition-all disabled:opacity-50"
+              className="px-5 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 shadow-[0_0_15px_rgba(13,204,242,0.3)] hover:shadow-[0_0_25px_rgba(13,204,242,0.5)] hover:opacity-90 transition-all disabled:opacity-50"
             >
               {submitting ? "Compilando..." : "Compilar & Submeter"}
             </button>
@@ -186,6 +207,15 @@ function WorkspaceContent({
                     {warn}
                   </div>
                 ))}
+              </div>
+            )}
+            {testCaseResults && testCaseResults.length > 0 && (
+              <div className="mt-3">
+                <TestCaseResults
+                  results={testCaseResults}
+                  passed={testCasesPassed}
+                  total={testCasesTotal}
+                />
               </div>
             )}
           </div>
@@ -257,39 +287,28 @@ export default function ExerciseWorkspace({
 }: {
   exerciseId: string;
 }) {
-  const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
+  const { userId } = useAuth();
+  const { showToast } = useToast();
   const [exercise, setExercise] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const id = localStorage.getItem("lms_user_id");
-    if (!id) {
-      router.push("/login");
-      return;
-    }
-    setUserId(id);
-  }, []);
-
-  useEffect(() => {
     if (!userId || !exerciseId) return;
-    fetch(`/api/exercises/${exerciseId}`, {
-      headers: { "x-user-id": userId },
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json();
+    api
+      .get(`/exercises/${exerciseId}`, {
+        headers: { "x-user-id": userId },
       })
-      .then((data) => {
+      .then(({ data }) => {
         setExercise(data);
         setLoading(false);
       })
       .catch(() => {
         setError("Exercício não encontrado");
+        showToast({ type: "error", message: "Exercício não encontrado." });
         setLoading(false);
       });
-  }, [userId, exerciseId]);
+  }, [exerciseId, showToast, userId]);
 
   if (loading) {
     return (

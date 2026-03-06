@@ -76,6 +76,7 @@ model Exercise {
   gradeWeight    Float
   status         ExerciseStatus @default(DRAFT)
   submissions    Submission[]
+  testCases      TestCase[]
 }
 
 enum ExerciseStatus {
@@ -94,6 +95,16 @@ model Submission {
   score           Float?
   teacherFeedback String?
   submittedAt     DateTime         @default(now())
+}
+
+model TestCase {
+  id             String   @id @default(uuid())
+  exerciseId     String
+  exercise       Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  label          String   @default("")
+  input          String
+  expectedOutput String
+  orderIndex     Int      @default(0)
 }
 
 enum SubmissionStatus {

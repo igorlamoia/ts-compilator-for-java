@@ -14,6 +14,7 @@
 | <whileStmt>
 | <atrib> ';'
 | <ifStmt>
+| <switchStmt>
 | <bloco>
 | 'break'
 | 'continue'
@@ -54,6 +55,14 @@
 
 <ifStmt> -> 'if' '(' <expr> ')' <stmt> <elsePart> ;
 <elsePart> -> 'else' <stmt> | & ;
+
+# comando switch
+
+<switchStmt> -> 'switch' '(' <expr> ')' '{' <caseList> <defaultOpt> '}' ;
+<caseList> -> <caseClause> <caseList> | & ;
+<caseClause> -> 'case' <caseLiteral> ':' <stmtList> ;
+<caseLiteral> -> 'NUMint' | 'NUMoct' | 'NUMhex' | 'STR' ;
+<defaultOpt> -> 'default' ':' <stmtList> | & ;
 
 #------------------------------
 

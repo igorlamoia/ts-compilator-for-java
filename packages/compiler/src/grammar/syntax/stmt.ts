@@ -11,12 +11,13 @@ import { returnStmt } from "./returnStmt";
 import { functionCallExpr } from "./functionCallExpr";
 import { breakStmt } from "./breakStmt";
 import { continueStmt } from "./continueStmt";
+import { switchStmt } from "./switchStmt";
 
 /**
  * Parses a statement by calling the appropriate function
  * based on the current token.
  *
- * @derivation `<stmt> -> <forStmt> | <printStmt> | <scanStmt> | <whileStmt> | <atrib> ';' | <ifStmt> | <bloco> | <declaration> | 'break' | 'continue' | ';'`
+ * @derivation `<stmt> -> <forStmt> | <printStmt> | <scanStmt> | <whileStmt> | <atrib> ';' | <ifStmt> | <switchStmt> | <bloco> | <declaration> | 'break' | 'continue' | ';'`
  */
 export function stmt(iterator: TokenIterator): void {
   const token = iterator.peek();
@@ -29,6 +30,7 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.while]: whileStmt,
     [TOKENS.LITERALS.identifier]: attrbuteStmtVariant,
     [RESERVEDS.if]: ifStmt,
+    [RESERVEDS.switch]: switchStmt,
     [TOKENS.SYMBOLS.left_brace]: blockStmt,
     [RESERVEDS.int]: declarationStmt,
     [RESERVEDS.float]: declarationStmt,
@@ -50,6 +52,24 @@ export function stmt(iterator: TokenIterator): void {
   if (ignoreStmt) {
     ignoreStmt(token.type);
     return;
+  }
+
+  if (token.type === RESERVEDS.case) {
+    iterator.throwError(
+      "grammar.case_outside_switch",
+      token.line,
+      token.column,
+      { lexeme: token.lexeme },
+    );
+  }
+
+  if (token.type === RESERVEDS.default) {
+    iterator.throwError(
+      "grammar.default_outside_switch",
+      token.line,
+      token.column,
+      { lexeme: token.lexeme },
+    );
   }
 
   iterator.throwError(

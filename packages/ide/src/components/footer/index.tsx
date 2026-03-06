@@ -1,13 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import {
-  FileCodeIcon,
-  LanguagesIcon,
-  MonitorIcon,
-  TerminalIcon,
-  SettingsIcon,
-} from "lucide-react";
+import { FileCodeIcon, LanguagesIcon, MonitorIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -20,7 +14,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Dock, DockIcon } from "@/components/ui/dock";
 import { SUPPORTED_LOCALES, t } from "@/i18n";
-import { useTerminalContext } from "@/contexts/TerminalContext";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -59,17 +52,9 @@ const DATA = {
   },
 };
 
-interface FooterProps {
-  toggleKeywordCustomizer: () => void;
-}
-
-export function Footer({ toggleKeywordCustomizer }: FooterProps) {
+export function Footer() {
   const router = useRouter();
   const { locale, pathname, query } = router;
-
-  const { setIsTerminalOpen } = useTerminalContext();
-
-  const toggleTerminal = () => setIsTerminalOpen((isOpen) => !isOpen);
 
   return (
     <>
@@ -103,44 +88,6 @@ export function Footer({ toggleKeywordCustomizer }: FooterProps) {
               </DockIcon>
             ))}
             <Separator orientation="vertical" className="h-full" />
-            <DockIcon>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleKeywordCustomizer}
-                    aria-label="Settings"
-                    className={cn(
-                      buttonVariants({ variant: "ghost", size: "icon" }),
-                      "size-12 rounded-full cursor-pointer",
-                    )}
-                  >
-                    <SettingsIcon className="size-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t(locale, "footer.settings")}</p>
-                </TooltipContent>
-              </Tooltip>
-            </DockIcon>
-            <DockIcon>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleTerminal}
-                    aria-label="Terminal"
-                    className={cn(
-                      buttonVariants({ variant: "ghost", size: "icon" }),
-                      "size-12 rounded-full cursor-pointer",
-                    )}
-                  >
-                    <TerminalIcon className="size-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t(locale, "footer.terminal")}</p>
-                </TooltipContent>
-              </Tooltip>
-            </DockIcon>
             <DockIcon>
               <Tooltip>
                 <TooltipTrigger asChild>

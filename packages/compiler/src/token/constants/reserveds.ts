@@ -12,6 +12,9 @@ export const RESERVEDS = {
   return: 30,
   print: 33,
   scan: 35,
+  switch: 50,
+  case: 51,
+  default: 52,
 };
 
 export const RESERVEDS_STYLE = {

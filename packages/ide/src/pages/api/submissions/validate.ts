@@ -1,14 +1,73 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Lexer } from '@ts-compilator-for-java/compiler/src/lexer'
+import type { KeywordMap } from '@ts-compilator-for-java/compiler/src/lexer'
 import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
+import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
+import { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
 import prisma from '@/lib/prisma'
+import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
+
+export type TTestCaseResult = {
+    label: string;
+    input: string;
+    expectedOutput: string;
+    actualOutput: string;
+    passed: boolean;
+}
 
 export type TValidationResult = {
     valid: boolean;
     errors: string[];
     warnings: string[];
     submissionId?: string;
+    testCaseResults?: TTestCaseResult[];
+    testCasesPassed?: number;
+    testCasesTotal?: number;
+}
+
+async function runTestCase(
+    instructions: Instruction[],
+    input: string,
+    timeoutMs = 5000
+): Promise<{ output: string; error: string | null }> {
+    const inputLines = input.split('\n')
+    let inputIndex = 0
+    let output = ''
+
+    const interpreter = new Interpreter(
+        instructions,
+        {
+            stdout: (msg: string) => {
+                output += msg
+            },
+            stdin: async () => {
+                if (inputIndex < inputLines.length) {
+                    return inputLines[inputIndex++]
+                }
+                return ''
+            },
+        }
+    )
+
+    try {
+        await Promise.race([
+            interpreter.execute(),
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs)
+            ),
+        ])
+        return { output, error: null }
+    } catch (err) {
+        if (err instanceof Error && err.message === 'TIMEOUT') {
+            return { output, error: 'Tempo limite excedido (5s)' }
+        }
+        return { output, error: (err as Error).message }
+    }
+}
+
+function normalizeOutput(s: string): string {
+    return s.replace(/\r\n/g, '\n').trimEnd()
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<TValidationResult>) {
@@ -17,17 +76,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const userId = req.headers['x-user-id'] as string
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, sourceCode } = req.body
+    const { exerciseId, sourceCode, keywordMap } = req.body as {
+        exerciseId: string
+        sourceCode: string
+        keywordMap?: KeywordMap
+    }
+    const dryRun = req.query.dryRun === 'true'
+
     if (!exerciseId || !sourceCode) {
         return res.status(400).json({ valid: false, errors: ['Código e exercício são obrigatórios'], warnings: [] })
     }
 
     const errors: string[] = []
     const warnings: string[] = []
+    let instructions: Instruction[] | null = null
 
     // Step 1: Lexical Analysis
     try {
-        const lexer = new Lexer(sourceCode)
+        const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap)
+        const lexer = new Lexer(sourceCode, effectiveKeywordMap)
         const tokens = lexer.scanTokens()
 
         if (lexer.warnings.length > 0) {
@@ -37,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         // Step 2: Intermediate Code Generation (Syntax + Semantic)
         try {
             const iterator = new TokenIterator(tokens)
-            iterator.generateIntermediateCode()
+            instructions = iterator.generateIntermediateCode()
         } catch (error) {
             if (error instanceof IssueError) {
                 errors.push(`Erro de compilação (linha ${error.details.line}): ${error.details.message}`)
@@ -58,7 +125,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         return res.status(200).json({ valid: false, errors, warnings })
     }
 
-    // Step 3: Code compiles! Create the submission
+    // Step 3: Run test cases if they exist
+    let testCaseResults: TTestCaseResult[] | undefined
+    let testCasesPassed: number | undefined
+    let testCasesTotal: number | undefined
+
+    if (instructions) {
+        const exercise = await prisma.exercise.findUnique({
+            where: { id: exerciseId },
+            include: { testCases: { orderBy: { orderIndex: 'asc' } } }
+        })
+
+        if (exercise?.testCases && exercise.testCases.length > 0) {
+            testCaseResults = []
+            testCasesTotal = exercise.testCases.length
+            testCasesPassed = 0
+
+            for (const tc of exercise.testCases) {
+                const { output, error } = await runTestCase(instructions, tc.input)
+
+                const actualOutput = error
+                    ? `[Erro] ${error}`
+                    : normalizeOutput(output)
+                const expectedNormalized = normalizeOutput(tc.expectedOutput)
+                const passed = !error && actualOutput === expectedNormalized
+
+                if (passed) testCasesPassed++
+
+                testCaseResults.push({
+                    label: tc.label || `Caso ${tc.orderIndex + 1}`,
+                    input: tc.input,
+                    expectedOutput: tc.expectedOutput,
+                    actualOutput: error ? `[Erro] ${error}` : output,
+                    passed,
+                })
+            }
+        }
+    }
+
+    // Step 4: Create the submission (unless dryRun)
+    if (dryRun) {
+        return res.status(200).json({
+            valid: true,
+            errors: [],
+            warnings,
+            testCaseResults,
+            testCasesPassed,
+            testCasesTotal,
+        })
+    }
+
     try {
         const submission = await prisma.submission.create({
             data: {
@@ -73,7 +189,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             valid: true,
             errors: [],
             warnings,
-            submissionId: submission.id
+            submissionId: submission.id,
+            testCaseResults,
+            testCasesPassed,
+            testCasesTotal,
         })
     } catch (error) {
         return res.status(500).json({
