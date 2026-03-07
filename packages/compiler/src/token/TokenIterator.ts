@@ -16,6 +16,7 @@ interface SwitchContext {
 
 export type GrammarConfig = {
   semicolonMode?: "optional-eol" | "required";
+  blockMode?: "delimited" | "indentation";
 };
 
 type TokenIteratorConfig = {
@@ -146,5 +147,9 @@ export class TokenIterator {
 
   getSemicolonMode(): "optional-eol" | "required" {
     return this.grammar?.semicolonMode ?? "optional-eol";
+  }
+
+  getBlockMode(): "delimited" | "indentation" {
+    return this.grammar?.blockMode ?? "delimited";
   }
 }

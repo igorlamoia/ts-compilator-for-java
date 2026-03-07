@@ -14,6 +14,15 @@ const lexer = {
     "Número de coma flotante mal escrito, se añadió 0 al final",
   unexpected_pipe: "Carácter inesperado '|'",
   unexpected_ampersand: "Carácter inesperado '&'",
+  indentation_disallow_block_delimiters:
+    "La configuración de delimitadores de bloque no puede usarse en el modo por indentación",
+  indentation_disallow_braces:
+    "Las llaves no están permitidas cuando el modo por indentación está habilitado",
+  inconsistent_indentation:
+    "La indentación no puede mezclar tabulaciones y espacios en el mismo prefijo de línea",
+  invalid_dedent: "Destino de dedent inválido",
+  unexpected_indent: "Aumento inesperado de indentación",
+  invalid_tab_width: "tabWidth debe ser mayor que 0",
 };
 
 export default lexer;

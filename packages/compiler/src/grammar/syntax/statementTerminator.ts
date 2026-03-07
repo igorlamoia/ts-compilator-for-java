@@ -30,6 +30,13 @@ export function consumeStmtTerminator(
     return;
   }
 
+  if (
+    next.type === TOKENS.SYMBOLS.dedent ||
+    next.type === TOKENS.SYMBOLS.newline
+  ) {
+    return;
+  }
+
   const previous = iterator.peekAt(-1);
   if (previous && next.line > previous.line) {
     return;

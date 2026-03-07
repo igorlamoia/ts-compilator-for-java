@@ -23,6 +23,7 @@ import { consumeStmtTerminator } from "./statementTerminator";
 export function stmt(iterator: TokenIterator): void {
   const token = iterator.peek();
   const { RESERVEDS } = TOKENS;
+  const blockMode = iterator.getBlockMode();
 
   const stmtsFactory = {
     [RESERVEDS.for]: forStmt,
@@ -42,11 +43,17 @@ export function stmt(iterator: TokenIterator): void {
     [TOKENS.ARITHMETICS.plus]: prefixIncrementStmtVariant,
   };
 
+  // In indentation mode, a colon also starts a block
+  if (blockMode === "indentation" && token.type === TOKENS.SYMBOLS.colon) {
+    return blockStmt(iterator);
+  }
+
   const goToStmt = stmtsFactory[token.type];
   if (goToStmt) return goToStmt(iterator);
 
   const ignoreStmts = {
     [TOKENS.SYMBOLS.semicolon]: iterator.consume.bind(iterator),
+    [TOKENS.SYMBOLS.newline]: iterator.consume.bind(iterator),
   };
 
   const ignoreStmt = ignoreStmts[token.type];

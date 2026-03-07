@@ -1,11 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
-  IssueDetails,
   IssueError,
 } from "@ts-compilator-for-java/compiler/issue";
+import type { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { TokenIterator } from "@ts-compilator-for-java/compiler/token/TokenIterator";
-import { Token } from "@ts-compilator-for-java/compiler/token";
-import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import type { Token } from "@ts-compilator-for-java/compiler/token";
+import type { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 export type TIntermediateCodeData = {
   instructions: Instruction[];
@@ -20,8 +21,15 @@ export default function handler(
   res: NextApiResponse<TIntermediateCodeData>,
 ) {
   try {
-    const { tokens, locale } = req.body as { tokens: Token[]; locale?: string };
-    const iterator = new TokenIterator(tokens, locale);
+    const { tokens, locale, grammar } = req.body as {
+      tokens: Token[];
+      locale?: string;
+      grammar?: IDEGrammarConfig;
+    };
+    const iterator = new TokenIterator(tokens, {
+      locale,
+      grammar,
+    });
     const instructions = iterator.generateIntermediateCode();
     res.status(200).json({
       instructions,

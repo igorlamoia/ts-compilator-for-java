@@ -59,4 +59,13 @@ describe("Lexer Block Delimiters", () => {
     expect(leftBraceCount).toBe(2);
     expect(rightBraceCount).toBe(2);
   });
+
+  it("should reject configured delimiters in indentation mode", () => {
+    expect(() =>
+      new Lexer("int main() begin print(\"ok\"); end", {
+        indentationBlock: true,
+        blockDelimiters: { open: "begin", close: "end" },
+      }).scanTokens(),
+    ).toThrow();
+  });
 });

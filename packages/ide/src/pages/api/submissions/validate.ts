@@ -7,9 +7,10 @@ import type {
 import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
 import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
-import { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
+import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
 import prisma from '@/lib/prisma'
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
+import { normalizeCompilerConfig } from '../../../lib/compiler-config'
 
 export type TTestCaseResult = {
     label: string;
@@ -79,11 +80,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const userId = req.headers['x-user-id'] as string
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, sourceCode, keywordMap, blockDelimiters } = req.body as {
+    const { exerciseId, sourceCode, keywordMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
         exerciseId: string
         sourceCode: string
         keywordMap?: KeywordMap
         blockDelimiters?: LexerBlockDelimiters
+        indentationBlock?: boolean
+        grammar?: { semicolonMode?: 'optional-eol' | 'required'; blockMode?: 'delimited' | 'indentation' }
+        locale?: string
     }
     const dryRun = req.query.dryRun === 'true'
 
@@ -97,10 +101,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     // Step 1: Lexical Analysis
     try {
-        const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap)
+        const normalized = normalizeCompilerConfig({
+            keywordMap,
+            blockDelimiters,
+            indentationBlock,
+            grammar,
+        })
+        const effectiveKeywordMap = buildEffectiveKeywordMap(normalized.keywordMap)
         const lexer = new Lexer(sourceCode, {
             customKeywords: effectiveKeywordMap,
-            blockDelimiters,
+            blockDelimiters: normalized.blockDelimiters,
+            indentationBlock: normalized.indentationBlock,
         })
         const tokens = lexer.scanTokens()
 
@@ -110,7 +121,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
         // Step 2: Intermediate Code Generation (Syntax + Semantic)
         try {
-            const iterator = new TokenIterator(tokens)
+            const iterator = new TokenIterator(tokens, {
+                locale,
+                grammar: normalized.grammar,
+            })
             instructions = iterator.generateIntermediateCode()
         } catch (error) {
             if (error instanceof IssueError) {

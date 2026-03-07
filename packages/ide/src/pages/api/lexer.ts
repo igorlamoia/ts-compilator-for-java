@@ -10,6 +10,7 @@ import {
 } from "@ts-compilator-for-java/compiler/issue";
 import { TToken } from "@/@types/token";
 import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
+import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 export type TLexerAnalyseData = {
   tokens: TToken[];
@@ -28,11 +29,13 @@ export default function handler(
     const blockDelimiters: LexerBlockDelimiters | undefined =
       req.body.blockDelimiters;
     const locale: string | undefined = req.body.locale;
+    const indentationBlock: boolean | undefined = req.body.indentationBlock;
     const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap);
     const lexer = new Lexer(req.body.sourceCode, {
       customKeywords: effectiveKeywordMap,
       blockDelimiters,
       locale,
+      indentationBlock,
     });
     const tokens = lexer.scanTokens();
     res.status(200).json({
