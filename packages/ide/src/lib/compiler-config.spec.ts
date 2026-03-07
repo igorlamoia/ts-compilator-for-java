@@ -23,4 +23,12 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.indentationBlock).toBe(true);
     expect(normalized.blockDelimiters).toBeUndefined();
   });
+
+  it("preserves grammar from UI payload when present", () => {
+    const normalized = normalizeCompilerConfig({
+      grammar: { semicolonMode: "required", blockMode: "delimited" },
+    });
+
+    expect(normalized.grammar.semicolonMode).toBe("required");
+  });
 });

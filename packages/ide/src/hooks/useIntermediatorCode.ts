@@ -11,10 +11,12 @@ import { EditorContext } from "@/contexts/EditorContext";
 import { TToken } from "@/@types/token";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
+import { useKeywords } from "@/contexts/KeywordContext";
 
 export function useIntermediatorCode() {
   const { showToast } = useToast();
   const { locale } = useRouter();
+  const { buildLexerConfig } = useKeywords();
   // const [isLoading, setIsLoading] = useState(false);
   const { showLineIssues, cleanIssues } = useEditor();
   const { currentFilePath, saveCurrentFile } = useContext(EditorContext);
@@ -26,9 +28,11 @@ export function useIntermediatorCode() {
     setIntermediateCode({} as TIntermediateCodeData);
     try {
       cleanIssues();
+      const lexerConfig = buildLexerConfig();
       const { data } = await api.post<TIntermediateCodeData>("/intermediator", {
         tokens: tokens,
         locale: locale,
+        grammar: lexerConfig.grammar,
       });
       const issues = [...data.warnings, ...data.infos];
       setIntermediateCode(data);
