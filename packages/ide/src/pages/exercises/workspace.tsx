@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
+import { useRouter } from "next/router";
 
 function WorkspaceContent({
   exercise,
@@ -22,6 +23,7 @@ function WorkspaceContent({
   userId: string;
 }) {
   const { showToast } = useToast();
+  const { locale } = useRouter();
   const { getEditorCode } = useContext(EditorContext);
   const { buildLexerConfig } = useKeywords();
   const [submitting, setSubmitting] = useState(false);
@@ -64,6 +66,9 @@ function WorkspaceContent({
           sourceCode: code,
           keywordMap: lexerConfig.keywordMap,
           blockDelimiters: lexerConfig.blockDelimiters,
+          indentationBlock: lexerConfig.indentationBlock,
+          grammar: lexerConfig.grammar,
+          locale,
         },
         { headers: { "x-user-id": userId } },
       );
