@@ -7,7 +7,7 @@ import type {
 import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
 import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
-import { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
+import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
 import prisma from '@/lib/prisma'
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
 import { normalizeCompilerConfig } from '../../../lib/compiler-config'

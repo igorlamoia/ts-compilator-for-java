@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
-  IssueDetails,
   IssueError,
 } from "@ts-compilator-for-java/compiler/issue";
+import type { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { TokenIterator } from "@ts-compilator-for-java/compiler/token/TokenIterator";
-import { Token } from "@ts-compilator-for-java/compiler/token";
-import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import type { Token } from "@ts-compilator-for-java/compiler/token";
+import type { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 export type TIntermediateCodeData = {
