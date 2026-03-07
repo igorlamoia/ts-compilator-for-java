@@ -21,8 +21,15 @@ export default function handler(
   res: NextApiResponse<TIntermediateCodeData>,
 ) {
   try {
-    const { tokens, locale } = req.body as { tokens: Token[]; locale?: string };
-    const iterator = new TokenIterator(tokens, locale);
+    const { tokens, locale, grammar } = req.body as {
+      tokens: Token[];
+      locale?: string;
+      grammar?: IDEGrammarConfig;
+    };
+    const iterator = new TokenIterator(tokens, {
+      locale,
+      grammar,
+    });
     const instructions = iterator.generateIntermediateCode();
     res.status(200).json({
       instructions,
