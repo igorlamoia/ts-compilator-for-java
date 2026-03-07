@@ -12,3 +12,10 @@ export type IDECompilerConfigPayload = {
   indentationBlock: boolean;
   grammar: IDEGrammarConfig;
 };
+
+export type IDEPartialCompilerConfigPayload = {
+  keywordMap?: Record<string, number>;
+  blockDelimiters?: { open: string; close: string };
+  indentationBlock?: boolean;
+  grammar?: Partial<IDEGrammarConfig>;
+};
