@@ -10,17 +10,29 @@ type CaseEntry = {
 
 /**
  * Parses a switch statement with C-style fallthrough semantics.
+ * Handles both brace-delimited and indentation-based blocks.
  *
- * @derivation `<switchStmt> -> 'switch' '(' <expr> ')' '{' { 'case' <caseLiteral> ':' <stmtList> } [ 'default' ':' <stmtList> ] '}'`
+ * @derivation `<switchStmt> -> 'switch' '(' <expr> ')' ('{' { 'case' <caseLiteral> ':' <stmtList> } [ 'default' ':' <stmtList> ] '}' | ':' NEWLINE INDENT { 'case' <caseLiteral> ':' <stmtList> } [ 'default' ':' <stmtList> ] DEDENT)`
  */
 export function switchStmt(iterator: TokenIterator): void {
   const { RESERVEDS, SYMBOLS, LITERALS } = TOKENS;
+  const blockMode = iterator.getBlockMode();
 
   iterator.consume(RESERVEDS.switch);
   iterator.consume(SYMBOLS.left_paren);
   const switchValue = exprStmt(iterator);
   iterator.consume(SYMBOLS.right_paren);
-  iterator.consume(SYMBOLS.left_brace);
+
+  // Handle block start based on mode
+  if (blockMode === "indentation") {
+    iterator.consume(SYMBOLS.colon);
+    if (iterator.peek().type === SYMBOLS.newline) {
+      iterator.consume(SYMBOLS.newline);
+    }
+    iterator.consume(SYMBOLS.indent);
+  } else {
+    iterator.consume(SYMBOLS.left_brace);
+  }
 
   const dispatchLabel = iterator.emitter.newLabel();
   const switchEndLabel = iterator.emitter.newLabel();
@@ -34,7 +46,13 @@ export function switchStmt(iterator: TokenIterator): void {
   iterator.emitter.emit("JUMP", dispatchLabel, null, null);
   iterator.pushSwitchContext(switchEndLabel);
 
-  while (!iterator.match(SYMBOLS.right_brace)) {
+  // Check for block end based on mode
+  const isBlockEnd = () =>
+    blockMode === "indentation"
+      ? iterator.match(SYMBOLS.dedent)
+      : iterator.match(SYMBOLS.right_brace);
+
+  while (!isBlockEnd()) {
     if (iterator.match(RESERVEDS.case)) {
       iterator.consume(RESERVEDS.case);
       const token = iterator.peek();
@@ -69,11 +87,32 @@ export function switchStmt(iterator: TokenIterator): void {
       seenCaseLiterals.add(normalizedLiteral);
 
       iterator.consume(SYMBOLS.colon);
-      const caseLabel = iterator.emitter.newLabel();
-      cases.push({ literal: literalToken.lexeme, label: caseLabel });
-      iterator.emitter.emit("LABEL", caseLabel, null, null);
 
-      parseSwitchSectionBody(iterator);
+      // In indentation mode, handle the indented block
+      if (blockMode === "indentation") {
+        if (iterator.peek().type === SYMBOLS.newline) {
+          iterator.consume(SYMBOLS.newline);
+        }
+        // Check if there's an INDENT (case has a body)
+        if (iterator.peek().type === SYMBOLS.indent) {
+          iterator.consume(SYMBOLS.indent);
+          const caseLabel = iterator.emitter.newLabel();
+          cases.push({ literal: literalToken.lexeme, label: caseLabel });
+          iterator.emitter.emit("LABEL", caseLabel, null, null);
+          parseSwitchSectionBody(iterator);
+          iterator.consume(SYMBOLS.dedent);
+        } else {
+          // Empty case (fallthrough), just add the label
+          const caseLabel = iterator.emitter.newLabel();
+          cases.push({ literal: literalToken.lexeme, label: caseLabel });
+          iterator.emitter.emit("LABEL", caseLabel, null, null);
+        }
+      } else {
+        const caseLabel = iterator.emitter.newLabel();
+        cases.push({ literal: literalToken.lexeme, label: caseLabel });
+        iterator.emitter.emit("LABEL", caseLabel, null, null);
+        parseSwitchSectionBody(iterator);
+      }
       continue;
     }
 
@@ -91,30 +130,60 @@ export function switchStmt(iterator: TokenIterator): void {
       }
 
       iterator.consume(SYMBOLS.colon);
-      defaultLabel = iterator.emitter.newLabel();
-      iterator.emitter.emit("LABEL", defaultLabel, null, null);
 
-      parseSwitchSectionBody(iterator);
+      // In indentation mode, handle the indented block
+      if (blockMode === "indentation") {
+        if (iterator.peek().type === SYMBOLS.newline) {
+          iterator.consume(SYMBOLS.newline);
+        }
+        // Check if there's an INDENT (default has a body)
+        if (iterator.peek().type === SYMBOLS.indent) {
+          iterator.consume(SYMBOLS.indent);
+          defaultLabel = iterator.emitter.newLabel();
+          iterator.emitter.emit("LABEL", defaultLabel, null, null);
+          parseSwitchSectionBody(iterator);
+          iterator.consume(SYMBOLS.dedent);
+        } else {
+          // Empty default (shouldn't happen, but handle it)
+          defaultLabel = iterator.emitter.newLabel();
+          iterator.emitter.emit("LABEL", defaultLabel, null, null);
+        }
+      } else {
+        defaultLabel = iterator.emitter.newLabel();
+        iterator.emitter.emit("LABEL", defaultLabel, null, null);
+        parseSwitchSectionBody(iterator);
+      }
       continue;
     }
 
     const token = iterator.peek();
-    iterator.throwError(
-      "grammar.unexpected_token",
-      token.line,
-      token.column,
-      { lexeme: token.lexeme, line: token.line, column: token.column },
-    );
+    iterator.throwError("grammar.unexpected_token", token.line, token.column, {
+      lexeme: token.lexeme,
+      line: token.line,
+      column: token.column,
+    });
   }
 
-  iterator.consume(SYMBOLS.right_brace);
+  // Handle block end based on mode
+  if (blockMode === "indentation") {
+    iterator.consume(SYMBOLS.dedent);
+  } else {
+    iterator.consume(SYMBOLS.right_brace);
+  }
+
   iterator.popSwitchContext();
 
   iterator.emitter.emit("LABEL", switchEndLabel, null, null);
   iterator.emitter.emit("JUMP", afterSwitchLabel, null, null);
 
   iterator.emitter.emit("LABEL", dispatchLabel, null, null);
-  emitSwitchDispatch(iterator, switchValue, cases, defaultLabel, switchEndLabel);
+  emitSwitchDispatch(
+    iterator,
+    switchValue,
+    cases,
+    defaultLabel,
+    switchEndLabel,
+  );
   iterator.emitter.emit("LABEL", afterSwitchLabel, null, null);
 }
 
@@ -123,6 +192,7 @@ function parseSwitchSectionBody(iterator: TokenIterator): void {
   while (iterator.hasNext()) {
     if (
       iterator.match(SYMBOLS.right_brace) ||
+      iterator.match(SYMBOLS.dedent) ||
       iterator.match(RESERVEDS.case) ||
       iterator.match(RESERVEDS.default)
     ) {

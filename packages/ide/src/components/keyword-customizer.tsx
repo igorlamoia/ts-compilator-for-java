@@ -232,14 +232,14 @@ export function KeywordCustomizer() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="mx-4">
+      <DialogContent className="mx-4 overflow-hidden">
         <form
           onSubmit={handleSubmitCurrentStep}
           role="dialog"
           aria-modal="true"
           aria-labelledby="keyword-customizer-title"
           aria-describedby="keyword-customizer-description"
-          className="flex flex-col h-full"
+          className="flex h-full min-h-0 flex-col"
         >
           <DialogHeader>
             <div>
@@ -259,7 +259,7 @@ export function KeywordCustomizer() {
             </DialogClose>
           </DialogHeader>
 
-          <div className="overflow-y-auto p-5 flex-1">
+          <div className="min-h-0 flex-1 overflow-y-auto p-5">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500 mb-2">
                 Comandos Atuais

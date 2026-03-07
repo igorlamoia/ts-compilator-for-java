@@ -16,4 +16,37 @@ describe("indentation config surface", () => {
 
     expect(iterator.getBlockMode()).toBe("indentation");
   });
+  it("should'nt throw error when indentation block mode is enabled and code is properly indented", () => {
+    const code = `
+int main():
+  print("Início do programa")
+  int x = 5;
+  int y = 10
+  if(x < y):
+    print("x é menor que y kkkk\\n")
+  else:
+    print("x é maior ou igual a y\\n")
+
+  print("\\nacabou do programa")
+  string oi = "oi"
+  switch(oi):
+    case 1:
+    case "oi":
+      print("AAAAAAAAAAA")
+      break
+    default:
+      print("Bbb")
+`;
+    const lexer = new Lexer(code, {
+      locale: "en",
+      indentationBlock: true,
+    });
+
+    const iterator = new TokenIterator(lexer.scanTokens(), {
+      locale: "en",
+      grammar: { blockMode: "indentation", semicolonMode: "optional-eol" },
+    });
+
+    expect(() => iterator.generateIntermediateCode()).not.toThrow();
+  });
 });

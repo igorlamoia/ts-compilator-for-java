@@ -29,11 +29,13 @@ export default function handler(
     const blockDelimiters: LexerBlockDelimiters | undefined =
       req.body.blockDelimiters;
     const locale: string | undefined = req.body.locale;
+    const indentationBlock: boolean | undefined = req.body.indentationBlock;
     const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap);
     const lexer = new Lexer(req.body.sourceCode, {
       customKeywords: effectiveKeywordMap,
       blockDelimiters,
       locale,
+      indentationBlock,
     });
     const tokens = lexer.scanTokens();
     res.status(200).json({
