@@ -24,6 +24,7 @@ export function stmt(iterator: TokenIterator): void {
   const token = iterator.peek();
   const { RESERVEDS } = TOKENS;
   const blockMode = iterator.getBlockMode();
+  const typingMode = iterator.getTypingMode();
 
   const stmtsFactory = {
     [RESERVEDS.for]: forStmt,
@@ -34,9 +35,15 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.if]: ifStmt,
     [RESERVEDS.switch]: switchStmt,
     [TOKENS.SYMBOLS.left_brace]: blockStmt,
-    [RESERVEDS.int]: declarationStmt,
-    [RESERVEDS.float]: declarationStmt,
-    [RESERVEDS.string]: declarationStmt,
+    ...(typingMode === "typed"
+      ? {
+          [RESERVEDS.int]: declarationStmt,
+          [RESERVEDS.float]: declarationStmt,
+          [RESERVEDS.string]: declarationStmt,
+        }
+      : {
+          [RESERVEDS.variavel]: declarationStmt,
+        }),
     [RESERVEDS.return]: returnStmt,
     [RESERVEDS.break]: breakStmt,
     [RESERVEDS.continue]: continueStmt,

@@ -12,8 +12,14 @@ import { parameterListStmt } from "./parameterListStmt";
  */
 export function functionCall(iterator: TokenIterator): void {
   const { left_paren, right_paren } = TOKENS.SYMBOLS;
+  const { funcao } = TOKENS.RESERVEDS;
+  const typingMode = iterator.getTypingMode();
 
-  typeStmt(iterator, true); // tipo de retorno (int, float, string, void)
+  if (typingMode === "untyped") {
+    iterator.consume(funcao);
+  } else {
+    typeStmt(iterator, true); // tipo de retorno (int, float, string, void)
+  }
   const identifier = iterator.consume(TOKENS.LITERALS.identifier); // nome da função
 
   iterator.consume(left_paren); // (

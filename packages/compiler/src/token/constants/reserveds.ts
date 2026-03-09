@@ -15,6 +15,8 @@ export const RESERVEDS = {
   switch: 50,
   case: 51,
   default: 52,
+  variavel: 53,
+  funcao: 54,
 };
 
 export const RESERVEDS_STYLE = {
