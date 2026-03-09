@@ -3,6 +3,7 @@ import { functionCall } from "../grammar/syntax/function-call";
 import { IssueError } from "../issue";
 import { Emitter } from "../ir/emitter";
 import { Token } from "./";
+import { TOKENS } from "./constants";
 import { translate } from "../i18n";
 
 interface LoopContext {
@@ -75,11 +76,17 @@ export class TokenIterator {
     const isDifferentLexeme = expectedLexeme && token.lexeme !== expectedLexeme;
     if (isDifferentType || isDifferentLexeme) {
       const code = "iterator.unexpected_token";
+      const expectedKey = TOKENS.BY_ID[expectedType];
+      const actualKey = TOKENS.BY_ID[token.type];
       const params = {
         line: token.line,
         column: token.column,
-        expectedType,
-        actualType: token.type,
+        expectedType: expectedKey
+          ? translate(this.locale, `token.${expectedKey}`)
+          : String(expectedType),
+        actualType: actualKey
+          ? translate(this.locale, `token.${actualKey}`)
+          : String(token.type),
         lexeme: token.lexeme,
       };
       const message = translate(this.locale, code, params);

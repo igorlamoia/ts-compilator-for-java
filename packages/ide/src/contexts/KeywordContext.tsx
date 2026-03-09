@@ -285,7 +285,14 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       blockMode,
       typingMode,
     });
-  }, [mappings, blockDelimiters, semicolonMode, blockMode, typingMode, isHydrated]);
+  }, [
+    mappings,
+    blockDelimiters,
+    semicolonMode,
+    blockMode,
+    typingMode,
+    isHydrated,
+  ]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -363,7 +370,10 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         return "Os delimitadores de abertura e fechamento devem ser diferentes.";
       }
 
-      if (ORIGINAL_KEYWORDS.includes(open) || ORIGINAL_KEYWORDS.includes(close)) {
+      if (
+        ORIGINAL_KEYWORDS.includes(open) ||
+        ORIGINAL_KEYWORDS.includes(close)
+      ) {
         return "Delimitadores não podem reutilizar palavras reservadas.";
       }
 
