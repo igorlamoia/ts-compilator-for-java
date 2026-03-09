@@ -11,6 +11,7 @@ import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/c
 import prisma from '@/lib/prisma'
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
 import { normalizeCompilerConfig } from '../../../lib/compiler-config'
+import type { IDEGrammarConfig } from '@/entities/compiler-config'
 
 export type TTestCaseResult = {
     label: string;
@@ -86,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         keywordMap?: KeywordMap
         blockDelimiters?: LexerBlockDelimiters
         indentationBlock?: boolean
-        grammar?: { semicolonMode?: 'optional-eol' | 'required'; blockMode?: 'delimited' | 'indentation' }
+        grammar?: Partial<IDEGrammarConfig>
         locale?: string
     }
     const dryRun = req.query.dryRun === 'true'

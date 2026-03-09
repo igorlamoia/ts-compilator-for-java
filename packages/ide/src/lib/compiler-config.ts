@@ -7,6 +7,7 @@ import type {
 const DEFAULT_GRAMMAR: IDEGrammarConfig = {
   semicolonMode: "optional-eol",
   blockMode: "delimited",
+  typingMode: "typed",
 };
 
 export function normalizeCompilerConfig(
@@ -16,6 +17,7 @@ export function normalizeCompilerConfig(
     semicolonMode:
       input.grammar?.semicolonMode ?? DEFAULT_GRAMMAR.semicolonMode,
     blockMode: input.grammar?.blockMode ?? DEFAULT_GRAMMAR.blockMode,
+    typingMode: input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode,
   };
 
   const indentationBlock = grammar.blockMode === "indentation";

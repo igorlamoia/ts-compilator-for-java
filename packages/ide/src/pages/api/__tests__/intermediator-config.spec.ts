@@ -36,7 +36,11 @@ describe("/api/intermediator config propagation", () => {
       body: {
         tokens: [{ lexeme: "x" }],
         locale: "pt-BR",
-        grammar: { semicolonMode: "required", blockMode: "indentation" },
+        grammar: {
+          semicolonMode: "required",
+          blockMode: "indentation",
+          typingMode: "untyped",
+        },
       },
     } as any;
 
@@ -48,7 +52,11 @@ describe("/api/intermediator config propagation", () => {
 
     expect(TokenIteratorMock).toHaveBeenCalledWith(expect.any(Array), {
       locale: "pt-BR",
-      grammar: { semicolonMode: "required", blockMode: "indentation" },
+      grammar: {
+        semicolonMode: "required",
+        blockMode: "indentation",
+        typingMode: "untyped",
+      },
     });
   });
 });
