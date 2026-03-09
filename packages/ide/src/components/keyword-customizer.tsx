@@ -7,6 +7,7 @@ import {
 import type {
   IDEBlockMode,
   IDESemicolonMode,
+  IDETypingMode,
 } from "@/entities/compiler-config";
 import {
   Dialog,
@@ -38,6 +39,8 @@ const KEYWORD_EXPLANATIONS: Record<string, string> = {
   switch: "Seleciona um bloco com base no valor de uma expressão.",
   case: "Define um ramo dentro do switch para um valor específico.",
   default: "Executa quando nenhum case do switch corresponde.",
+  variavel: "Declara uma variável no modo não tipado.",
+  funcao: "Declara uma função no modo não tipado.",
 };
 
 export function KeywordCustomizer() {
@@ -52,6 +55,8 @@ export function KeywordCustomizer() {
     setSemicolonMode,
     blockMode,
     setBlockMode,
+    typingMode,
+    setTypingMode,
     isOpenKeywordCustomizer: isOpen,
     setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
@@ -62,6 +67,7 @@ export function KeywordCustomizer() {
   const [draftSemicolonMode, setDraftSemicolonMode] =
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
+  const [draftTypingMode, setDraftTypingMode] = useState<IDETypingMode>(typingMode);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
@@ -73,11 +79,12 @@ export function KeywordCustomizer() {
       setDraftBlockDelimiters(blockDelimiters);
       setDraftSemicolonMode(semicolonMode);
       setDraftBlockMode(blockMode);
+      setDraftTypingMode(typingMode);
       setCurrentStep(0);
       setCurrentError(null);
       setDelimiterError(null);
     }
-  }, [isOpen, mappings, blockDelimiters, semicolonMode, blockMode]);
+  }, [isOpen, mappings, blockDelimiters, semicolonMode, blockMode, typingMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -100,7 +107,8 @@ export function KeywordCustomizer() {
       draftBlockDelimiters.open !== blockDelimiters.open ||
       draftBlockDelimiters.close !== blockDelimiters.close ||
       draftSemicolonMode !== semicolonMode ||
-      draftBlockMode !== blockMode,
+      draftBlockMode !== blockMode ||
+      draftTypingMode !== typingMode,
     [
       draftMappings,
       draftBlockDelimiters,
@@ -109,6 +117,8 @@ export function KeywordCustomizer() {
       semicolonMode,
       draftBlockMode,
       blockMode,
+      draftTypingMode,
+      typingMode,
     ],
   );
 
@@ -141,14 +151,17 @@ export function KeywordCustomizer() {
     const resetBlockDelimiters = { open: "", close: "" };
     const resetSemicolonMode: IDESemicolonMode = "optional-eol";
     const resetBlockMode: IDEBlockMode = "delimited";
+    const resetTypingMode: IDETypingMode = "typed";
     setDraftMappings(resetMappings);
     setDraftBlockDelimiters(resetBlockDelimiters);
     setDraftSemicolonMode(resetSemicolonMode);
     setDraftBlockMode(resetBlockMode);
+    setDraftTypingMode(resetTypingMode);
     replaceKeywords(resetMappings);
     setBlockDelimiters(resetBlockDelimiters);
     setSemicolonMode(resetSemicolonMode);
     setBlockMode(resetBlockMode);
+    setTypingMode(resetTypingMode);
     setCurrentError(null);
     setDelimiterError(null);
   };
@@ -194,6 +207,7 @@ export function KeywordCustomizer() {
     replaceKeywords(draftMappings);
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
+    setTypingMode(draftTypingMode);
     setBlockDelimiters({
       open: draftBlockDelimiters.open.trim(),
       close: draftBlockDelimiters.close.trim(),
@@ -437,6 +451,36 @@ export function KeywordCustomizer() {
                   }`}
                 >
                   Indentação
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Tipagem
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftTypingMode("typed")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftTypingMode === "typed"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Tipado
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftTypingMode("untyped")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftTypingMode === "untyped"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Não tipado
                 </button>
               </div>
             </div>
