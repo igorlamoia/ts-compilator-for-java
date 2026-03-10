@@ -13,7 +13,7 @@ export async function registerUseCase(
 
   const org = await prisma.organization.findUnique({ where: { id: organizationId } })
   if (!org) {
-    throw new NotFoundError('organization_not_found', {params: })
+    throw new NotFoundError('Organization not found')
   }
 
   const existing = await prisma.user.findUnique({ where: { email } })
