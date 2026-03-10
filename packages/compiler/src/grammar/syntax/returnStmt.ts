@@ -13,9 +13,22 @@ export function returnStmt(iterator: TokenIterator): void {
 
   // Parsear expressão de retorno (opcional)
   const returnValue = optExprStmt(iterator);
+  const functionReturnType = iterator.getCurrentFunctionReturnType();
+
+  if (returnValue && functionReturnType) {
+    iterator.warnIfLossyIntConversion(
+      functionReturnType,
+      returnValue.type,
+      returnValue.token,
+    );
+  }
 
   consumeStmtTerminator(iterator);
 
-  // Emitir instrução RETURN
-  iterator.emitter.emit("RETURN", returnValue || "null", null, null);
+  iterator.emitter.emit(
+    "RETURN",
+    returnValue?.place || "null",
+    functionReturnType,
+    null,
+  );
 }

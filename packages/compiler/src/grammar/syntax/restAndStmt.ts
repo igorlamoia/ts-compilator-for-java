@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { notStmt } from "./notStmt";
 
@@ -10,17 +10,18 @@ import { notStmt } from "./notStmt";
  */
 export function restAndStmt(
   iterator: TokenIterator,
-  inherited: string
-): string {
+  inherited: ExprResult,
+): ExprResult {
   const { logical_and } = TOKENS.LOGICALS;
   while (iterator.match(logical_and)) {
-    iterator.consume(TOKENS.LOGICALS.logical_and);
+    const token = iterator.consume(TOKENS.LOGICALS.logical_and);
 
     const right = notStmt(iterator);
     const temp = iterator.emitter.newTemp();
 
-    iterator.emitter.emit("&&", temp, inherited, right);
-    inherited = temp;
+    iterator.emitter.emit("&&", temp, inherited.place, right.place);
+    iterator.registerTemp(temp, "bool");
+    inherited = iterator.createExprResult(temp, "bool", token);
   }
 
   return inherited;

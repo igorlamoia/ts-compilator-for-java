@@ -1,9 +1,9 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { TokenIterator, ValueType } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 
 export interface Parameter {
-  type: string;  // "int", "float", "string"
+  type: ValueType;
   name: string;  // nome do parâmetro
 }
 

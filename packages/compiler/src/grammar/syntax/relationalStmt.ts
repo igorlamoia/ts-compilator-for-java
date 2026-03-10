@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { addStmt } from "./addStmt";
 import { restRelationalStmt } from "./restRelationalStmt";
 
@@ -8,7 +8,7 @@ import { restRelationalStmt } from "./restRelationalStmt";
  *
  * @derivation `<rel> -> <add> <restoRel>`
  */
-export function relationalStmt(iterator: TokenIterator): string {
+export function relationalStmt(iterator: TokenIterator): ExprResult {
   const left = addStmt(iterator);
   return restRelationalStmt(iterator, left);
 }

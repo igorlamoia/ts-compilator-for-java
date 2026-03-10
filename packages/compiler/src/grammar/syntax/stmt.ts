@@ -118,13 +118,14 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
   if (iterator.peek().type === TOKENS.SYMBOLS.left_paren) {
     // É uma chamada de função
-    functionCallExpr(iterator, identifier.lexeme);
+    functionCallExpr(iterator, identifier);
     consumeStmtTerminator(iterator);
   } else if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
     // É um incremento pós-fixado
     iterator.consume(plus, "++");
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(identifier.lexeme));
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
     consumeStmtTerminator(iterator);
   } else {

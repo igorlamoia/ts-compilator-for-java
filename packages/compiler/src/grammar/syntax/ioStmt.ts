@@ -19,10 +19,10 @@ export function printStmt(iterator: TokenIterator): void {
 
   for (const val of values) {
     // Heurística simples: se for aspas, é string; se número, também é literal
-    if (val.startsWith('"') || !isNaN(Number(val))) {
-      iterator.emitter.emit("CALL", "PRINT", val, null);
+    if (val.place.startsWith('"') || !isNaN(Number(val.place))) {
+      iterator.emitter.emit("CALL", "PRINT", val.place, null);
     } else {
-      iterator.emitter.emit("CALL", "PRINT", null, val); // identificador
+      iterator.emitter.emit("CALL", "PRINT", null, val.place); // identificador
     }
   }
 

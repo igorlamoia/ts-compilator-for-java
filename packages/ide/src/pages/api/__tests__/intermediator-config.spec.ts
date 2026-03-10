@@ -4,7 +4,9 @@ const { mockGenerateIntermediateCode, TokenIteratorMock } = vi.hoisted(() => {
   const mockGenerateIntermediateCode = vi.fn(() => []);
   const TokenIteratorMock = vi.fn(function TokenIteratorMock() {
     return {
-    generateIntermediateCode: mockGenerateIntermediateCode,
+      generateIntermediateCode: mockGenerateIntermediateCode,
+      getWarnings: () => [],
+      getInfos: () => [],
     };
   });
 
@@ -58,5 +60,53 @@ describe("/api/intermediator config propagation", () => {
         typingMode: "untyped",
       },
     });
+  });
+
+  it("returns compiler warnings from TokenIterator", () => {
+    const req = {
+      body: {
+        tokens: [{ lexeme: "x" }],
+        locale: "pt-BR",
+        grammar: {
+          semicolonMode: "required",
+          blockMode: "indentation",
+          typingMode: "typed",
+        },
+      },
+    } as any;
+
+    const status = vi.fn().mockReturnThis();
+    const json = vi.fn();
+    const res = { status, json } as any;
+
+    mockGenerateIntermediateCode.mockReturnValue([]);
+    TokenIteratorMock.mockImplementation(function TokenIteratorWithWarnings() {
+      return {
+      generateIntermediateCode: mockGenerateIntermediateCode,
+      getWarnings: () => [
+        {
+          code: "grammar.lossy_int_conversion",
+          message: "warn",
+          line: 2,
+          column: 9,
+          type: "warning",
+          params: null,
+        },
+      ],
+      getInfos: () => [],
+      };
+    });
+
+    handler(req, res);
+
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        warnings: [
+          expect.objectContaining({
+            code: "grammar.lossy_int_conversion",
+          }),
+        ],
+      }),
+    );
   });
 });

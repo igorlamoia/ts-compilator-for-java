@@ -16,6 +16,7 @@ export function attributeStmt(iterator: TokenIterator): void {
     const identifier = iterator.consume(TOKENS.LITERALS.identifier);
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(identifier.lexeme));
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
     return;
   }
@@ -27,6 +28,7 @@ export function attributeStmt(iterator: TokenIterator): void {
     iterator.consume(plus, "++");
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, token.lexeme, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(token.lexeme));
     iterator.emitter.emit("=", token.lexeme, incremented, null);
     return;
   }
@@ -67,7 +69,17 @@ export function emitAssignmentChain(
   let currentValue = value;
 
   for (let i = targets.length - 1; i >= 0; i--) {
-    iterator.emitter.emit("=", targets[i], currentValue, null);
-    currentValue = targets[i];
+    const targetType = iterator.resolveSymbol(targets[i]);
+    iterator.warnIfLossyIntConversion(
+      targetType,
+      currentValue.type,
+      currentValue.token,
+    );
+    iterator.emitter.emit("=", targets[i], currentValue.place, null);
+    currentValue = iterator.createExprResult(
+      targets[i],
+      targetType,
+      currentValue.token,
+    );
   }
 }

@@ -20,6 +20,7 @@ export function declarationStmt(iterator: TokenIterator): void {
   while (true) {
     const identToken = iterator.consume(TOKENS.LITERALS.identifier);
     const varName = identToken.lexeme;
+    iterator.declareSymbol(varName, type);
 
     emitter.emit("DECLARE", varName, type, null);
 

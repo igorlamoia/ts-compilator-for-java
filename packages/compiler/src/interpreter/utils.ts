@@ -50,6 +50,20 @@ export function makeRelation(
 
 export type TTypeOperand = string | number | boolean | null;
 
+export function truncateTowardZero(value: number): number {
+  return value < 0 ? Math.ceil(value) : Math.floor(value);
+}
+
+export function coerceValueForType(type: string, value: unknown): unknown {
+  if (type === "int" && typeof value === "number") {
+    return truncateTowardZero(value);
+  }
+  if (type === "float" && typeof value === "number") {
+    return value;
+  }
+  return value;
+}
+
 export function parseOrGetVariable(
   operand: TTypeOperand,
   variables: Map<string, unknown>,

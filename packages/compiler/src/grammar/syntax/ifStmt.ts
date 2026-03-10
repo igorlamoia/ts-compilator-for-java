@@ -22,7 +22,7 @@ export function ifStmt(iterator: TokenIterator): void {
   const labelEnd = iterator.emitter.newLabel();
 
   // Gerar instrução condicional: IF condResult ? labelTrue : labelFalse
-  iterator.emitter.emit("IF", condResult, labelTrue, labelFalse);
+  iterator.emitter.emit("IF", condResult.place, labelTrue, labelFalse);
 
   // Início do bloco "if"
   iterator.emitter.emit("LABEL", labelTrue, null, null);

@@ -31,10 +31,14 @@ export default function handler(
       grammar,
     });
     const instructions = iterator.generateIntermediateCode();
+    const warnings =
+      typeof iterator.getWarnings === "function" ? iterator.getWarnings() : [];
+    const infos =
+      typeof iterator.getInfos === "function" ? iterator.getInfos() : [];
     res.status(200).json({
       instructions,
-      warnings: [],
-      infos: [],
+      warnings,
+      infos,
       error: null,
       message: "Intermediate code generation completed",
     });

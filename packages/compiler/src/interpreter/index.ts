@@ -4,23 +4,25 @@ import {
   Instruction,
   LOGICALS,
   RELATIONALS,
+  RuntimeSlot,
   TArithmetics,
   TLogical,
   TRelational,
 } from "./constants";
 import { RuntimeError } from "./runtime-error";
 import { translate } from "../i18n";
+import { coerceValueForType } from "./utils";
 
 interface CallFrame {
   returnAddress: number;
   returnVariable: string | null;
-  localScope: Map<string, unknown>;
+  localScope: Map<string, RuntimeSlot>;
   parameters: string[];
 }
 
 export class Interpreter {
   private labels: Map<string, number>;
-  private variables: Map<string, unknown>;
+  private variables: Map<string, RuntimeSlot>;
   private callStack: CallFrame[];
   private instructionPointer: number;
   private program: Instruction[];
@@ -281,7 +283,7 @@ export class Interpreter {
             const frame: CallFrame = {
               returnAddress: this.instructionPointer + 1,
               returnVariable: returnVar,
-              localScope: new Map<string, unknown>(),
+              localScope: new Map<string, RuntimeSlot>(),
               parameters: [],
             };
 
@@ -305,6 +307,7 @@ export class Interpreter {
 
           // Se estivermos em uma função e houver argumentos avaliados, atribuir aos parâmetros
           let initialValue: unknown = null;
+          const declaredType = typeof operand1 === "string" ? operand1 : "dynamic";
           if (this.callStack.length > 0) {
             const frame = this.callStack[this.callStack.length - 1];
             const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
@@ -319,13 +322,14 @@ export class Interpreter {
             }
           }
 
-          // Declarar variável no escopo atual com o valor inicial
-          this.setVariable(result, initialValue);
+          this.declareVariable(result, declaredType, initialValue);
 
           this.instructionPointer++;
           continue;
         } else if (op === "RETURN") {
           const returnValue = this.parseOrGetVariableWithScope(result);
+          const returnType = typeof operand1 === "string" ? operand1 : "dynamic";
+          const coercedReturnValue = coerceValueForType(returnType, returnValue);
 
           if (this.callStack.length === 0) {
             // Return do main - terminar execução
@@ -337,8 +341,7 @@ export class Interpreter {
 
           // Armazenar valor de retorno no escopo do caller se houver variável
           if (frame.returnVariable) {
-            const callerScope = this.getCurrentScope();
-            callerScope.set(frame.returnVariable, returnValue);
+            this.setVariable(frame.returnVariable, coercedReturnValue);
           }
 
           // Voltar para endereço de retorno
@@ -371,7 +374,7 @@ export class Interpreter {
     );
   }
 
-  private getCurrentScope(): Map<string, unknown> {
+  private getCurrentScope(): Map<string, RuntimeSlot> {
     if (this.callStack.length > 0) {
       return this.callStack[this.callStack.length - 1].localScope;
     }
@@ -383,13 +386,13 @@ export class Interpreter {
     if (this.callStack.length > 0) {
       const currentScope = this.callStack[this.callStack.length - 1].localScope;
       if (currentScope.has(name)) {
-        return currentScope.get(name);
+        return currentScope.get(name)?.value;
       }
     }
 
     // Se não encontrar, procurar no escopo global
     if (this.variables.has(name)) {
-      return this.variables.get(name);
+      return this.variables.get(name)?.value;
     }
 
     this.throwRuntimeError("interpreter.variable_not_found", {
@@ -398,9 +401,36 @@ export class Interpreter {
     });
   }
 
+  private declareVariable(name: string, type: string, value: unknown): void {
+    const currentScope = this.getCurrentScope();
+    currentScope.set(name, {
+      type,
+      value: coerceValueForType(type, value),
+    });
+  }
+
   private setVariable(name: string, value: unknown): void {
     const currentScope = this.getCurrentScope();
-    currentScope.set(name, value);
+    const currentSlot = currentScope.get(name);
+
+    if (currentSlot) {
+      currentScope.set(name, {
+        ...currentSlot,
+        value: coerceValueForType(currentSlot.type, value),
+      });
+      return;
+    }
+
+    if (this.variables.has(name) && currentScope !== this.variables) {
+      const globalSlot = this.variables.get(name)!;
+      this.variables.set(name, {
+        ...globalSlot,
+        value: coerceValueForType(globalSlot.type, value),
+      });
+      return;
+    }
+
+    currentScope.set(name, { type: "dynamic", value });
   }
 
   private parseOrGetVariableWithScope(value: unknown): unknown {

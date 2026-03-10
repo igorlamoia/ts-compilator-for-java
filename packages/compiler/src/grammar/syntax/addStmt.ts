@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { multStmt } from "./multStmt";
 import { restAddStmt } from "./restAddStmt";
 
@@ -8,7 +8,7 @@ import { restAddStmt } from "./restAddStmt";
  *
  * @derivation `<add> -> <mult> <restoAdd>`
  */
-export function addStmt(iterator: TokenIterator): string {
+export function addStmt(iterator: TokenIterator): ExprResult {
   const left = multStmt(iterator);
   return restAddStmt(iterator, left);
 }

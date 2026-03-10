@@ -29,3 +29,8 @@ export interface Instruction {
   operand1: string | number | boolean | string[] | null;
   operand2: string | number | boolean | null;
 }
+
+export interface RuntimeSlot {
+  type: string;
+  value: unknown;
+}
