@@ -12,7 +12,7 @@
 
 # testing
 /coverage
-test.db
+packages/ide/prism/test.db
 
 # next.js
 /.next/

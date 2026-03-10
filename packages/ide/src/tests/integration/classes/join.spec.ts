@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { prisma, createOrg, createUser, createClass } from '../helpers'
 import { joinClassUseCase } from '@/use-cases/classes/join'
-import { NotFoundError } from '@/lib/errors'
+import { NotFoundError, ForbiddenError } from '@/lib/errors'
 
 describe('joinClassUseCase', () => {
   it('should create a membership and return classId', async () => {
@@ -41,5 +41,17 @@ describe('joinClassUseCase', () => {
     await expect(
       joinClassUseCase(prisma, { userId: student.id, accessCode: 'WRONG' }),
     ).rejects.toThrow(NotFoundError)
+  })
+
+  it('should throw ForbiddenError when student belongs to a different organization', async () => {
+    const orgA = await createOrg('Org A')
+    const orgB = await createOrg('Org B')
+    const teacher = await createUser(orgA.id, { role: 'TEACHER' })
+    const cls = await createClass(orgA.id, teacher.id, { accessCode: 'JOIN-03' })
+    const student = await createUser(orgB.id)
+
+    await expect(
+      joinClassUseCase(prisma, { userId: student.id, accessCode: 'JOIN-03' }),
+    ).rejects.toThrow(ForbiddenError)
   })
 })

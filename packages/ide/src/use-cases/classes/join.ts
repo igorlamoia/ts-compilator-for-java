@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client'
-import { NotFoundError } from '@/lib/errors'
+import { NotFoundError, ForbiddenError } from '@/lib/errors'
 
 export async function joinClassUseCase(
   prisma: PrismaClient,
@@ -10,17 +10,12 @@ export async function joinClassUseCase(
   const cls = await prisma.class.findUnique({ where: { accessCode } })
   if (!cls) throw new NotFoundError('Class not found')
 
-  await prisma.user.upsert({
-    where: { id: userId },
-    create: {
-      id: userId,
-      organizationId: cls.organizationId,
-      email: `student-${userId}@temp.com`,
-      name: 'Student',
-      role: 'STUDENT',
-    },
-    update: {},
-  })
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) throw new NotFoundError('User not found')
+
+  if (user.organizationId !== cls.organizationId) {
+    throw new ForbiddenError('User does not belong to this class organization')
+  }
 
   await prisma.classMember.upsert({
     where: { classId_studentId: { classId: cls.id, studentId: userId } },

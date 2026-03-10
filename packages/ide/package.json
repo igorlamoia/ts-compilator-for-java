@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run --config vitest.integration.config.ts"
+    "test": "vitest run --config vitest.integration.config.ts",
+    "seed": "npx tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@babel/preset-typescript": "^7.26.0",
