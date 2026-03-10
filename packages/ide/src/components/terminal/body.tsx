@@ -22,6 +22,18 @@ interface BodyProps {
   toggleTerminal: () => void;
 }
 
+const scheduledExecutionKeys = new Set<string>();
+
+function getExecutionKey(intermediateCode: Instruction[]): string {
+  if (intermediateCode.length === 0) return "";
+
+  try {
+    return JSON.stringify(intermediateCode);
+  } catch {
+    return `${intermediateCode.length}`;
+  }
+}
+
 export function Body(props: BodyProps) {
   const {
     lines,
@@ -73,6 +85,9 @@ export function Body(props: BodyProps) {
           break;
         case "ping":
           addLine("Pong! 🏓", "output");
+          break;
+        case "choma":
+          addLine("mei!", "output");
           break;
         case "exit":
           addLine("❌  Exiting terminal...", "output");
@@ -160,7 +175,24 @@ export function Body(props: BodyProps) {
   }, [intermediateCode, addLine, setRuntimeErrorInstructionPointer]);
 
   useEffect(() => {
-    if (intermediateCode?.length > 0) runInterpreter();
+    const executionKey = getExecutionKey(intermediateCode);
+    if (!executionKey || scheduledExecutionKeys.has(executionKey)) return;
+
+    scheduledExecutionKeys.add(executionKey);
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      void runInterpreter().finally(() => {
+        scheduledExecutionKeys.delete(executionKey);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      scheduledExecutionKeys.delete(executionKey);
+    };
   }, [intermediateCode, runInterpreter]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
