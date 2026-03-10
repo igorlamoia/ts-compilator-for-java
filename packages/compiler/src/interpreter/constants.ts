@@ -7,6 +7,7 @@ export type TFlowControl = "IF" | "JUMP" | "RETURN";
 export type TSystemCalls = "CALL"; // e.g. PRINT, SCAN
 export type TLabel = "LABEL";
 export type TDeclaration = "DECLARE";
+export type ScanHint = "int" | "float" | null;
 
 export const ARITHMETICS: TArithmetics[] = ["+", "-", "*", "/", "%", "//"];
 export const LOGICALS: TLogical[] = ["||", "&&", "!"];
@@ -26,7 +27,7 @@ export type OpName =
 export interface Instruction {
   op: OpName;
   result: string;
-  operand1: string | number | boolean | string[] | null;
+  operand1: string | number | boolean | string[] | ScanHint;
   operand2: string | number | boolean | null;
 }
 

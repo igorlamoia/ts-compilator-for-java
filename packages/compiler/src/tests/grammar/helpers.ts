@@ -50,7 +50,7 @@ export function compileProgram(source: string, options?: CompileToIrOptions) {
 
 export async function executeProgram(
   source: string,
-  options?: CompileToIrOptions,
+  options?: CompileToIrOptions & { stdin?: () => Promise<string> },
 ) {
   const output: string[] = [];
   const { instructions, warnings, infos, error } = compileProgram(
@@ -61,7 +61,7 @@ export async function executeProgram(
     instructions,
     {
       stdout: (msg) => output.push(msg),
-      stdin: async () => "",
+      stdin: options?.stdin ?? (async () => ""),
     },
     options?.locale ?? "en",
   );

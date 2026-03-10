@@ -47,4 +47,60 @@ describe("Grammar Typing Mode", () => {
       }),
     ).toThrow(/Unexpected|type|parameter/i);
   });
+
+  it("accepts scan type-token syntax in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int x = 0;
+            scan(int, x);
+          }
+        `,
+        { grammar: { typingMode: "typed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("accepts scan format syntax in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int x = 0;
+            scan("%f", x);
+          }
+        `,
+        { grammar: { typingMode: "typed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("accepts bare scan syntax in untyped mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            variavel x = 0;
+            scan(x);
+          }
+        `,
+        { grammar: { typingMode: "untyped" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects typed scan syntax in untyped mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            variavel x = 0;
+            scan(int, x);
+          }
+        `,
+        { grammar: { typingMode: "untyped" } },
+      ),
+    ).toThrow();
+  });
 });

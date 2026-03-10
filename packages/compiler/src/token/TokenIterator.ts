@@ -269,6 +269,18 @@ export class TokenIterator {
     });
   }
 
+  warnIfLossyWriteToSymbol(
+    symbolName: string,
+    sourceType: ValueType,
+    token: Token,
+  ): void {
+    this.warnIfLossyIntConversion(
+      this.resolveSymbol(symbolName),
+      sourceType,
+      token,
+    );
+  }
+
   inferLiteralType(token: Token): ValueType {
     if (
       token.type === TOKENS.LITERALS.integer_literal ||

@@ -116,6 +116,21 @@ describe("Grammar Optional Semicolons", () => {
     expect(() => compileToIr(source)).not.toThrow();
   });
 
+  it("should allow bare untyped scan without semicolon at end of line", () => {
+    const source = `
+      funcao main() {
+        variavel x = 0;
+        scan(x)
+      }
+    `;
+
+    expect(() =>
+      compileToIr(source, {
+        grammar: { typingMode: "untyped" },
+      }),
+    ).not.toThrow();
+  });
+
   it("should allow return statement without semicolon at end of line", () => {
     const source = `
       int main() {

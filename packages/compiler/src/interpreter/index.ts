@@ -1,4 +1,4 @@
-import { makeOperation, makeRelation, parsePiece } from "./utils";
+import { makeOperation, makeRelation, parseScanInput } from "./utils";
 import {
   ARITHMETICS,
   Instruction,
@@ -261,10 +261,11 @@ export class Interpreter {
                 currentInstruction,
               );
 
+            const scanHint =
+              operand1 === "int" || operand1 === "float" ? operand1 : null;
             const userInput = await this.stdin();
-            console.log("userInput", userInput);
             commandRef.current = "";
-            this.setVariable(operand2, parsePiece(userInput));
+            this.setVariable(operand2, parseScanInput(scanHint, userInput));
             this.instructionPointer++;
           } else if (callType === "STOP") {
             break;

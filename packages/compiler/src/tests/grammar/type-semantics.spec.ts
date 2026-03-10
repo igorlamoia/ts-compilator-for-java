@@ -49,6 +49,42 @@ describe("Type semantics warnings", () => {
 
     expect(result.warnings).toHaveLength(3);
   });
+
+  it("warns when a float scan hint writes into an int variable", () => {
+    const result = compileProgram(`
+      int main() {
+        int x = 0;
+        scan(float, x);
+        return 0;
+      }
+    `);
+
+    expect(result.warnings).toHaveLength(1);
+  });
+
+  it('warns when a %f scan hint writes into an int variable', () => {
+    const result = compileProgram(`
+      int main() {
+        int x = 0;
+        scan("%f", x);
+        return 0;
+      }
+    `);
+
+    expect(result.warnings).toHaveLength(1);
+  });
+
+  it("does not warn when an int scan hint writes into a float variable", () => {
+    const result = compileProgram(`
+      int main() {
+        float x = 0.0;
+        scan(int, x);
+        return 0;
+      }
+    `);
+
+    expect(result.warnings).toHaveLength(0);
+  });
 });
 
 describe("Type semantics runtime", () => {
@@ -60,6 +96,54 @@ describe("Type semantics runtime", () => {
         return 0;
       }
     `);
+
+    expect(result.output).toBe("3");
+  });
+
+  it("truncates scanned float input when destination variable is int", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int x = 0;
+          scan("%f", x);
+          print(x);
+          return 0;
+        }
+      `,
+      { stdin: async () => "3.9" },
+    );
+
+    expect(result.output).toBe("3");
+  });
+
+  it("keeps declaration semantics when float variable uses int scan hint", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          float x = 0.0;
+          scan(int, x);
+          print(x);
+          return 0;
+        }
+      `,
+      { stdin: async () => "3" },
+    );
+
+    expect(result.output).toBe("3");
+  });
+
+  it("uses the scan int hint before writing into a float variable", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          float x = 0.0;
+          scan(int, x);
+          print(x);
+          return 0;
+        }
+      `,
+      { stdin: async () => "3.9" },
+    );
 
     expect(result.output).toBe("3");
   });
