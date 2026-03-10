@@ -141,7 +141,7 @@ function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
     });
 }
 
-function getDefaultMappings(): KeywordMapping[] {
+export function getDefaultKeywordMappings(): KeywordMapping[] {
   return ORIGINAL_KEYWORDS.map((word) => ({
     original: word,
     custom: word,
@@ -177,7 +177,7 @@ function getDefaultTypingMode(): IDETypingMode {
 
 function loadCustomization(): StoredKeywordCustomization {
   const defaults: StoredKeywordCustomization = {
-    mappings: getDefaultMappings(),
+    mappings: getDefaultKeywordMappings(),
     blockDelimiters: getDefaultBlockDelimiters(),
     semicolonMode: getDefaultSemicolonMode(),
     blockMode: getDefaultBlockMode(),
@@ -247,7 +247,7 @@ function persistCustomization(customization: StoredKeywordCustomization) {
 
 export function KeywordProvider({ children }: { children: ReactNode }) {
   const [mappings, setMappings] =
-    useState<KeywordMapping[]>(getDefaultMappings);
+    useState<KeywordMapping[]>(getDefaultKeywordMappings);
   const [blockDelimiters, setBlockDelimiters] = useState<BlockDelimiters>(
     getDefaultBlockDelimiters(),
   );
@@ -297,13 +297,13 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
     if (monacoRef.current) {
-      const customWords = mappings
-        .map((m: KeywordMapping) => m.custom)
-        .filter(Boolean);
-      updateJavaMMKeywords(monacoRef.current, customWords);
+      updateJavaMMKeywords(monacoRef.current, mappings, {
+        blockMode,
+        blockDelimiters,
+      });
       retokenize();
     }
-  }, [mappings, monacoRef, retokenize]);
+  }, [mappings, blockMode, blockDelimiters, monacoRef, retokenize]);
 
   const validateKeyword = useCallback(
     (
@@ -337,7 +337,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetKeywords = useCallback(() => {
-    setMappings(getDefaultMappings());
+    setMappings(getDefaultKeywordMappings());
     setBlockDelimiters(getDefaultBlockDelimiters());
     setSemicolonMode(getDefaultSemicolonMode());
     setBlockMode(getDefaultBlockMode());

@@ -15,11 +15,25 @@ import {
   registerJavaMMLanguage,
   JAVAMM_LANGUAGE_ID,
 } from "@/utils/compiler/editor/editor-language";
-import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
+import { getDefaultKeywordMappings } from "@/contexts/KeywordContext";
 import { useFileSystem } from "@/hooks/useFileSystem";
 
 const getSourceCodeStorageKey = (fileName: string) => `source-code-${fileName}`;
 const DEFAULT_FILE_NAME = "main.?";
+const JAVA_MM_THEME_RULES_DARK = [
+  { token: "keyword.type", foreground: "7dd3fc", fontStyle: "bold" },
+  { token: "keyword.conditional", foreground: "fbbf24", fontStyle: "bold" },
+  { token: "keyword.loop", foreground: "fb7185", fontStyle: "bold" },
+  { token: "keyword.flow", foreground: "c084fc", fontStyle: "bold" },
+  { token: "keyword.io", foreground: "34d399", fontStyle: "bold" },
+];
+const JAVA_MM_THEME_RULES_LIGHT = [
+  { token: "keyword.type", foreground: "0f766e", fontStyle: "bold" },
+  { token: "keyword.conditional", foreground: "b45309", fontStyle: "bold" },
+  { token: "keyword.loop", foreground: "be123c", fontStyle: "bold" },
+  { token: "keyword.flow", foreground: "7c3aed", fontStyle: "bold" },
+  { token: "keyword.io", foreground: "047857", fontStyle: "bold" },
+];
 
 // Create the EditorContext with default values
 export const EditorContext = createContext<TEditorContextType>(
@@ -48,11 +62,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     loader.init().then((monaco) => {
       monacoRef.current = monaco;
       // Registrar a linguagem Java-- com as keywords padrão
-      registerJavaMMLanguage(monaco, ORIGINAL_KEYWORDS);
+      registerJavaMMLanguage(monaco, getDefaultKeywordMappings());
       monaco.editor.defineTheme("editor-glass-dark", {
         base: "vs-dark",
         inherit: true,
-        rules: [],
+        rules: JAVA_MM_THEME_RULES_DARK,
         colors: {
           "editor.background": "#00000000",
           "editorGutter.background": "#00000000",
@@ -70,7 +84,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       monaco.editor.defineTheme("editor-glass-light", {
         base: "vs",
         inherit: true,
-        rules: [],
+        rules: JAVA_MM_THEME_RULES_LIGHT,
         colors: {
           "editor.background": "#00000000",
           "editorGutter.background": "#00000000",
