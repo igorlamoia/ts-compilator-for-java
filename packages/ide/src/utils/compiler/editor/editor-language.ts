@@ -203,6 +203,59 @@ export function buildJavaMMLanguageMetadata(
   };
 }
 
+const SEMANTIC_GROUP_LABELS: Record<JavaMMSemanticGroupName, string> = {
+  types: "Tipo",
+  conditionals: "Condicional",
+  loops: "Laço de repetição",
+  flow: "Controle de fluxo",
+  io: "Entrada/Saída",
+};
+
+/**
+ * Snippet bodies keyed by the original keyword.
+ * Uses Monaco snippet syntax: $1, $2 for tab stops, ${1:placeholder} for placeholders.
+ */
+const KEYWORD_SNIPPETS: Record<string, { body: string; description: string }> =
+  {
+    int: { body: "int ${1:nome};", description: "Declarar int" },
+    float: { body: "float ${1:nome};", description: "Declarar float" },
+    string: { body: "string ${1:nome};", description: "Declarar string" },
+    void: {
+      body: "void ${1:funcao}(${2:params}) {\n\t$3\n}",
+      description: "Função void",
+    },
+    if: {
+      body: "if (${1:condicao}) {\n\t$2\n}",
+      description: "Bloco if",
+    },
+    else: { body: "else {\n\t$1\n}", description: "Bloco else" },
+    switch: {
+      body: "switch (${1:variavel}) {\n\tcase ${2:valor}:\n\t\t$3\n\t\tbreak;\n\tdefault:\n\t\t$4\n}",
+      description: "Bloco switch",
+    },
+    for: {
+      body: "for (${1:int i = 0}; ${2:i < n}; ${3:++i}) {\n\t$4\n}",
+      description: "Laço for",
+    },
+    while: {
+      body: "while (${1:condicao}) {\n\t$2\n}",
+      description: "Laço while",
+    },
+    return: { body: "return ${1:valor};", description: "Retornar valor" },
+    break: { body: "break;", description: "Interromper laço" },
+    continue: { body: "continue;", description: "Continuar laço" },
+    print: {
+      body: 'print(${1:"mensagem"});',
+      description: "Imprimir valor",
+    },
+    scan: {
+      body: "scan(${1:int}, ${2:variavel});",
+      description: "Ler entrada",
+    },
+  };
+
+let completionProviderDisposable: monacoEditor.IDisposable | null = null;
+
 /**
  * Registra a linguagem Java-- no Monaco com um Monarch tokenizer.
  * As keywords customizáveis são recebidas como parâmetro para permitir atualização dinâmica.
@@ -231,6 +284,69 @@ export function registerJavaMMLanguage(
     JAVAMM_LANGUAGE_ID,
     buildJavaMMLanguageConfiguration(options),
   );
+
+  // Dispose previous completion provider before registering a new one
+  completionProviderDisposable?.dispose();
+  completionProviderDisposable =
+    monaco.languages.registerCompletionItemProvider(JAVAMM_LANGUAGE_ID, {
+      provideCompletionItems(model, position) {
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn,
+        };
+
+        const suggestions: monacoEditor.languages.CompletionItem[] = [];
+
+        for (const mapping of keywordMappings) {
+          const keyword = mapping.custom.trim();
+          if (!keyword) continue;
+
+          let groupLabel = "Palavra-chave";
+          for (const [groupName, originals] of Object.entries(
+            SEMANTIC_KEYWORD_GROUPS,
+          ) as [JavaMMSemanticGroupName, Set<string>][]) {
+            if (originals.has(mapping.original)) {
+              groupLabel = SEMANTIC_GROUP_LABELS[groupName];
+              break;
+            }
+          }
+
+          // Keyword completion
+          suggestions.push({
+            label: keyword,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            detail: groupLabel,
+            insertText: keyword,
+            range,
+          });
+
+          // Snippet completion (if a template is defined for this original keyword)
+          const snippet = KEYWORD_SNIPPETS[mapping.original];
+          if (snippet) {
+            // Replace the original keyword in the snippet body with the custom one
+            const customBody = snippet.body.replace(
+              new RegExp(`^${mapping.original}\\b`),
+              keyword,
+            );
+            suggestions.push({
+              label: `${keyword}…`,
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              detail: snippet.description,
+              documentation: customBody,
+              insertText: customBody,
+              insertTextRules:
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              range,
+            });
+          }
+        }
+
+        return { suggestions };
+      },
+    });
 }
 
 /**

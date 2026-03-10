@@ -121,6 +121,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         },
         scrollBeyondLastLine: false,
         ...config,
+        wordBasedSuggestions: "off",
+        quickSuggestions: true,
+        suggestOnTriggerCharacters: false,
       });
     }
   };
