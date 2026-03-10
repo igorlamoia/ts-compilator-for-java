@@ -1,9 +1,11 @@
 export type IDESemicolonMode = "optional-eol" | "required";
 export type IDEBlockMode = "delimited" | "indentation";
+export type IDETypingMode = "typed" | "untyped";
 
 export type IDEGrammarConfig = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
+  typingMode: IDETypingMode;
 };
 
 export type IDECompilerConfigPayload = {

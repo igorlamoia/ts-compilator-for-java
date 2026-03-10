@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { restMultStmt } from "./restMultStmt";
 import { unitaryStmt } from "./unitaryStmt";
 /**
@@ -7,7 +7,7 @@ import { unitaryStmt } from "./unitaryStmt";
  * @derivation `<multStmt> -> <unitaryStmt> <restMultStmt>`
  * @returns A string representing the result of the expression
  */
-export function multStmt(iterator: TokenIterator): string {
+export function multStmt(iterator: TokenIterator): ExprResult {
   const left = unitaryStmt(iterator);
   return restMultStmt(iterator, left);
 }

@@ -24,6 +24,7 @@ export function stmt(iterator: TokenIterator): void {
   const token = iterator.peek();
   const { RESERVEDS } = TOKENS;
   const blockMode = iterator.getBlockMode();
+  const typingMode = iterator.getTypingMode();
 
   const stmtsFactory = {
     [RESERVEDS.for]: forStmt,
@@ -34,9 +35,15 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.if]: ifStmt,
     [RESERVEDS.switch]: switchStmt,
     [TOKENS.SYMBOLS.left_brace]: blockStmt,
-    [RESERVEDS.int]: declarationStmt,
-    [RESERVEDS.float]: declarationStmt,
-    [RESERVEDS.string]: declarationStmt,
+    ...(typingMode === "typed"
+      ? {
+          [RESERVEDS.int]: declarationStmt,
+          [RESERVEDS.float]: declarationStmt,
+          [RESERVEDS.string]: declarationStmt,
+        }
+      : {
+          [RESERVEDS.variavel]: declarationStmt,
+        }),
     [RESERVEDS.return]: returnStmt,
     [RESERVEDS.break]: breakStmt,
     [RESERVEDS.continue]: continueStmt,
@@ -111,13 +118,14 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
   if (iterator.peek().type === TOKENS.SYMBOLS.left_paren) {
     // É uma chamada de função
-    functionCallExpr(iterator, identifier.lexeme);
+    functionCallExpr(iterator, identifier);
     consumeStmtTerminator(iterator);
   } else if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
     // É um incremento pós-fixado
     iterator.consume(plus, "++");
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(identifier.lexeme));
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
     consumeStmtTerminator(iterator);
   } else {

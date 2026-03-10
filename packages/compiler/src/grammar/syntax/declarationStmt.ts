@@ -10,12 +10,17 @@ import { consumeStmtTerminator } from "./statementTerminator";
  * @derivation `<declaration> -> <type> <identList> ';'`
  */
 export function declarationStmt(iterator: TokenIterator): void {
-  const type = typeStmt(iterator); // "int", "float", "string"
+  const typingMode = iterator.getTypingMode();
+  const type =
+    typingMode === "untyped"
+      ? (iterator.consume(TOKENS.RESERVEDS.variavel), "dynamic")
+      : typeStmt(iterator); // "int", "float", "string"
   const emitter = iterator.emitter;
 
   while (true) {
     const identToken = iterator.consume(TOKENS.LITERALS.identifier);
     const varName = identToken.lexeme;
+    iterator.declareSymbol(varName, type);
 
     emitter.emit("DECLARE", varName, type, null);
 

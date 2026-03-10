@@ -8,6 +8,7 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.grammar).toEqual({
       semicolonMode: "optional-eol",
       blockMode: "delimited",
+      typingMode: "typed",
     });
     expect(normalized.indentationBlock).toBe(false);
     expect(normalized.blockDelimiters).toBeUndefined();
@@ -26,9 +27,14 @@ describe("normalizeCompilerConfig", () => {
 
   it("preserves grammar from UI payload when present", () => {
     const normalized = normalizeCompilerConfig({
-      grammar: { semicolonMode: "required", blockMode: "delimited" },
+      grammar: {
+        semicolonMode: "required",
+        blockMode: "delimited",
+        typingMode: "untyped",
+      },
     });
 
     expect(normalized.grammar.semicolonMode).toBe("required");
+    expect(normalized.grammar.typingMode).toBe("untyped");
   });
 });

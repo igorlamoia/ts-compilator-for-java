@@ -1,6 +1,7 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator, ValueType } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { argumentListStmt } from "./argumentListStmt";
+import { Token } from "../../token";
 
 /**
  * Parses a function call expression.
@@ -12,22 +13,34 @@ import { argumentListStmt } from "./argumentListStmt";
  *
  * @derivation `<functionCallExpr> → IDENT '(' <argList> ')'`
  */
-export function functionCallExpr(iterator: TokenIterator, functionName: string): string {
-  // functionName já foi consumido antes de chamar esta função
+export function functionCallExpr(
+  iterator: TokenIterator,
+  functionName: Token,
+): ExprResult {
   iterator.consume(TOKENS.SYMBOLS.left_paren);
 
-  // Parsear lista de argumentos
   const args = argumentListStmt(iterator);
 
   iterator.consume(TOKENS.SYMBOLS.right_paren);
 
-  // Criar temporário para o resultado da função
   const resultTemp = iterator.emitter.newTemp();
+  const signature = iterator.resolveFunction(functionName.lexeme);
 
-  // Emitir chamada de função
-  // operand1: array de argumentos
-  // operand2: variável que recebe o retorno
-  iterator.emitter.emit("CALL", functionName, args, resultTemp);
+  if (signature) {
+    args.forEach((arg, index) => {
+      const expectedType = signature.params[index] ?? "unknown";
+      iterator.warnIfLossyIntConversion(expectedType, arg.type, arg.token);
+    });
+  }
 
-  return resultTemp;
+  iterator.emitter.emit(
+    "CALL",
+    functionName.lexeme,
+    args.map((arg) => arg.place),
+    resultTemp,
+  );
+  const returnType: ValueType = signature?.returnType ?? "unknown";
+  iterator.registerTemp(resultTemp, returnType);
+
+  return iterator.createExprResult(resultTemp, returnType, functionName);
 }

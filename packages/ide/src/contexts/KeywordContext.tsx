@@ -13,6 +13,7 @@ import type {
   IDEBlockMode,
   IDECompilerConfigPayload,
   IDESemicolonMode,
+  IDETypingMode,
 } from "@/entities/compiler-config";
 
 /** As 13 keywords editáveis com seus IDs numéricos de token */
@@ -33,6 +34,8 @@ const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
   switch: 50,
   case: 51,
   default: 52,
+  variavel: 53,
+  funcao: 54,
 };
 
 /** Lista ordenada das palavras originais customizáveis (para exibir no modal) */
@@ -54,6 +57,7 @@ type StoredKeywordCustomization = {
   blockDelimiters: BlockDelimiters;
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
+  typingMode: IDETypingMode;
 };
 
 type KeywordContextType = {
@@ -83,6 +87,10 @@ type KeywordContextType = {
   blockMode: IDEBlockMode;
   /** Define modo de bloco da gramática */
   setBlockMode: (value: IDEBlockMode) => void;
+  /** Modo de tipagem da gramática */
+  typingMode: IDETypingMode;
+  /** Define modo de tipagem da gramática */
+  setTypingMode: (value: IDETypingMode) => void;
   /** Valida se uma palavra customizada é válida */
   validateKeyword: (
     original: string,
@@ -163,12 +171,17 @@ function getDefaultBlockMode(): IDEBlockMode {
   return "delimited";
 }
 
+function getDefaultTypingMode(): IDETypingMode {
+  return "typed";
+}
+
 function loadCustomization(): StoredKeywordCustomization {
   const defaults: StoredKeywordCustomization = {
     mappings: getDefaultMappings(),
     blockDelimiters: getDefaultBlockDelimiters(),
     semicolonMode: getDefaultSemicolonMode(),
     blockMode: getDefaultBlockMode(),
+    typingMode: getDefaultTypingMode(),
   };
 
   if (typeof window === "undefined") return defaults;
@@ -188,6 +201,10 @@ function loadCustomization(): StoredKeywordCustomization {
         parsed.blockMode === "delimited" || parsed.blockMode === "indentation"
           ? parsed.blockMode
           : getDefaultBlockMode();
+      const typingMode =
+        parsed.typingMode === "typed" || parsed.typingMode === "untyped"
+          ? parsed.typingMode
+          : getDefaultTypingMode();
 
       if (!isValidStoredMappings(mappings)) return defaults;
 
@@ -201,6 +218,7 @@ function loadCustomization(): StoredKeywordCustomization {
             : getDefaultBlockDelimiters(),
         semicolonMode,
         blockMode,
+        typingMode,
       };
     }
 
@@ -215,6 +233,7 @@ function loadCustomization(): StoredKeywordCustomization {
       blockDelimiters: getDefaultBlockDelimiters(),
       semicolonMode: getDefaultSemicolonMode(),
       blockMode: getDefaultBlockMode(),
+      typingMode: getDefaultTypingMode(),
     };
   } catch {
     return defaults;
@@ -236,6 +255,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     getDefaultSemicolonMode(),
   );
   const [blockMode, setBlockMode] = useState<IDEBlockMode>(getDefaultBlockMode);
+  const [typingMode, setTypingMode] = useState<IDETypingMode>(
+    getDefaultTypingMode(),
+  );
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
 
@@ -248,6 +270,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setBlockDelimiters(loadedCustomization.blockDelimiters);
     setSemicolonMode(loadedCustomization.semicolonMode);
     setBlockMode(loadedCustomization.blockMode);
+    setTypingMode(loadedCustomization.typingMode);
     persistCustomization(loadedCustomization);
     setIsHydrated(true);
   }, []);
@@ -255,8 +278,21 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   // Persistir no localStorage quando mudar
   useEffect(() => {
     if (!isHydrated) return;
-    persistCustomization({ mappings, blockDelimiters, semicolonMode, blockMode });
-  }, [mappings, blockDelimiters, semicolonMode, blockMode, isHydrated]);
+    persistCustomization({
+      mappings,
+      blockDelimiters,
+      semicolonMode,
+      blockMode,
+      typingMode,
+    });
+  }, [
+    mappings,
+    blockDelimiters,
+    semicolonMode,
+    blockMode,
+    typingMode,
+    isHydrated,
+  ]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -305,6 +341,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setBlockDelimiters(getDefaultBlockDelimiters());
     setSemicolonMode(getDefaultSemicolonMode());
     setBlockMode(getDefaultBlockMode());
+    setTypingMode(getDefaultTypingMode());
   }, []);
 
   const buildKeywordMap = useCallback((): Record<string, number> => {
@@ -333,7 +370,10 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         return "Os delimitadores de abertura e fechamento devem ser diferentes.";
       }
 
-      if (ORIGINAL_KEYWORDS.includes(open) || ORIGINAL_KEYWORDS.includes(close)) {
+      if (
+        ORIGINAL_KEYWORDS.includes(open) ||
+        ORIGINAL_KEYWORDS.includes(close)
+      ) {
         return "Delimitadores não podem reutilizar palavras reservadas.";
       }
 
@@ -350,6 +390,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     const grammar = {
       semicolonMode,
       blockMode,
+      typingMode,
     };
 
     return {
@@ -371,6 +412,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     validateBlockDelimiters,
     semicolonMode,
     blockMode,
+    typingMode,
   ]);
 
   return (
@@ -389,6 +431,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         setSemicolonMode,
         blockMode,
         setBlockMode,
+        typingMode,
+        setTypingMode,
         validateKeyword,
         isOpenKeywordCustomizer,
         setIsOpenKeywordCustomizer,

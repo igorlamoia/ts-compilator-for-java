@@ -179,7 +179,7 @@ export function switchStmt(iterator: TokenIterator): void {
   iterator.emitter.emit("LABEL", dispatchLabel, null, null);
   emitSwitchDispatch(
     iterator,
-    switchValue,
+    switchValue.place,
     cases,
     defaultLabel,
     switchEndLabel,

@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { relationalStmt } from "./relationalStmt";
 
@@ -7,17 +7,18 @@ import { relationalStmt } from "./relationalStmt";
  *
  * @derivation `<not> -> ! <not> | <rel>`
  */
-export function notStmt(iterator: TokenIterator): string {
+export function notStmt(iterator: TokenIterator): ExprResult {
   const { logical_not } = TOKENS.LOGICALS;
 
   if (iterator.match(logical_not)) {
-    iterator.consume(logical_not);
+    const token = iterator.consume(logical_not);
 
     const inner = notStmt(iterator); // chamada recursiva
     const temp = iterator.emitter.newTemp();
 
-    iterator.emitter.emit("!", temp, inner, null);
-    return temp;
+    iterator.emitter.emit("!", temp, inner.place, null);
+    iterator.registerTemp(temp, "bool");
+    return iterator.createExprResult(temp, "bool", token);
   }
 
   return relationalStmt(iterator); // fallback: expressão relacional

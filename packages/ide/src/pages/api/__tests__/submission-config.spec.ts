@@ -103,7 +103,11 @@ describe("/api/submissions/validate config propagation", () => {
         keywordMap: { exibir: 33 },
         indentationBlock: false,
         blockDelimiters: { open: "begin", close: "end" },
-        grammar: { semicolonMode: "required", blockMode: "indentation" },
+        grammar: {
+          semicolonMode: "required",
+          blockMode: "indentation",
+          typingMode: "untyped",
+        },
       },
     } as any;
 
@@ -121,7 +125,11 @@ describe("/api/submissions/validate config propagation", () => {
 
     expect(TokenIteratorMock).toHaveBeenCalledWith([{ type: "IDENT" }], {
       locale: "pt-BR",
-      grammar: { semicolonMode: "required", blockMode: "indentation" },
+      grammar: {
+        semicolonMode: "required",
+        blockMode: "indentation",
+        typingMode: "untyped",
+      },
     });
   });
 });
