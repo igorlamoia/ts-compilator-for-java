@@ -1,4 +1,4 @@
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import { useContext } from "react";
 
 // Custom hook for accessing EditorContext

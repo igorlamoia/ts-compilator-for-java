@@ -7,7 +7,7 @@ import { useState, useContext } from "react";
 import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import { TToken } from "@/@types/token";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";

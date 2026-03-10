@@ -8,7 +8,7 @@ import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
 

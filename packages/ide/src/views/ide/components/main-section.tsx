@@ -3,7 +3,7 @@ import { OpenFIlesList } from "./open-files-list";
 import { Editor } from "@/components/editor";
 import { HomeScreen } from "@/components/home-screen";
 import { useContext } from "react";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {

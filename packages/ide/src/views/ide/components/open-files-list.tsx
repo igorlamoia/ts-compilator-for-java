@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 import {
   ContextMenu,
