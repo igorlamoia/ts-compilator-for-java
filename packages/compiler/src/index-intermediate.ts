@@ -29,7 +29,7 @@ function runningIntermediate() {
 
 function lexemerCode() {
   const sourceCode: string = fs.readFileSync(PATH, ENCODE);
-  const lexer = new Lexer(sourceCode);
+  const lexer = new Lexer(sourceCode, { locale: "en" });
   const tokens = lexer.scanTokens();
 
   return tokens;

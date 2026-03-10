@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { unitaryStmt } from "./unitaryStmt";
 import { TArithmetics } from "../../interpreter/constants";
@@ -14,8 +14,8 @@ import { TArithmetics } from "../../interpreter/constants";
  */
 export function restMultStmt(
   iterator: TokenIterator,
-  inherited: string
-): string {
+  inherited: ExprResult,
+): ExprResult {
   const { star, slash, modulo } = TOKENS.ARITHMETICS;
 
   while (true) {
@@ -31,8 +31,10 @@ export function restMultStmt(
     iterator.consume(token.type); // consume '*', '/', '%'
     const right = unitaryStmt(iterator);
     const temp = iterator.emitter.newTemp();
-    iterator.emitter.emit(op, temp, inherited, right);
-    inherited = temp;
+    iterator.emitter.emit(op, temp, inherited.place, right.place);
+    const type = iterator.mergeArithmeticTypes(inherited.type, right.type);
+    iterator.registerTemp(temp, type);
+    inherited = iterator.createExprResult(temp, type, token);
   }
 
   return inherited;

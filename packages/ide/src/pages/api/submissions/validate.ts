@@ -1,39 +1,226 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import type { KeywordMap } from '@ts-compilator-for-java/compiler/src/lexer'
+import { Lexer } from '@ts-compilator-for-java/compiler/src/lexer'
+import type {
+    KeywordMap,
+    LexerBlockDelimiters,
+} from '@ts-compilator-for-java/compiler/src/lexer/config'
+import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
+import { IssueError } from '@ts-compilator-for-java/compiler/issue'
+import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
+import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
 import prisma from '@/lib/prisma'
-import { validateSubmissionUseCase, type ValidationResult } from '@/use-cases/compiler/validate-submission'
+import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
+import { normalizeCompilerConfig } from '../../../lib/compiler-config'
+import type { IDEGrammarConfig } from '@/entities/compiler-config'
 
-export type { ValidationResult as TValidationResult }
+export type TTestCaseResult = {
+    label: string;
+    input: string;
+    expectedOutput: string;
+    actualOutput: string;
+    passed: boolean;
+}
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<ValidationResult>) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ valid: false, errors: ['Method not allowed'], warnings: [] })
-  }
+export type TValidationResult = {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+    submissionId?: string;
+    testCaseResults?: TTestCaseResult[];
+    testCasesPassed?: number;
+    testCasesTotal?: number;
+}
 
-  const userId = req.headers['x-user-id'] as string
-  if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
+async function runTestCase(
+    instructions: Instruction[],
+    input: string,
+    timeoutMs = 5000
+): Promise<{ output: string; error: string | null }> {
+    const inputLines = input.split('\n')
+    let inputIndex = 0
+    let output = ''
 
-  const { exerciseId, sourceCode, keywordMap } = req.body as {
-    exerciseId: string
-    sourceCode: string
-    keywordMap?: KeywordMap
-  }
+    const interpreter = new Interpreter(
+        instructions,
+        {
+            stdout: (msg: string) => {
+                output += msg
+            },
+            stdin: async () => {
+                if (inputIndex < inputLines.length) {
+                    return inputLines[inputIndex++]
+                }
+                return ''
+            },
+        }
+    )
 
-  if (!exerciseId || !sourceCode) {
-    return res.status(400).json({ valid: false, errors: ['Código e exercício são obrigatórios'], warnings: [] })
-  }
+    try {
+        await Promise.race([
+            interpreter.execute(),
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs)
+            ),
+        ])
+        return { output, error: null }
+    } catch (err) {
+        if (err instanceof Error && err.message === 'TIMEOUT') {
+            return { output, error: 'Tempo limite excedido (5s)' }
+        }
+        return { output, error: (err as Error).message }
+    }
+}
 
-  try {
-    const result = await validateSubmissionUseCase(prisma, {
-      exerciseId,
-      sourceCode,
-      userId,
-      keywordMap,
-      dryRun: req.query.dryRun === 'true',
-    })
-    return res.status(200).json(result)
-  } catch (error) {
-    console.error(error)
-    return res.status(500).json({ valid: false, errors: ['Erro ao salvar a submissão no banco de dados'], warnings: [] })
-  }
+function normalizeOutput(s: string): string {
+    return s.replace(/\r\n/g, '\n').trimEnd()
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse<TValidationResult>) {
+    if (req.method !== 'POST') return res.status(405).json({ valid: false, errors: ['Method not allowed'], warnings: [] })
+
+    const userId = req.headers['x-user-id'] as string
+    if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
+
+    const { exerciseId, sourceCode, keywordMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
+        exerciseId: string
+        sourceCode: string
+        keywordMap?: KeywordMap
+        blockDelimiters?: LexerBlockDelimiters
+        indentationBlock?: boolean
+        grammar?: Partial<IDEGrammarConfig>
+        locale?: string
+    }
+    const dryRun = req.query.dryRun === 'true'
+
+    if (!exerciseId || !sourceCode) {
+        return res.status(400).json({ valid: false, errors: ['Código e exercício são obrigatórios'], warnings: [] })
+    }
+
+    const errors: string[] = []
+    const warnings: string[] = []
+    let instructions: Instruction[] | null = null
+
+    // Step 1: Lexical Analysis
+    try {
+        const normalized = normalizeCompilerConfig({
+            keywordMap,
+            blockDelimiters,
+            indentationBlock,
+            grammar,
+        })
+        const effectiveKeywordMap = buildEffectiveKeywordMap(normalized.keywordMap)
+        const lexer = new Lexer(sourceCode, {
+            customKeywords: effectiveKeywordMap,
+            blockDelimiters: normalized.blockDelimiters,
+            indentationBlock: normalized.indentationBlock,
+        })
+        const tokens = lexer.scanTokens()
+
+        if (lexer.warnings.length > 0) {
+            lexer.warnings.forEach(w => warnings.push(`Aviso (linha ${w.line}): ${w.message}`))
+        }
+
+        // Step 2: Intermediate Code Generation (Syntax + Semantic)
+        try {
+            const iterator = new TokenIterator(tokens, {
+                locale,
+                grammar: normalized.grammar,
+            })
+            instructions = iterator.generateIntermediateCode()
+        } catch (error) {
+            if (error instanceof IssueError) {
+                errors.push(`Erro de compilação (linha ${error.details.line}): ${error.details.message}`)
+            } else {
+                errors.push(`Erro de compilação: ${(error as Error).message}`)
+            }
+        }
+    } catch (error) {
+        if (error instanceof IssueError) {
+            errors.push(`Erro léxico (linha ${error.details.line}): ${error.details.message}`)
+        } else {
+            errors.push(`Erro léxico: ${(error as Error).message}`)
+        }
+    }
+
+    // If there are compilation errors, return them without saving
+    if (errors.length > 0) {
+        return res.status(200).json({ valid: false, errors, warnings })
+    }
+
+    // Step 3: Run test cases if they exist
+    let testCaseResults: TTestCaseResult[] | undefined
+    let testCasesPassed: number | undefined
+    let testCasesTotal: number | undefined
+
+    if (instructions) {
+        const exercise = await prisma.exercise.findUnique({
+            where: { id: exerciseId },
+            include: { testCases: { orderBy: { orderIndex: 'asc' } } }
+        })
+
+        if (exercise?.testCases && exercise.testCases.length > 0) {
+            testCaseResults = []
+            testCasesTotal = exercise.testCases.length
+            testCasesPassed = 0
+
+            for (const tc of exercise.testCases) {
+                const { output, error } = await runTestCase(instructions, tc.input)
+
+                const actualOutput = error
+                    ? `[Erro] ${error}`
+                    : normalizeOutput(output)
+                const expectedNormalized = normalizeOutput(tc.expectedOutput)
+                const passed = !error && actualOutput === expectedNormalized
+
+                if (passed) testCasesPassed++
+
+                testCaseResults.push({
+                    label: tc.label || `Caso ${tc.orderIndex + 1}`,
+                    input: tc.input,
+                    expectedOutput: tc.expectedOutput,
+                    actualOutput: error ? `[Erro] ${error}` : output,
+                    passed,
+                })
+            }
+        }
+    }
+
+    // Step 4: Create the submission (unless dryRun)
+    if (dryRun) {
+        return res.status(200).json({
+            valid: true,
+            errors: [],
+            warnings,
+            testCaseResults,
+            testCasesPassed,
+            testCasesTotal,
+        })
+    }
+
+    try {
+        const submission = await prisma.submission.create({
+            data: {
+                exerciseId,
+                studentId: userId,
+                codeSnapshot: sourceCode,
+                status: 'SUBMITTED'
+            }
+        })
+
+        return res.status(200).json({
+            valid: true,
+            errors: [],
+            warnings,
+            submissionId: submission.id,
+            testCaseResults,
+            testCasesPassed,
+            testCasesTotal,
+        })
+    } catch (error) {
+        return res.status(500).json({
+            valid: false,
+            errors: ['Erro ao salvar a submissão no banco de dados'],
+            warnings
+        })
+    }
 }

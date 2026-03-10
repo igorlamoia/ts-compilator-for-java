@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { exprStmt } from "./exprStmt";
 
@@ -9,8 +9,8 @@ import { exprStmt } from "./exprStmt";
  *
  * @returns Array of expression results (temporaries or values)
  */
-export function argumentListStmt(iterator: TokenIterator): string[] {
-  const args: string[] = [];
+export function argumentListStmt(iterator: TokenIterator): ExprResult[] {
+  const args: ExprResult[] = [];
 
   // Verifica se tem argumentos (se próximo token é ')', lista vazia)
   if (iterator.peek().type === TOKENS.SYMBOLS.right_paren) {

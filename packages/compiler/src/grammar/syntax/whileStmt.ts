@@ -20,7 +20,7 @@ export function whileStmt(iterator: TokenIterator): void {
 
   const conditionResult = exprStmt(iterator); // condicional
 
-  iterator.emitter.emit("IF", conditionResult, labelBody, labelEnd);
+  iterator.emitter.emit("IF", conditionResult.place, labelBody, labelEnd);
   iterator.emitter.emit("LABEL", labelBody, null, null);
 
   iterator.consume(TOKENS.SYMBOLS.right_paren);

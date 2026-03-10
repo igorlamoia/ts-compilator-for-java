@@ -1,5 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
+import { consumeStmtTerminator } from "./statementTerminator";
 
 /**
  * Parses a continue statement and emits a JUMP to the current loop's continue label.
@@ -8,7 +9,7 @@ import { TOKENS } from "../../token/constants";
  */
 export function continueStmt(iterator: TokenIterator): void {
   const continueToken = iterator.consume(TOKENS.RESERVEDS.continue);
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 
   const continueLabel = iterator.getCurrentContinueLabel();
   if (!continueLabel) {

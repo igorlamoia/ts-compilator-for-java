@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { andStmt } from "./andStmt";
 /**
@@ -7,14 +7,18 @@ import { andStmt } from "./andStmt";
  *
  * @derivation `<restoOr> -> '||' <and> <restoOr> | &`
  */
-export function restOrStmt(iterator: TokenIterator, inherited: string): string {
+export function restOrStmt(
+  iterator: TokenIterator,
+  inherited: ExprResult,
+): ExprResult {
   while (iterator.match(TOKENS.LOGICALS.logical_or)) {
-    iterator.consume(TOKENS.LOGICALS.logical_or);
+    const token = iterator.consume(TOKENS.LOGICALS.logical_or);
     const right = andStmt(iterator);
     const temp = iterator.emitter.newTemp();
 
-    iterator.emitter.emit("||", temp, inherited, right);
-    inherited = temp; // para próxima iteração
+    iterator.emitter.emit("||", temp, inherited.place, right.place);
+    iterator.registerTemp(temp, "bool");
+    inherited = iterator.createExprResult(temp, "bool", token);
   }
 
   return inherited;

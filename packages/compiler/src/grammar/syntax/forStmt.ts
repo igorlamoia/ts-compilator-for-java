@@ -31,7 +31,7 @@ export function forStmt(iterator: TokenIterator): void {
   iterator.consume(semicolon);
 
   if (conditionResult !== null) {
-    iterator.emitter.emit("IF", conditionResult, labelBody, labelEnd);
+    iterator.emitter.emit("IF", conditionResult.place, labelBody, labelEnd);
   } else {
     iterator.emitter.emit("JUMP", labelBody, null, null);
   }

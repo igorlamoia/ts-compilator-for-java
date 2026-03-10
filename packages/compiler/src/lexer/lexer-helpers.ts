@@ -21,3 +21,7 @@ export function isAlphaNumeric(c: string): boolean {
 export function isWhitespace(c: string): boolean {
   return c === " " || c === "\r" || c === "\t";
 }
+
+export function isIndentationWhitespace(c: string): boolean {
+  return c === " " || c === "\t";
+}

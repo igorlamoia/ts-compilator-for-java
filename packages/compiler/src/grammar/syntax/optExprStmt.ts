@@ -1,5 +1,5 @@
 import { TOKENS } from "../../token/constants";
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
 
 /**
@@ -8,7 +8,7 @@ import { exprStmt } from "./exprStmt";
  *
  * @derivation `<optExpr> → <expr> | ε`
  */
-export function optExprStmt(iterator: TokenIterator): string | null {
+export function optExprStmt(iterator: TokenIterator): ExprResult | null {
   const token = iterator.peek();
   if (isStartToken(token.type)) {
     return exprStmt(iterator);
@@ -22,8 +22,11 @@ function isStartToken(type: number): boolean {
     TOKENS.LITERALS.string_literal,
     TOKENS.LITERALS.integer_literal,
     TOKENS.LITERALS.float_literal,
-    TOKENS.RESERVEDS.float,
-    TOKENS.RESERVEDS.int,
-    TOKENS.SYMBOLS.left_brace, // TODO voltar aqui pra saber se tem left brace ou não de vdd? TOKENS.SYMBOLS.left_paren,
+    TOKENS.LITERALS.hex_literal,
+    TOKENS.LITERALS.octal_literal,
+    TOKENS.SYMBOLS.left_paren,
+    TOKENS.ARITHMETICS.plus,
+    TOKENS.ARITHMETICS.minus,
+    TOKENS.LOGICALS.logical_not,
   ].includes(type);
 }

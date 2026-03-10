@@ -1,5 +1,14 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useKeywords, KeywordMapping } from "@/contexts/KeywordContext";
+import {
+  useKeywords,
+  KeywordMapping,
+  BlockDelimiters,
+} from "@/contexts/KeywordContext";
+import type {
+  IDEBlockMode,
+  IDESemicolonMode,
+  IDETypingMode,
+} from "@/entities/compiler-config";
 import {
   Dialog,
   DialogContent,
@@ -30,29 +39,52 @@ const KEYWORD_EXPLANATIONS: Record<string, string> = {
   switch: "Seleciona um bloco com base no valor de uma expressão.",
   case: "Define um ramo dentro do switch para um valor específico.",
   default: "Executa quando nenhum case do switch corresponde.",
+  variavel: "Declara uma variável no modo não tipado.",
+  funcao: "Declara uma função no modo não tipado.",
 };
 
 export function KeywordCustomizer() {
   const {
     mappings,
+    blockDelimiters,
     replaceKeywords,
+    setBlockDelimiters,
     validateKeyword,
+    validateBlockDelimiters,
+    semicolonMode,
+    setSemicolonMode,
+    blockMode,
+    setBlockMode,
+    typingMode,
+    setTypingMode,
     isOpenKeywordCustomizer: isOpen,
     setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
   const [draftMappings, setDraftMappings] =
     useState<KeywordMapping[]>(mappings);
+  const [draftBlockDelimiters, setDraftBlockDelimiters] =
+    useState<BlockDelimiters>(blockDelimiters);
+  const [draftSemicolonMode, setDraftSemicolonMode] =
+    useState<IDESemicolonMode>(semicolonMode);
+  const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
+  const [draftTypingMode, setDraftTypingMode] = useState<IDETypingMode>(typingMode);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
+  const [delimiterError, setDelimiterError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setDraftMappings(mappings);
+      setDraftBlockDelimiters(blockDelimiters);
+      setDraftSemicolonMode(semicolonMode);
+      setDraftBlockMode(blockMode);
+      setDraftTypingMode(typingMode);
       setCurrentStep(0);
       setCurrentError(null);
+      setDelimiterError(null);
     }
-  }, [isOpen, mappings]);
+  }, [isOpen, mappings, blockDelimiters, semicolonMode, blockMode, typingMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,9 +93,33 @@ export function KeywordCustomizer() {
     }
   }, [isOpen, currentStep]);
 
+  useEffect(() => {
+    if (draftBlockMode === "indentation") {
+      setDelimiterError(null);
+      return;
+    }
+    setDelimiterError(validateBlockDelimiters(draftBlockDelimiters));
+  }, [draftBlockMode, draftBlockDelimiters, validateBlockDelimiters]);
+
   const hasChanges = useMemo(
-    () => draftMappings.some((m: KeywordMapping) => m.original !== m.custom),
-    [draftMappings],
+    () =>
+      draftMappings.some((m: KeywordMapping) => m.original !== m.custom) ||
+      draftBlockDelimiters.open !== blockDelimiters.open ||
+      draftBlockDelimiters.close !== blockDelimiters.close ||
+      draftSemicolonMode !== semicolonMode ||
+      draftBlockMode !== blockMode ||
+      draftTypingMode !== typingMode,
+    [
+      draftMappings,
+      draftBlockDelimiters,
+      blockDelimiters,
+      draftSemicolonMode,
+      semicolonMode,
+      draftBlockMode,
+      blockMode,
+      draftTypingMode,
+      typingMode,
+    ],
   );
 
   const currentMapping = draftMappings[currentStep];
@@ -92,9 +148,22 @@ export function KeywordCustomizer() {
       ...mapping,
       custom: mapping.original,
     }));
+    const resetBlockDelimiters = { open: "", close: "" };
+    const resetSemicolonMode: IDESemicolonMode = "optional-eol";
+    const resetBlockMode: IDEBlockMode = "delimited";
+    const resetTypingMode: IDETypingMode = "typed";
     setDraftMappings(resetMappings);
+    setDraftBlockDelimiters(resetBlockDelimiters);
+    setDraftSemicolonMode(resetSemicolonMode);
+    setDraftBlockMode(resetBlockMode);
+    setDraftTypingMode(resetTypingMode);
     replaceKeywords(resetMappings);
+    setBlockDelimiters(resetBlockDelimiters);
+    setSemicolonMode(resetSemicolonMode);
+    setBlockMode(resetBlockMode);
+    setTypingMode(resetTypingMode);
     setCurrentError(null);
+    setDelimiterError(null);
   };
 
   const goToPrevious = () => {
@@ -126,9 +195,42 @@ export function KeywordCustomizer() {
         return;
       }
     }
+    if (draftBlockMode === "delimited") {
+      const blockError = validateBlockDelimiters(draftBlockDelimiters);
+      if (blockError) {
+        setDelimiterError(blockError);
+        return;
+      }
+    } else {
+      setDelimiterError(null);
+    }
     replaceKeywords(draftMappings);
+    setSemicolonMode(draftSemicolonMode);
+    setBlockMode(draftBlockMode);
+    setTypingMode(draftTypingMode);
+    setBlockDelimiters({
+      open: draftBlockDelimiters.open.trim(),
+      close: draftBlockDelimiters.close.trim(),
+    });
     setCurrentError(null);
+    setDelimiterError(null);
     setIsOpen(false);
+  };
+
+  const handleDelimiterChange = (
+    field: keyof BlockDelimiters,
+    value: string,
+  ) => {
+    const next = {
+      ...draftBlockDelimiters,
+      [field]: value,
+    };
+    setDraftBlockDelimiters(next);
+    if (draftBlockMode === "delimited") {
+      setDelimiterError(validateBlockDelimiters(next));
+      return;
+    }
+    setDelimiterError(null);
   };
 
   const handleSubmitCurrentStep = (event: FormEvent<HTMLFormElement>) => {
@@ -144,14 +246,14 @@ export function KeywordCustomizer() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="mx-4">
+      <DialogContent className="mx-4 overflow-hidden">
         <form
           onSubmit={handleSubmitCurrentStep}
           role="dialog"
           aria-modal="true"
           aria-labelledby="keyword-customizer-title"
           aria-describedby="keyword-customizer-description"
-          className="flex flex-col h-full"
+          className="flex h-full min-h-0 flex-col"
         >
           <DialogHeader>
             <div>
@@ -171,7 +273,7 @@ export function KeywordCustomizer() {
             </DialogClose>
           </DialogHeader>
 
-          <div className="overflow-y-auto p-5 flex-1">
+          <div className="min-h-0 flex-1 overflow-y-auto p-5">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500 mb-2">
                 Comandos Atuais
@@ -290,6 +392,149 @@ export function KeywordCustomizer() {
                 <span id="keyword-error" className="text-xs text-red-500">
                   {currentError}
                 </span>
+              )}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Ponto e Vírgula
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftSemicolonMode("optional-eol")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftSemicolonMode === "optional-eol"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Opcional no fim da linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftSemicolonMode("required")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftSemicolonMode === "required"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Obrigatório
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Bloco
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftBlockMode("delimited")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftBlockMode === "delimited"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Delimitadores de bloco
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftBlockMode("indentation")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftBlockMode === "indentation"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Indentação
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Tipagem
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftTypingMode("typed")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftTypingMode === "typed"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Tipado
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftTypingMode("untyped")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftTypingMode === "untyped"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Não tipado
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Delimitadores de Bloco (Opcional)
+              </p>
+              <p className="text-sm dark:text-gray-400 text-gray-500">
+                Configure palavras para abrir/fechar blocos no lugar de {"{"} e
+                {"}"} (ex.: <code>begin</code> e <code>end</code>).
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  value={draftBlockDelimiters.open}
+                  onChange={(e) => handleDelimiterChange("open", e.target.value)}
+                  disabled={draftBlockMode === "indentation"}
+                  placeholder="Abertura (ex.: begin)"
+                  spellCheck={false}
+                  className={`
+                    w-full px-3 py-2 rounded-md text-sm font-mono
+                    dark:bg-slate-800 bg-gray-50
+                    dark:text-gray-200 text-gray-800
+                    border transition-colors outline-none
+                    focus:ring-2 focus:ring-cyan-500/50
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    ${delimiterError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                  `}
+                />
+                <input
+                  type="text"
+                  value={draftBlockDelimiters.close}
+                  onChange={(e) =>
+                    handleDelimiterChange("close", e.target.value)
+                  }
+                  disabled={draftBlockMode === "indentation"}
+                  placeholder="Fechamento (ex.: end)"
+                  spellCheck={false}
+                  className={`
+                    w-full px-3 py-2 rounded-md text-sm font-mono
+                    dark:bg-slate-800 bg-gray-50
+                    dark:text-gray-200 text-gray-800
+                    border transition-colors outline-none
+                    focus:ring-2 focus:ring-cyan-500/50
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    ${delimiterError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                  `}
+                />
+              </div>
+
+              {draftBlockMode === "delimited" && delimiterError && (
+                <span className="text-xs text-red-500">{delimiterError}</span>
               )}
             </div>
           </div>

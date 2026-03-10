@@ -1,4 +1,4 @@
-import { TArithmetics, TRelational } from "./constants";
+import { ScanHint, TArithmetics, TRelational } from "./constants";
 
 export function makeOperation(
   op: TArithmetics,
@@ -50,6 +50,20 @@ export function makeRelation(
 
 export type TTypeOperand = string | number | boolean | null;
 
+export function truncateTowardZero(value: number): number {
+  return value < 0 ? Math.ceil(value) : Math.floor(value);
+}
+
+export function coerceValueForType(type: string, value: unknown): unknown {
+  if (type === "int" && typeof value === "number") {
+    return truncateTowardZero(value);
+  }
+  if (type === "float" && typeof value === "number") {
+    return value;
+  }
+  return value;
+}
+
 export function parseOrGetVariable(
   operand: TTypeOperand,
   variables: Map<string, unknown>,
@@ -90,4 +104,20 @@ export function parsePiece(piece: string): string | number | boolean | null {
   if (!Number.isNaN(asNumber) && piece !== "") return asNumber;
 
   return piece;
+}
+
+export function parseScanInput(hint: ScanHint, rawInput: string): unknown {
+  const trimmed = rawInput.trim();
+
+  if (hint === "int") {
+    const parsed = Number.parseInt(trimmed, 10);
+    return Number.isNaN(parsed) ? parsePiece(trimmed) : parsed;
+  }
+
+  if (hint === "float") {
+    const parsed = Number.parseFloat(trimmed);
+    return Number.isNaN(parsed) ? parsePiece(trimmed) : parsed;
+  }
+
+  return parsePiece(trimmed);
 }

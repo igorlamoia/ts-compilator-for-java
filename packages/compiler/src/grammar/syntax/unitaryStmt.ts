@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { factorStmt } from "./factorStmt";
 import { TUnaryArithmetics } from "../../interpreter/constants";
@@ -9,7 +9,7 @@ import { TUnaryArithmetics } from "../../interpreter/constants";
  *
  * @returns A variable, literal or temporary name
  */
-export function unitaryStmt(iterator: TokenIterator): string {
+export function unitaryStmt(iterator: TokenIterator): ExprResult {
   const token = iterator.peek();
   const { minus, plus } = TOKENS.ARITHMETICS;
 
@@ -20,7 +20,9 @@ export function unitaryStmt(iterator: TokenIterator): string {
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
-    return incremented;
+    const type = iterator.resolveSymbol(identifier.lexeme);
+    iterator.registerTemp(incremented, type);
+    return iterator.createExprResult(incremented, type, identifier);
   }
 
   if (token.type === plus || token.type === minus) {
@@ -37,8 +39,9 @@ export function unitaryStmt(iterator: TokenIterator): string {
 
     const value = unitaryStmt(iterator);
     const temp = iterator.emitter.newTemp();
-    iterator.emitter.emit(operator as TUnaryArithmetics, temp, value, null);
-    return temp;
+    iterator.emitter.emit(operator as TUnaryArithmetics, temp, value.place, null);
+    iterator.registerTemp(temp, value.type);
+    return iterator.createExprResult(temp, value.type, token);
   }
 
   return factorStmt(iterator); // no operador unário: delega ao fator

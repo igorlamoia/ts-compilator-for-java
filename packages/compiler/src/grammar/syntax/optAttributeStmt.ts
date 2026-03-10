@@ -8,7 +8,11 @@ import { attributeStmt } from "./attributeStmt";
  * @derivation `<optAtrib> → <atrib> | ε`
  */
 export function optAttributeStmt(iterator: TokenIterator): void {
-  if (iterator.peek().type !== TOKENS.SYMBOLS.semicolon) {
+  const current = iterator.peek().type;
+  if (
+    current !== TOKENS.SYMBOLS.semicolon &&
+    current !== TOKENS.SYMBOLS.right_paren
+  ) {
     attributeStmt(iterator);
   }
 }

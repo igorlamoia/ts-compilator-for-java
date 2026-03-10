@@ -1,5 +1,5 @@
 import { TOKENS } from "../../token/constants";
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { addStmt } from "./addStmt";
 
 /**
@@ -10,16 +10,17 @@ import { addStmt } from "./addStmt";
  */
 export function restRelationalStmt(
   iterator: TokenIterator,
-  inherited: string
-): string {
+  inherited: ExprResult,
+): ExprResult {
   const token = iterator.peek();
   const operator = TOKENS.RELATIONAL_SYMBOLS[token.type] ?? null;
   if (operator) {
     iterator.consume(token.type);
     const right = addStmt(iterator);
     const temp = iterator.emitter.newTemp();
-    iterator.emitter.emit(operator, temp, inherited, right);
-    return temp;
+    iterator.emitter.emit(operator, temp, inherited.place, right.place);
+    iterator.registerTemp(temp, "bool");
+    return iterator.createExprResult(temp, "bool", token);
   }
   return inherited;
 }

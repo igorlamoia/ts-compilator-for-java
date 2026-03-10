@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { andStmt } from "./andStmt";
 import { restOrStmt } from "./restOrStmt";
 /**
@@ -7,7 +7,7 @@ import { restOrStmt } from "./restOrStmt";
  * @derivation `<or> -> <and> <restoOr>`
  * @returns The identifier, literal or temp variable holding the result
  */
-export function orStmt(iterator: TokenIterator): string {
+export function orStmt(iterator: TokenIterator): ExprResult {
   const left = andStmt(iterator);
   return restOrStmt(iterator, left);
 }

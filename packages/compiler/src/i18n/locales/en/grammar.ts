@@ -16,6 +16,8 @@ const grammar = {
   duplicate_case_label: 'Duplicate case label "{lexeme}" in switch',
   invalid_case_literal:
     'Invalid case literal "{lexeme}". Only int and string literals are allowed.',
+  lossy_int_conversion:
+    "Possible lossy conversion from {sourceType} to {targetType}.",
 };
 
 export default grammar;
