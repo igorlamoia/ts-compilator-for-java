@@ -1,4 +1,10 @@
 import type * as monacoEditor from "monaco-editor";
+import {
+  JavaMMBlockMode,
+  JavaMMSnippetVariant,
+  JavaMMTypingMode,
+} from "./types";
+import { KEYWORD_SNIPPETS } from "./keyword-snippets";
 
 export const JAVAMM_LANGUAGE_ID = "java--";
 
@@ -28,6 +34,7 @@ export type JavaMMBlockDelimiters = {
 export type JavaMMLanguageOptions = {
   blockMode?: "delimited" | "indentation";
   blockDelimiters?: JavaMMBlockDelimiters;
+  typingMode?: "typed" | "untyped";
 };
 
 export function buildJavaMMMonarchLanguage(
@@ -126,7 +133,7 @@ export function buildJavaMMMonarchLanguage(
 export function buildJavaMMLanguageConfiguration(
   options: JavaMMLanguageOptions = {},
 ): monacoEditor.languages.LanguageConfiguration {
-  const brackets: monacoEditor.languages.LanguageBracket[] = [
+  const brackets: [string, string][] = [
     ["{", "}"],
     ["[", "]"],
     ["(", ")"],
@@ -164,7 +171,7 @@ export function buildJavaMMLanguageConfiguration(
 }
 
 const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
-  types: new Set(["int", "float", "string", "void"]),
+  types: new Set(["int", "float", "string", "void", "variavel", "funcao"]),
   conditionals: new Set(["if", "else", "switch", "case", "default"]),
   loops: new Set(["for", "while"]),
   flow: new Set(["break", "continue", "return"]),
@@ -211,48 +218,32 @@ const SEMANTIC_GROUP_LABELS: Record<JavaMMSemanticGroupName, string> = {
   io: "Entrada/Saída",
 };
 
-/**
- * Snippet bodies keyed by the original keyword.
- * Uses Monaco snippet syntax: $1, $2 for tab stops, ${1:placeholder} for placeholders.
- */
-const KEYWORD_SNIPPETS: Record<string, { body: string; description: string }> =
-  {
-    int: { body: "int ${1:nome};", description: "Declarar int" },
-    float: { body: "float ${1:nome};", description: "Declarar float" },
-    string: { body: "string ${1:nome};", description: "Declarar string" },
-    void: {
-      body: "void ${1:funcao}(${2:params}) {\n\t$3\n}",
-      description: "Função void",
-    },
-    if: {
-      body: "if (${1:condicao}) {\n\t$2\n}",
-      description: "Bloco if",
-    },
-    else: { body: "else {\n\t$1\n}", description: "Bloco else" },
-    switch: {
-      body: "switch (${1:variavel}) {\n\tcase ${2:valor}:\n\t\t$3\n\t\tbreak;\n\tdefault:\n\t\t$4\n}",
-      description: "Bloco switch",
-    },
-    for: {
-      body: "for (${1:int i = 0}; ${2:i < n}; ${3:++i}) {\n\t$4\n}",
-      description: "Laço for",
-    },
-    while: {
-      body: "while (${1:condicao}) {\n\t$2\n}",
-      description: "Laço while",
-    },
-    return: { body: "return ${1:valor};", description: "Retornar valor" },
-    break: { body: "break;", description: "Interromper laço" },
-    continue: { body: "continue;", description: "Continuar laço" },
-    print: {
-      body: 'print(${1:"mensagem"});',
-      description: "Imprimir valor",
-    },
-    scan: {
-      body: "scan(${1:int}, ${2:variavel});",
-      description: "Ler entrada",
-    },
-  };
+function mapSnippetKeywords(
+  snippetBody: string,
+  keywordMappings: JavaMMKeywordMapping[],
+): string {
+  const mappingEntries = keywordMappings
+    .map((m) => ({ original: m.original, custom: m.custom.trim() }))
+    .filter((m) => Boolean(m.custom));
+
+  if (!mappingEntries.length) return snippetBody;
+
+  return mappingEntries.reduce((acc, item) => {
+    const expression = new RegExp(`\\b${item.original}\\b`, "g");
+    return acc.replace(expression, item.custom);
+  }, snippetBody);
+}
+
+function isSnippetSupported(
+  snippet: JavaMMSnippetVariant,
+  typingMode: JavaMMTypingMode,
+  blockMode: JavaMMBlockMode,
+): boolean {
+  const supportsTyping =
+    !snippet.typingMode || snippet.typingMode === typingMode;
+  const supportsBlock = !snippet.blockMode || snippet.blockMode === blockMode;
+  return supportsTyping && supportsBlock;
+}
 
 let completionProviderDisposable: monacoEditor.IDisposable | null = null;
 
@@ -287,9 +278,17 @@ export function registerJavaMMLanguage(
 
   // Dispose previous completion provider before registering a new one
   completionProviderDisposable?.dispose();
+  if (typeof monaco.languages.registerCompletionItemProvider !== "function") {
+    completionProviderDisposable = null;
+    return;
+  }
   completionProviderDisposable =
     monaco.languages.registerCompletionItemProvider(JAVAMM_LANGUAGE_ID, {
       provideCompletionItems(model, position) {
+        const preferredTypingMode: JavaMMTypingMode =
+          options.typingMode ?? "typed";
+        const preferredBlockMode: JavaMMBlockMode =
+          options.blockMode ?? "delimited";
         const word = model.getWordUntilPosition(position);
         const range = {
           startLineNumber: position.lineNumber,
@@ -323,16 +322,28 @@ export function registerJavaMMLanguage(
             range,
           });
 
-          // Snippet completion (if a template is defined for this original keyword)
-          const snippet = KEYWORD_SNIPPETS[mapping.original];
-          if (snippet) {
-            // Replace the original keyword in the snippet body with the custom one
-            const customBody = snippet.body.replace(
-              new RegExp(`^${mapping.original}\\b`),
-              keyword,
+          // Snippet completion (multiple typed/untyped + block-mode variants)
+          const snippets = KEYWORD_SNIPPETS[mapping.original] ?? [];
+          for (const snippet of snippets) {
+            if (
+              !isSnippetSupported(
+                snippet,
+                preferredTypingMode,
+                preferredBlockMode,
+              )
+            ) {
+              continue;
+            }
+
+            const customBody = mapSnippetKeywords(
+              snippet.body,
+              keywordMappings,
             );
+            const suffix = snippet.labelSuffix
+              ? ` (${snippet.labelSuffix})`
+              : "";
             suggestions.push({
-              label: `${keyword}…`,
+              label: `${keyword}…${suffix}`,
               kind: monaco.languages.CompletionItemKind.Snippet,
               detail: snippet.description,
               documentation: customBody,

@@ -246,8 +246,9 @@ function persistCustomization(customization: StoredKeywordCustomization) {
 }
 
 export function KeywordProvider({ children }: { children: ReactNode }) {
-  const [mappings, setMappings] =
-    useState<KeywordMapping[]>(getDefaultKeywordMappings);
+  const [mappings, setMappings] = useState<KeywordMapping[]>(
+    getDefaultKeywordMappings,
+  );
   const [blockDelimiters, setBlockDelimiters] = useState<BlockDelimiters>(
     getDefaultBlockDelimiters(),
   );
@@ -300,10 +301,11 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       updateJavaMMKeywords(monacoRef.current, mappings, {
         blockMode,
         blockDelimiters,
+        typingMode,
       });
       retokenize();
     }
-  }, [mappings, blockMode, blockDelimiters, monacoRef, retokenize]);
+  }, [mappings, blockMode, blockDelimiters, typingMode, monacoRef, retokenize]);
 
   const validateKeyword = useCallback(
     (
