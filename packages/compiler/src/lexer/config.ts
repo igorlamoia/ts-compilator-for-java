@@ -1,5 +1,17 @@
 export type KeywordMap = Record<string, number>;
 
+export type OperatorWordMap = {
+  logical_or?: string;
+  logical_and?: string;
+  logical_not?: string;
+  less?: string;
+  less_equal?: string;
+  greater?: string;
+  greater_equal?: string;
+  equal_equal?: string;
+  not_equal?: string;
+};
+
 export type LexerBlockDelimiters = {
   open: string;
   close: string;
@@ -7,6 +19,7 @@ export type LexerBlockDelimiters = {
 
 export type LexerConfig = {
   customKeywords?: KeywordMap;
+  operatorWordMap?: OperatorWordMap;
   blockDelimiters?: LexerBlockDelimiters;
   locale?: string;
   indentationBlock?: boolean;

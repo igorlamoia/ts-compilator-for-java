@@ -1,6 +1,7 @@
 import type {
   IDECompilerConfigPayload,
   IDEGrammarConfig,
+  IDEOperatorWordMap,
   IDEPartialCompilerConfigPayload,
 } from "../entities/compiler-config";
 
@@ -9,6 +10,26 @@ const DEFAULT_GRAMMAR: IDEGrammarConfig = {
   blockMode: "delimited",
   typingMode: "typed",
 };
+
+function normalizeOperatorWordMap(
+  input: IDEOperatorWordMap | undefined,
+): IDEOperatorWordMap {
+  if (!input) return {};
+
+  return Object.entries(input).reduce((acc, [key, value]) => {
+    if (typeof value !== "string") {
+      return acc;
+    }
+
+    const normalizedValue = value.trim();
+    if (normalizedValue.length === 0) {
+      return acc;
+    }
+
+    acc[key as keyof IDEOperatorWordMap] = normalizedValue;
+    return acc;
+  }, {} as IDEOperatorWordMap);
+}
 
 export function normalizeCompilerConfig(
   input: IDEPartialCompilerConfigPayload,
@@ -29,6 +50,7 @@ export function normalizeCompilerConfig(
 
   return {
     keywordMap: input.keywordMap ?? {},
+    operatorWordMap: normalizeOperatorWordMap(input.operatorWordMap),
     grammar,
     indentationBlock,
     ...(grammar.blockMode === "delimited" && hasDelimiters
