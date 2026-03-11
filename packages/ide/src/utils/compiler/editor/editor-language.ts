@@ -76,6 +76,7 @@ export function buildJavaMMMonarchLanguage(
     loops: metadata.semanticGroups.loops,
     flow: metadata.semanticGroups.flow,
     io: metadata.semanticGroups.io,
+    operatorWords: metadata.operatorWords,
     operators: [...DEFAULT_OPERATORS, ...metadata.operatorWords],
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
     tokenizer: {
@@ -89,6 +90,7 @@ export function buildJavaMMMonarchLanguage(
               "@loops": "keyword.loop",
               "@flow": "keyword.flow",
               "@io": "keyword.io",
+              "@operatorWords": "operator.word",
               "@keywords": "keyword",
               "@default": "identifier",
             },
@@ -370,6 +372,21 @@ export function registerJavaMMLanguage(
               range,
             });
           }
+        }
+
+        // Add operator word completions
+        const metadata = buildJavaMMLanguageMetadata(
+          keywordMappings,
+          options.operatorWordMap,
+        );
+        for (const operatorWord of metadata.operatorWords) {
+          suggestions.push({
+            label: operatorWord,
+            kind: monaco.languages.CompletionItemKind.Operator,
+            detail: "Operador",
+            insertText: operatorWord,
+            range,
+          });
         }
 
         return { suggestions };

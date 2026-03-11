@@ -33,6 +33,7 @@ export function useIntermediatorCode() {
         tokens: tokens,
         locale: locale,
         grammar: lexerConfig.grammar,
+        operatorWordMap: lexerConfig.operatorWordMap,
       });
       const issues = [...data.warnings, ...data.infos];
       setIntermediateCode(data);

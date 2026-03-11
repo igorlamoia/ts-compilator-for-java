@@ -37,6 +37,7 @@ export function useLexerAnalyse() {
         blockDelimiters: lexerConfig.blockDelimiters,
         indentationBlock: lexerConfig.indentationBlock,
         grammar: lexerConfig.grammar,
+        operatorWordMap: lexerConfig.operatorWordMap,
         locale: locale,
       });
       const issues = [...data.warnings, ...data.infos];

@@ -49,13 +49,39 @@ export function sanitizeOperatorWordMap(value: unknown): OperatorWordMap {
     return { ...DEFAULT_OPERATOR_WORD_MAP };
   }
 
+  const validKeys = new Set<string>([
+    "logical_or",
+    "logical_and",
+    "logical_not",
+    "less",
+    "less_equal",
+    "greater",
+    "greater_equal",
+    "equal_equal",
+    "not_equal",
+  ]);
+
   const next: OperatorWordMap = { ...DEFAULT_OPERATOR_WORD_MAP };
 
   for (const [key, alias] of Object.entries(value)) {
+    // Only process valid OperatorWordMap keys
+    if (!validKeys.has(key)) continue;
     if (typeof alias !== "string") continue;
     const normalizedAlias = alias.trim();
     if (normalizedAlias.length === 0) continue;
     next[key as keyof OperatorWordMap] = normalizedAlias;
+  }
+
+  // Validate that all values are unique to prevent duplicate aliases
+  const seenValues = new Set<string>();
+  for (const alias of Object.values(next)) {
+    if (typeof alias === "string") {
+      if (seenValues.has(alias)) {
+        // If duplicates detected, reset to defaults to prevent lexer errors
+        return { ...DEFAULT_OPERATOR_WORD_MAP };
+      }
+      seenValues.add(alias);
+    }
   }
 
   return next;
