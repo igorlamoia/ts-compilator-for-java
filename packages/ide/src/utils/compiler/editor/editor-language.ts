@@ -24,6 +24,7 @@ type JavaMMSemanticGroupName =
 
 export type JavaMMLanguageMetadata = {
   allKeywords: string[];
+  operatorWords: string[];
   semanticGroups: Record<JavaMMSemanticGroupName, string[]>;
 };
 
@@ -75,7 +76,7 @@ export function buildJavaMMMonarchLanguage(
     loops: metadata.semanticGroups.loops,
     flow: metadata.semanticGroups.flow,
     io: metadata.semanticGroups.io,
-    operators: DEFAULT_OPERATORS,
+    operators: [...DEFAULT_OPERATORS, ...metadata.operatorWords],
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
     tokenizer: {
       root: [
@@ -184,6 +185,7 @@ const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
 
 export function buildJavaMMLanguageMetadata(
   keywordMappings: JavaMMKeywordMapping[],
+  operatorWordMap: IDEOperatorWordMap = {},
 ): JavaMMLanguageMetadata {
   const semanticGroups: JavaMMLanguageMetadata["semanticGroups"] = {
     types: [],
@@ -192,6 +194,13 @@ export function buildJavaMMLanguageMetadata(
     flow: [],
     io: [],
   };
+  const operatorWords = Array.from(
+    new Set(
+      Object.values(operatorWordMap)
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
 
   for (const mapping of keywordMappings) {
     const customKeyword = mapping.custom.trim();
@@ -210,6 +219,7 @@ export function buildJavaMMLanguageMetadata(
     allKeywords: keywordMappings
       .map((mapping) => mapping.custom.trim())
       .filter(Boolean),
+    operatorWords,
     semanticGroups,
   };
 }
@@ -266,7 +276,10 @@ export function registerJavaMMLanguage(
     monaco.languages.register({ id: JAVAMM_LANGUAGE_ID });
   }
 
-  const metadata = buildJavaMMLanguageMetadata(keywordMappings);
+  const metadata = buildJavaMMLanguageMetadata(
+    keywordMappings,
+    options.operatorWordMap,
+  );
 
   // (Re)definir o tokenizer Monarch
   monaco.languages.setMonarchTokensProvider(

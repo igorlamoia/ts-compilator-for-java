@@ -65,6 +65,40 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(language.conditionals).toContain("escolha");
   });
 
+  it("includes configured operator aliases in Monarch operators", () => {
+    const metadata = buildJavaMMLanguageMetadata(
+      [{ original: "if", custom: "if", tokenId: 28 }],
+      { logical_and: "and", less_equal: "less_equal" },
+    );
+
+    expect(metadata.operatorWords).toEqual(
+      expect.arrayContaining(["and", "less_equal"]),
+    );
+  });
+
+  it("registers operator alias words in the Monaco language", () => {
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [{ original: "if", custom: "if", tokenId: 28 }] as never,
+      {
+        operatorWordMap: { logical_and: "and" },
+      } as never,
+    );
+
+    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+
+    expect(language.operators).toContain("and");
+  });
+
   it("uses custom block delimiters in Monaco language configuration", () => {
     const monaco = {
       languages: {
