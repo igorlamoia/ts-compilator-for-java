@@ -31,7 +31,7 @@ export function useFileSystem() {
         setFiles(filesMap);
         setIsLoaded(true);
       } catch (error) {
-        console.error("Failed to load files from localStorage:", error);
+        console.error("Falha ao carregar arquivos do localStorage:", error);
         setIsLoaded(true);
       }
     };
@@ -47,7 +47,7 @@ export function useFileSystem() {
       const filesArray = Array.from(files.values());
       localStorage.setItem(FILES_STORAGE_KEY, JSON.stringify(filesArray));
     } catch (error) {
-      console.error("Failed to save files to localStorage:", error);
+      console.error("Falha ao salvar arquivos no localStorage:", error);
     }
   }, [files, isLoaded]);
 

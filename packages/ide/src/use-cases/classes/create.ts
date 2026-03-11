@@ -26,6 +26,7 @@ export async function createClassUseCase(
       email: `teacher-${userId}@temp.com`,
       name: 'Teacher',
       role: 'TEACHER',
+      password: '',
     },
     update: {},
   })

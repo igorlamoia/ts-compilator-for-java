@@ -50,7 +50,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<TLexer
         warnings: [],
         infos: [],
         error: null,
-        message: (error as Error).message || 'Code not supported',
+        message: (error as Error).message || 'Codigo nao suportado',
       })
     }
     res.status(400).json({ message: error.message, tokens: [], warnings: [], infos: [], error: error.details })

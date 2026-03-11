@@ -12,6 +12,6 @@ export async function getSubmissionUseCase(prisma: PrismaClient, id: string) {
     },
   })
 
-  if (!submission) throw new NotFoundError('Submission not found')
+  if (!submission) throw new NotFoundError('Submissao nao encontrada')
   return submission
 }

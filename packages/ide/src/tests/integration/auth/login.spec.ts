@@ -8,7 +8,7 @@ describe('loginUseCase', () => {
     const org = await createOrg()
     const user = await createUser(org.id, { email: 'login@test.com' })
 
-    const result = await loginUseCase(prisma, { email: 'login@test.com', password: 'any' })
+    const result = await loginUseCase(prisma, { email: 'login@test.com', password: 'password123' })
 
     expect(result.id).toBe(user.id)
     expect(result.email).toBe('login@test.com')

@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@prisma/client'
+import { hash } from 'bcryptjs'
 import { ValidationError, ConflictError, NotFoundError } from '@/lib/errors'
 
 export async function registerUseCase(
@@ -8,23 +9,26 @@ export async function registerUseCase(
   const { name, email, password, role, organizationId } = input
 
   if (!name || !email || !password || !role || !organizationId) {
-    throw new ValidationError('Missing required fields')
+    throw new ValidationError('Campos obrigatorios nao informados')
   }
 
   const org = await prisma.organization.findUnique({ where: { id: organizationId } })
   if (!org) {
-    throw new NotFoundError('Organization not found')
+    throw new NotFoundError('Organizacao nao encontrada')
   }
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
-    throw new ConflictError('User with this email already exists')
+    throw new ConflictError('Ja existe um usuario com este e-mail')
   }
+
+  const hashedPassword = await hash(password, 10)
 
   const user = await prisma.user.create({
     data: {
       email,
       name,
+      password: hashedPassword,
       role: role.toUpperCase() === 'TEACHER' ? 'TEACHER' : 'STUDENT',
       organizationId,
     },

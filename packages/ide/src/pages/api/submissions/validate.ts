@@ -76,7 +76,7 @@ function normalizeOutput(s: string): string {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<TValidationResult>) {
-    if (req.method !== 'POST') return res.status(405).json({ valid: false, errors: ['Method not allowed'], warnings: [] })
+    if (req.method !== 'POST') return res.status(405).json({ valid: false, errors: ['Metodo nao permitido'], warnings: [] })
 
     const userId = req.headers['x-user-id'] as string
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
