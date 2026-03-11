@@ -3,7 +3,7 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import type { FileData } from "@/hooks/useFileSystem";
 import { Search, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";

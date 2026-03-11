@@ -9,6 +9,15 @@ export const RELATIONALS = {
   less_equal: 14, // <=
 };
 
+export const RELATIONAL_OPERATOR_TOKEN_IDS = {
+  equal_equal: RELATIONALS.equal_equal,
+  not_equal: RELATIONALS.not_equal,
+  greater: RELATIONALS.greater,
+  greater_equal: RELATIONALS.greater_equal,
+  less: RELATIONALS.less,
+  less_equal: RELATIONALS.less_equal,
+} as const;
+
 export const RELATIONALS_STYLE = {
   text: "text-yellow-500",
   bg: "bg-yellow-100 dark:bg-amber-900/55",

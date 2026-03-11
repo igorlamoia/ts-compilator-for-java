@@ -6,8 +6,10 @@ import { IssueWarning, IssueInfo, IssueError } from "../issue";
 import { TIssueParams } from "../issue/details";
 import { translate } from "../i18n";
 import {
+  buildOperatorWordTokenMap,
   LexerConfig,
   validateBlockDelimiters,
+  validateOperatorWordMap,
   type KeywordMap,
 } from "./config";
 
@@ -15,6 +17,7 @@ function isLexerConfig(value: unknown): value is LexerConfig {
   if (!value || typeof value !== "object") return false;
   return (
     "customKeywords" in value ||
+    "operatorWordMap" in value ||
     "blockDelimiters" in value ||
     "locale" in value ||
     "indentationBlock" in value ||
@@ -56,6 +59,7 @@ export class Lexer {
     this.keywordMap = {
       ...(TOKENS.RESERVEDS as KeywordMap),
       ...(config.customKeywords ?? {}),
+      ...buildOperatorWordTokenMap(config.operatorWordMap),
     };
     this.locale = config.locale;
     this.indentationBlock = config.indentationBlock ?? false;
@@ -65,6 +69,14 @@ export class Lexer {
     }
 
     const delimiters = config.blockDelimiters;
+    if (config.operatorWordMap) {
+      validateOperatorWordMap(
+        config.operatorWordMap,
+        TOKENS.RESERVEDS as KeywordMap,
+        config.customKeywords,
+        delimiters,
+      );
+    }
     if (delimiters) {
       if (this.indentationBlock) {
         this.error("lexer.indentation_disallow_block_delimiters");

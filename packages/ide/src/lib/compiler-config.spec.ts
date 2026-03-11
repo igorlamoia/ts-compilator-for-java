@@ -37,4 +37,18 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.grammar.semicolonMode).toBe("required");
     expect(normalized.grammar.typingMode).toBe("untyped");
   });
+
+  it("preserves operator word aliases in the normalized payload", () => {
+    const normalized = normalizeCompilerConfig({
+      operatorWordMap: {
+        logical_and: "and",
+        less_equal: "less_equal",
+      },
+    });
+
+    expect(normalized.operatorWordMap).toEqual({
+      logical_and: "and",
+      less_equal: "less_equal",
+    });
+  });
 });

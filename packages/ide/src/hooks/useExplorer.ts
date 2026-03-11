@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useContext, useCallback } from "react";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 import { useAlert } from "@/components/alert";
 import type { FileData } from "@/hooks/useFileSystem";
 

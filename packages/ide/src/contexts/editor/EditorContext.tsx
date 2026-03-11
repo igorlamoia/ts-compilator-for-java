@@ -15,8 +15,10 @@ import {
   registerJavaMMLanguage,
   JAVAMM_LANGUAGE_ID,
 } from "@/utils/compiler/editor/editor-language";
-import { ORIGINAL_KEYWORDS } from "@/contexts/KeywordContext";
+import { getDefaultKeywordMappings } from "@/contexts/KeywordContext";
 import { useFileSystem } from "@/hooks/useFileSystem";
+import { EditorSkeleton } from "./EditorSkeleton";
+import { DarkTheme, LightTheme } from "./EditorThemes";
 
 const getSourceCodeStorageKey = (fileName: string) => `source-code-${fileName}`;
 const DEFAULT_FILE_NAME = "main.?";
@@ -48,43 +50,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     loader.init().then((monaco) => {
       monacoRef.current = monaco;
       // Registrar a linguagem Java-- com as keywords padrão
-      registerJavaMMLanguage(monaco, ORIGINAL_KEYWORDS);
-      monaco.editor.defineTheme("editor-glass-dark", {
-        base: "vs-dark",
-        inherit: true,
-        rules: [],
-        colors: {
-          "editor.background": "#00000000",
-          "editorGutter.background": "#00000000",
-          "editorLineNumber.foreground": "#a7a7a7aa",
-          "editorLineNumber.activeForeground": "#ffffffcc",
-          "editorCursor.foreground": "#ffffffd9", // cursor piscando
-          "editor.lineHighlightBackground": "#ffffff0f", // linha atual
-          "editor.selectionBackground": "#ffffff26", // seleção de texto
-          "minimap.background": "#0b0f1499",
-          "minimapSlider.background": "#ffffff14",
-          "minimapSlider.hoverBackground": "#ffffff26",
-          "minimapSlider.activeBackground": "#ffffff3d",
-        },
-      });
-      monaco.editor.defineTheme("editor-glass-light", {
-        base: "vs",
-        inherit: true,
-        rules: [],
-        colors: {
-          "editor.background": "#00000000",
-          "editorGutter.background": "#00000000",
-          "editorLineNumber.foreground": "#1a1a1a66",
-          "editorLineNumber.activeForeground": "#1a1a1acc",
-          "editorCursor.foreground": "#1a1a1ad9",
-          "editor.lineHighlightBackground": "#0000000a",
-          "editor.selectionBackground": "#0000001f",
-          "minimap.background": "#e6eef799",
-          "minimapSlider.background": "#1a1a1a14",
-          "minimapSlider.hoverBackground": "#1a1a1a26",
-          "minimapSlider.activeBackground": "#1a1a1a3d",
-        },
-      });
+      registerJavaMMLanguage(monaco, getDefaultKeywordMappings());
+      monaco.editor.defineTheme("editor-glass-dark", DarkTheme);
+      monaco.editor.defineTheme("editor-glass-light", LightTheme);
       setLoading(false);
     });
   }, []);
@@ -107,6 +75,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         },
         scrollBeyondLastLine: false,
         ...config,
+        wordBasedSuggestions: "off",
+        quickSuggestions: true,
+        suggestOnTriggerCharacters: false,
       });
     }
   };
@@ -260,59 +231,5 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     >
       {loading ? <EditorSkeleton /> : children}
     </EditorContext.Provider>
-  );
-}
-
-function EditorSkeleton() {
-  return (
-    <div className="relative rounded-2xl animate-pulse">
-      <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100/70 dark:bg-neutral-950/70 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.8)]">
-        <div className="h-12 border-b border-black/10 dark:border-white/10 px-4 flex items-center gap-3">
-          <div className="h-2.5 w-2.5 rounded-full bg-slate-300/70 dark:bg-slate-700/80" />
-          <div className="h-2.5 w-2.5 rounded-full bg-slate-300/70 dark:bg-slate-700/80" />
-          <div className="h-2.5 w-2.5 rounded-full bg-slate-300/70 dark:bg-slate-700/80" />
-          <div className="ml-3 h-4 w-40 rounded bg-slate-300/70 dark:bg-slate-700/80" />
-        </div>
-
-        <div className="flex h-[70vh] overflow-hidden rounded-b-2xl">
-          <div className="w-12 border-r border-black/10 dark:border-white/10 p-2 space-y-2">
-            <div className="h-7 rounded-md bg-slate-300/70 dark:bg-slate-700/80" />
-            <div className="h-7 rounded-md bg-slate-300/60 dark:bg-slate-700/70" />
-            <div className="h-7 rounded-md bg-slate-300/60 dark:bg-slate-700/70" />
-          </div>
-
-          <div className="hidden sm:block w-70 border-r border-black/10 dark:border-white/10 p-3 space-y-3">
-            <div className="h-4 w-28 rounded bg-slate-300/70 dark:bg-slate-700/80" />
-            <div className="h-8 rounded-lg bg-slate-300/60 dark:bg-slate-700/70" />
-            <div className="h-8 rounded-lg bg-slate-300/60 dark:bg-slate-700/70" />
-            <div className="h-8 rounded-lg bg-slate-300/60 dark:bg-slate-700/70" />
-            <div className="h-8 rounded-lg bg-slate-300/60 dark:bg-slate-700/70" />
-          </div>
-
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="h-9 border-b border-black/10 dark:border-white/10 px-3 flex items-center gap-2">
-              <div className="h-6 w-28 rounded-md bg-slate-300/70 dark:bg-slate-700/80" />
-              <div className="h-6 w-24 rounded-md bg-slate-300/60 dark:bg-slate-700/70" />
-            </div>
-
-            <div className="flex-1 p-4">
-              <div className="h-full w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/3 p-3 space-y-2">
-                <div className="h-3 w-2/3 rounded bg-slate-300/70 dark:bg-slate-700/80" />
-                <div className="h-3 w-3/5 rounded bg-slate-300/60 dark:bg-slate-700/70" />
-                <div className="h-3 w-4/5 rounded bg-slate-300/60 dark:bg-slate-700/70" />
-                <div className="h-3 w-1/2 rounded bg-slate-300/60 dark:bg-slate-700/70" />
-                <div className="h-3 w-3/4 rounded bg-slate-300/60 dark:bg-slate-700/70" />
-              </div>
-            </div>
-
-            <div className="h-30 border-t border-black/10 dark:border-white/10 px-3 py-2 space-y-2">
-              <div className="h-3 w-24 rounded bg-slate-300/70 dark:bg-slate-700/80" />
-              <div className="h-3 w-2/3 rounded bg-slate-300/60 dark:bg-slate-700/70" />
-              <div className="h-3 w-1/3 rounded bg-slate-300/60 dark:bg-slate-700/70" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }

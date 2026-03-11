@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
-import { EditorContext, EditorProvider } from "@/contexts/EditorContext";
+import { EditorContext, EditorProvider } from "@/contexts/editor/EditorContext";
 import { KeywordProvider } from "@/contexts/KeywordContext";
 import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
 import { IDEView } from "@/views/ide";

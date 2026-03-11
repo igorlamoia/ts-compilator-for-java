@@ -1,0 +1,64 @@
+import type { IDEOperatorWordMap } from "@/entities/compiler-config";
+import type {
+  BlockDelimiters,
+  KeywordMapping,
+} from "@/contexts/KeywordContext";
+
+export const OPERATOR_ALIAS_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+export const OPERATOR_WORD_FIELDS: Array<{
+  key: keyof IDEOperatorWordMap;
+  label: string;
+  symbol: string;
+}> = [
+  { key: "logical_or", label: "Logical OR", symbol: "||" },
+  { key: "logical_and", label: "Logical AND", symbol: "&&" },
+  { key: "logical_not", label: "Logical NOT", symbol: "!" },
+  { key: "less", label: "Less than", symbol: "<" },
+  { key: "less_equal", label: "Less or equal", symbol: "<=" },
+  { key: "greater", label: "Greater than", symbol: ">" },
+  { key: "greater_equal", label: "Greater or equal", symbol: ">=" },
+  { key: "equal_equal", label: "Equal", symbol: "==" },
+  { key: "not_equal", label: "Not equal", symbol: "!=" },
+];
+
+export function validateOperatorWordMap(
+  operatorWordMap: IDEOperatorWordMap,
+  mappings: KeywordMapping[],
+  blockDelimiters: BlockDelimiters,
+): string | null {
+  const seenAliases = new Map<string, keyof IDEOperatorWordMap>();
+  const keywordSet = new Set(
+    mappings.map((mapping) => mapping.custom.trim()).filter(Boolean),
+  );
+  const openDelimiter = blockDelimiters.open.trim();
+  const closeDelimiter = blockDelimiters.close.trim();
+
+  for (const field of OPERATOR_WORD_FIELDS) {
+    const rawAlias = operatorWordMap[field.key];
+    const alias = typeof rawAlias === "string" ? rawAlias.trim() : "";
+
+    if (!alias) {
+      continue;
+    }
+
+    if (!OPERATOR_ALIAS_REGEX.test(alias)) {
+      return "Use palavras validas para operadores (letras, numeros e _).";
+    }
+
+    if (seenAliases.has(alias)) {
+      return `"${alias}" is already used by another operator alias.`;
+    }
+    seenAliases.set(alias, field.key);
+
+    if (keywordSet.has(alias)) {
+      return `"${alias}" conflicts with an existing keyword customization.`;
+    }
+
+    if (alias === openDelimiter || alias === closeDelimiter) {
+      return `"${alias}" conflicts with the configured block delimiters.`;
+    }
+  }
+
+  return null;
+}

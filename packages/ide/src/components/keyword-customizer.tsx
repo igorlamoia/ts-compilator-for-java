@@ -6,6 +6,7 @@ import {
 } from "@/contexts/KeywordContext";
 import type {
   IDEBlockMode,
+  IDEOperatorWordMap,
   IDESemicolonMode,
   IDETypingMode,
 } from "@/entities/compiler-config";
@@ -21,6 +22,8 @@ import {
 import { X } from "lucide-react";
 import { BorderBeam } from "./ui/border-beam";
 import { HeroButton } from "./buttons/hero";
+import { DEFAULT_OPERATOR_WORD_MAP } from "@/lib/keyword-map";
+import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 
 const KEYWORD_EXPLANATIONS: Record<string, string> = {
   int: "Tipo numérico para números inteiros.",
@@ -47,9 +50,12 @@ export function KeywordCustomizer() {
   const {
     mappings,
     blockDelimiters,
+    operatorWordMap,
     replaceKeywords,
+    setOperatorWordMap,
     setBlockDelimiters,
     validateKeyword,
+    validateOperatorWordMap,
     validateBlockDelimiters,
     semicolonMode,
     setSemicolonMode,
@@ -64,6 +70,8 @@ export function KeywordCustomizer() {
     useState<KeywordMapping[]>(mappings);
   const [draftBlockDelimiters, setDraftBlockDelimiters] =
     useState<BlockDelimiters>(blockDelimiters);
+  const [draftOperatorWordMap, setDraftOperatorWordMap] =
+    useState<IDEOperatorWordMap>(operatorWordMap);
   const [draftSemicolonMode, setDraftSemicolonMode] =
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
@@ -71,20 +79,31 @@ export function KeywordCustomizer() {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
+  const [operatorError, setOperatorError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setDraftMappings(mappings);
       setDraftBlockDelimiters(blockDelimiters);
+      setDraftOperatorWordMap(operatorWordMap);
       setDraftSemicolonMode(semicolonMode);
       setDraftBlockMode(blockMode);
       setDraftTypingMode(typingMode);
       setCurrentStep(0);
       setCurrentError(null);
       setDelimiterError(null);
+      setOperatorError(null);
     }
-  }, [isOpen, mappings, blockDelimiters, semicolonMode, blockMode, typingMode]);
+  }, [
+    isOpen,
+    mappings,
+    blockDelimiters,
+    operatorWordMap,
+    semicolonMode,
+    blockMode,
+    typingMode,
+  ]);
 
   useEffect(() => {
     if (isOpen) {
@@ -101,9 +120,28 @@ export function KeywordCustomizer() {
     setDelimiterError(validateBlockDelimiters(draftBlockDelimiters));
   }, [draftBlockMode, draftBlockDelimiters, validateBlockDelimiters]);
 
+  useEffect(() => {
+    setOperatorError(
+      validateOperatorWordMap(
+        draftOperatorWordMap,
+        draftMappings,
+        getOperatorValidationDelimiters(),
+      ),
+    );
+  }, [
+    draftOperatorWordMap,
+    draftMappings,
+    draftBlockDelimiters,
+    draftBlockMode,
+    validateOperatorWordMap,
+  ]);
+
   const hasChanges = useMemo(
     () =>
       draftMappings.some((m: KeywordMapping) => m.original !== m.custom) ||
+      OPERATOR_WORD_FIELDS.some(
+        ({ key }) => draftOperatorWordMap[key] !== operatorWordMap[key],
+      ) ||
       draftBlockDelimiters.open !== blockDelimiters.open ||
       draftBlockDelimiters.close !== blockDelimiters.close ||
       draftSemicolonMode !== semicolonMode ||
@@ -111,6 +149,8 @@ export function KeywordCustomizer() {
       draftTypingMode !== typingMode,
     [
       draftMappings,
+      draftOperatorWordMap,
+      operatorWordMap,
       draftBlockDelimiters,
       blockDelimiters,
       draftSemicolonMode,
@@ -131,6 +171,11 @@ export function KeywordCustomizer() {
   ) => {
     return validateKeyword(original, custom, mappingsToValidate);
   };
+
+  const getOperatorValidationDelimiters = (): BlockDelimiters =>
+    draftBlockMode === "delimited"
+      ? draftBlockDelimiters
+      : { open: "", close: "" };
 
   const handleChange = (value: string) => {
     if (!currentMapping) return;
@@ -154,16 +199,19 @@ export function KeywordCustomizer() {
     const resetTypingMode: IDETypingMode = "typed";
     setDraftMappings(resetMappings);
     setDraftBlockDelimiters(resetBlockDelimiters);
+    setDraftOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
     setDraftSemicolonMode(resetSemicolonMode);
     setDraftBlockMode(resetBlockMode);
     setDraftTypingMode(resetTypingMode);
     replaceKeywords(resetMappings);
+    setOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
     setBlockDelimiters(resetBlockDelimiters);
     setSemicolonMode(resetSemicolonMode);
     setBlockMode(resetBlockMode);
     setTypingMode(resetTypingMode);
     setCurrentError(null);
     setDelimiterError(null);
+    setOperatorError(null);
   };
 
   const goToPrevious = () => {
@@ -204,7 +252,17 @@ export function KeywordCustomizer() {
     } else {
       setDelimiterError(null);
     }
+    const nextOperatorError = validateOperatorWordMap(
+      draftOperatorWordMap,
+      draftMappings,
+      getOperatorValidationDelimiters(),
+    );
+    if (nextOperatorError) {
+      setOperatorError(nextOperatorError);
+      return;
+    }
     replaceKeywords(draftMappings);
+    setOperatorWordMap(draftOperatorWordMap);
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
     setTypingMode(draftTypingMode);
@@ -214,6 +272,7 @@ export function KeywordCustomizer() {
     });
     setCurrentError(null);
     setDelimiterError(null);
+    setOperatorError(null);
     setIsOpen(false);
   };
 
@@ -240,6 +299,24 @@ export function KeywordCustomizer() {
       return;
     }
     handleSave();
+  };
+
+  const handleOperatorAliasChange = (
+    field: keyof IDEOperatorWordMap,
+    value: string,
+  ) => {
+    const next = {
+      ...draftOperatorWordMap,
+      [field]: value,
+    };
+    setDraftOperatorWordMap(next);
+    setOperatorError(
+      validateOperatorWordMap(
+        next,
+        draftMappings,
+        getOperatorValidationDelimiters(),
+      ),
+    );
   };
 
   if (!currentMapping) return null;
@@ -483,6 +560,53 @@ export function KeywordCustomizer() {
                   Não tipado
                 </button>
               </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Alias de Operadores
+              </p>
+              <p className="text-sm dark:text-gray-400 text-gray-500">
+                Configure palavras para os operadores lógicos e relacionais sem
+                perder o suporte aos símbolos originais.
+              </p>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {OPERATOR_WORD_FIELDS.map((field) => (
+                  <label
+                    key={field.key}
+                    className="flex flex-col gap-2 rounded-md border border-gray-300 bg-gray-50 p-3 text-sm dark:border-slate-600 dark:bg-slate-800"
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="dark:text-gray-200 text-gray-800">
+                        {field.label}
+                      </span>
+                      <span className="font-mono text-cyan-600 dark:text-(--color-primary)">
+                        {field.symbol}
+                      </span>
+                    </span>
+                    <input
+                      type="text"
+                      value={draftOperatorWordMap[field.key] ?? ""}
+                      onChange={(e) =>
+                        handleOperatorAliasChange(field.key, e.target.value)
+                      }
+                      placeholder={DEFAULT_OPERATOR_WORD_MAP[field.key]}
+                      spellCheck={false}
+                      className={`
+                        w-full rounded-md border px-3 py-2 font-mono text-sm outline-none transition-colors
+                        dark:bg-slate-900 dark:text-gray-200 bg-white text-gray-800
+                        focus:ring-2 focus:ring-cyan-500/50
+                        ${operatorError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                      `}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              {operatorError && (
+                <span className="text-xs text-red-500">{operatorError}</span>
+              )}
             </div>
 
             <div className="mt-6 flex flex-col gap-3">

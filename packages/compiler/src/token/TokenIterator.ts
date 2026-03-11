@@ -5,6 +5,7 @@ import { Emitter } from "../ir/emitter";
 import { Token } from "./";
 import { TOKENS } from "./constants";
 import { translate } from "../i18n";
+import type { OperatorWordMap } from "../lexer/config";
 
 interface LoopContext {
   breakLabel: string;
@@ -46,6 +47,7 @@ export type GrammarConfig = {
 type TokenIteratorConfig = {
   locale?: string;
   grammar?: GrammarConfig;
+  operatorWordMap?: OperatorWordMap;
 };
 
 export class TokenIterator {

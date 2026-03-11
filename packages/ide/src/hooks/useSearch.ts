@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { EditorContext } from "@/contexts/EditorContext";
+import { EditorContext } from "@/contexts/editor/EditorContext";
 
 export interface SearchResult {
   filePath: string;

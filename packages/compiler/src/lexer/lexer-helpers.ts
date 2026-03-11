@@ -14,8 +14,12 @@ export function isAlpha(c: string): boolean {
   return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
 }
 
+export function isIdentifierStart(c: string): boolean {
+  return isAlpha(c) || c === "_";
+}
+
 export function isAlphaNumeric(c: string): boolean {
-  return isAlpha(c) || isDigit(c);
+  return isIdentifierStart(c) || isDigit(c);
 }
 
 export function isWhitespace(c: string): boolean {

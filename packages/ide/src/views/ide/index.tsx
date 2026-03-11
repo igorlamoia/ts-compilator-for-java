@@ -19,7 +19,7 @@ import { BorderBeam } from "@/components/ui/border-beam";
 import { useKeyboardShortcuts } from "@/components/terminal/useKeyboardShortcuts";
 import { AnimatePresence, motion } from "motion/react";
 import { ScrollArrow } from "@/components/scroll-arrow";
-import { EditorContext, EditorProvider } from "@/contexts/EditorContext";
+import { EditorContext, EditorProvider } from "@/contexts/editor/EditorContext";
 import { QuickFileSearch } from "@/components/quick-file-search";
 import { useIntermediatorCode } from "@/hooks/useIntermediatorCode";
 import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
