@@ -8,13 +8,13 @@ export async function joinClassUseCase(
   const { userId, accessCode } = input
 
   const cls = await prisma.class.findUnique({ where: { accessCode } })
-  if (!cls) throw new NotFoundError('Class not found')
+  if (!cls) throw new NotFoundError('Turma nao encontrada')
 
   const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) throw new NotFoundError('User not found')
+  if (!user) throw new NotFoundError('Usuario nao encontrado')
 
   if (user.organizationId !== cls.organizationId) {
-    throw new ForbiddenError('User does not belong to this class organization')
+    throw new ForbiddenError('Usuario nao pertence a organizacao desta turma')
   }
 
   await prisma.classMember.upsert({

@@ -7,7 +7,7 @@ export async function listExercisesUseCase(
 ) {
   const { classId, userId } = input
 
-  if (!classId) throw new ValidationError('Missing classId')
+  if (!classId) throw new ValidationError('classId e obrigatorio')
 
   return prisma.exercise.findMany({
     where: { classId },

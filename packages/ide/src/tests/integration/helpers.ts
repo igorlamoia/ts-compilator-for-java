@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { hashSync } from 'bcryptjs'
 import path from 'path'
 
 const TEST_DB_PATH = path.resolve(__dirname, '../../../prisma/test.db')
@@ -25,7 +26,7 @@ export function createOrg(name = 'Test Org') {
 
 export function createUser(
   orgId: string,
-  overrides: Partial<{ email: string; name: string; role: 'TEACHER' | 'STUDENT' | 'ADMIN' }> = {},
+  overrides: Partial<{ email: string; name: string; role: 'TEACHER' | 'STUDENT' | 'ADMIN'; password: string }> = {},
 ) {
   return prisma.user.create({
     data: {
@@ -33,6 +34,7 @@ export function createUser(
       email: `user-${Date.now()}-${Math.random()}@test.com`,
       name: 'Test User',
       role: 'STUDENT',
+      password: hashSync('password123', 4),
       ...overrides,
     },
   })

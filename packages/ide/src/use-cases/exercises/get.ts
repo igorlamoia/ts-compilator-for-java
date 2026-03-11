@@ -20,7 +20,7 @@ export async function getExerciseUseCase(
     },
   })
 
-  if (!exercise) throw new NotFoundError('Exercise not found')
+  if (!exercise) throw new NotFoundError('Exercicio nao encontrado')
 
   const isTeacher = exercise.class.teacherId === userId
 

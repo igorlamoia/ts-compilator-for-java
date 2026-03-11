@@ -59,8 +59,8 @@ export default function handler(
         warnings: [],
         infos: [],
         error: null,
-        message: (error as Error).message || "Code not supported",
-      });
+        message: (error as Error).message || 'Codigo nao suportado',
+      })
     }
     res
       .status(400)
