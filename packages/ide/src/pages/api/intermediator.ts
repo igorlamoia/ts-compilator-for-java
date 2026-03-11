@@ -1,13 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import {
-  IssueError,
-} from "@ts-compilator-for-java/compiler/issue";
+import { IssueError } from "@ts-compilator-for-java/compiler/issue";
 import type { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { TokenIterator } from "@ts-compilator-for-java/compiler/token/TokenIterator";
 import type { Token } from "@ts-compilator-for-java/compiler/token";
 import type { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
-import type { OperatorWordMap } from "@ts-compilator-for-java/compiler/src/lexer/config";
 import type { IDEGrammarConfig } from "@/entities/compiler-config";
+import type { OperatorWordMap } from "@ts-compilator-for-java/compiler/src/lexer/config";
 
 export type TIntermediateCodeData = {
   instructions: Instruction[];
@@ -58,13 +56,14 @@ export default function handler(
         message: (error as Error).message || "Code not supported",
       });
     }
-
-    res.status(400).json({
-      message: error.message,
-      instructions: [],
-      warnings: [],
-      infos: [],
-      error: error.details,
-    });
+    res
+      .status(400)
+      .json({
+        message: error.message,
+        instructions: [],
+        warnings: [],
+        infos: [],
+        error: error.details,
+      });
   }
 }

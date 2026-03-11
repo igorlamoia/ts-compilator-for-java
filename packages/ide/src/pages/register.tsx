@@ -1,7 +1,7 @@
 import { SpaceBackground } from "@/components/space-background";
 import { BorderBeam } from "@/components/ui/border-beam";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
@@ -27,11 +27,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 
+type Organization = { id: string; name: string }
+
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("E-mail inválido"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   role: z.enum(["teacher", "student"]),
+  organizationId: z.string().min(1, "Selecione uma instituição"),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -41,6 +44,16 @@ export default function Register() {
   const { login } = useAuth();
   const { showToast } = useToast();
   const [serverError, setServerError] = useState("");
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [loadingOrgs, setLoadingOrgs] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<Organization[]>("/organizations")
+      .then((res) => setOrganizations(res.data))
+      .catch(() => setOrganizations([]))
+      .finally(() => setLoadingOrgs(false));
+  }, []);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -49,6 +62,7 @@ export default function Register() {
       email: "",
       password: "",
       role: "student",
+      organizationId: "",
     },
   });
 
@@ -195,6 +209,36 @@ export default function Register() {
                           type="password"
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Select: Institution */}
+                <FormField
+                  control={form.control}
+                  name="organizationId"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">
+                        Instituição
+                      </FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          disabled={loadingOrgs}
+                          className="w-full h-10 px-3 rounded-md border border-white/10 dark:bg-black/20 bg-slate-300/20 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#0dccf2]/50 disabled:opacity-50"
+                        >
+                          <option value="" disabled className="bg-slate-900">
+                            {loadingOrgs ? "Carregando..." : "Selecione sua instituição"}
+                          </option>
+                          {organizations.map((org) => (
+                            <option key={org.id} value={org.id} className="bg-slate-900">
+                              {org.name}
+                            </option>
+                          ))}
+                        </select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

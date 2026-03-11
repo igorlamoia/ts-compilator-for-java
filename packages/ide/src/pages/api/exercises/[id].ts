@@ -1,42 +1,24 @@
 import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { getExerciseUseCase } from '@/use-cases/exercises/get'
+import { NotFoundError } from '@/lib/errors'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const userId = req.headers['x-user-id'] as string
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+  const userId = req.headers['x-user-id'] as string
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
 
-    const { id } = req.query
-    if (!id || typeof id !== 'string') return res.status(400).json({ error: 'Missing exercise id' })
+  const { id } = req.query
+  if (!id || typeof id !== 'string') return res.status(400).json({ error: 'Missing exercise id' })
 
-    if (req.method === 'GET') {
-        const exercise = await prisma.exercise.findUnique({
-            where: { id },
-            include: {
-                class: { select: { name: true, teacherId: true } },
-                submissions: {
-                    where: { studentId: userId },
-                    orderBy: { submittedAt: 'desc' },
-                    take: 1
-                },
-                testCases: {
-                    orderBy: { orderIndex: 'asc' }
-                }
-            }
-        })
-
-        if (!exercise) return res.status(404).json({ error: 'Exercise not found' })
-
-        const isTeacher = exercise.class.teacherId === userId
-
-        if (!isTeacher && exercise.testCases) {
-            exercise.testCases = exercise.testCases.map(tc => ({
-                ...tc,
-                expectedOutput: ''
-            }))
-        }
-
-        return res.status(200).json(exercise)
+  if (req.method === 'GET') {
+    try {
+      const exercise = await getExerciseUseCase(prisma, { id, userId })
+      return res.status(200).json(exercise)
+    } catch (error) {
+      if (error instanceof NotFoundError) return res.status(404).json({ error: error.message })
+      throw error
     }
+  }
 
-    return res.status(405).json({ error: 'Method not allowed' })
+  return res.status(405).json({ error: 'Method not allowed' })
 }
