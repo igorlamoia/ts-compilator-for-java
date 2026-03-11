@@ -8,7 +8,7 @@ export type OperatorWordMap = {
   less_equal?: string;
   greater?: string;
   greater_equal?: string;
-  equal_equal?: string;
+  equal?: string;
   not_equal?: string;
 };
 
@@ -32,7 +32,7 @@ const OPERATOR_WORD_TOKEN_IDS = {
   logical_or: 6,
   logical_and: 7,
   logical_not: 8,
-  equal_equal: 9,
+  equal: 9,
   not_equal: 10,
   greater: 11,
   greater_equal: 12,

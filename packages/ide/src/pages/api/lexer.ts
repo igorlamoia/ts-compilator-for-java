@@ -3,6 +3,7 @@ import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
 import type {
   KeywordMap,
   LexerBlockDelimiters,
+  OperatorWordMap,
 } from "@ts-compilator-for-java/compiler/src/lexer/config";
 import {
   IssueDetails,
@@ -26,13 +27,14 @@ export default function handler(
 ) {
   try {
     const keywordMap: KeywordMap | undefined = req.body.keywordMap;
-    const blockDelimiters: LexerBlockDelimiters | undefined =
-      req.body.blockDelimiters;
+    const blockDelimiters: LexerBlockDelimiters | undefined = req.body.blockDelimiters;
     const locale: string | undefined = req.body.locale;
     const indentationBlock: boolean | undefined = req.body.indentationBlock;
+    const operatorWordMap: OperatorWordMap | undefined = req.body.operatorWordMap;
     const effectiveKeywordMap = buildEffectiveKeywordMap(keywordMap);
     const lexer = new Lexer(req.body.sourceCode, {
       customKeywords: effectiveKeywordMap,
+      operatorWordMap,
       blockDelimiters,
       locale,
       indentationBlock,

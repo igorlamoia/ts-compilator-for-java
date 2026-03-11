@@ -62,6 +62,37 @@ describe("/api/intermediator config propagation", () => {
     });
   });
 
+  it("preserves operatorWordMap when building the intermediate compiler config", () => {
+    const req = {
+      body: {
+        tokens: [{ lexeme: "x" }],
+        locale: "pt-BR",
+        grammar: {
+          semicolonMode: "required",
+          blockMode: "indentation",
+          typingMode: "untyped",
+        },
+        operatorWordMap: {
+          logical_and: "and",
+        },
+      },
+    } as any;
+
+    const status = vi.fn().mockReturnThis();
+    const json = vi.fn();
+    const res = { status, json } as any;
+
+    handler(req, res);
+
+    expect(TokenIteratorMock).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({
+        grammar: expect.any(Object),
+        operatorWordMap: { logical_and: "and" },
+      }),
+    );
+  });
+
   it("returns compiler warnings from TokenIterator", () => {
     const req = {
       body: {

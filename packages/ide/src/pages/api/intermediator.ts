@@ -6,6 +6,7 @@ import type { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { TokenIterator } from "@ts-compilator-for-java/compiler/token/TokenIterator";
 import type { Token } from "@ts-compilator-for-java/compiler/token";
 import type { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
+import type { OperatorWordMap } from "@ts-compilator-for-java/compiler/src/lexer/config";
 import type { IDEGrammarConfig } from "@/entities/compiler-config";
 
 export type TIntermediateCodeData = {
@@ -25,10 +26,15 @@ export default function handler(
       tokens: Token[];
       locale?: string;
       grammar?: IDEGrammarConfig;
+      operatorWordMap?: OperatorWordMap;
     };
+    const operatorWordMap = req.body.operatorWordMap as
+      | OperatorWordMap
+      | undefined;
     const iterator = new TokenIterator(tokens, {
       locale,
       grammar,
+      operatorWordMap,
     });
     const instructions = iterator.generateIntermediateCode();
     const warnings =

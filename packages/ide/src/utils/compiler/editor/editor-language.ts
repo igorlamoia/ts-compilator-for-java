@@ -1,4 +1,5 @@
 import type * as monacoEditor from "monaco-editor";
+import type { IDEOperatorWordMap } from "@/entities/compiler-config";
 import {
   JavaMMBlockMode,
   JavaMMSnippetVariant,
@@ -34,6 +35,7 @@ export type JavaMMBlockDelimiters = {
 export type JavaMMLanguageOptions = {
   blockMode?: "delimited" | "indentation";
   blockDelimiters?: JavaMMBlockDelimiters;
+  operatorWordMap?: IDEOperatorWordMap;
   typingMode?: "typed" | "untyped";
 };
 
