@@ -17,6 +17,7 @@ import type {
   IDETypingMode,
 } from "@/entities/compiler-config";
 import { DEFAULT_OPERATOR_WORD_MAP, sanitizeOperatorWordMap } from "@/lib/keyword-map";
+import { validateOperatorWordMap as validateOperatorWordMapValue } from "@/lib/operator-word-map";
 
 /** As 13 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
@@ -80,6 +81,12 @@ type KeywordContextType = {
   operatorWordMap: IDEOperatorWordMap;
   /** Atualiza os aliases textuais de operadores */
   setOperatorWordMap: (value: IDEOperatorWordMap) => void;
+  /** Valida aliases textuais de operadores */
+  validateOperatorWordMap: (
+    value: IDEOperatorWordMap,
+    mappingsToValidate?: KeywordMapping[],
+    delimitersToValidate?: BlockDelimiters,
+  ) => string | null;
   /** Atualiza delimitadores customizados de bloco */
   setBlockDelimiters: (value: BlockDelimiters) => void;
   /** Valida delimitadores customizados de bloco */
@@ -414,6 +421,20 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const validateOperatorWordMap = useCallback(
+    (
+      value: IDEOperatorWordMap,
+      mappingsToValidate: KeywordMapping[] = mappings,
+      delimitersToValidate: BlockDelimiters = blockDelimiters,
+    ): string | null =>
+      validateOperatorWordMapValue(
+        value,
+        mappingsToValidate,
+        delimitersToValidate,
+      ),
+    [mappings, blockDelimiters],
+  );
+
   const buildLexerConfig = useCallback((): IDECompilerConfigPayload => {
     const keywordMap = buildKeywordMap();
     const open = blockDelimiters.open.trim();
@@ -460,6 +481,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         blockDelimiters,
         operatorWordMap,
         setOperatorWordMap,
+        validateOperatorWordMap,
         setBlockDelimiters,
         validateBlockDelimiters,
         buildLexerConfig,

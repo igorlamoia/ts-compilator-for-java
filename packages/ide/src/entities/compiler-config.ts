@@ -10,7 +10,7 @@ export type IDEOperatorWordMap = {
   less_equal?: string;
   greater?: string;
   greater_equal?: string;
-  equal?: string;
+  equal_equal?: string;
   not_equal?: string;
 };
 

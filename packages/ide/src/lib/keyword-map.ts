@@ -13,21 +13,21 @@ export const DEFAULT_OPERATOR_WORD_MAP: IDEOperatorWordMap = {
   less_equal: "less_equal",
   greater: "greater",
   greater_equal: "greater_equal",
-  equal: "equal",
+  equal_equal: "equal",
   not_equal: "not_equal",
 };
 
-function isValidKeywordEntry(
-  value: unknown,
-): value is [string, number] {
+function isValidKeywordEntry(value: unknown): value is [string, number] {
   if (!Array.isArray(value) || value.length !== 2) return false;
   const [key, tokenId] = value;
-  return typeof key === "string" && key.trim().length > 0 && typeof tokenId === "number";
+  return (
+    typeof key === "string" &&
+    key.trim().length > 0 &&
+    typeof tokenId === "number"
+  );
 }
 
-export function buildEffectiveKeywordMap(
-  overrides?: unknown,
-): KeywordMap {
+export function buildEffectiveKeywordMap(overrides?: unknown): KeywordMap {
   const sanitizedOverrides: KeywordMap = {};
 
   if (overrides && typeof overrides === "object") {
@@ -44,9 +44,7 @@ export function buildEffectiveKeywordMap(
   };
 }
 
-export function sanitizeOperatorWordMap(
-  value: unknown,
-): OperatorWordMap {
+export function sanitizeOperatorWordMap(value: unknown): OperatorWordMap {
   if (!value || typeof value !== "object") {
     return { ...DEFAULT_OPERATOR_WORD_MAP };
   }
