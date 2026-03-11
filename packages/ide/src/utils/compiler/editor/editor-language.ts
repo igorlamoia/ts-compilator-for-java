@@ -37,6 +37,32 @@ export type JavaMMLanguageOptions = {
   typingMode?: "typed" | "untyped";
 };
 
+const DEFAULT_OPERATORS = [
+  "=",
+  ">",
+  "<",
+  "!",
+  "==",
+  "<=",
+  ">=",
+  "!=",
+  "&&",
+  "||",
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "+=",
+  "-=",
+  "*=",
+  "/=",
+  "%=",
+  "++",
+  "--",
+  "**",
+];
+
 export function buildJavaMMMonarchLanguage(
   metadata: JavaMMLanguageMetadata,
 ): monacoEditor.languages.IMonarchLanguage {
@@ -47,32 +73,8 @@ export function buildJavaMMMonarchLanguage(
     loops: metadata.semanticGroups.loops,
     flow: metadata.semanticGroups.flow,
     io: metadata.semanticGroups.io,
-
-    operators: [
-      "=",
-      ">",
-      "<",
-      "!",
-      "==",
-      "<=",
-      ">=",
-      "!=",
-      "&&",
-      "||",
-      "+",
-      "-",
-      "*",
-      "/",
-      "%",
-      "+=",
-      "-=",
-      "*=",
-      "/=",
-      "%=",
-    ],
-
+    operators: DEFAULT_OPERATORS,
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
     tokenizer: {
       root: [
         [

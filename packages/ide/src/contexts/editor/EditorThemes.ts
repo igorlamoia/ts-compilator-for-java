@@ -4,6 +4,7 @@ const JAVA_MM_THEME_RULES_DARK = [
   { token: "keyword.loop", foreground: "fb7185", fontStyle: "bold" },
   { token: "keyword.flow", foreground: "c084fc", fontStyle: "bold" },
   { token: "keyword.io", foreground: "34d399", fontStyle: "bold" },
+  { token: "operator", foreground: "f59e0b", fontStyle: "bold" },
 ];
 
 const JAVA_MM_THEME_RULES_LIGHT = [
@@ -12,6 +13,7 @@ const JAVA_MM_THEME_RULES_LIGHT = [
   { token: "keyword.loop", foreground: "be123c", fontStyle: "bold" },
   { token: "keyword.flow", foreground: "7c3aed", fontStyle: "bold" },
   { token: "keyword.io", foreground: "047857", fontStyle: "bold" },
+  { token: "operator", foreground: "c2410c", fontStyle: "bold" },
 ];
 
 export const DarkTheme = {
