@@ -4,8 +4,7 @@ import { SpaceBackground } from "@/components/space-background";
 import { EditorContext, EditorProvider } from "@/contexts/editor/EditorContext";
 import { KeywordProvider } from "@/contexts/KeywordContext";
 import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
-import { IDEView } from "@/views/ide";
-import { useIntermediatorCode } from "@/hooks/useIntermediatorCode";
+import { IDE } from "@/views/ide";
 import { TerminalProvider } from "@/contexts/TerminalContext";
 import { TestCaseResults } from "@/components/test-case-results";
 import type { TTestCaseResult } from "@/pages/api/submissions/validate";
@@ -29,9 +28,9 @@ function WorkspaceContent({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [compileErrors, setCompileErrors] = useState<string[]>([]);
-  const [compileWarnings, setCompileWarnings] = useState<string[]>([]);
-  const [showCompilePanel, setShowCompilePanel] = useState(false);
+  const [submitErrors, setSubmitErrors] = useState<string[]>([]);
+  const [submitWarnings, setSubmitWarnings] = useState<string[]>([]);
+  const [showSubmitPanel, setShowSubmitPanel] = useState(false);
   const [testCaseResults, setTestCaseResults] = useState<
     TTestCaseResult[] | null
   >(null);
@@ -45,14 +44,15 @@ function WorkspaceContent({
 
   const handleSubmit = async () => {
     setError("");
-    setCompileErrors([]);
-    setCompileWarnings([]);
-    setShowCompilePanel(false);
+    setSubmitErrors([]);
+    setSubmitWarnings([]);
+    setShowSubmitPanel(false);
     setTestCaseResults(null);
+    setSubmitted(false);
 
     const code = getEditorCode();
     if (!code || code.trim().length < 5) {
-      setError("Escreva algum código antes de enviar!");
+      setError("Escreva algum código antes de submeter!");
       return;
     }
 
@@ -74,27 +74,26 @@ function WorkspaceContent({
       );
 
       if (!data.valid) {
-        // Compilation failed
-        setCompileErrors(data.errors || []);
-        setCompileWarnings(data.warnings || []);
-        setShowCompilePanel(true);
+        setSubmitErrors(data.errors || []);
+        setSubmitWarnings(data.warnings || []);
+        setShowSubmitPanel(true);
         setSubmitting(false);
         return;
       }
 
-      // Compilation succeeded, submission created
       if (data.warnings?.length > 0) {
-        setCompileWarnings(data.warnings);
+        setSubmitWarnings(data.warnings);
       }
       if (data.testCaseResults) {
         setTestCaseResults(data.testCaseResults);
         setTestCasesPassed(data.testCasesPassed ?? 0);
         setTestCasesTotal(data.testCasesTotal ?? 0);
-        setShowCompilePanel(true);
+        setShowSubmitPanel(true);
       } else if (data.warnings?.length > 0) {
-        setShowCompilePanel(true);
+        setShowSubmitPanel(true);
       }
       setSubmitted(true);
+      showToast({ type: "success", message: "Submissão enviada com sucesso!" });
       setSubmitting(false);
     } catch {
       setError("Erro de conexão");
@@ -148,16 +147,21 @@ function WorkspaceContent({
         </div>
         <div className="flex items-center gap-3">
           {error && <span className="text-xs text-red-400">{error}</span>}
-          {submitted || isAlreadySubmitted ? (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-              <span className="text-sm text-emerald-300 font-medium">
+          {(submitted || isAlreadySubmitted) && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <span className="text-xs text-emerald-300 font-medium">
                 ✓ Enviado
               </span>
               {lastSubmission?.score != null && (
-                <span className="text-sm font-bold text-[#0dccf2]">
+                <span className="text-xs font-bold text-[#0dccf2]">
                   Nota: {lastSubmission.score}
                 </span>
               )}
+            </div>
+          )}
+          {isOverdue ? (
+            <div className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 bg-white/5 border border-white/10 cursor-not-allowed">
+              Prazo encerrado
             </div>
           ) : (
             <button
@@ -165,36 +169,40 @@ function WorkspaceContent({
               disabled={submitting}
               className="px-5 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 shadow-[0_0_15px_rgba(13,204,242,0.3)] hover:shadow-[0_0_25px_rgba(13,204,242,0.5)] hover:opacity-90 transition-all disabled:opacity-50"
             >
-              {submitting ? "Compilando..." : "Compilar & Submeter"}
+              {submitting
+                ? "Submetendo..."
+                : isAlreadySubmitted || submitted
+                  ? "Resubmeter"
+                  : "Submeter Resposta"}
             </button>
           )}
         </div>
       </header>
 
-      {/* Compilation Results Panel */}
-      {showCompilePanel && (
+      {/* Submission Results Panel */}
+      {showSubmitPanel && (
         <div className="relative z-10 border-b border-white/5">
           <div
-            className={`px-6 py-3 ${compileErrors.length > 0 ? "bg-red-500/5" : "bg-emerald-500/5"} backdrop-blur-md`}
+            className={`px-6 py-3 ${submitErrors.length > 0 ? "bg-red-500/5" : "bg-emerald-500/5"} backdrop-blur-md`}
           >
             <div className="flex justify-between items-center mb-2">
               <h3
-                className={`text-sm font-bold ${compileErrors.length > 0 ? "text-red-400" : "text-emerald-400"}`}
+                className={`text-sm font-bold ${submitErrors.length > 0 ? "text-red-400" : "text-emerald-400"}`}
               >
-                {compileErrors.length > 0
-                  ? `❌ Compilação Falhou (${compileErrors.length} erro${compileErrors.length > 1 ? "s" : ""})`
-                  : "✅ Compilado com Sucesso"}
+                {submitErrors.length > 0
+                  ? `Submissão Falhou (${submitErrors.length} erro${submitErrors.length > 1 ? "s" : ""})`
+                  : "Submissão Enviada"}
               </h3>
               <button
-                onClick={() => setShowCompilePanel(false)}
+                onClick={() => setShowSubmitPanel(false)}
                 className="text-xs text-slate-500 hover:text-white transition-colors"
               >
                 Fechar
               </button>
             </div>
-            {compileErrors.length > 0 && (
+            {submitErrors.length > 0 && (
               <div className="space-y-1 mb-2">
-                {compileErrors.map((err, i) => (
+                {submitErrors.map((err, i) => (
                   <div
                     key={i}
                     className="text-xs text-red-300 font-mono bg-red-500/10 px-3 py-1.5 rounded"
@@ -204,9 +212,9 @@ function WorkspaceContent({
                 ))}
               </div>
             )}
-            {compileWarnings.length > 0 && (
+            {submitWarnings.length > 0 && (
               <div className="space-y-1">
-                {compileWarnings.map((warn, i) => (
+                {submitWarnings.map((warn, i) => (
                   <div
                     key={i}
                     className="text-xs text-yellow-300 font-mono bg-yellow-500/10 px-3 py-1.5 rounded"
@@ -270,7 +278,7 @@ function WorkspaceContent({
         </div>
 
         {/* Right: Monaco IDE */}
-        <div className="flex-1 relative">
+        <div className="flex-1 min-w-0 relative overflow-hidden">
           <IDETerminalInner />
         </div>
       </div>
@@ -279,14 +287,7 @@ function WorkspaceContent({
 }
 
 function IDETerminalInner() {
-  const { handleIntermediateCodeGeneration, intermediateCode } =
-    useIntermediatorCode();
-  return (
-    <IDEView
-      handleIntermediateCodeGeneration={handleIntermediateCodeGeneration}
-      intermediateCode={intermediateCode}
-    />
-  );
+  return <IDE />;
 }
 
 export default function ExerciseWorkspace({

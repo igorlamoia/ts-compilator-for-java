@@ -75,6 +75,7 @@ function normalizeOutput(s: string): string {
     return s.replace(/\r\n/g, '\n').trimEnd()
 }
 
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<TValidationResult>) {
     if (req.method !== 'POST') return res.status(405).json({ valid: false, errors: ['Metodo nao permitido'], warnings: [] })
 
@@ -198,6 +199,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     try {
+        await prisma.submission.deleteMany({
+            where: { exerciseId, studentId: userId },
+        })
+
         const submission = await prisma.submission.create({
             data: {
                 exerciseId,

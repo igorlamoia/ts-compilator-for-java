@@ -53,6 +53,7 @@ function normalizeOutput(s: string) {
   return s.replace(/\r\n/g, '\n').trimEnd()
 }
 
+
 export async function validateSubmissionUseCase(
   prisma: PrismaClient,
   input: {
