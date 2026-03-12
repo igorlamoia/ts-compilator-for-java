@@ -17,13 +17,13 @@ export async function createExerciseUseCase(
 
   const testCasesData = Array.isArray(testCases)
     ? testCases
-        .filter((tc) => tc.input?.trim() || tc.expectedOutput?.trim())
-        .map((tc, index) => ({
-          label: tc.label || '',
-          input: tc.input || '',
-          expectedOutput: tc.expectedOutput || '',
-          orderIndex: index,
-        }))
+      .filter((tc) => tc.input?.trim() || tc.expectedOutput?.trim())
+      .map((tc, index) => ({
+        label: tc.label || '',
+        input: tc.input || '',
+        expectedOutput: tc.expectedOutput || '',
+        orderIndex: index,
+      }))
     : []
 
   return prisma.exercise.create({

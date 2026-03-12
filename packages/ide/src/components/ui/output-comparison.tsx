@@ -2,34 +2,44 @@
 
 import { cn } from "@/lib/utils";
 
-type DiffLine =
-  | { type: "equal"; line: string }
-  | { type: "remove"; line: string } // in expected, missing in actual
-  | { type: "add"; line: string }; // in actual, not in expected
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-function computeDiff(expected: string, actual: string): DiffLine[] {
+type LineDiff =
+  | { type: "equal"; line: string }
+  | { type: "remove"; line: string }
+  | { type: "add"; line: string };
+
+type CharPart = { kind: "equal" | "highlight"; text: string };
+
+type RenderLine =
+  | { type: "equal"; line: string }
+  | { type: "remove"; line: string; parts: CharPart[] | null }
+  | { type: "add"; line: string; parts: CharPart[] | null };
+
+// ── LCS ───────────────────────────────────────────────────────────────────────
+
+function buildDpTable<T>(a: T[], b: T[], eq: (x: T, y: T) => boolean): number[][] {
+  const dp = Array.from({ length: a.length + 1 }, () =>
+    new Array(b.length + 1).fill(0)
+  );
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = eq(a[i - 1], b[j - 1])
+        ? dp[i - 1][j - 1] + 1
+        : Math.max(dp[i - 1][j], dp[i][j - 1]);
+  return dp;
+}
+
+// ── Line-level diff ────────────────────────────────────────────────────────────
+
+function computeLineDiff(expected: string, actual: string): LineDiff[] {
   const a = expected.split("\n");
   const b = actual.split("\n");
-  const m = a.length;
-  const n = b.length;
+  const dp = buildDpTable(a, b, (x, y) => x === y);
 
-  // LCS DP table
-  const dp: number[][] = Array.from({ length: m + 1 }, () =>
-    new Array(n + 1).fill(0)
-  );
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      dp[i][j] =
-        a[i - 1] === b[j - 1]
-          ? dp[i - 1][j - 1] + 1
-          : Math.max(dp[i - 1][j], dp[i][j - 1]);
-    }
-  }
-
-  // Backtrack to build diff
-  const result: DiffLine[] = [];
-  let i = m,
-    j = n;
+  const result: LineDiff[] = [];
+  let i = a.length,
+    j = b.length;
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
       result.unshift({ type: "equal", line: a[i - 1] });
@@ -43,9 +53,152 @@ function computeDiff(expected: string, actual: string): DiffLine[] {
       i--;
     }
   }
+  return result;
+}
+
+// ── Char-level diff (for paired remove/add lines) ─────────────────────────────
+
+function computeCharParts(
+  a: string,
+  b: string
+): { removeParts: CharPart[]; addParts: CharPart[] } {
+  const ac = a.split("");
+  const bc = b.split("");
+  const dp = buildDpTable(ac, bc, (x, y) => x === y);
+
+  type Op = { type: "equal" | "remove" | "add"; char: string };
+  const ops: Op[] = [];
+  let i = ac.length,
+    j = bc.length;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && ac[i - 1] === bc[j - 1]) {
+      ops.unshift({ type: "equal", char: ac[i - 1] });
+      i--;
+      j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      ops.unshift({ type: "add", char: bc[j - 1] });
+      j--;
+    } else {
+      ops.unshift({ type: "remove", char: ac[i - 1] });
+      i--;
+    }
+  }
+
+  const removeParts: CharPart[] = [];
+  const addParts: CharPart[] = [];
+
+  function push(arr: CharPart[], kind: "equal" | "highlight", char: string) {
+    if (arr.length && arr[arr.length - 1].kind === kind)
+      arr[arr.length - 1].text += char;
+    else arr.push({ kind, text: char });
+  }
+
+  for (const op of ops) {
+    if (op.type === "equal") {
+      push(removeParts, "equal", op.char);
+      push(addParts, "equal", op.char);
+    } else if (op.type === "remove") {
+      push(removeParts, "highlight", op.char);
+    } else {
+      push(addParts, "highlight", op.char);
+    }
+  }
+
+  return { removeParts, addParts };
+}
+
+// ── Pair remove/add blocks and attach char parts ───────────────────────────────
+
+function buildRenderLines(lineDiff: LineDiff[]): RenderLine[] {
+  const result: RenderLine[] = [];
+  let i = 0;
+
+  while (i < lineDiff.length) {
+    const entry = lineDiff[i];
+
+    if (entry.type === "equal") {
+      result.push({ type: "equal", line: entry.line });
+      i++;
+      continue;
+    }
+
+    if (entry.type === "add") {
+      result.push({ type: "add", line: entry.line, parts: null });
+      i++;
+      continue;
+    }
+
+    // Collect a contiguous block of removes then adds
+    const removes: string[] = [];
+    while (i < lineDiff.length && lineDiff[i].type === "remove") {
+      removes.push(lineDiff[i].line);
+      i++;
+    }
+    const adds: string[] = [];
+    while (i < lineDiff.length && lineDiff[i].type === "add") {
+      adds.push(lineDiff[i].line);
+      i++;
+    }
+
+    const pairCount = Math.min(removes.length, adds.length);
+
+    for (let k = 0; k < removes.length; k++) {
+      if (k < pairCount) {
+        const { removeParts } = computeCharParts(removes[k], adds[k]);
+        result.push({ type: "remove", line: removes[k], parts: removeParts });
+      } else {
+        result.push({ type: "remove", line: removes[k], parts: null });
+      }
+    }
+
+    for (let k = 0; k < adds.length; k++) {
+      if (k < pairCount) {
+        const { addParts } = computeCharParts(removes[k], adds[k]);
+        result.push({ type: "add", line: adds[k], parts: addParts });
+      } else {
+        result.push({ type: "add", line: adds[k], parts: null });
+      }
+    }
+  }
 
   return result;
 }
+
+// ── Render helpers ─────────────────────────────────────────────────────────────
+
+function LineContent({
+  line,
+  parts,
+  isRemove,
+}: {
+  line: string;
+  parts: CharPart[] | null;
+  isRemove: boolean;
+}) {
+  if (!parts) return <>{line}</>;
+
+  return (
+    <>
+      {parts.map((part, idx) =>
+        part.kind === "highlight" ? (
+          <span
+            key={idx}
+            className={cn(
+              "rounded-[2px]",
+              isRemove ? "bg-emerald-400/25" : "bg-red-400/25"
+            )}
+          >
+            {part.text}
+          </span>
+        ) : (
+          <span key={idx}>{part.text}</span>
+        )
+      )}
+    </>
+  );
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 interface OutputComparisonProps {
   expectedOutput: string;
@@ -60,7 +213,11 @@ export function OutputComparison({
   passed,
   className,
 }: OutputComparisonProps) {
-  const diff = computeDiff(expectedOutput || "(vazio)", actualOutput || "(vazio)");
+  const lineDiff = computeLineDiff(
+    expectedOutput || "(vazio)",
+    actualOutput || "(vazio)"
+  );
+  const renderLines = buildRenderLines(lineDiff);
 
   return (
     <div
@@ -69,7 +226,7 @@ export function OutputComparison({
         className
       )}
     >
-      {/* Header — mimics git diff header */}
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.04] px-3 py-1.5">
         <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
           <span className="text-emerald-400/70">
@@ -94,7 +251,7 @@ export function OutputComparison({
 
       {/* Diff body */}
       <div className="bg-[#0d1117]">
-        {diff.map((entry, idx) => (
+        {renderLines.map((entry, idx) => (
           <div
             key={idx}
             className={cn(
@@ -127,7 +284,15 @@ export function OutputComparison({
                 entry.type === "equal" && "text-slate-500"
               )}
             >
-              {entry.line}
+              {entry.type === "equal" ? (
+                entry.line
+              ) : (
+                <LineContent
+                  line={entry.line}
+                  parts={entry.parts}
+                  isRemove={entry.type === "remove"}
+                />
+              )}
             </span>
           </div>
         ))}
