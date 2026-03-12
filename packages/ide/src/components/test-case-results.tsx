@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { TTestCaseResult } from "@/pages/api/submissions/validate";
+import { OutputComparison } from "@/components/ui/output-comparison";
 
 type Props = {
   results: TTestCaseResult[];
@@ -89,30 +90,11 @@ export function TestCaseResults({ results, passed, total }: Props) {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-xs text-slate-500 font-medium">
-                      Saída Esperada:
-                    </span>
-                    <pre className="mt-1 text-xs font-mono text-slate-300 bg-black/20 px-3 py-2 rounded whitespace-pre-wrap">
-                      {tc.expectedOutput || "(vazio)"}
-                    </pre>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 font-medium">
-                      Saída Real:
-                    </span>
-                    <pre
-                      className={`mt-1 text-xs font-mono px-3 py-2 rounded whitespace-pre-wrap ${
-                        tc.passed
-                          ? "text-emerald-300 bg-emerald-500/10"
-                          : "text-red-300 bg-red-500/10"
-                      }`}
-                    >
-                      {tc.actualOutput || "(vazio)"}
-                    </pre>
-                  </div>
-                </div>
+                <OutputComparison
+                  expectedOutput={tc.expectedOutput ?? ""}
+                  actualOutput={tc.actualOutput ?? ""}
+                  passed={tc.passed}
+                />
               </div>
             )}
           </div>
