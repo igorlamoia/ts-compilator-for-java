@@ -1,49 +1,42 @@
 import { describe, it, expect } from 'vitest'
-import { prisma, createOrg, createUser, createClass, createExercise } from '../helpers'
+import { prisma, createOrg, createUser, createClass, createExercise, createExerciseList } from '../helpers'
 import { listExercisesUseCase } from '@/use-cases/exercises/list'
 import { ValidationError } from '@/lib/errors'
 
 describe('listExercisesUseCase', () => {
-  it('should return exercises for a class', async () => {
+  it('should return exercises for a teacher', async () => {
     const org = await createOrg()
     const teacher = await createUser(org.id, { role: 'TEACHER' })
-    const cls = await createClass(org.id, teacher.id)
-    await createExercise(cls.id, { title: 'Ex 1' })
-    await createExercise(cls.id, { title: 'Ex 2' })
+    await createExercise(teacher.id, { title: 'Ex 1' })
+    await createExercise(teacher.id, { title: 'Ex 2' })
 
-    const exercises = await listExercisesUseCase(prisma, { classId: cls.id, userId: teacher.id })
+    const exercises = await listExercisesUseCase(prisma, { teacherId: teacher.id })
 
     expect(exercises).toHaveLength(2)
     expect(exercises.map((e) => e.title)).toContain('Ex 1')
   })
 
-  it('should return empty array when class has no exercises', async () => {
+  it('should return empty array when teacher has no exercises', async () => {
     const org = await createOrg()
     const teacher = await createUser(org.id, { role: 'TEACHER' })
-    const cls = await createClass(org.id, teacher.id)
 
-    const exercises = await listExercisesUseCase(prisma, { classId: cls.id, userId: teacher.id })
+    const exercises = await listExercisesUseCase(prisma, { teacherId: teacher.id })
 
     expect(exercises).toEqual([])
   })
 
-  it('should include last submission for the user', async () => {
+  it('should not return exercises from other teachers', async () => {
     const org = await createOrg()
-    const teacher = await createUser(org.id, { role: 'TEACHER' })
-    const student = await createUser(org.id)
-    const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
-    await prisma.submission.create({
-      data: { exerciseId: exercise.id, studentId: student.id, codeSnapshot: 'code', status: 'SUBMITTED' },
-    })
+    const teacher1 = await createUser(org.id, { role: 'TEACHER' })
+    const teacher2 = await createUser(org.id, { role: 'TEACHER' })
+    await createExercise(teacher1.id, { title: 'T1 Exercise' })
 
-    const exercises = await listExercisesUseCase(prisma, { classId: cls.id, userId: student.id })
+    const exercises = await listExercisesUseCase(prisma, { teacherId: teacher2.id })
 
-    expect(exercises[0].submissions).toHaveLength(1)
-    expect(exercises[0].submissions[0].status).toBe('SUBMITTED')
+    expect(exercises).toHaveLength(0)
   })
 
-  it('should throw ValidationError when classId is empty', async () => {
-    await expect(listExercisesUseCase(prisma, { classId: '', userId: 'u1' })).rejects.toThrow(ValidationError)
+  it('should throw ValidationError when teacherId is empty', async () => {
+    await expect(listExercisesUseCase(prisma, { teacherId: '' })).rejects.toThrow(ValidationError)
   })
 })

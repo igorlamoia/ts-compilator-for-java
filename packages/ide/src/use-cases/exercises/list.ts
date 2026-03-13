@@ -3,21 +3,15 @@ import { ValidationError } from '@/lib/errors'
 
 export async function listExercisesUseCase(
   prisma: PrismaClient,
-  input: { classId: string; userId: string },
+  input: { teacherId: string },
 ) {
-  const { classId, userId } = input
+  const { teacherId } = input
 
-  if (!classId) throw new ValidationError('classId e obrigatorio')
+  if (!teacherId) throw new ValidationError('teacherId e obrigatorio')
 
   return prisma.exercise.findMany({
-    where: { classId },
+    where: { teacherId },
     include: {
-      submissions: {
-        where: { studentId: userId },
-        orderBy: { submittedAt: 'desc' },
-        take: 1,
-        select: { id: true, status: true, score: true, teacherFeedback: true, submittedAt: true },
-      },
       testCases: { orderBy: { orderIndex: 'asc' } },
     },
   })
