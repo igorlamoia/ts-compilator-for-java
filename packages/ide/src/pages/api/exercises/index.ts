@@ -6,7 +6,8 @@ import { HttpError } from '@/lib/errors'
 import { toExerciseDTO } from '@/dtos/exercise.dto'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const userId = req.headers['x-user-id'] as string || 'default-user-id'
+  const userId = req.headers['x-user-id'] as string
+  if (!userId) return res.status(401).json({ error: 'Nao autorizado' })
 
   if (req.method === 'GET') {
     try {
@@ -20,7 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const exercise = await createExerciseUseCase(prisma, { ...req.body, teacherId: userId })
+      const { title, description, testCases } = req.body
+      const exercise = await createExerciseUseCase(prisma, { teacherId: userId, title, description, testCases })
       return res.status(201).json(toExerciseDTO(exercise))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
