@@ -119,6 +119,7 @@ model ExerciseListItem {
   orderIndex     Int          @default(0)
 
   @@id([exerciseListId, exerciseId])
+  @@index([exerciseId])
 }
 
 model ClassExerciseList {
