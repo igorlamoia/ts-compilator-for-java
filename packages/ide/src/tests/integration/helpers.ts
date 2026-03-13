@@ -9,16 +9,17 @@ export const prisma = new PrismaClient({
 })
 
 export async function clearDatabase() {
-  await prisma.testCase.deleteMany()
   await prisma.submission.deleteMany()
+  await prisma.testCase.deleteMany()
+  await prisma.exerciseListItem.deleteMany()
+  await prisma.classExerciseList.deleteMany()
   await prisma.classMember.deleteMany()
+  await prisma.exerciseList.deleteMany()
   await prisma.exercise.deleteMany()
   await prisma.class.deleteMany()
   await prisma.user.deleteMany()
   await prisma.organization.deleteMany()
 }
-
-// --- Seed helpers ---
 
 export function createOrg(name = 'Test Org') {
   return prisma.organization.create({ data: { name } })
@@ -58,17 +59,46 @@ export function createClass(
 }
 
 export function createExercise(
-  classId: string,
-  overrides: Partial<{ title: string; description: string; gradeWeight: number }> = {},
+  teacherId: string,
+  overrides: Partial<{ title: string; description: string }> = {},
 ) {
   return prisma.exercise.create({
     data: {
-      classId,
+      teacherId,
       title: 'Test Exercise',
       description: 'A test exercise',
       attachments: '',
-      deadline: new Date(Date.now() + 86400000),
-      gradeWeight: 10,
+      ...overrides,
+    },
+  })
+}
+
+export function createExerciseList(
+  teacherId: string,
+  overrides: Partial<{ title: string; description: string; status: 'DRAFT' | 'PUBLISHED' }> = {},
+) {
+  return prisma.exerciseList.create({
+    data: {
+      teacherId,
+      title: 'Test List',
+      description: 'A test exercise list',
+      ...overrides,
+    },
+  })
+}
+
+export function createClassExerciseList(
+  exerciseListId: string,
+  classId: string,
+  overrides: Partial<{ deadline: Date; totalGrade: number; minRequired: number }> = {},
+) {
+  return prisma.classExerciseList.create({
+    data: {
+      exerciseListId,
+      classId,
+      deadline: new Date(Date.now() + 7 * 86400000),
+      totalGrade: 10,
+      minRequired: 1,
       ...overrides,
     },
   })
@@ -77,12 +107,16 @@ export function createExercise(
 export function createSubmission(
   exerciseId: string,
   studentId: string,
+  exerciseListId: string,
+  classId: string,
   overrides: Partial<{ codeSnapshot: string; status: 'PENDING' | 'SUBMITTED' | 'GRADED' }> = {},
 ) {
   return prisma.submission.create({
     data: {
       exerciseId,
       studentId,
+      exerciseListId,
+      classId,
       codeSnapshot: 'int main() {}',
       status: 'PENDING',
       ...overrides,
