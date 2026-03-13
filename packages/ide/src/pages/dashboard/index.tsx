@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
-import { ClipboardList, LogIn, Plus, Users } from "lucide-react";
+import { ClipboardList, ListChecks, LogIn, Plus, Users } from "lucide-react";
 import { HeroButton, HeroLink } from "@/components/buttons/hero";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { Navbar } from "@/components/navbar";
+import Link from "next/link";
 
 type UserData = {
   id: string;
@@ -111,7 +112,15 @@ export default function Dashboard() {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
           <Header isTeacher={isTeacher} />
-          <div className="flex gap-4">
+          <div className="flex gap-3">
+            <HeroLink
+              variant="outline"
+              href="/exercise-lists"
+              className="gap-2 px-5 py-2.5 text-sm"
+            >
+              <ListChecks className="w-4 h-4" />
+              {isTeacher ? "Minhas Listas" : "Listas da Turma"}
+            </HeroLink>
             {isTeacher ? (
               <HeroButton
                 onClick={() => setShowCreateClass(true)}
