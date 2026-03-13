@@ -6,9 +6,8 @@ export async function getSubmissionUseCase(prisma: PrismaClient, id: string) {
     where: { id },
     include: {
       student: { select: { id: true, name: true, email: true } },
-      exercise: {
-        select: { id: true, title: true, description: true, gradeWeight: true, classId: true },
-      },
+      exercise: { select: { id: true, title: true, description: true } },
+      publication: { select: { totalGrade: true, deadline: true, minRequired: true } },
     },
   })
 

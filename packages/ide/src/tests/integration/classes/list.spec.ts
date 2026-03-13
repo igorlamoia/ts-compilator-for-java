@@ -44,6 +44,6 @@ describe('listClassesUseCase', () => {
     const classes = await listClassesUseCase(prisma, org.id)
 
     expect(classes[0]._count).toHaveProperty('members')
-    expect(classes[0]._count).toHaveProperty('exercises')
+    expect(classes[0]._count).toHaveProperty('exerciseLists')
   })
 })
