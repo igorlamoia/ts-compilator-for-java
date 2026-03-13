@@ -1,4 +1,4 @@
-import prisma from '../../../lib/prisma'
+import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { listExerciseListsUseCase } from '@/use-cases/exercise-lists/list'
 import { createExerciseListUseCase } from '@/use-cases/exercise-lists/create'
@@ -22,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     try {
       const { title, description } = req.body
+      if (!title) return res.status(400).json({ error: 'title e obrigatorio' })
       const list = await createExerciseListUseCase(prisma, { teacherId: userId, title, description })
       return res.status(201).json(toExerciseListDTO(list))
     } catch (error) {

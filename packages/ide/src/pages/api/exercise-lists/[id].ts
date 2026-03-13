@@ -1,4 +1,4 @@
-import prisma from '../../../../lib/prisma'
+import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getExerciseListUseCase } from '@/use-cases/exercise-lists/get'
 import { HttpError } from '@/lib/errors'
@@ -9,6 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!userId) return res.status(401).json({ error: 'Nao autorizado' })
 
   const { id } = req.query as { id: string }
+  if (!id || typeof id !== 'string') return res.status(400).json({ error: 'Id invalido' })
 
   if (req.method === 'GET') {
     try {
