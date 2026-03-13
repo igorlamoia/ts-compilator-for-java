@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'GET') {
     try {
-      const exercise = await getExerciseUseCase(prisma, { id, userId })
+      const exercise = await getExerciseUseCase(prisma, id)
       return res.status(200).json(toExerciseDTO(exercise))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
