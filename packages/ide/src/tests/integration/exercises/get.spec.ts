@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { prisma, createOrg, createUser, createClass, createExercise } from '../helpers'
+import { prisma, createOrg, createUser, createExercise } from '../helpers'
 import { getExerciseUseCase } from '@/use-cases/exercises/get'
 import { NotFoundError } from '@/lib/errors'
 

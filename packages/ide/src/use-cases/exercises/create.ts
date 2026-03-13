@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@prisma/client'
+import { ValidationError } from '@/lib/errors'
 
 type TestCaseInput = { label?: string; input?: string; expectedOutput?: string }
 
@@ -12,6 +13,9 @@ export async function createExerciseUseCase(
   },
 ) {
   const { teacherId, title, description, testCases } = input
+
+  if (!teacherId) throw new ValidationError('teacherId e obrigatorio')
+  if (!title.trim()) throw new ValidationError('title e obrigatorio')
 
   const testCasesData = Array.isArray(testCases)
     ? testCases
