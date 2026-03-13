@@ -7,6 +7,7 @@ export async function createExerciseListUseCase(
 ) {
   const { teacherId, title, description } = input
 
+  if (!teacherId) throw new ValidationError('teacherId e obrigatorio')
   if (!title.trim()) throw new ValidationError('title e obrigatorio')
 
   return prisma.exerciseList.create({
