@@ -10,6 +10,7 @@ export type ClassPublicationDTO = {
   deadline: Date
   totalGrade: number
   minRequired: number
+  publishedAt?: Date
 }
 
 export type ExerciseListDTO = {
@@ -38,7 +39,7 @@ export function toExerciseListDTO(list: {
     orderIndex: number
     exercise: { id: string; title: string; status: string }
   }[]
-  classes: { classId: string; deadline: Date; totalGrade: number; minRequired: number }[]
+  classes: { classId: string; deadline: Date; totalGrade: number; minRequired: number; publishedAt?: Date }[]
 }): ExerciseListDTO {
   return {
     id: list.id,
