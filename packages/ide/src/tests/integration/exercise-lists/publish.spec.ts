@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { prisma, createOrg, createUser, createClass, createExerciseList } from '../helpers'
 import { publishExerciseListUseCase } from '@/use-cases/exercise-lists/publish'
-import { ValidationError } from '@/lib/errors'
+import { ValidationError, ForbiddenError } from '@/lib/errors'
 
 describe('publishExerciseListUseCase', () => {
   it('should publish a list to a class', async () => {
@@ -13,6 +13,7 @@ describe('publishExerciseListUseCase', () => {
     const publication = await publishExerciseListUseCase(prisma, {
       exerciseListId: list.id,
       classId: cls.id,
+      callerId: teacher.id,
       deadline: new Date(Date.now() + 7 * 86400000),
       totalGrade: 10,
       minRequired: 2,
@@ -33,6 +34,7 @@ describe('publishExerciseListUseCase', () => {
       publishExerciseListUseCase(prisma, {
         exerciseListId: list.id,
         classId: cls.id,
+        callerId: teacher.id,
         deadline: new Date(Date.now() + 86400000),
         totalGrade: 10,
         minRequired: 0,
@@ -51,10 +53,10 @@ describe('publishExerciseListUseCase', () => {
     const deadlineB = new Date(Date.now() + 7 * 86400000)
 
     await publishExerciseListUseCase(prisma, {
-      exerciseListId: list.id, classId: clsA.id, deadline: deadlineA, totalGrade: 10, minRequired: 1,
+      exerciseListId: list.id, classId: clsA.id, callerId: teacher.id, deadline: deadlineA, totalGrade: 10, minRequired: 1,
     })
     await publishExerciseListUseCase(prisma, {
-      exerciseListId: list.id, classId: clsB.id, deadline: deadlineB, totalGrade: 10, minRequired: 1,
+      exerciseListId: list.id, classId: clsB.id, callerId: teacher.id, deadline: deadlineB, totalGrade: 10, minRequired: 1,
     })
 
     const pubA = await prisma.classExerciseList.findUnique({
@@ -78,10 +80,10 @@ describe('publishExerciseListUseCase', () => {
     const newDeadline = new Date(Date.now() + 10 * 86400000)
 
     await publishExerciseListUseCase(prisma, {
-      exerciseListId: list.id, classId: cls.id, deadline: firstDeadline, totalGrade: 10, minRequired: 1,
+      exerciseListId: list.id, classId: cls.id, callerId: teacher.id, deadline: firstDeadline, totalGrade: 10, minRequired: 1,
     })
     await publishExerciseListUseCase(prisma, {
-      exerciseListId: list.id, classId: cls.id, deadline: newDeadline, totalGrade: 20, minRequired: 2,
+      exerciseListId: list.id, classId: cls.id, callerId: teacher.id, deadline: newDeadline, totalGrade: 20, minRequired: 2,
     })
 
     const pub = await prisma.classExerciseList.findUnique({
@@ -91,5 +93,24 @@ describe('publishExerciseListUseCase', () => {
     expect(pub!.deadline.getTime()).toBe(newDeadline.getTime())
     expect(pub!.totalGrade).toBe(20)
     expect(pub!.minRequired).toBe(2)
+  })
+
+  it('should throw ForbiddenError when caller is not the list owner', async () => {
+    const org = await createOrg()
+    const teacher = await createUser(org.id, { role: 'TEACHER' })
+    const otherUser = await createUser(org.id, { role: 'TEACHER' })
+    const cls = await createClass(org.id, teacher.id)
+    const list = await createExerciseList(teacher.id)
+
+    await expect(
+      publishExerciseListUseCase(prisma, {
+        exerciseListId: list.id,
+        classId: cls.id,
+        callerId: otherUser.id,
+        deadline: new Date(Date.now() + 86400000),
+        totalGrade: 10,
+        minRequired: 1,
+      })
+    ).rejects.toThrow(ForbiddenError)
   })
 })

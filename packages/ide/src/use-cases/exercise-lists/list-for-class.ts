@@ -16,7 +16,6 @@ export async function listExerciseListsForClassUseCase(
             include: {
               exercise: {
                 include: {
-                  testCases: { orderBy: { orderIndex: 'asc' } },
                   submissions: {
                     where: { studentId, classId },
                     orderBy: { submittedAt: 'desc' },

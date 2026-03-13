@@ -16,12 +16,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!classId) return res.status(400).json({ error: 'classId e obrigatorio' })
       if (!deadline) return res.status(400).json({ error: 'deadline e obrigatorio' })
 
+      const totalGradeNum = Number(totalGrade)
+      const minRequiredNum = Number(minRequired)
+      if (isNaN(totalGradeNum)) return res.status(400).json({ error: 'totalGrade invalido' })
+      if (isNaN(minRequiredNum)) return res.status(400).json({ error: 'minRequired invalido' })
+
       const publication = await publishExerciseListUseCase(prisma, {
         exerciseListId,
         classId,
+        callerId: userId,
         deadline: new Date(deadline),
-        totalGrade: Number(totalGrade),
-        minRequired: Number(minRequired),
+        totalGrade: totalGradeNum,
+        minRequired: minRequiredNum,
       })
       return res.status(200).json(publication)
     } catch (error) {
