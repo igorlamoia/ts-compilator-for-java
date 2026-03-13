@@ -1,9 +1,9 @@
-import prisma from '../../../lib/prisma'
+import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { listExercisesUseCase } from '@/use-cases/exercises/list'
-import { createExerciseUseCase } from '@/use-cases/exercises/create'
+import { listExerciseListsUseCase } from '@/use-cases/exercise-lists/list'
+import { createExerciseListUseCase } from '@/use-cases/exercise-lists/create'
 import { HttpError } from '@/lib/errors'
-import { toExerciseDTO } from '@/dtos/exercise.dto'
+import { toExerciseListDTO } from '@/dtos/exercise-list.dto'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const userId = req.headers['x-user-id'] as string
@@ -11,8 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'GET') {
     try {
-      const exercises = await listExercisesUseCase(prisma, { teacherId: userId })
-      return res.status(200).json(exercises.map(toExerciseDTO))
+      const lists = await listExerciseListsUseCase(prisma, { teacherId: userId })
+      return res.status(200).json(lists.map(toExerciseListDTO))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error
@@ -21,9 +21,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { title, description, testCases } = req.body
-      const exercise = await createExerciseUseCase(prisma, { teacherId: userId, title, description, testCases })
-      return res.status(201).json(toExerciseDTO(exercise))
+      const { title, description } = req.body
+      if (!title) return res.status(400).json({ error: 'title e obrigatorio' })
+      const list = await createExerciseListUseCase(prisma, { teacherId: userId, title, description })
+      return res.status(201).json(toExerciseListDTO(list))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error

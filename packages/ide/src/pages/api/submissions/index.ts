@@ -9,8 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const userId = req.headers['x-user-id'] as string || 'default-user-id'
 
   if (req.method === 'POST') {
-    const { exerciseId, codeSnapshot, status } = req.body
-    const submission = await createSubmissionUseCase(prisma, { exerciseId, studentId: userId, codeSnapshot, status })
+    const { exerciseId, exerciseListId, classId, codeSnapshot, status } = req.body
+    const submission = await createSubmissionUseCase(prisma, { exerciseId, studentId: userId, exerciseListId, classId, codeSnapshot, status })
     return res.status(201).json(toSubmissionDTO(submission))
   }
 

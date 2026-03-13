@@ -1,20 +1,20 @@
 import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getExerciseUseCase } from '@/use-cases/exercises/get'
+import { getExerciseListUseCase } from '@/use-cases/exercise-lists/get'
 import { HttpError } from '@/lib/errors'
-import { toExerciseDTO } from '@/dtos/exercise.dto'
+import { toExerciseListDTO } from '@/dtos/exercise-list.dto'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const userId = req.headers['x-user-id'] as string
   if (!userId) return res.status(401).json({ error: 'Nao autorizado' })
 
-  const { id } = req.query
-  if (!id || typeof id !== 'string') return res.status(400).json({ error: 'ID do exercicio e obrigatorio' })
+  const { id } = req.query as { id: string }
+  if (!id || typeof id !== 'string') return res.status(400).json({ error: 'Id invalido' })
 
   if (req.method === 'GET') {
     try {
-      const exercise = await getExerciseUseCase(prisma, id)
-      return res.status(200).json(toExerciseDTO(exercise))
+      const list = await getExerciseListUseCase(prisma, id)
+      return res.status(200).json(toExerciseListDTO(list))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error

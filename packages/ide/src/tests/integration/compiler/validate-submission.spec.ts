@@ -16,7 +16,7 @@ describe('validateSubmissionUseCase', () => {
     const teacher = await createUser(org.id, { role: 'TEACHER' })
     const student = await createUser(org.id)
     const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
+    const exercise = await createExercise(teacher.id)
 
     const result = await validateSubmissionUseCase(prisma, {
       exerciseId: exercise.id,
@@ -34,7 +34,7 @@ describe('validateSubmissionUseCase', () => {
     const teacher = await createUser(org.id, { role: 'TEACHER' })
     const student = await createUser(org.id)
     const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
+    const exercise = await createExercise(teacher.id)
 
     const result = await validateSubmissionUseCase(prisma, {
       exerciseId: exercise.id,
@@ -47,34 +47,12 @@ describe('validateSubmissionUseCase', () => {
     expect(result.errors[0]).toContain('Erro léxico')
   })
 
-  it('should create a submission when dryRun is false', async () => {
-    const org = await createOrg()
-    const teacher = await createUser(org.id, { role: 'TEACHER' })
-    const student = await createUser(org.id)
-    const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
-
-    const result = await validateSubmissionUseCase(prisma, {
-      exerciseId: exercise.id,
-      sourceCode: VALID_CODE,
-      userId: student.id,
-      dryRun: false,
-    })
-
-    expect(result.valid).toBe(true)
-    expect(result.submissionId).toBeDefined()
-
-    const saved = await prisma.submission.findUnique({ where: { id: result.submissionId } })
-    expect(saved).not.toBeNull()
-    expect(saved!.status).toBe('SUBMITTED')
-  })
-
   it('should run test cases and report results', async () => {
     const org = await createOrg()
     const teacher = await createUser(org.id, { role: 'TEACHER' })
     const student = await createUser(org.id)
     const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
+    const exercise = await createExercise(teacher.id)
     await prisma.testCase.create({
       data: { exerciseId: exercise.id, label: 'Print 7', input: '', expectedOutput: '7', orderIndex: 0 },
     })
@@ -96,7 +74,7 @@ describe('validateSubmissionUseCase', () => {
     const teacher = await createUser(org.id, { role: 'TEACHER' })
     const student = await createUser(org.id)
     const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
+    const exercise = await createExercise(teacher.id)
     await prisma.testCase.create({
       data: { exerciseId: exercise.id, label: 'Wrong', input: '', expectedOutput: '99', orderIndex: 0 },
     })

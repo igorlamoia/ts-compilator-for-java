@@ -16,18 +16,20 @@ model Organization {
 }
 
 model User {
-  id             String        @id @default(uuid())
+  id             String          @id @default(uuid())
   organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  role           UserRole      @default(STUDENT)
-  email          String        @unique
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  role           UserRole        @default(STUDENT)
+  email          String          @unique
   password       String
   name           String
   avatarUrl      String?
   bio            String?
-  classesTaught  Class[]       @relation("TeacherToClass")
+  classesTaught  Class[]         @relation("TeacherToClass")
   memberships    ClassMember[]
   submissions    Submission[]
+  exercises      Exercise[]
+  exerciseLists  ExerciseList[]
 }
 
 enum UserRole {
@@ -37,18 +39,18 @@ enum UserRole {
 }
 
 model Class {
-  id             String        @id @default(uuid())
+  id             String              @id @default(uuid())
   organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organization   Organization        @relation(fields: [organizationId], references: [id])
   teacherId      String
-  teacher        User          @relation("TeacherToClass", fields: [teacherId], references: [id])
+  teacher        User                @relation("TeacherToClass", fields: [teacherId], references: [id])
   name           String
   description    String
-  accessCode     String        @unique
-  createdAt      DateTime      @default(now())
-  status         ClassStatus   @default(ACTIVE)
+  accessCode     String              @unique
+  createdAt      DateTime            @default(now())
+  status         ClassStatus         @default(ACTIVE)
   members        ClassMember[]
-  exercises      Exercise[]
+  exerciseLists  ClassExerciseList[]
 }
 
 enum ClassStatus {
@@ -67,17 +69,20 @@ model ClassMember {
 }
 
 model Exercise {
-  id             String       @id @default(uuid())
-  classId        String
-  class          Class        @relation(fields: [classId], references: [id])
-  title          String
-  description    String
-  attachments    String
-  deadline       DateTime
-  gradeWeight    Float
-  status         ExerciseStatus @default(DRAFT)
-  submissions    Submission[]
-  testCases      TestCase[]
+  id          String             @id @default(uuid())
+  teacherId   String
+  teacher     User               @relation(fields: [teacherId], references: [id])
+  title       String
+  description String
+  attachments String
+  status      ExerciseStatus     @default(DRAFT)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  submissions Submission[]
+  testCases   TestCase[]
+  listItems   ExerciseListItem[]
+
+  @@index([teacherId])
 }
 
 enum ExerciseStatus {
@@ -85,17 +90,72 @@ enum ExerciseStatus {
   PUBLISHED
 }
 
+model ExerciseList {
+  id          String              @id @default(uuid())
+  teacherId   String
+  teacher     User                @relation(fields: [teacherId], references: [id])
+  title       String
+  description String
+  status      ExerciseListStatus  @default(DRAFT)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  items       ExerciseListItem[]
+  classes     ClassExerciseList[]
+
+  @@index([teacherId])
+}
+
+enum ExerciseListStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model ExerciseListItem {
+  exerciseListId String
+  exerciseId     String
+  exerciseList   ExerciseList @relation(fields: [exerciseListId], references: [id], onDelete: Cascade)
+  exercise       Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  gradeWeight    Float
+  orderIndex     Int          @default(0)
+
+  @@id([exerciseListId, exerciseId])
+  @@index([exerciseId])
+}
+
+model ClassExerciseList {
+  exerciseListId String
+  classId        String
+  exerciseList   ExerciseList  @relation(fields: [exerciseListId], references: [id], onDelete: Cascade)
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  deadline       DateTime
+  totalGrade     Float
+  minRequired    Int
+  publishedAt    DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  submissions    Submission[]
+
+  @@id([exerciseListId, classId])
+  @@index([classId])
+  @@index([deadline])
+}
+
 model Submission {
-  id              String           @id @default(uuid())
-  exerciseId      String
-  exercise        Exercise         @relation(fields: [exerciseId], references: [id])
-  studentId       String
-  student         User             @relation(fields: [studentId], references: [id])
-  codeSnapshot    String
-  status          SubmissionStatus @default(PENDING)
-  score           Float?
-  teacherFeedback String?
-  submittedAt     DateTime         @default(now())
+  id               String            @id @default(uuid())
+  exerciseId       String
+  exercise         Exercise          @relation(fields: [exerciseId], references: [id])
+  exerciseListId   String
+  classId          String
+  publication      ClassExerciseList @relation(fields: [exerciseListId, classId], references: [exerciseListId, classId])
+  studentId        String
+  student          User              @relation(fields: [studentId], references: [id])
+  codeSnapshot     String
+  status           SubmissionStatus  @default(PENDING)
+  score            Float?
+  teacherFeedback  String?
+  submittedAt      DateTime          @default(now())
+
+  @@index([exerciseListId, classId])
+  @@index([studentId])
 }
 
 model TestCase {

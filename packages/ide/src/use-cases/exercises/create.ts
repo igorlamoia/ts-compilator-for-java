@@ -1,19 +1,21 @@
 import type { PrismaClient } from '@prisma/client'
+import { ValidationError } from '@/lib/errors'
 
 type TestCaseInput = { label?: string; input?: string; expectedOutput?: string }
 
 export async function createExerciseUseCase(
   prisma: PrismaClient,
   input: {
-    classId: string
+    teacherId: string
     title: string
     description: string
-    deadline: string
-    gradeWeight: number | string
     testCases?: TestCaseInput[]
   },
 ) {
-  const { classId, title, description, deadline, gradeWeight, testCases } = input
+  const { teacherId, title, description, testCases } = input
+
+  if (!teacherId) throw new ValidationError('teacherId e obrigatorio')
+  if (!title.trim()) throw new ValidationError('title e obrigatorio')
 
   const testCasesData = Array.isArray(testCases)
     ? testCases
@@ -28,11 +30,9 @@ export async function createExerciseUseCase(
 
   return prisma.exercise.create({
     data: {
-      classId,
+      teacherId,
       title,
       description,
-      deadline: new Date(deadline),
-      gradeWeight: Number(gradeWeight),
       attachments: '',
       ...(testCasesData.length > 0 && { testCases: { create: testCasesData } }),
     },

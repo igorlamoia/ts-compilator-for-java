@@ -1,9 +1,31 @@
 import { describe, it, expect } from 'vitest'
-import { prisma, createOrg, createUser, createClass, createExercise, createSubmission } from '../helpers'
+import {
+  prisma,
+  createOrg,
+  createUser,
+  createClass,
+  createExercise,
+  createExerciseList,
+  createExerciseListItem,
+  createClassExerciseList,
+  createSubmission,
+} from '../helpers'
 import { getSubmissionUseCase } from '@/use-cases/submissions/get'
 import { gradeSubmissionUseCase } from '@/use-cases/submissions/grade'
 import { listSubmissionsUseCase } from '@/use-cases/submissions/list'
 import { NotFoundError, ValidationError } from '@/lib/errors'
+
+async function setupSubmission(orgOverride?: string) {
+  const org = await createOrg(orgOverride)
+  const teacher = await createUser(org.id, { role: 'TEACHER' })
+  const student = await createUser(org.id)
+  const cls = await createClass(org.id, teacher.id)
+  const exercise = await createExercise(teacher.id)
+  const exerciseList = await createExerciseList(teacher.id)
+  await createExerciseListItem(exerciseList.id, exercise.id)
+  await createClassExerciseList(exerciseList.id, cls.id)
+  return { org, teacher, student, cls, exercise, exerciseList }
+}
 
 describe('getSubmissionUseCase', () => {
   it('should return submission with student and exercise data', async () => {
@@ -11,8 +33,11 @@ describe('getSubmissionUseCase', () => {
     const teacher = await createUser(org.id, { role: 'TEACHER' })
     const student = await createUser(org.id, { name: 'Alice' })
     const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id, { title: 'My Exercise' })
-    const submission = await createSubmission(exercise.id, student.id)
+    const exercise = await createExercise(teacher.id, { title: 'My Exercise' })
+    const exerciseList = await createExerciseList(teacher.id)
+    await createExerciseListItem(exerciseList.id, exercise.id)
+    await createClassExerciseList(exerciseList.id, cls.id)
+    const submission = await createSubmission(exercise.id, student.id, exerciseList.id, cls.id)
 
     const result = await getSubmissionUseCase(prisma, submission.id)
 
@@ -28,12 +53,8 @@ describe('getSubmissionUseCase', () => {
 
 describe('gradeSubmissionUseCase', () => {
   it('should update score, feedback and set status to GRADED', async () => {
-    const org = await createOrg()
-    const teacher = await createUser(org.id, { role: 'TEACHER' })
-    const student = await createUser(org.id)
-    const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
-    const submission = await createSubmission(exercise.id, student.id)
+    const { teacher, student, cls, exercise, exerciseList } = await setupSubmission()
+    const submission = await createSubmission(exercise.id, student.id, exerciseList.id, cls.id)
 
     const graded = await gradeSubmissionUseCase(prisma, {
       id: submission.id,
@@ -47,12 +68,8 @@ describe('gradeSubmissionUseCase', () => {
   })
 
   it('should grade without feedback', async () => {
-    const org = await createOrg()
-    const teacher = await createUser(org.id, { role: 'TEACHER' })
-    const student = await createUser(org.id)
-    const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
-    const submission = await createSubmission(exercise.id, student.id)
+    const { teacher, student, cls, exercise, exerciseList } = await setupSubmission()
+    const submission = await createSubmission(exercise.id, student.id, exerciseList.id, cls.id)
 
     const graded = await gradeSubmissionUseCase(prisma, { id: submission.id, score: 7 })
 
@@ -68,9 +85,12 @@ describe('listSubmissionsUseCase', () => {
     const s1 = await createUser(org.id)
     const s2 = await createUser(org.id)
     const cls = await createClass(org.id, teacher.id)
-    const exercise = await createExercise(cls.id)
-    await createSubmission(exercise.id, s1.id)
-    await createSubmission(exercise.id, s2.id)
+    const exercise = await createExercise(teacher.id)
+    const exerciseList = await createExerciseList(teacher.id)
+    await createExerciseListItem(exerciseList.id, exercise.id)
+    await createClassExerciseList(exerciseList.id, cls.id)
+    await createSubmission(exercise.id, s1.id, exerciseList.id, cls.id)
+    await createSubmission(exercise.id, s2.id, exerciseList.id, cls.id)
 
     const submissions = await listSubmissionsUseCase(prisma, exercise.id)
 
