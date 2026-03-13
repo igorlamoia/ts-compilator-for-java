@@ -21,6 +21,7 @@ export async function clearDatabase() {
   await prisma.organization.deleteMany()
 }
 
+// --- Seed helpers ---
 export function createOrg(name = 'Test Org') {
   return prisma.organization.create({ data: { name } })
 }
@@ -87,6 +88,22 @@ export function createExerciseList(
   })
 }
 
+export function createExerciseListItem(
+  exerciseListId: string,
+  exerciseId: string,
+  overrides: Partial<{ gradeWeight: number; orderIndex: number }> = {},
+) {
+  return prisma.exerciseListItem.create({
+    data: {
+      exerciseListId,
+      exerciseId,
+      gradeWeight: 10,
+      orderIndex: 0,
+      ...overrides,
+    },
+  })
+}
+
 export function createClassExerciseList(
   exerciseListId: string,
   classId: string,
@@ -96,7 +113,7 @@ export function createClassExerciseList(
     data: {
       exerciseListId,
       classId,
-      deadline: new Date(Date.now() + 7 * 86400000),
+      deadline: new Date(Date.now() + 7 * 86400000), // 7 dias
       totalGrade: 10,
       minRequired: 1,
       ...overrides,
