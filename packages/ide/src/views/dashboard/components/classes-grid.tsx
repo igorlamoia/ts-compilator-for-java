@@ -6,13 +6,11 @@ export function ClassesGrid({
   isTeacher,
   loading,
   onJoinClass,
-  onCreateExercise,
 }: {
   classes: any[];
   isTeacher: boolean;
   loading: boolean;
   onJoinClass: () => void;
-  onCreateExercise: (classId: string) => void;
 }) {
   if (loading) {
     return (
@@ -63,7 +61,6 @@ export function ClassesGrid({
           key={cls.id}
           cls={cls}
           isTeacher={isTeacher}
-          onCreateExercise={onCreateExercise}
         />
       ))}
     </div>

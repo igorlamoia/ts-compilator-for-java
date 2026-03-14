@@ -12,6 +12,7 @@ import { Navbar } from "@/components/navbar";
 import { Copyright } from "@/components/copyright";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { RegisterForm, registerSchema, type RegisterFormValues } from "@/components/auth/register-form";
 import { SocialLogin } from "@/components/auth/social-login";
@@ -59,9 +60,10 @@ export default function Register() {
 
       router.push("/dashboard");
     } catch (error) {
-      const message = isAxiosError(error)
-        ? error.response?.data?.error || "Erro de rede. Tente novamente."
-        : "Ocorreu um erro. Com os dados fornecidos.";
+      const message = getApiErrorMessage(
+        error,
+        "Erro de rede. Tente novamente.",
+      );
       setServerError(message);
       showToast({ type: "error", message });
     }

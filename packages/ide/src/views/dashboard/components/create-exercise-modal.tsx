@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
-import axios from "axios";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { HeroButton } from "@/components/buttons/hero";
 import {
   Accordion,
@@ -124,11 +124,7 @@ export function CreateExerciseModal({
       resetForm();
       onOpenChange(false);
     } catch (error) {
-      const message =
-        axios.isAxiosError(error) &&
-        typeof error.response?.data?.error === "string"
-          ? error.response.data.error
-          : "Erro ao criar exercício";
+      const message = getApiErrorMessage(error, "Erro ao criar exercício");
       onError?.(message);
     }
   };

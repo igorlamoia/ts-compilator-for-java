@@ -23,10 +23,16 @@ import { Input } from "@/components/ui/input";
 import { HeroButton } from "@/components/buttons/hero";
 import type { ClassOption } from "./types";
 
+function defaultDeadline() {
+  const d = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm for datetime-local
+}
+
 const publishSchema = z.object({
   classId: z.string().min(1, "Selecione uma turma"),
   totalGrade: z.string().min(1, "Nota total é obrigatória"),
   minRequired: z.string().min(1, "Mínimo obrigatório"),
+  deadline: z.string().min(1, "Prazo é obrigatório"),
 });
 type PublishForm = z.infer<typeof publishSchema>;
 
@@ -48,7 +54,7 @@ export function PublishModal({
   const { showToast } = useToast();
   const form = useForm<PublishForm>({
     resolver: zodResolver(publishSchema),
-    defaultValues: { classId: "", totalGrade: "10", minRequired: "1" },
+    defaultValues: { classId: "", totalGrade: "10", minRequired: "1", deadline: defaultDeadline() },
   });
 
   const onSubmit = async (values: PublishForm) => {
@@ -59,6 +65,7 @@ export function PublishModal({
           classId: values.classId,
           totalGrade: Number(values.totalGrade),
           minRequired: Number(values.minRequired),
+          deadline: new Date(values.deadline).toISOString(),
         },
         { headers: { "x-user-id": userId } },
       );
@@ -148,6 +155,23 @@ export function PublishModal({
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="deadline"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prazo de entrega</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="datetime-local"
+                      {...field}
+                      className="h-11 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
         <DialogFooter className="bg-white/5 border-t border-white/10">

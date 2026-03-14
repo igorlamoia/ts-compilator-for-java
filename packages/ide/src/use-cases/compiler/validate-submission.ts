@@ -62,9 +62,11 @@ export async function validateSubmissionUseCase(
     userId: string
     keywordMap?: KeywordMap
     dryRun?: boolean
+    exerciseListId?: string
+    classId?: string
   },
 ): Promise<ValidationResult> {
-  const { exerciseId, sourceCode, userId, keywordMap, dryRun } = input
+  const { exerciseId, sourceCode, userId, keywordMap, dryRun, exerciseListId, classId } = input
 
   const errors: string[] = []
   const warnings: string[] = []
@@ -135,9 +137,35 @@ export async function validateSubmissionUseCase(
     return { valid: true, errors: [], warnings, testCaseResults, testCasesPassed, testCasesTotal }
   }
 
-  // Step 4: Save submission
+  // Step 4: Determine status based on deadline
+  let status: 'SUBMITTED' | 'LATE' = 'SUBMITTED'
+
+  if (exerciseListId && classId) {
+    const publication = await prisma.classExerciseList.findUnique({
+      where: { exerciseListId_classId: { exerciseListId, classId } },
+      select: { deadline: true },
+    })
+
+    if (publication && new Date() > publication.deadline) {
+      status = 'LATE'
+      warnings.push('Submissão após o prazo — será marcada como atrasada.')
+    }
+
+    // Delete previous submission for same exercise+list+class+student
+    await prisma.submission.deleteMany({
+      where: { exerciseId, exerciseListId, classId, studentId: userId },
+    })
+  }
+
+  // Step 5: Save submission
   const submission = await prisma.submission.create({
-    data: { exerciseId, studentId: userId, codeSnapshot: sourceCode, status: 'SUBMITTED' },
+    data: {
+      exerciseId,
+      studentId: userId,
+      codeSnapshot: sourceCode,
+      status,
+      ...(exerciseListId && classId ? { exerciseListId, classId } : {}),
+    },
   })
 
   return {

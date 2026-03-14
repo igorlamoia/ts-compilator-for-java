@@ -9,6 +9,7 @@ export type ClassPublicationDTO = {
   classId: string
   totalGrade: number
   minRequired: number
+  deadline: Date
   publishedAt?: Date
 }
 
@@ -21,23 +22,27 @@ export type ExerciseListDTO = {
   updatedAt: Date
   items: ExerciseListItemDTO[]
   classes: ClassPublicationDTO[]
+  submittedExerciseIds?: string[]
 }
 
-export function toExerciseListDTO(list: {
-  id: string
-  teacherId: string
-  title: string
-  description: string
-  createdAt: Date
-  updatedAt: Date
-  items: {
-    exerciseId: string
-    gradeWeight: number
-    orderIndex: number
-    exercise: { id: string; title: string }
-  }[]
-  classes: { classId: string; totalGrade: number; minRequired: number; publishedAt?: Date }[]
-}): ExerciseListDTO {
+export function toExerciseListDTO(
+  list: {
+    id: string
+    teacherId: string
+    title: string
+    description: string
+    createdAt: Date
+    updatedAt: Date
+    items: {
+      exerciseId: string
+      gradeWeight: number
+      orderIndex: number
+      exercise: { id: string; title: string }
+    }[]
+    classes?: { classId: string; totalGrade: number; minRequired: number; deadline: Date; publishedAt?: Date }[]
+  },
+  submittedExerciseIds?: string[]
+): ExerciseListDTO {
   return {
     id: list.id,
     teacherId: list.teacherId,
@@ -51,11 +56,13 @@ export function toExerciseListDTO(list: {
       orderIndex: item.orderIndex,
       exercise: item.exercise,
     })),
-    classes: list.classes.map((c) => ({
+    classes: (list.classes ?? []).map((c) => ({
       classId: c.classId,
       totalGrade: c.totalGrade,
       minRequired: c.minRequired,
+      deadline: c.deadline,
       publishedAt: c.publishedAt,
     })),
+    submittedExerciseIds,
   }
 }

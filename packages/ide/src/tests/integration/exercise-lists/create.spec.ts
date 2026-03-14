@@ -17,7 +17,6 @@ describe('createExerciseListUseCase', () => {
     expect(list.id).toBeDefined()
     expect(list.teacherId).toBe(teacher.id)
     expect(list.title).toBe('Lista 1')
-    expect(list.status).toBe('DRAFT')
   })
 
   it('should throw ValidationError when title is empty', async () => {

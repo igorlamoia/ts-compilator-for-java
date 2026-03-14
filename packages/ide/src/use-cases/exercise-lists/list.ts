@@ -12,7 +12,7 @@ export async function listExerciseListsUseCase(
     include: {
       items: {
         orderBy: { orderIndex: 'asc' },
-        include: { exercise: { select: { id: true, title: true, status: true } } },
+        include: { exercise: { select: { id: true, title: true } } },
       },
       classes: {
         select: { classId: true, deadline: true, totalGrade: true, minRequired: true, publishedAt: true },

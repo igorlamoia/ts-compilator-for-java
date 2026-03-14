@@ -13,8 +13,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'GET') {
     try {
+      const { classId } = req.query as { classId?: string }
       const list = await getExerciseListUseCase(prisma, id)
-      return res.status(200).json(toExerciseListDTO(list))
+
+      let submittedExerciseIds: string[] | undefined
+      if (classId && userId) {
+        const submissions = await prisma.submission.findMany({
+          where: { exerciseListId: id, classId, studentId: userId },
+          select: { exerciseId: true },
+        })
+        submittedExerciseIds = submissions.map((s) => s.exerciseId)
+      }
+
+      return res.status(200).json(toExerciseListDTO(list, submittedExerciseIds))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error

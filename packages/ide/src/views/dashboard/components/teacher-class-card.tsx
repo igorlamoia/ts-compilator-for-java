@@ -1,14 +1,12 @@
-import { ClipboardList, Plus, Users } from "lucide-react";
-import { HeroButton, HeroLink } from "@/components/buttons/hero";
+import { ClipboardList, Users } from "lucide-react";
+import { HeroLink } from "@/components/buttons/hero";
 
 export function TeacherClassCard({
   cls,
   isTeacher,
-  onCreateExercise,
 }: {
   cls: any;
   isTeacher: boolean;
-  onCreateExercise: (classId: string) => void;
 }) {
   return (
     <div className="group shadow-[0_1px_10px_rgba(0,0,0,0.1)] dark:shadow-none overflow-hidden relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full">
@@ -64,15 +62,6 @@ export function TeacherClassCard({
         >
           Ver Detalhes
         </HeroLink>
-        {isTeacher && (
-          <HeroButton
-            onClick={() => onCreateExercise(cls.id)}
-            className="flex flex-1 gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            Exercício
-          </HeroButton>
-        )}
       </div>
     </div>
   );

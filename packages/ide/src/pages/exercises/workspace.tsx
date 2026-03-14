@@ -29,7 +29,10 @@ function ListNavigatorSidebar({
 }) {
   const sorted = list.items.slice().sort((a, b) => a.orderIndex - b.orderIndex);
   const currentIdx = sorted.findIndex((i) => i.exerciseId === currentExerciseId);
-  const completedCount = sorted.length;
+
+  const submittedSet = new Set<string>(list.submittedExerciseIds ?? []);
+
+  const completedCount = sorted.filter((i) => submittedSet.has(i.exerciseId)).length;
 
   return (
     <div className="w-52 shrink-0 border-r border-white/5 bg-[#0b1719]/80 backdrop-blur-md flex flex-col overflow-hidden">
@@ -48,6 +51,7 @@ function ListNavigatorSidebar({
       <div className="flex-1 overflow-y-auto py-1">
         {sorted.map((item, idx) => {
           const isActive = item.exerciseId === currentExerciseId;
+          const isSubmitted = submittedSet.has(item.exerciseId);
           const href = `/exercises/${item.exerciseId}${classId ? `?listId=${list.id}&classId=${classId}` : `?listId=${list.id}`}`;
           return (
             <Link
@@ -56,12 +60,16 @@ function ListNavigatorSidebar({
               className={`flex items-center gap-2.5 px-3 py-2.5 text-xs transition-all group ${
                 isActive
                   ? "bg-[#0dccf2]/10 border-l-2 border-[#0dccf2] text-[#0dccf2]"
-                  : "border-l-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/3"
+                  : isSubmitted
+                    ? "border-l-2 border-emerald-500/50 text-emerald-400/80 hover:text-emerald-300 hover:bg-emerald-500/5"
+                    : "border-l-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/3"
               }`}
             >
               <span className="shrink-0">
                 {isActive ? (
                   <ChevronRight className="w-3 h-3" />
+                ) : isSubmitted ? (
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 ) : (
                   <Circle className="w-3 h-3 opacity-40" />
                 )}
@@ -77,13 +85,13 @@ function ListNavigatorSidebar({
 
       <div className="px-4 py-3 border-t border-white/5">
         <div className="text-[10px] text-slate-500 mb-1.5">
-          {currentIdx + 1}/{sorted.length}
+          {completedCount}/{sorted.length} concluídos
         </div>
         <div className="h-1 bg-white/8 rounded-full overflow-hidden">
           <div
-            className="h-full bg-linear-to-r from-[#0dccf2] to-[#10b981] rounded-full"
+            className="h-full bg-linear-to-r from-[#0dccf2] to-[#10b981] rounded-full transition-all duration-500"
             style={{
-              width: `${sorted.length > 0 ? ((currentIdx + 1) / sorted.length) * 100 : 0}%`,
+              width: `${sorted.length > 0 ? (completedCount / sorted.length) * 100 : 0}%`,
             }}
           />
         </div>
@@ -99,11 +107,13 @@ function WorkspaceContent({
   userId,
   list,
   classId,
+  onSubmitSuccess,
 }: {
   exercise: any;
   userId: string;
   list?: ExerciseListDTO;
   classId?: string;
+  onSubmitSuccess?: (exerciseId: string) => void;
 }) {
   const { showToast } = useToast();
   const { locale } = useRouter();
@@ -147,6 +157,8 @@ function WorkspaceContent({
         "/submissions/validate",
         {
           exerciseId: exercise.id,
+          exerciseListId: list?.id,
+          classId,
           sourceCode: code,
           keywordMap: lexerConfig.keywordMap,
           blockDelimiters: lexerConfig.blockDelimiters,
@@ -177,6 +189,7 @@ function WorkspaceContent({
         setShowSubmitPanel(true);
       }
       setSubmitted(true);
+      onSubmitSuccess?.(exercise.id);
       showToast({ type: "success", message: "Submissão enviada com sucesso!" });
       setSubmitting(false);
     } catch {
@@ -195,7 +208,9 @@ function WorkspaceContent({
       minute: "2-digit",
     });
 
-  const isOverdue = new Date(exercise.deadline) < new Date();
+  const publication = list?.classes?.find((c) => c.classId === classId);
+  const deadlineStr = publication?.deadline;
+  const isOverdue = deadlineStr ? new Date(deadlineStr) < new Date() : false;
 
   return (
     <>
@@ -216,11 +231,13 @@ function WorkspaceContent({
               <span className="text-xs text-slate-500">
                 Turma: {exercise.class?.name}
               </span>
-              <span
-                className={`text-xs ${isOverdue ? "text-red-400" : "text-slate-500"}`}
-              >
-                Prazo: {formatDate(exercise.deadline)}
-              </span>
+              {deadlineStr && (
+                <span
+                  className={`text-xs ${isOverdue ? "text-red-400" : "text-slate-500"}`}
+                >
+                  Prazo: {formatDate(deadlineStr)}
+                </span>
+              )}
               {isOverdue && (
                 <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-300">
                   Atrasado
@@ -390,6 +407,7 @@ export default function ExerciseWorkspace({
   const [list, setList] = useState<ExerciseListDTO | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [localSubmittedIds, setLocalSubmittedIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!userId || !exerciseId) return;
@@ -399,6 +417,7 @@ export default function ExerciseWorkspace({
       listId
         ? api.get<ExerciseListDTO>(`/exercise-lists/${listId}`, {
             headers: { "x-user-id": userId },
+            params: classId ? { classId } : undefined,
           })
         : undefined,
     ].filter(Boolean) as [Promise<any>, Promise<any>?];
@@ -448,8 +467,9 @@ export default function ExerciseWorkspace({
               <WorkspaceContent
                 exercise={exercise}
                 userId={userId!}
-                list={list}
+                list={list ? { ...list, submittedExerciseIds: [...(list.submittedExerciseIds ?? []), ...localSubmittedIds] } : undefined}
                 classId={classId}
+                onSubmitSuccess={(id) => setLocalSubmittedIds((prev) => prev.includes(id) ? prev : [...prev, id])}
               />
             </TerminalProvider>
           </RuntimeErrorProvider>

@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { isAxiosError } from "axios";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { LoginForm, loginSchema, type LoginFormValues } from "@/components/auth/login-form";
 import { SocialLogin } from "@/components/auth/social-login";
@@ -42,9 +42,7 @@ export default function Login() {
       });
       router.push("/dashboard");
     } catch (error) {
-      const message = isAxiosError(error)
-        ? error.response?.data?.error || "Falha ao entrar"
-        : "Erro de conexão";
+      const message = getApiErrorMessage(error, "Falha ao entrar");
       setServerError(message);
       showToast({ type: "error", message });
     }

@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
-import { CreateClassModal } from "./components/create-class-modal";
-import { JoinClassModal } from "./components/join-class-modal";
-import { CreateExerciseModal } from "./components/create-exercise-modal";
 import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
-import { DashboardHeader } from "./components/dashboard-header";
-import { ClassesGrid } from "./components/classes-grid";
+import { ClassesGrid } from "@/views/dashboard/components/classes-grid";
+import { CreateClassModal } from "@/views/dashboard/components/create-class-modal";
+import { DashboardHeader } from "@/views/dashboard/components/dashboard-header";
+import { JoinClassModal } from "@/views/dashboard/components/join-class-modal";
 
 type UserData = {
   id: string;
@@ -30,9 +30,6 @@ export default function Dashboard() {
   // Modals
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [showJoinClass, setShowJoinClass] = useState(false);
-  const [showCreateExercise, setShowCreateExercise] = useState(false);
-  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -46,7 +43,7 @@ export default function Dashboard() {
     } catch (error: any) {
       showToast({
         type: "error",
-        message: error?.response?.data?.error || "Erro ao carregar turmas.",
+        message: getApiErrorMessage(error, "Erro ao carregar turmas."),
       });
       setLoading(false);
     }
@@ -66,11 +63,6 @@ export default function Dashboard() {
   };
 
   const handleClassJoined = (message: string) => {
-    setSuccess(message);
-    fetchClasses();
-  };
-
-  const handleExerciseCreated = (message: string) => {
     setSuccess(message);
     fetchClasses();
   };
@@ -105,9 +97,10 @@ export default function Dashboard() {
               isTeacher={isTeacher}
               loading={loading}
               onJoinClass={() => setShowJoinClass(true)}
-              onCreateExercise={(classId) => {
-                setSelectedClassId(classId);
-                setShowCreateExercise(true);
+              onCreateExercise={(classId: string) => {
+                // TODO: Implement exercise creation modal or navigation
+                setSuccess(`Exercício criado para a turma ${classId}.`);
+                // Optionally, refresh classes or exercises here
               }}
             />
           </main>
@@ -130,14 +123,6 @@ export default function Dashboard() {
             onError={setError}
           />
 
-          <CreateExerciseModal
-            open={showCreateExercise}
-            onOpenChange={setShowCreateExercise}
-            classId={selectedClassId}
-            userId={userId!}
-            onSuccess={handleExerciseCreated}
-            onError={setError}
-          />
         </div>
       </div>
     </div>

@@ -13,6 +13,8 @@
 # testing
 /coverage
 packages/ide/prism/test.db
+test.db
+dev.db
 
 # next.js
 /.next/

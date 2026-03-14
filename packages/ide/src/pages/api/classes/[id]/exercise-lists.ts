@@ -41,6 +41,7 @@ export default async function handler(
       classId: cel.classId,
       totalGrade: cel.totalGrade,
       minRequired: cel.minRequired,
+      deadline: cel.deadline,
       exerciseList: {
         id: cel.exerciseList.id,
         title: cel.exerciseList.title,

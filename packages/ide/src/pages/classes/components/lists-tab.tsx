@@ -1,5 +1,19 @@
 import Link from "next/link";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, Calendar, ChevronRight } from "lucide-react";
+
+function formatDeadline(deadline: string | undefined) {
+  if (!deadline) return null;
+  const d = new Date(deadline);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / 86400000);
+  const formatted = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const isOverdue = diffMs < 0;
+  const color = isOverdue ? "text-red-400" : diffDays <= 3 ? "text-amber-400" : diffDays <= 7 ? "text-yellow-300" : "text-slate-400";
+  const label = isOverdue ? "Encerrado" : diffDays === 0 ? "Hoje" : diffDays === 1 ? "Amanhã" : `${diffDays} dias`;
+  return { formatted, color, label, isOverdue };
+}
 
 export function ListsTab({
   exerciseLists,
@@ -56,6 +70,17 @@ export function ListsTab({
                 Mínimo: {entry.minRequired}
               </span>
             </div>
+            {(() => {
+              const dl = formatDeadline(entry.deadline);
+              if (!dl) return null;
+              return (
+                <div className={`flex items-center gap-1.5 text-xs ${dl.color}`}>
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{dl.formatted}</span>
+                  <span className="text-[10px] opacity-75">({dl.label})</span>
+                </div>
+              );
+            })()}
             <div className="mt-auto pt-3 border-t border-white/5">
               <Link
                 href={`/exercise-lists/${entry.exerciseListId}`}
@@ -96,6 +121,16 @@ export function ListsTab({
               <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 border border-white/8 px-2.5 py-1 rounded-full">
                 Mínimo: {entry.minRequired} exercício{entry.minRequired !== 1 ? "s" : ""}
               </span>
+              {(() => {
+                const dl = formatDeadline(entry.deadline);
+                if (!dl) return null;
+                return (
+                  <span className={`inline-flex items-center gap-1.5 text-xs bg-white/5 border border-white/8 px-2.5 py-1 rounded-full ${dl.color}`}>
+                    <Calendar className="w-3 h-3" />
+                    {dl.label} — {dl.formatted}
+                  </span>
+                );
+              })()}
             </div>
             <div className="mb-4">
               <div className="flex justify-between text-xs text-slate-500 mb-1.5">

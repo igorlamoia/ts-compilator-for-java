@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./logo";
 import { HeroLink } from "./buttons/hero";
-import { ChevronDown, LogIn, LogOut } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogIn, LogOut } from "lucide-react";
 import { useRouter } from "next/router";
 import { t } from "@/i18n";
 import { ToggleTheme } from "./toggle-theme";
@@ -21,7 +21,7 @@ interface NavbarProps {
   hasAuth?: boolean;
 }
 
-const defaultLinks = [{ label: "Dashboard", href: "/dashboard" }];
+const defaultLinks: { label: string; href: string }[] = [];
 
 export function Navbar({ links, hasAuth = true }: NavbarProps) {
   const { locale, pathname, push } = useRouter();
@@ -99,6 +99,10 @@ export function Navbar({ links, hasAuth = true }: NavbarProps) {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
+                  <DropdownMenuItem onSelect={() => { setIsMenuOpen(false); push("/dashboard"); }}>
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </DropdownMenuItem>
                   <DropdownMenuItem onSelect={handleLogout}>
                     <LogOut className="w-4 h-4" />
                     Sair

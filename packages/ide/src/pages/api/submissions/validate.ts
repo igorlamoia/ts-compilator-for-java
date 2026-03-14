@@ -82,8 +82,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const userId = req.headers['x-user-id'] as string
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, sourceCode, keywordMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
+    const { exerciseId, exerciseListId, classId, sourceCode, keywordMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
         exerciseId: string
+        exerciseListId: string
+        classId: string
         sourceCode: string
         keywordMap?: KeywordMap
         blockDelimiters?: LexerBlockDelimiters
@@ -95,6 +97,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     if (!exerciseId || !sourceCode) {
         return res.status(400).json({ valid: false, errors: ['Código e exercício são obrigatórios'], warnings: [] })
+    }
+
+    if (!dryRun && (!exerciseListId || !classId)) {
+        return res.status(400).json({ valid: false, errors: ['exerciseListId e classId são obrigatórios para submissão'], warnings: [] })
     }
 
     const errors: string[] = []
@@ -199,16 +205,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     try {
+        // Check deadline and determine status
+        let status: 'SUBMITTED' | 'LATE' = 'SUBMITTED'
+
+        if (exerciseListId && classId) {
+            const publication = await prisma.classExerciseList.findUnique({
+                where: { exerciseListId_classId: { exerciseListId, classId } },
+                select: { deadline: true },
+            })
+
+            if (publication && new Date() > publication.deadline) {
+                status = 'LATE'
+                warnings.push('Submissão após o prazo — será marcada como atrasada.')
+            }
+        }
+
         await prisma.submission.deleteMany({
-            where: { exerciseId, studentId: userId },
+            where: { exerciseId, exerciseListId, classId, studentId: userId },
         })
 
         const submission = await prisma.submission.create({
             data: {
                 exerciseId,
+                exerciseListId,
+                classId,
                 studentId: userId,
                 codeSnapshot: sourceCode,
-                status: 'SUBMITTED'
+                status,
             }
         })
 

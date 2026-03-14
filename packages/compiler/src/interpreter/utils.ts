@@ -1,4 +1,4 @@
-import { ScanHint, TArithmetics, TRelational } from "./constants";
+import { RuntimeSlot, ScanHint, TArithmetics, TRelational } from "./constants";
 
 export function makeOperation(
   op: TArithmetics,
@@ -66,7 +66,7 @@ export function coerceValueForType(type: string, value: unknown): unknown {
 
 export function parseOrGetVariable(
   operand: TTypeOperand,
-  variables: Map<string, unknown>,
+  variables: Map<string, RuntimeSlot>,
   throwError?: (code: string, params?: Record<string, unknown>) => never,
 ): unknown {
   if (operand === null) return null;
@@ -89,7 +89,7 @@ export function parseOrGetVariable(
     throw new Error(`Variable '${operand}' has not been defined yet!`);
   }
 
-  return variables.get(operand);
+  return variables.get(operand)?.value;
 }
 
 export function parsePiece(piece: string): string | number | boolean | null {

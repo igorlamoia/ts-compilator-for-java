@@ -104,35 +104,19 @@ export default function ClassDetail() {
       <div className="flex flex-1 overflow-hidden relative z-10">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-y-auto w-full">
-          {/* Header bar */}
-          <header className="relative z-20 w-full border-b border-white/5 bg-[#0A0A0F]/80 backdrop-blur-xl">
-            <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <Link
-                  href="/dashboard"
-                  className="group flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#0dccf2]/40 transition-all duration-300 hover:shadow-[0_0_15px_rgba(13,204,242,0.2)]"
-                >
-                  <svg
-                    className="w-5 h-5 text-[#0dccf2] group-hover:-translate-x-0.5 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-                <div className="h-6 w-px bg-white/10" />
-                <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  Detalhes da Turma
-                </h1>
-              </div>
-            </div>
-          </header>
-
           <main className="max-w-7xl mx-auto px-6 py-12 w-full">
             {/* Header Section with tabs */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
+                <Link
+                  href="/dashboard"
+                  className="group inline-flex items-center gap-2 text-slate-500 hover:text-[#0dccf2] transition-colors mb-4 text-sm"
+                >
+                  <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Voltar ao Painel
+                </Link>
                 <div className="flex items-center gap-2 text-[#0dccf2] mb-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
                   <span className="text-xs font-bold uppercase tracking-wider">Dashboard da Turma</span>

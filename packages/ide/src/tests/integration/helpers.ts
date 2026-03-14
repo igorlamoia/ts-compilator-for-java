@@ -107,7 +107,7 @@ export function createExerciseListItem(
 export function createClassExerciseList(
   exerciseListId: string,
   classId: string,
-  overrides: Partial<{ totalGrade: number; minRequired: number }> = {},
+  overrides: Partial<{ totalGrade: number; minRequired: number; deadline: Date }> = {},
 ) {
   return prisma.classExerciseList.create({
     data: {
@@ -115,6 +115,7 @@ export function createClassExerciseList(
       classId,
       totalGrade: 10,
       minRequired: 1,
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       ...overrides,
     },
   })
