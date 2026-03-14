@@ -28,7 +28,7 @@ export async function getClassMembersUseCase(prisma: PrismaClient, req: GetClass
     throw new Error('Turma não encontrada.');
   }
 
-  // Verify user exists and belongs to the same organization as the class
+  // Verify user is either the teacher of this class, a student member, or an admin
   const user = await prisma.user.findUnique({
     where: { id: userId }
   });
@@ -37,9 +37,15 @@ export async function getClassMembersUseCase(prisma: PrismaClient, req: GetClass
     throw new Error('Usuário não encontrado.');
   }
 
-  // Any user in the same organization can view class members
-  // (the dashboard already shows all org classes to students)
-  if (user.organizationId !== classObj.organizationId) {
+  const membership = await prisma.classMember.findFirst({
+    where: { classId, studentId: userId }
+  });
+
+  if (
+    user.role !== 'ADMIN' &&
+    classObj.teacherId !== user.id &&
+    !membership
+  ) {
     throw new Error('Acesso negado.');
   }
 

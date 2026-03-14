@@ -130,14 +130,6 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
             <Header isTeacher={isTeacher} />
             <div className="flex gap-3">
-              <HeroLink
-                variant="outline"
-                href="/exercise-lists"
-                className="gap-2 px-5 py-2.5 text-sm"
-              >
-                <ListChecks className="w-4 h-4" />
-                Minhas Listas
-              </HeroLink>
               <HeroButton
                 onClick={() => setShowCreateClass(true)}
                 className="group gap-2 px-6 py-3"

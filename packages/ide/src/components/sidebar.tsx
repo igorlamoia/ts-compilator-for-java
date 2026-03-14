@@ -1,23 +1,51 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen } from "lucide-react";
+import { BookOpen, LayoutDashboard, ListChecks } from "lucide-react";
+
+type MenuItem = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  href: string;
+  activeMatchers: string[];
+};
+
+const studentMenu: MenuItem[] = [
+  {
+    id: "turmas",
+    label: "Minhas Turmas",
+    icon: <BookOpen className="w-5 h-5" />,
+    href: "/dashboard",
+    activeMatchers: ["/dashboard", "/classes"],
+  },
+];
+
+const teacherMenu: MenuItem[] = [
+  {
+    id: "painel",
+    label: "Painel do Professor",
+    icon: <LayoutDashboard className="w-5 h-5" />,
+    href: "/dashboard",
+    activeMatchers: ["/dashboard", "/classes"],
+  },
+  {
+    id: "listas",
+    label: "Minhas Listas",
+    icon: <ListChecks className="w-5 h-5" />,
+    href: "/exercise-lists",
+    activeMatchers: ["/exercise-lists"],
+  },
+];
 
 export function Sidebar() {
   const { pathname } = useRouter();
-  const { isAuthenticated } = useAuth();
-
-  const menuItems = [
-    {
-      id: "turmas",
-      label: "Minhas Turmas",
-      icon: <BookOpen className="w-5 h-5" />,
-      href: "/dashboard",
-      activeMatchers: ["/dashboard", "/classes"],
-    },
-  ];
+  const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) return null;
+
+  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
+  const menuItems = isTeacher ? teacherMenu : studentMenu;
 
   return (
     <aside className="w-64 h-full shrink-0 flex flex-col bg-[#110c1c] border-r border-[#ffffff0a] relative z-40">

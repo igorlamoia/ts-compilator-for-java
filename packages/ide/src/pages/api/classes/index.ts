@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const orgId = req.headers['x-org-id'] as string || 'default-org-id'
 
   if (req.method === 'GET') {
-    const classes = await listClassesUseCase(prisma, orgId)
+    const classes = await listClassesUseCase(prisma, orgId, userId)
     return res.status(200).json(classes.map(toClassDTO))
   }
 

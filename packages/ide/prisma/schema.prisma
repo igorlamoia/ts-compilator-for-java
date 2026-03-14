@@ -115,6 +115,7 @@ model ClassExerciseList {
   classId        String
   exerciseList   ExerciseList  @relation(fields: [exerciseListId], references: [id], onDelete: Cascade)
   class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  deadline       DateTime
   totalGrade     Float
   minRequired    Int
   publishedAt    DateTime      @default(now())
