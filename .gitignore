@@ -1,2 +1,4 @@
 node_modules
-.vscode/*
+packages/ide/prism/test.db
+test.db
+.vscode/*.worktrees/

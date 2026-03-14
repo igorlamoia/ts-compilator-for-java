@@ -4,13 +4,21 @@ export class IssueError extends Error {
   details: IssueDetails;
 
   constructor(
+    code: string,
     message: string,
     line: number,
     column: number,
-    params?: TIssueParams
+    params?: TIssueParams,
   ) {
     super(message);
-    this.details = new IssueDetails(message, line, column, "error", params);
+    this.details = new IssueDetails(
+      code,
+      message,
+      line,
+      column,
+      "error",
+      params,
+    );
 
     // Object.setPrototypeOf(this, IssueError.prototype);
   }

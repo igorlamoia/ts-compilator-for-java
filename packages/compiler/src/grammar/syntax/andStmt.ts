@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { notStmt } from "./notStmt";
 import { restAndStmt } from "./restAndStmt";
 
@@ -7,7 +7,7 @@ import { restAndStmt } from "./restAndStmt";
  *
  * @derivation `<and> -> <not> <restoAnd>`
  */
-export function andStmt(iterator: TokenIterator): string {
+export function andStmt(iterator: TokenIterator): ExprResult {
   const left = notStmt(iterator);
   return restAndStmt(iterator, left);
 }

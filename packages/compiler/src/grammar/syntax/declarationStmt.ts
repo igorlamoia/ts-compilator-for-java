@@ -2,6 +2,7 @@ import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 import { emitAssignmentChain } from "./attributeStmt";
+import { consumeStmtTerminator } from "./statementTerminator";
 
 /**
  * Parses a variable declaration statement and emits declaration instructions.
@@ -9,12 +10,17 @@ import { emitAssignmentChain } from "./attributeStmt";
  * @derivation `<declaration> -> <type> <identList> ';'`
  */
 export function declarationStmt(iterator: TokenIterator): void {
-  const type = typeStmt(iterator); // "int", "float", "string"
+  const typingMode = iterator.getTypingMode();
+  const type =
+    typingMode === "untyped"
+      ? (iterator.consume(TOKENS.RESERVEDS.variavel), "dynamic")
+      : typeStmt(iterator); // "int", "float", "string"
   const emitter = iterator.emitter;
 
   while (true) {
     const identToken = iterator.consume(TOKENS.LITERALS.identifier);
     const varName = identToken.lexeme;
+    iterator.declareSymbol(varName, type);
 
     emitter.emit("DECLARE", varName, type, null);
 
@@ -27,7 +33,7 @@ export function declarationStmt(iterator: TokenIterator): void {
     iterator.consume(TOKENS.SYMBOLS.comma); // consume ","
   }
 
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 }
 
 // import { identListStmt } from "./identListStmt";

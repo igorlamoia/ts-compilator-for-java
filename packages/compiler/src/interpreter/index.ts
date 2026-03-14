@@ -1,35 +1,35 @@
-import {
-  makeOperation,
-  makeRelation,
-  parsePiece,
-} from "./utils";
+import { makeOperation, makeRelation, parseScanInput } from "./utils";
 import {
   ARITHMETICS,
   Instruction,
   LOGICALS,
   RELATIONALS,
+  RuntimeSlot,
   TArithmetics,
   TLogical,
   TRelational,
 } from "./constants";
 import { RuntimeError } from "./runtime-error";
+import { translate } from "../i18n";
+import { coerceValueForType } from "./utils";
 
 interface CallFrame {
   returnAddress: number;
   returnVariable: string | null;
-  localScope: Map<string, unknown>;
+  localScope: Map<string, RuntimeSlot>;
   parameters: string[];
 }
 
 export class Interpreter {
   private labels: Map<string, number>;
-  private variables: Map<string, unknown>;
+  private variables: Map<string, RuntimeSlot>;
   private callStack: CallFrame[];
   private instructionPointer: number;
   private program: Instruction[];
 
   private stdout: (msg: string) => void;
   private stdin: () => Promise<string>;
+  private locale: string | undefined;
 
   constructor(
     program: Instruction[],
@@ -37,14 +37,16 @@ export class Interpreter {
       stdout: (msg: string) => void;
       stdin: () => Promise<string>;
     },
+    locale?: string,
   ) {
     this.stdout = io.stdout;
     this.stdin = io.stdin;
     this.program = program;
     this.labels = new Map<string, number>();
-    this.variables = new Map<string, unknown>();
+    this.variables = new Map<string, RuntimeSlot>();
     this.callStack = [];
     this.instructionPointer = 0;
+    this.locale = locale;
   }
 
   private getFallbackInstruction(): Instruction {
@@ -57,7 +59,9 @@ export class Interpreter {
   }
 
   private getCurrentInstruction(): Instruction {
-    return this.program[this.instructionPointer] ?? this.getFallbackInstruction();
+    return (
+      this.program[this.instructionPointer] ?? this.getFallbackInstruction()
+    );
   }
 
   private buildErrorCallStack(
@@ -72,8 +76,10 @@ export class Interpreter {
     pointer: number = this.instructionPointer,
   ): RuntimeError {
     if (error instanceof RuntimeError) return error;
+    const code = "interpreter.runtime_error";
     const message = error instanceof Error ? error.message : "Runtime error";
     return new RuntimeError(
+      code,
       message,
       instruction,
       pointer,
@@ -82,11 +88,14 @@ export class Interpreter {
   }
 
   private throwRuntimeError(
-    message: string,
+    code: string,
+    params?: Record<string, string | number | boolean | unknown>,
     instruction: Instruction = this.getCurrentInstruction(),
     pointer: number = this.instructionPointer,
   ): never {
+    const message = translate(this.locale, code, params);
     throw new RuntimeError(
+      code,
       message,
       instruction,
       pointer,
@@ -108,7 +117,8 @@ export class Interpreter {
       const labelName = instruction.result;
       if (this.labels.has(labelName))
         this.throwRuntimeError(
-          `Label '${labelName}' defined more than once!`,
+          "interpreter.label_defined_multiple_times",
+          { labelName },
           instruction,
           index,
         );
@@ -117,7 +127,12 @@ export class Interpreter {
 
     // Segundo passo: iniciar execução no label 'main'
     if (!this.labels.has("main")) {
-      this.throwRuntimeError("No 'main' function found!", this.getFallbackInstruction(), 0);
+      this.throwRuntimeError(
+        "interpreter.no_main_function",
+        undefined,
+        this.getFallbackInstruction(),
+        0,
+      );
     }
     this.instructionPointer = this.getLabelIndex("main");
 
@@ -136,31 +151,44 @@ export class Interpreter {
             const val2 = this.parseOrGetVariableWithScope(operand2);
 
             if (typeof val1 !== "number" || typeof val2 !== "number")
-              throw new Error(
-                `Arithmetic operation '${op}' requires numeric operands. between '${val1}' and '${val2}'`,
+              this.throwRuntimeError(
+                "interpreter.arithmetic_requires_numeric",
+                { op, val1, val2 },
+                currentInstruction,
               );
 
             this.setVariable(
               result,
-              makeOperation(op as TArithmetics, val1, val2),
+              makeOperation(op as TArithmetics, val1, val2, (code, params) =>
+                this.throwRuntimeError(code, params, currentInstruction),
+              ),
             );
           } else {
             const val1 = this.parseOrGetVariableWithScope(operand1);
             if (typeof val1 !== "number")
-              throw new Error(
-                `Unary arithmetic operation '${op}' requires a numeric operand. Received '${val1}'`,
+              this.throwRuntimeError(
+                "interpreter.unary_arithmetic_requires_numeric",
+                { op, val1 },
+                currentInstruction,
               );
 
             if (op === "+") this.setVariable(result, +val1);
             else if (op === "-") this.setVariable(result, -val1);
-            else throw new Error(`Invalid unary arithmetic operator '${op}'`);
+            else
+              this.throwRuntimeError(
+                "interpreter.invalid_unary_operator",
+                { op },
+                currentInstruction,
+              );
           }
           this.instructionPointer++;
         } else if (op === "unary+" || op === "unary-") {
           const val1 = this.parseOrGetVariableWithScope(operand1);
           if (typeof val1 !== "number")
-            throw new Error(
-              `Unary operation '${op}' requires numeric operand. Received '${val1}'`,
+            this.throwRuntimeError(
+              "interpreter.unary_operation_requires_numeric",
+              { op, val1 },
+              currentInstruction,
             );
           this.setVariable(result, op === "unary+" ? +val1 : -val1);
           this.instructionPointer++;
@@ -182,7 +210,13 @@ export class Interpreter {
           const val2 = this.parseOrGetVariableWithScope(operand2);
           this.setVariable(
             result,
-            makeRelation(op as TRelational, val1 as number, val2 as number),
+            makeRelation(
+              op as TRelational,
+              val1 as number,
+              val2 as number,
+              (code, params) =>
+                this.throwRuntimeError(code, params, currentInstruction),
+            ),
           );
           this.instructionPointer++;
         } else if (op === "=") {
@@ -195,8 +229,10 @@ export class Interpreter {
           const labelFalse = operand2;
 
           if (typeof labelTrue !== "string" || typeof labelFalse !== "string")
-            throw new Error(
-              `IF requires label names as operand1/operand2. Received '${labelTrue}' and '${labelFalse}'`,
+            this.throwRuntimeError(
+              "interpreter.if_requires_labels",
+              { labelTrue, labelFalse },
+              currentInstruction,
             );
 
           if (Boolean(conditionVal))
@@ -219,14 +255,17 @@ export class Interpreter {
             this.instructionPointer++;
           } else if (callType === "SCAN") {
             if (typeof operand2 !== "string")
-              throw new Error(
-                `SCAN requires a string variable name as operand1. Received '${operand2}'`,
+              this.throwRuntimeError(
+                "interpreter.scan_requires_string_variable",
+                { operand2 },
+                currentInstruction,
               );
 
+            const scanHint =
+              operand1 === "int" || operand1 === "float" ? operand1 : null;
             const userInput = await this.stdin();
-            console.log("userInput", userInput);
             commandRef.current = "";
-            this.setVariable(operand2, parsePiece(userInput));
+            this.setVariable(operand2, parseScanInput(scanHint, userInput));
             this.instructionPointer++;
           } else if (callType === "STOP") {
             break;
@@ -245,7 +284,7 @@ export class Interpreter {
             const frame: CallFrame = {
               returnAddress: this.instructionPointer + 1,
               returnVariable: returnVar,
-              localScope: new Map<string, unknown>(),
+              localScope: new Map<string, RuntimeSlot>(),
               parameters: [],
             };
 
@@ -261,30 +300,42 @@ export class Interpreter {
           }
         } else if (op === "DECLARE") {
           if (typeof result !== "string")
-            throw new Error(
-              `DECLARE requires a string variable name as result. Received '${result}'`,
+            this.throwRuntimeError(
+              "interpreter.declare_requires_string",
+              { result },
+              currentInstruction,
             );
 
           // Se estivermos em uma função e houver argumentos avaliados, atribuir aos parâmetros
           let initialValue: unknown = null;
+          const declaredType =
+            typeof operand1 === "string" ? operand1 : "dynamic";
           if (this.callStack.length > 0) {
             const frame = this.callStack[this.callStack.length - 1];
             const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
 
-            if (evaluatedArgs && frame.parameters.length < evaluatedArgs.length) {
+            if (
+              evaluatedArgs &&
+              frame.parameters.length < evaluatedArgs.length
+            ) {
               // Usar o valor do argumento como valor inicial
               initialValue = evaluatedArgs[frame.parameters.length];
               frame.parameters.push(result);
             }
           }
 
-          // Declarar variável no escopo atual com o valor inicial
-          this.setVariable(result, initialValue);
+          this.declareVariable(result, declaredType, initialValue);
 
           this.instructionPointer++;
           continue;
         } else if (op === "RETURN") {
           const returnValue = this.parseOrGetVariableWithScope(result);
+          const returnType =
+            typeof operand1 === "string" ? operand1 : "dynamic";
+          const coercedReturnValue = coerceValueForType(
+            returnType,
+            returnValue,
+          );
 
           if (this.callStack.length === 0) {
             // Return do main - terminar execução
@@ -296,15 +347,16 @@ export class Interpreter {
 
           // Armazenar valor de retorno no escopo do caller se houver variável
           if (frame.returnVariable) {
-            const callerScope = this.getCurrentScope();
-            callerScope.set(frame.returnVariable, returnValue);
+            this.setVariable(frame.returnVariable, coercedReturnValue);
           }
 
           // Voltar para endereço de retorno
           this.instructionPointer = frame.returnAddress;
         } else
-          throw new Error(
-            `Unknown operation '${op}' at Instruction Pointer = ${this.instructionPointer}`,
+          this.throwRuntimeError(
+            "interpreter.unknown_operation",
+            { op, instructionPointer: this.instructionPointer },
+            currentInstruction,
           );
       } catch (error) {
         throw this.toRuntimeError(error, currentInstruction);
@@ -314,9 +366,10 @@ export class Interpreter {
 
   private getLabelIndex(label: string): number {
     if (!this.labels.has(label))
-      this.throwRuntimeError(
-        `Label '${label}' not found! Available labels: ${[...this.labels.keys()].join(", ")}`,
-      );
+      this.throwRuntimeError("interpreter.label_not_found", {
+        label,
+        availableLabels: [...this.labels.keys()].join(", "),
+      });
     return this.labels.get(label)!;
   }
 
@@ -327,7 +380,7 @@ export class Interpreter {
     );
   }
 
-  private getCurrentScope(): Map<string, unknown> {
+  private getCurrentScope(): Map<string, RuntimeSlot> {
     if (this.callStack.length > 0) {
       return this.callStack[this.callStack.length - 1].localScope;
     }
@@ -339,23 +392,51 @@ export class Interpreter {
     if (this.callStack.length > 0) {
       const currentScope = this.callStack[this.callStack.length - 1].localScope;
       if (currentScope.has(name)) {
-        return currentScope.get(name);
+        return currentScope.get(name)?.value;
       }
     }
 
     // Se não encontrar, procurar no escopo global
     if (this.variables.has(name)) {
-      return this.variables.get(name);
+      return this.variables.get(name)?.value;
     }
 
-    this.throwRuntimeError(
-      `Variable '${name}' not found. Available variables: ${[...this.variables.keys()].join(", ")}`,
-    );
+    this.throwRuntimeError("interpreter.variable_not_found", {
+      name,
+      availableVariables: [...this.variables.keys()].join(", "),
+    });
+  }
+
+  private declareVariable(name: string, type: string, value: unknown): void {
+    const currentScope = this.getCurrentScope();
+    currentScope.set(name, {
+      type,
+      value: coerceValueForType(type, value),
+    });
   }
 
   private setVariable(name: string, value: unknown): void {
     const currentScope = this.getCurrentScope();
-    currentScope.set(name, value);
+    const currentSlot = currentScope.get(name);
+
+    if (currentSlot) {
+      currentScope.set(name, {
+        ...currentSlot,
+        value: coerceValueForType(currentSlot.type, value),
+      });
+      return;
+    }
+
+    if (this.variables.has(name) && currentScope !== this.variables) {
+      const globalSlot = this.variables.get(name)!;
+      this.variables.set(name, {
+        ...globalSlot,
+        value: coerceValueForType(globalSlot.type, value),
+      });
+      return;
+    }
+
+    currentScope.set(name, { type: "dynamic", value });
   }
 
   private parseOrGetVariableWithScope(value: unknown): unknown {

@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "magicuidesign": {
+      "command": "/home/lamoia/.local/share/mise/installs/node/24.13.1/bin/npx",
+      "args": [
+        "-y",
+        "@magicuidesign/mcp"
+      ],
+      "env": {
+        "PATH": "/home/lamoia/.local/share/mise/installs/node/24.13.1/bin:${env:PATH}"
+      }
+    },
+    "shadcn": {
+      "command": "/home/lamoia/.local/share/mise/installs/node/24.13.1/bin/npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ],
+      "env": {
+        "PATH": "/home/lamoia/.local/share/mise/installs/node/24.13.1/bin:${env:PATH}"
+      }
+    }
+  },
+  "inputs": []
+}

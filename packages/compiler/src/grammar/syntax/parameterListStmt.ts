@@ -1,9 +1,9 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { TokenIterator, ValueType } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 
 export interface Parameter {
-  type: string;  // "int", "float", "string"
+  type: ValueType;
   name: string;  // nome do parâmetro
 }
 
@@ -17,10 +17,23 @@ export interface Parameter {
  */
 export function parameterListStmt(iterator: TokenIterator): Parameter[] {
   const params: Parameter[] = [];
+  const typingMode = iterator.getTypingMode();
 
   // Verifica se tem parâmetros (se próximo token é ')', lista vazia)
   if (iterator.peek().type === TOKENS.SYMBOLS.right_paren) {
     return params; // lista vazia
+  }
+
+  if (typingMode === "untyped") {
+    const paramName = iterator.consume(TOKENS.LITERALS.identifier);
+    params.push({ type: "dynamic", name: paramName.lexeme });
+
+    while (iterator.peek().type === TOKENS.SYMBOLS.comma) {
+      iterator.consume(TOKENS.SYMBOLS.comma);
+      const nextName = iterator.consume(TOKENS.LITERALS.identifier);
+      params.push({ type: "dynamic", name: nextName.lexeme });
+    }
+    return params;
   }
 
   // Parsear primeiro parâmetro: type identifier

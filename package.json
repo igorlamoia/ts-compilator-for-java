@@ -5,5 +5,6 @@
   ],
   "keywords": [],
   "author": "Igor Lamoia",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {}
 }

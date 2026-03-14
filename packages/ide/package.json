@@ -4,22 +4,38 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run prisma:prepare && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run --config vitest.integration.config.ts",
+    "seed": "npx tsx prisma/seed.ts",
+    "prisma:migrate": "node scripts/prisma-generate.mjs migrate deploy",
+    "prisma:generate": "node scripts/prisma-generate.mjs generate",
+    "prisma:prepare": "npm run prisma:migrate && npm run prisma:generate",
+    "postinstall": "npm run prisma:generate"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@babel/preset-typescript": "^7.26.0",
+    "@hookform/resolvers": "^5.2.2",
     "@monaco-editor/loader": "^1.4.0",
+    "@prisma/client": "^6.19.2",
+    "@radix-ui/react-accordion": "^1.2.12",
+    "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.4",
     "@react-three/fiber": "^9.3.0",
     "@ts-compilator-for-java/compiler": "1.0.0",
-    "axios": "^1.7.7",
+    "axios": "^1.13.6",
     "babel-loader": "^9.2.1",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.563.0",
@@ -28,6 +44,7 @@
     "next": "^16.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-hook-form": "^7.71.2",
     "sass": "^1.80.6",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
@@ -36,14 +53,18 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/xterm": "^2.0.3",
     "eslint": "^8",
     "eslint-config-next": "15.0.1",
+    "jsdom": "^28.1.0",
     "postcss": "^8",
+    "prisma": "^6.19.2",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }

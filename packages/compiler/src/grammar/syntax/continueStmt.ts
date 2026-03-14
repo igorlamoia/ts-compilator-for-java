@@ -1,6 +1,6 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
-import { IssueError } from "../../issue";
+import { consumeStmtTerminator } from "./statementTerminator";
 
 /**
  * Parses a continue statement and emits a JUMP to the current loop's continue label.
@@ -9,14 +9,14 @@ import { IssueError } from "../../issue";
  */
 export function continueStmt(iterator: TokenIterator): void {
   const continueToken = iterator.consume(TOKENS.RESERVEDS.continue);
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  consumeStmtTerminator(iterator);
 
   const continueLabel = iterator.getCurrentContinueLabel();
   if (!continueLabel) {
-    throw new IssueError(
-      "continue statement outside of loop",
+    iterator.throwError(
+      "grammar.continue_outside_loop",
       continueToken.line,
-      continueToken.column
+      continueToken.column,
     );
   }
 

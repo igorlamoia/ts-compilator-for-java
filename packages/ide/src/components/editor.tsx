@@ -18,5 +18,5 @@ export function Editor() {
     setConfig({ theme: "editor-glass-light" });
   }, [darkMode, setConfig]);
 
-  return <div ref={editorContainerRef} className="w-full h-full overflow-x-auto" />;
+  return <div ref={editorContainerRef} className="w-full h-full" />;
 }

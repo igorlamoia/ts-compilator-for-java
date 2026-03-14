@@ -1,34 +1,57 @@
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 import React from "react";
-import styles from "./style.module.css";
-type HeroButtonProps = {
-  start: string;
-  end: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function HeroButton({
-  start,
-  end,
-  className,
-  ...rest
-}: HeroButtonProps) {
-  const isDisabled = !!rest.disabled;
+interface HeroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+  variant?: "primary" | "outline" | "ghost";
+}
+
+export function HeroButton(props: HeroButtonProps) {
+  const { children, disabled, variant = "primary", ...rest } = props;
 
   return (
-    <div
-      className={`${styles.buttons} w-max
-          border dark:border-slate-600 border-gray-300
-          dark:bg-slate-800 bg-white
-          dark:text-gray-200 text-gray-700
-          ${isDisabled ? "" : "hover:dark:bg-slate-700 hover:bg-gray-50"}
-          transition-colors text-sm font-medium`}
+    <button
+      {...rest}
+      className={cn(
+        "group inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-800 font-bold text-sm rounded-md  transition-all duration-300 transform active:scale-[0.97]  hover:scale-[1.02] cursor-pointer",
+        variant === "primary" &&
+          "bg-linear-to-r from-[#0dccf2] to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 shadow-[0_0_15px_rgba(13,204,242,0.25)] hover:shadow-[0_0_25px_rgba(13,204,242,0.45)]",
+        variant === "outline" &&
+          "border border-slate-700/20 dark:border-white/10 hover:border-[#0dccf2]/50 hover:bg-[#0dccf2]/5 dark:text-slate-300 hover:text-[#0dccf2]",
+        variant === "ghost" &&
+          "hover:bg-[#0dccf2]/5 dark:hover:bg-[#0dccf2]/5 text-slate-800 dark:text-slate-300 hover:text-[#0dccf2]",
+        props.className,
+        disabled &&
+          "opacity-50 cursor-not-allowed hover:from-[#0dccf2] hover:to-emerald-300 hover:shadow-none hover:border-slate-700/20 hover:bg-transparent hover:text-slate-800 dark:hover:border-white/10 dark:hover:bg-transparent dark:hover:text-slate-300",
+      )}
     >
-      <button
-        {...rest}
-        className={`w-40 h-9 ${className} ${styles.btn} disabled:cursor-not-allowed disabled:opacity-50`}
-      >
-        <span></span>
-        <p data-start={start} data-title={start} data-text={end}></p>
-      </button>
-    </div>
+      {children}
+    </button>
+  );
+}
+interface HeroLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  children: React.ReactNode;
+  variant?: "primary" | "outline";
+  href: string;
+}
+
+export function HeroLink(props: HeroLinkProps) {
+  const { children, variant = "primary", ...rest } = props;
+
+  return (
+    <Link
+      {...rest}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-800 font-bold text-sm rounded-md  transition-all duration-300 transform active:scale-[0.97] hover:scale-[1.02]  cursor-pointer",
+        variant === "primary" &&
+          "bg-linear-to-r from-[#0dccf2] to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 shadow-[0_0_15px_rgba(13,204,242,0.25)] hover:shadow-[0_0_25px_rgba(13,204,242,0.45)]",
+        variant === "outline" &&
+          "border border-slate-700/20 dark:border-white/10 hover:border-[#0dccf2]/50 hover:bg-[#0dccf2]/5 text-slate-800 dark:text-slate-300 hover:text-[#0dccf2]",
+        props.className,
+      )}
+    >
+      {children}
+    </Link>
   );
 }

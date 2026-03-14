@@ -1,6 +1,7 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { optExprStmt } from "./optExprStmt";
+import { consumeStmtTerminator } from "./statementTerminator";
 
 /**
  * Parses a return statement.
@@ -12,9 +13,22 @@ export function returnStmt(iterator: TokenIterator): void {
 
   // Parsear expressão de retorno (opcional)
   const returnValue = optExprStmt(iterator);
+  const functionReturnType = iterator.getCurrentFunctionReturnType();
 
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  if (returnValue && functionReturnType) {
+    iterator.warnIfLossyIntConversion(
+      functionReturnType,
+      returnValue.type,
+      returnValue.token,
+    );
+  }
 
-  // Emitir instrução RETURN
-  iterator.emitter.emit("RETURN", returnValue || "null", null, null);
+  consumeStmtTerminator(iterator);
+
+  iterator.emitter.emit(
+    "RETURN",
+    returnValue?.place || "null",
+    functionReturnType,
+    null,
+  );
 }

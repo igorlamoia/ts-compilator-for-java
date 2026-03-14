@@ -1,6 +1,10 @@
 import dynamic from "next/dynamic";
 import { OpenFIlesList } from "./open-files-list";
 import { Editor } from "@/components/editor";
+import { HomeScreen } from "@/components/home-screen";
+import { useContext } from "react";
+import { EditorContext } from "@/contexts/editor/EditorContext";
+import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 
 const TerminalView = dynamic(() => import("@/components/terminal"), {
   ssr: false,
@@ -13,7 +17,7 @@ interface MainSectionProps {
   setOpenTabs: (paths: string[] | ((prev: string[]) => string[])) => void;
   isTerminalOpen: boolean;
   toggleTerminal: () => void;
-  intermediateCode?: { instructions: any[] };
+  intermediateCode?: { instructions: Instruction[] };
 }
 
 export function MainSection({
@@ -25,22 +29,40 @@ export function MainSection({
   toggleTerminal,
   intermediateCode,
 }: MainSectionProps) {
+  const editorContext = useContext(EditorContext);
+
   const closeTab = (path: string) => {
+    // Only save if closing the currently active file
+    // Non-active files are already saved when they were last active
+    if (activeFile === path) {
+      editorContext.saveCurrentFile(path);
+    }
+
     setOpenTabs((prev) => prev.filter((tab) => tab !== path));
     if (activeFile === path) {
       const fallback = openTabs.find((tab) => tab !== path);
-      setActiveFile(fallback ?? "src/main.?");
+      if (fallback) {
+        setActiveFile(fallback);
+      } else {
+        setActiveFile("");
+      }
     }
   };
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      <OpenFIlesList
-        openTabs={openTabs}
-        activeFile={activeFile}
-        closeTab={closeTab}
-      />
+    <div className="flex flex-col h-full w-full overflow-x-auto">
+      {openTabs.length > 0 && (
+        <OpenFIlesList
+          openTabs={openTabs}
+          activeFile={activeFile}
+          closeTab={closeTab}
+          onActiveFileChange={setActiveFile}
+        />
+      )}
       <div className="relative flex-1 overflow-x-auto">
-        <Editor />
+        <div className={openTabs.length === 0 ? "hidden" : "h-full w-full"}>
+          <Editor />
+        </div>
+        {openTabs.length === 0 && <HomeScreen />}
         <TerminalView
           intermediateCode={intermediateCode?.instructions || []}
           isTerminalOpen={isTerminalOpen}

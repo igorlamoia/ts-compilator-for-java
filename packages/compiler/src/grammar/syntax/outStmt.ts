@@ -1,6 +1,5 @@
 import { TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
-import { IssueError } from "../../issue";
 
 /**
  * Parses a single output value: string literal, identifier, or number.
@@ -11,10 +10,11 @@ export function outStmt(iterator: TokenIterator): string {
   const token = iterator.peek();
 
   if (!Object.values(TOKENS.LITERALS).includes(token.type)) {
-    throw new IssueError(
-      `Unexpected output token: ${token.lexeme}`,
+    iterator.throwError(
+      "grammar.unexpected_output_token",
       token.line,
-      token.column
+      token.column,
+      { lexeme: token.lexeme },
     );
   }
 

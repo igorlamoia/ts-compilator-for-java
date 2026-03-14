@@ -45,12 +45,12 @@ export const Meteors = ({
           key={idx}
           style={{ ...style }}
           className={cn(
-            "animate-meteor pointer-events-none absolute size-0.5 rotate-[--angle] rounded-full bg-primary shadow-[0_0_0_1px_#ffffff10]",
+            "animate-meteor pointer-events-none absolute size-0.5 rotate-[--angle] rounded-full bg-[#00b7d0] shadow-[0_0_0_1px_#ffffff10]",
             className,
           )}
         >
           {/* Meteor Tail */}
-          <div className="pointer-events-none absolute top-1/2 -z-10 h-px w-12.5 -translate-y-1/2 bg-linear-to-r from-primary to-transparent" />
+          <div className="pointer-events-none absolute top-1/2 -z-10 h-px w-12.5 -translate-y-1/2 bg-linear-to-r from-[#0fb698] to-transparent" />
         </span>
       ))}
     </>

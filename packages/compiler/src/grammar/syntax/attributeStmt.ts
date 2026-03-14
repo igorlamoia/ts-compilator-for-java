@@ -1,6 +1,5 @@
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
-import { IssueError } from "../../issue";
 import { exprStmt } from "./exprStmt";
 /**
  * Processes an attribute statement by first parsing an identifier token,
@@ -17,6 +16,7 @@ export function attributeStmt(iterator: TokenIterator): void {
     const identifier = iterator.consume(TOKENS.LITERALS.identifier);
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(identifier.lexeme));
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
     return;
   }
@@ -28,15 +28,17 @@ export function attributeStmt(iterator: TokenIterator): void {
     iterator.consume(plus, "++");
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, token.lexeme, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(token.lexeme));
     iterator.emitter.emit("=", token.lexeme, incremented, null);
     return;
   }
 
   if (!Object.values(TOKENS.ASSIGNMENTS).includes(iterator.peek().type))
-    throw new IssueError(
-      `Invalid assignment operator "${token.lexeme}" at line ${token.line}, column ${token.column}.`,
+    iterator.throwError(
+      "grammar.invalid_assignment_operator",
       token.line,
-      token.column
+      token.column,
+      { lexeme: token.lexeme, line: token.line, column: token.column },
     );
   const assignmentType = iterator.peek().type;
   iterator.consume(assignmentType);
@@ -46,7 +48,7 @@ export function attributeStmt(iterator: TokenIterator): void {
 export function emitAssignmentChain(
   iterator: TokenIterator,
   firstTarget: string,
-  firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal
+  firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal,
 ): void {
   const { equal } = TOKENS.ASSIGNMENTS;
   const targets: string[] = [firstTarget];
@@ -67,7 +69,17 @@ export function emitAssignmentChain(
   let currentValue = value;
 
   for (let i = targets.length - 1; i >= 0; i--) {
-    iterator.emitter.emit("=", targets[i], currentValue, null);
-    currentValue = targets[i];
+    const targetType = iterator.resolveSymbol(targets[i]);
+    iterator.warnIfLossyIntConversion(
+      targetType,
+      currentValue.type,
+      currentValue.token,
+    );
+    iterator.emitter.emit("=", targets[i], currentValue.place, null);
+    currentValue = iterator.createExprResult(
+      targets[i],
+      targetType,
+      currentValue.token,
+    );
   }
 }

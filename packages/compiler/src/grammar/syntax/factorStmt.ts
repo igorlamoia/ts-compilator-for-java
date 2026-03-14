@@ -1,6 +1,5 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
-import { IssueError } from "../../issue";
 import { exprStmt } from "./exprStmt";
 import { functionCallExpr } from "./functionCallExpr";
 
@@ -10,7 +9,7 @@ import { functionCallExpr } from "./functionCallExpr";
  *
  * @returns string representing the result
  */
-export function factorStmt(iterator: TokenIterator): string {
+export function factorStmt(iterator: TokenIterator): ExprResult {
   const token = iterator.peek();
   const { LITERALS, SYMBOLS } = TOKENS;
 
@@ -20,7 +19,7 @@ export function factorStmt(iterator: TokenIterator): string {
 
     // Verificar se é chamada de função (seguido por '(')
     if (iterator.peek().type === SYMBOLS.left_paren) {
-      return functionCallExpr(iterator, identifier.lexeme);
+      return functionCallExpr(iterator, identifier);
     }
 
     // Postfix increment: identifier++
@@ -34,16 +33,28 @@ export function factorStmt(iterator: TokenIterator): string {
       iterator.emitter.emit("=", previous, identifier.lexeme, null);
       iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
       iterator.emitter.emit("=", identifier.lexeme, incremented, null);
-      return previous;
+      const type = iterator.resolveSymbol(identifier.lexeme);
+      iterator.registerTemp(previous, type);
+      iterator.registerTemp(incremented, type);
+      return iterator.createExprResult(previous, type, identifier);
     }
 
     // Caso contrário, é apenas uma variável
-    return identifier.lexeme;
+    return iterator.createExprResult(
+      identifier.lexeme,
+      iterator.resolveSymbol(identifier.lexeme),
+      identifier,
+    );
   }
 
   // Outros literais (números, strings)
   if (Object.values(LITERALS).includes(token.type)) {
-    return iterator.consume(token.type).lexeme;
+    const literal = iterator.consume(token.type);
+    return iterator.createExprResult(
+      literal.lexeme,
+      iterator.inferLiteralType(literal),
+      literal,
+    );
   }
 
   // Parênteses: (expr)
@@ -54,10 +65,9 @@ export function factorStmt(iterator: TokenIterator): string {
     return inner;
   }
 
-  throw new IssueError(
-    "grammar.unexpected_token",
-    token.line,
-    token.column,
-    { lexeme: token.lexeme, line: token.line, column: token.column }
-  );
+  iterator.throwError("grammar.unexpected_token", token.line, token.column, {
+    lexeme: token.lexeme,
+    line: token.line,
+    column: token.column,
+  });
 }

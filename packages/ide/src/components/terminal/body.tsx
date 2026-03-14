@@ -9,6 +9,7 @@ import { motion } from "motion/react";
 import { Instruction } from "@ts-compilator-for-java/compiler/interpreter/constants";
 import { getLineColor } from "@/utils/compiler/styles";
 import { cn } from "@/lib/utils";
+import { PerfectScrollbar } from "../ui/perfect-scrollbar";
 
 interface BodyProps {
   lines: TerminalLine[];
@@ -19,6 +20,18 @@ interface BodyProps {
   setIsExecuting: React.Dispatch<React.SetStateAction<boolean>>;
   setLines: React.Dispatch<React.SetStateAction<TerminalLine[]>>;
   toggleTerminal: () => void;
+}
+
+const scheduledExecutionKeys = new Set<string>();
+
+function getExecutionKey(intermediateCode: Instruction[]): string {
+  if (intermediateCode.length === 0) return "";
+
+  try {
+    return JSON.stringify(intermediateCode);
+  } catch {
+    return `${intermediateCode.length}`;
+  }
 }
 
 export function Body(props: BodyProps) {
@@ -72,6 +85,9 @@ export function Body(props: BodyProps) {
           break;
         case "ping":
           addLine("Pong! 🏓", "output");
+          break;
+        case "choma":
+          addLine("mei!", "output");
           break;
         case "exit":
           addLine("❌  Exiting terminal...", "output");
@@ -159,7 +175,24 @@ export function Body(props: BodyProps) {
   }, [intermediateCode, addLine, setRuntimeErrorInstructionPointer]);
 
   useEffect(() => {
-    if (intermediateCode?.length > 0) runInterpreter();
+    const executionKey = getExecutionKey(intermediateCode);
+    if (!executionKey || scheduledExecutionKeys.has(executionKey)) return;
+
+    scheduledExecutionKeys.add(executionKey);
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      void runInterpreter().finally(() => {
+        scheduledExecutionKeys.delete(executionKey);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      scheduledExecutionKeys.delete(executionKey);
+    };
   }, [intermediateCode, runInterpreter]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -204,9 +237,9 @@ export function Body(props: BodyProps) {
   const resolveInput = useRef<((value: string) => void) | null>(null);
 
   return (
-    <div
+    <PerfectScrollbar
       ref={scrollRef}
-      className="overflow-y-auto overflow-x-hidden p-4 font-mono text-sm h-65 terminal-scroll"
+      className="overflow-x-hidden p-4 font-mono text-sm h-65 terminal-scroll"
     >
       {lines.map((line, index) => (
         <motion.div
@@ -241,6 +274,6 @@ export function Body(props: BodyProps) {
           autoComplete="off"
         />
       </div>
-    </div>
+    </PerfectScrollbar>
   );
 }

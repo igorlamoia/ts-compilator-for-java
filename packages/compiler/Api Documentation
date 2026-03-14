@@ -1,0 +1,376 @@
+# Documentação da API (LMS Java--)
+
+Este documento detalha todos os endpoints da API RESTful do projeto, incluindo os métodos disponíveis, os cabeçalhos obrigatórios, exemplos de payload (entrada) e exemplos de resposta (saída).
+
+---
+
+## Autenticação (`/api/auth`)
+
+### 1. Registrar Usuário
+**`POST /api/auth/register`**
+Cria um novo usuário no sistema (Aluno ou Professor).
+
+* **Payload:**
+```json
+{
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "senha123",
+  "role": "STUDENT" // ou "TEACHER"
+}
+```
+* **Resposta (201 Created):**
+```json
+{
+  "message": "Account created successfully",
+  "user": {
+    "id": "cl...",
+    "email": "joao@email.com",
+    "name": "João Silva",
+    "role": "STUDENT",
+    "organizationId": "cl..."
+  }
+}
+```
+
+### 2. Login
+**`POST /api/auth/login`**
+Autentica o usuário e valida suas credenciais.
+
+* **Payload:**
+```json
+{
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+* **Resposta (200 OK):**
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": "cl...",
+    "email": "joao@email.com",
+    "name": "João Silva",
+    "role": "STUDENT"
+  }
+}
+```
+
+### 3. Obter Usuário Atual
+**`GET /api/auth/me`**
+Retorna as informações do usuário logado baseado no header fornecido pelo cliente.
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Resposta (200 OK):**
+```json
+{
+  "id": "cl...",
+  "email": "joao@email.com",
+  "name": "João Silva",
+  "role": "STUDENT"
+}
+```
+
+---
+
+## Turmas (`/api/classes`)
+
+### 4. Listar Turmas
+**`GET /api/classes`**
+Para Professores: lista as turmas da organização. Para Alunos: lista as turmas nas quais ele está matriculado.
+
+* **Headers Obrigatórios:** `x-user-id`, `x-org-id` (obrigatório para professor)
+* **Resposta (200 OK):**
+```json
+[
+  {
+    "id": "cl...",
+    "name": "Introdução à Programação",
+    "description": "Turma do de Java--",
+    "accessCode": "U711EG",
+    "teacherId": "cl...",
+    "teacher": { "name": "Professor" },
+    "_count": { "members": 15, "exercises": 3 }
+  }
+]
+```
+
+### 5. Criar Turma
+**`POST /api/classes`**
+Cria uma nova turma (Apenas para professores com `x-org-id`).
+
+* **Headers Obrigatórios:** `x-user-id`, `x-org-id`
+* **Payload:**
+```json
+{
+  "name": "Nova Turma",
+  "description": "Descrição detalhada",
+  "accessCode": "A1B2C3"
+}
+```
+* **Resposta (201 Created):**
+```json
+{
+  "id": "cl...",
+  "name": "Nova Turma",
+  "accessCode": "A1B2C3",
+  "organizationId": "cl..."
+}
+```
+
+### 6. Entrar em uma Turma
+**`POST /api/classes/join`**
+Matricula um aluno em uma turma específica utilizando o código de acesso.
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Payload:**
+```json
+{
+  "accessCode": "U711EG"
+}
+```
+* **Resposta (200 OK):**
+```json
+{
+  "success": true,
+  "classId": "cl..."
+}
+```
+
+---
+
+## Exercícios (`/api/exercises`)
+
+### 7. Listar Exercícios de uma Turma
+**`GET /api/exercises?classId={id}`**
+Retorna todos os exercícios de uma turma. Submissões do aluno logado são pré-carregadas.
+
+* **Query Params:** `classId`
+* **Headers Obrigatórios:** `x-user-id`
+* **Resposta (200 OK):**
+```json
+[
+  {
+    "id": "cl...",
+    "title": "Calculadora de soma",
+    "description": "Crie um programa que some...",
+    "deadline": "2026-02-28T16:32:00.000Z",
+    "gradeWeight": 10,
+    "status": "PUBLISHED",
+    "submissions": [
+      {
+        "id": "sub...",
+        "status": "GRADED",
+        "score": 8.5,
+        "teacherFeedback": "Bom trabalho!",
+        "submittedAt": "2026-02-28T14:00:00.000Z"
+      }
+    ]
+  }
+]
+```
+
+### 8. Criar Exercício
+**`POST /api/exercises`**
+Cria um novo exercício atrelado a uma turma.
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Payload:**
+```json
+{
+  "classId": "cl...",
+  "title": "Lógica Condicional",
+  "description": "Use if/else para...",
+  "deadline": "2026-03-01T23:59:00.000Z",
+  "gradeWeight": 5
+}
+```
+* **Resposta (201 Created):**
+```json
+{
+  "id": "cl...",
+  "title": "Lógica Condicional",
+  "classId": "cl..."
+}
+```
+
+### 9. Obter Exercício Específico
+**`GET /api/exercises/[id]`**
+Busca os detalhes de um exercício e traz a última submissão do aluno autenticado.
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Resposta (200 OK):**
+```json
+{
+  "id": "cl...",
+  "title": "Calculadora de soma",
+  "description": "Crie um programa...",
+  "deadline": "2026-02-28T16:00:00.000Z",
+  "submissions": []
+}
+```
+
+---
+
+## Submissões e Notas (`/api/submissions`)
+
+### 10. Listar Submissões do Exercício (Visão do Professor)
+**`GET /api/submissions?exerciseId={id}`**
+Busca todas as submissões dos alunos para o exercício selecionado.
+
+* **Query Params:** `exerciseId`
+* **Headers Obrigatórios:** `x-user-id`
+* **Resposta (200 OK):**
+```json
+[
+  {
+    "id": "sub...",
+    "studentId": "cl...",
+    "status": "SUBMITTED",
+    "score": null,
+    "submittedAt": "2026-02-28T14:30:00.000Z",
+    "student": {
+      "name": "João Silva",
+      "email": "joao@email.com"
+    }
+  }
+]
+```
+
+### 11. Salvar Submissão (Uso Manual / Fallback)
+**`POST /api/submissions`**
+Cria o registro de submissão do código (Nota: normalmente chama-se o `/validate` do fluxo real).
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Payload:**
+```json
+{
+  "exerciseId": "cl...",
+  "codeSnapshot": "int main() { print(\"olá\"); }",
+  "status": "SUBMITTED"
+}
+```
+* **Resposta (201 Created):**
+```json
+{
+  "id": "sub...",
+  "status": "SUBMITTED",
+  "codeSnapshot": "..."
+}
+```
+
+### 12. Obter Submissão Individual para Correção
+**`GET /api/submissions/[id]`**
+Obtém o código do aluno, seu perfil e dados do exercício (Usado na funcionalidade de correção).
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Resposta (200 OK):**
+```json
+{
+  "id": "sub...",
+  "codeSnapshot": "int main() { ... }",
+  "score": null,
+  "teacherFeedback": null,
+  "student": { "name": "João", "email": "joao@email.com" },
+  "exercise": { "title": "Calculadora", "gradeWeight": 10 }
+}
+```
+
+### 13. Atribuir Nota e Feedback (Professor)
+**`PATCH /api/submissions/[id]`**
+Atualiza o campo de nota e feedback preenchido pelo professor. Marca status como `GRADED`.
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Payload:**
+```json
+{
+  "score": 9.5,
+  "teacherFeedback": "Ótima lógica, mas esqueceu um // comentário"
+}
+```
+* **Resposta (200 OK):**
+```json
+{
+  "id": "sub...",
+  "score": 9.5,
+  "teacherFeedback": "Ótima lógica, mas esqueceu um // comentário",
+  "status": "GRADED"
+}
+```
+
+### 14. Validar Código e Confirmar Submissão
+**`POST /api/submissions/validate`**
+Caminho completo do Aluno no IDE. Passa pelos processos lexer/intermediator. Se compilar, salva como `SUBMITTED`, senão, retorna erros em tempo real.
+
+* **Headers Obrigatórios:** `x-user-id`
+* **Payload:**
+```json
+{
+  "exerciseId": "cl...",
+  "sourceCode": "int main() { int a; scan(a); }"
+}
+```
+* **Resposta (Falha no compilador - 400 Bad Request):**
+```json
+{
+  "valid": false,
+  "errors": ["Erro de sintaxe na linha 2"],
+  "warnings": []
+}
+```
+* **Resposta (Sucesso - 201 Created):**
+```json
+{
+  "valid": true,
+  "submissionId": "sub...",
+  "warnings": [],
+  "message": "Enviado com sucesso!"
+}
+```
+
+---
+
+## Compilador (Microsserviços Java--)
+
+### 15. Análise Léxica
+**`POST /api/lexer`**
+Retorna o token stream gerado pelo código.
+
+* **Payload:**
+```json
+{
+  "code": "int a;",
+  "keywordMap": {}
+}
+```
+* **Resposta (200 OK):**
+```json
+{
+  "tokens": [
+    { "type": "KEYWORD", "value": "int", "line": 1, "column": 1 },
+    { "type": "IDENTIFIER", "value": "a", "line": 1, "column": 5 }
+  ],
+  "issues": { "errors": [], "warnings": [] },
+  "languageSupport": { "id": "java--" }
+}
+```
+
+### 16. Código Intermediário / Sintaxe
+**`POST /api/intermediator`**
+Analisa os tokens e gera o código intermediário (ou retorna erros sintáticos/semânticos).
+
+* **Payload:**
+```json
+{
+  "tokens": [ { "type": "KEYWORD", "value": "int" }, ... ]
+}
+```
+* **Resposta (200 OK ou 400 se houver erro léxico/sintático estruturado):**
+```json
+{
+  "intermediateCode": "t1 = a + b\n...",
+  "lexicalErrors": [],
+  "syntacticalErrors": []
+}
+```

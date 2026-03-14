@@ -2,11 +2,12 @@ import { IssueDetails, TIssueParams } from "./details";
 
 export class IssueInfo extends IssueDetails {
   constructor(
+    code: string,
     message: string,
     line: number,
     column: number,
-    params?: TIssueParams
+    params?: TIssueParams,
   ) {
-    super(message, line, column, "info", params);
+    super(code, message, line, column, "info", params);
   }
 }

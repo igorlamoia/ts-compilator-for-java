@@ -1,6 +1,7 @@
 import { Instruction, OpName } from "./constants";
 
 export class RuntimeError extends Error {
+  code: string;
   instruction: {
     op: OpName;
     result: string;
@@ -11,6 +12,7 @@ export class RuntimeError extends Error {
   instructionPointer: number;
 
   constructor(
+    code: string,
     message: string,
     instruction: Instruction,
     instructionPointer: number,
@@ -18,6 +20,7 @@ export class RuntimeError extends Error {
   ) {
     super(message);
     this.name = "RuntimeError";
+    this.code = code;
     this.instruction = {
       op: instruction.op,
       result: instruction.result,

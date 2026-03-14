@@ -1,4 +1,4 @@
-import { TokenIterator } from "../../token/TokenIterator";
+import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { orStmt } from "./orStmt";
 
 /**
@@ -7,6 +7,6 @@ import { orStmt } from "./orStmt";
  *
  * @derivation `<expr> -> <or>`
  */
-export function exprStmt(iterator: TokenIterator): string {
+export function exprStmt(iterator: TokenIterator): ExprResult {
   return orStmt(iterator);
 }

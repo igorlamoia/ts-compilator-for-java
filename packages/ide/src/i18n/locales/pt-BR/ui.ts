@@ -20,6 +20,7 @@ const ui = {
   intermediate_code_title: "Código Intermediário - Linha do Tempo de Execução",
   intermediate_code_description:
     "O código intermediário é uma representação abstrata do código-fonte, que fica entre o código-fonte original e o código de máquina final. Ele é gerado após a análise sintática e antes da geração de código, permitindo otimizações e análises adicionais antes da execução final.",
+  login: "Entrar",
 };
 
 export default ui;
