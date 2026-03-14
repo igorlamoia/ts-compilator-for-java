@@ -23,7 +23,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { isAxiosError } from "axios";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 
 const loginSchema = z.object({
@@ -59,9 +59,7 @@ export default function Login() {
       });
       router.push("/dashboard");
     } catch (error) {
-      const message = isAxiosError(error)
-        ? error.response?.data?.error || "Falha ao entrar"
-        : "Erro de conexão";
+      const message = getApiErrorMessage(error, "Falha ao entrar");
       setServerError(message);
       showToast({ type: "error", message });
     }

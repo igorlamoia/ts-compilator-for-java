@@ -5,8 +5,8 @@ import { SpaceBackground } from "@/components/space-background";
 import { TestCaseResults } from "@/components/test-case-results";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
-import { isAxiosError } from "axios";
 
 export default function GradeSubmission() {
   const router = useRouter();
@@ -62,9 +62,7 @@ export default function GradeSubmission() {
       setSaved(true);
       setSaving(false);
     } catch (error) {
-      const message = isAxiosError(error)
-        ? error.response?.data?.error || "Erro ao salvar nota"
-        : "Erro de conexão";
+      const message = getApiErrorMessage(error, "Erro ao salvar nota");
       setError(message);
       showToast({ type: "error", message });
       setSaving(false);

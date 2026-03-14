@@ -43,7 +43,7 @@ export class Interpreter {
     this.stdin = io.stdin;
     this.program = program;
     this.labels = new Map<string, number>();
-    this.variables = new Map<string, unknown>();
+    this.variables = new Map<string, RuntimeSlot>();
     this.callStack = [];
     this.instructionPointer = 0;
     this.locale = locale;
@@ -308,7 +308,8 @@ export class Interpreter {
 
           // Se estivermos em uma função e houver argumentos avaliados, atribuir aos parâmetros
           let initialValue: unknown = null;
-          const declaredType = typeof operand1 === "string" ? operand1 : "dynamic";
+          const declaredType =
+            typeof operand1 === "string" ? operand1 : "dynamic";
           if (this.callStack.length > 0) {
             const frame = this.callStack[this.callStack.length - 1];
             const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
@@ -329,8 +330,12 @@ export class Interpreter {
           continue;
         } else if (op === "RETURN") {
           const returnValue = this.parseOrGetVariableWithScope(result);
-          const returnType = typeof operand1 === "string" ? operand1 : "dynamic";
-          const coercedReturnValue = coerceValueForType(returnType, returnValue);
+          const returnType =
+            typeof operand1 === "string" ? operand1 : "dynamic";
+          const coercedReturnValue = coerceValueForType(
+            returnType,
+            returnValue,
+          );
 
           if (this.callStack.length === 0) {
             // Return do main - terminar execução

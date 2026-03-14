@@ -21,9 +21,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import axios from "axios";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { HeroButton } from "@/components/buttons/hero";
 
 const joinClassSchema = z.object({
@@ -79,11 +78,7 @@ export function JoinClassModal({
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      const message =
-        axios.isAxiosError(error) &&
-        typeof error.response?.data?.error === "string"
-          ? error.response.data.error
-          : "Código inválido";
+      const message = getApiErrorMessage(error, "Código inválido");
       onError?.(message);
     }
   };

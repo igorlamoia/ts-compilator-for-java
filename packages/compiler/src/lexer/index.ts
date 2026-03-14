@@ -13,6 +13,8 @@ import {
   type KeywordMap,
 } from "./config";
 
+export type { KeywordMap, LexerConfig } from "./config";
+
 function isLexerConfig(value: unknown): value is LexerConfig {
   if (!value || typeof value !== "object") return false;
   return (
@@ -106,7 +108,8 @@ export class Lexer {
     if (
       this.indentationBlock &&
       char === "\\" &&
-      (this.peek() === "\n" || (this.peek() === "\r" && this.peekNext() === "\n"))
+      (this.peek() === "\n" ||
+        (this.peek() === "\r" && this.peekNext() === "\n"))
     ) {
       this.explicitLineContinuation = true;
       return;
@@ -151,7 +154,8 @@ export class Lexer {
   public addToken(type: number, lexeme?: string, addedChars: number = 0) {
     if (
       this.indentationBlock &&
-      (type === TOKENS.SYMBOLS.left_brace || type === TOKENS.SYMBOLS.right_brace)
+      (type === TOKENS.SYMBOLS.left_brace ||
+        type === TOKENS.SYMBOLS.right_brace)
     ) {
       this.error("lexer.indentation_disallow_braces");
     }
@@ -161,10 +165,14 @@ export class Lexer {
     this.tokens.push(
       new Token(type, text, this.line, this.column - text.length + addedChars),
     );
-    if (type === TOKENS.SYMBOLS.left_paren || type === TOKENS.SYMBOLS.left_brace) {
+    if (
+      type === TOKENS.SYMBOLS.left_paren ||
+      type === TOKENS.SYMBOLS.left_brace
+    ) {
       this.groupDepth++;
     } else if (
-      (type === TOKENS.SYMBOLS.right_paren || type === TOKENS.SYMBOLS.right_brace) &&
+      (type === TOKENS.SYMBOLS.right_paren ||
+        type === TOKENS.SYMBOLS.right_brace) &&
       this.groupDepth > 0
     ) {
       this.groupDepth--;
@@ -246,7 +254,10 @@ export class Lexer {
   }
 
   private emitDedentsUntil(depth: number): void {
-    while (this.indentStack.length > 1 && this.indentStack[this.indentStack.length - 1] > depth) {
+    while (
+      this.indentStack.length > 1 &&
+      this.indentStack[this.indentStack.length - 1] > depth
+    ) {
       this.indentStack.pop();
       this.addToken(TOKENS.SYMBOLS.dedent, "<DEDENT>");
     }

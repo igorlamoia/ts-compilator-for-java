@@ -5,12 +5,13 @@ import { HeroButton, HeroLink } from "@/components/buttons/hero";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
 import { Subtitle } from "@/components/text/subtitle";
-import { CreateClassModal } from "./components/create-class-modal";
-import { JoinClassModal } from "./components/join-class-modal";
-import { CreateExerciseModal } from "./components/create-exercise-modal";
+import { CreateClassModal } from "@/views/dashboard/components/create-class-modal";
+import { JoinClassModal } from "@/views/dashboard/components/join-class-modal";
+import { CreateExerciseModal } from "@/views/dashboard/components/create-exercise-modal";
 import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { Navbar } from "@/components/navbar";
 
@@ -56,7 +57,7 @@ export default function Dashboard() {
     } catch (error) {
       showToast({
         type: "error",
-        message: error?.response?.data?.error || "Erro ao carregar turmas.",
+        message: getApiErrorMessage(error, "Erro ao carregar turmas."),
       });
       setLoading(false);
     }

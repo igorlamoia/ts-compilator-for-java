@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
-import axios from "axios";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { HeroButton } from "@/components/buttons/hero";
 
 const createClassSchema = z.object({
@@ -89,11 +89,7 @@ export function CreateClassModal({
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      const message =
-        axios.isAxiosError(error) &&
-        typeof error.response?.data?.error === "string"
-          ? error.response.data.error
-          : "Erro ao criar turma";
+      const message = getApiErrorMessage(error, "Erro ao criar turma");
       onError?.(message);
     }
   };

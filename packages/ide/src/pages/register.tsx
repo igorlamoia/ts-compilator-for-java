@@ -19,15 +19,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { isAxiosError } from "axios";
 import { Navbar } from "@/components/navbar";
 import { RadioSelector } from "@/components/buttons/radio-selector";
 import { Copyright } from "@/components/copyright";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 
-type Organization = { id: string; name: string }
+type Organization = { id: string; name: string };
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -80,9 +80,10 @@ export default function Register() {
 
       router.push("/dashboard");
     } catch (error) {
-      const message = isAxiosError(error)
-        ? error.response?.data?.error || "Erro de rede. Tente novamente."
-        : "Ocorreu um erro. Com os dados fornecidos.";
+      const message = getApiErrorMessage(
+        error,
+        "Erro de rede. Tente novamente.",
+      );
       setServerError(message);
       showToast({ type: "error", message });
     }
@@ -231,10 +232,16 @@ export default function Register() {
                           className="w-full h-10 px-3 rounded-md border border-white/10 dark:bg-black/20 bg-slate-300/20 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#0dccf2]/50 disabled:opacity-50"
                         >
                           <option value="" disabled className="bg-slate-900">
-                            {loadingOrgs ? "Carregando..." : "Selecione sua instituição"}
+                            {loadingOrgs
+                              ? "Carregando..."
+                              : "Selecione sua instituição"}
                           </option>
                           {organizations.map((org) => (
-                            <option key={org.id} value={org.id} className="bg-slate-900">
+                            <option
+                              key={org.id}
+                              value={org.id}
+                              className="bg-slate-900"
+                            >
                               {org.name}
                             </option>
                           ))}
