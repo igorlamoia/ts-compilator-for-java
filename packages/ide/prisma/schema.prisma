@@ -75,7 +75,6 @@ model Exercise {
   title       String
   description String
   attachments String
-  status      ExerciseStatus     @default(DRAFT)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   submissions Submission[]
@@ -85,29 +84,18 @@ model Exercise {
   @@index([teacherId])
 }
 
-enum ExerciseStatus {
-  DRAFT
-  PUBLISHED
-}
-
 model ExerciseList {
   id          String              @id @default(uuid())
   teacherId   String
   teacher     User                @relation(fields: [teacherId], references: [id])
   title       String
   description String
-  status      ExerciseListStatus  @default(DRAFT)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   items       ExerciseListItem[]
   classes     ClassExerciseList[]
 
   @@index([teacherId])
-}
-
-enum ExerciseListStatus {
-  DRAFT
-  PUBLISHED
 }
 
 model ExerciseListItem {
@@ -127,7 +115,6 @@ model ClassExerciseList {
   classId        String
   exerciseList   ExerciseList  @relation(fields: [exerciseListId], references: [id], onDelete: Cascade)
   class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
-  deadline       DateTime
   totalGrade     Float
   minRequired    Int
   publishedAt    DateTime      @default(now())
@@ -136,7 +123,6 @@ model ClassExerciseList {
 
   @@id([exerciseListId, classId])
   @@index([classId])
-  @@index([deadline])
 }
 
 model Submission {

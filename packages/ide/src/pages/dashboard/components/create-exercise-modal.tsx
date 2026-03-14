@@ -47,7 +47,6 @@ const testCaseSchema = z.object({
 const createExerciseSchema = z.object({
   exTitle: z.string().min(1, "Título é obrigatório"),
   exDesc: z.string().min(1, "Descrição é obrigatória"),
-  exDeadline: z.string().min(1, "Prazo é obrigatório"),
   exWeight: z.string().min(1, "Peso é obrigatório"),
   testCases: z.array(testCaseSchema),
 });
@@ -82,7 +81,6 @@ export function CreateExerciseModal({
     defaultValues: {
       exTitle: "",
       exDesc: "",
-      exDeadline: "",
       exWeight: "1",
       testCases: defaultTestCases,
     },
@@ -109,7 +107,6 @@ export function CreateExerciseModal({
           classId,
           title: values.exTitle,
           description: values.exDesc,
-          deadline: values.exDeadline,
           gradeWeight: values.exWeight,
           testCases: values.testCases.filter(
             (tc) => tc.input.trim() || tc.expectedOutput.trim(),
@@ -139,7 +136,6 @@ export function CreateExerciseModal({
     form.reset({
       exTitle: "",
       exDesc: "",
-      exDeadline: "",
       exWeight: "1",
       testCases: defaultTestCases,
     });
@@ -198,24 +194,6 @@ export function CreateExerciseModal({
             />
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="exDeadline"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prazo de Entrega</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="datetime-local"
-                        {...field}
-                        className="h-12 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="exWeight"

@@ -76,7 +76,7 @@ export function createExercise(
 
 export function createExerciseList(
   teacherId: string,
-  overrides: Partial<{ title: string; description: string; status: 'DRAFT' | 'PUBLISHED' }> = {},
+  overrides: Partial<{ title: string; description: string }> = {},
 ) {
   return prisma.exerciseList.create({
     data: {
@@ -107,13 +107,12 @@ export function createExerciseListItem(
 export function createClassExerciseList(
   exerciseListId: string,
   classId: string,
-  overrides: Partial<{ deadline: Date; totalGrade: number; minRequired: number }> = {},
+  overrides: Partial<{ totalGrade: number; minRequired: number }> = {},
 ) {
   return prisma.classExerciseList.create({
     data: {
       exerciseListId,
       classId,
-      deadline: new Date(Date.now() + 7 * 86400000), // 7 dias
       totalGrade: 10,
       minRequired: 1,
       ...overrides,

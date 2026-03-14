@@ -110,36 +110,43 @@ export default function Dashboard() {
         )}
 
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
-          <Header isTeacher={isTeacher} />
-          <div className="flex gap-3">
-            <HeroLink
-              variant="outline"
-              href="/exercise-lists"
-              className="gap-2 px-5 py-2.5 text-sm"
-            >
-              <ListChecks className="w-4 h-4" />
-              {isTeacher ? "Minhas Listas" : "Listas da Turma"}
-            </HeroLink>
-            {isTeacher ? (
+        {!isTeacher ? (
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Minhas Turmas</h1>
+              <p className="text-slate-400 text-sm">Gerencie seu progresso acadêmico.</p>
+            </div>
+            <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
+              <button className="px-6 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold shadow-lg shadow-blue-500/20 transition-all">
+                Semestre Atual
+              </button>
+              <button className="px-6 py-2 rounded-lg text-slate-400 text-sm font-semibold hover:text-slate-200 transition-colors">
+                Arquivadas
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
+            <Header isTeacher={isTeacher} />
+            <div className="flex gap-3">
+              <HeroLink
+                variant="outline"
+                href="/exercise-lists"
+                className="gap-2 px-5 py-2.5 text-sm"
+              >
+                <ListChecks className="w-4 h-4" />
+                Minhas Listas
+              </HeroLink>
               <HeroButton
                 onClick={() => setShowCreateClass(true)}
                 className="group gap-2 px-6 py-3"
               >
-                <Plus className="w-4.5 h-4.5 transition-transform group-hover:rotate-90" />
+                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
                 Nova Turma
               </HeroButton>
-            ) : (
-              <HeroButton
-                onClick={() => setShowJoinClass(true)}
-                className="gap-2 px-6 py-3"
-              >
-                <LogIn className="w-4 h-4" />
-                Entrar em Turma
-              </HeroButton>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Classes Grid */}
         {loading ? (
@@ -148,6 +155,53 @@ export default function Dashboard() {
             <span className="font-medium tracking-wide">
               Carregando turmas...
             </span>
+          </div>
+        ) : !isTeacher ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {classes.map((cls: any) => (
+              <div key={cls.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 flex flex-col group hover:border-blue-500/40 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-500">
+                    <ListChecks className="w-6 h-6" />
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">
+                    Em andamento
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold mb-1 leading-tight group-hover:text-blue-500 transition-colors">{cls.name}</h3>
+                <p className="text-slate-500 text-sm mb-6 flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  {cls.teacher?.name || "Professor"}
+                </p>
+                
+                <div className="mb-8 flex items-center gap-6">
+                  <div className="relative w-16 h-16 shrink-0">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                      <circle className="stroke-slate-800" cx="18" cy="18" fill="none" r="16" strokeWidth="3"></circle>
+                      <circle className="stroke-blue-500" cx="18" cy="18" fill="none" r="16" strokeDasharray="100" strokeDashoffset="35" strokeLinecap="round" strokeWidth="3"></circle>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center text-[11px] font-mono font-bold">65%</div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Próximo Prazo</span>
+                    <span className="text-sm font-semibold text-slate-200">Em breve</span>
+                  </div>
+                </div>
+                
+                <Link href={`/classes/${cls.id}`} className="mt-auto w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2">
+                  Entrar na Turma
+                  <LogIn className="w-4 h-4" />
+                </Link>
+              </div>
+            ))}
+            
+            <button onClick={() => setShowJoinClass(true)} className="rounded-xl border-2 border-dashed border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all p-6 flex flex-col items-center justify-center group h-full min-h-[300px]">
+              <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-blue-500/20 flex items-center justify-center text-slate-500 group-hover:text-blue-500 transition-all mb-4">
+                <Plus className="w-8 h-8" />
+              </div>
+              <h3 className="font-bold text-lg mb-1 hidden sm:block">Entrar em nova turma</h3>
+              <p className="text-slate-500 text-sm hidden sm:block text-center px-4">Insira o código fornecido pelo seu professor para participar.</p>
+            </button>
           </div>
         ) : classes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 bg-white/2 rounded-3xl border border-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
@@ -160,9 +214,7 @@ export default function Dashboard() {
               Nenhuma turma encontrada
             </p>
             <p className="text-slate-500 text-sm mt-3 max-w-sm text-center leading-relaxed">
-              {isTeacher
-                ? "Você ainda não criou nenhuma turma. Clique no botão acima para começar a gerenciar seus alunos."
-                : "Você não está matriculado em nenhuma turma. Use o código de acesso fornecido pelo seu professor para entrar."}
+              Você ainda não criou nenhuma turma. Clique no botão acima para começar a gerenciar seus alunos.
             </p>
           </div>
         ) : (

@@ -21,13 +21,12 @@ export default async function handler(
               items: {
                 orderBy: { orderIndex: "asc" },
                 include: {
-                  exercise: { select: { id: true, title: true, status: true } },
+                  exercise: { select: { id: true, title: true } },
                 },
               },
             },
           },
         },
-        orderBy: { deadline: "asc" },
       }),
       prisma.submission.findMany({
         where: { studentId: userId, classId },
@@ -40,7 +39,6 @@ export default async function handler(
     const result = classExerciseLists.map((cel) => ({
       exerciseListId: cel.exerciseListId,
       classId: cel.classId,
-      deadline: cel.deadline,
       totalGrade: cel.totalGrade,
       minRequired: cel.minRequired,
       exerciseList: {

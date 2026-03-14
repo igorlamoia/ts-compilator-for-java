@@ -97,7 +97,6 @@ function deadlineInfo(deadline: string) {
 
 const publishSchema = z.object({
   classId: z.string().min(1, "Selecione uma turma"),
-  deadline: z.string().min(1, "Prazo é obrigatório"),
   totalGrade: z.string().min(1, "Nota total é obrigatória"),
   minRequired: z.string().min(1, "Mínimo obrigatório"),
 });
@@ -121,7 +120,7 @@ function PublishModal({
   const { showToast } = useToast();
   const form = useForm<PublishForm>({
     resolver: zodResolver(publishSchema),
-    defaultValues: { classId: "", deadline: "", totalGrade: "10", minRequired: "1" },
+    defaultValues: { classId: "", totalGrade: "10", minRequired: "1" },
   });
 
   const onSubmit = async (values: PublishForm) => {
@@ -130,7 +129,6 @@ function PublishModal({
         `/exercise-lists/${listId}/publish`,
         {
           classId: values.classId,
-          deadline: new Date(values.deadline).toISOString(),
           totalGrade: Number(values.totalGrade),
           minRequired: Number(values.minRequired),
         },
@@ -178,23 +176,6 @@ function PublishModal({
                         </option>
                       ))}
                     </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prazo de entrega</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="datetime-local"
-                      {...field}
-                      className="h-11 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -443,15 +424,6 @@ function TeacherDetailView({
             )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span
-              className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-                list.status === "DRAFT"
-                  ? "bg-slate-500/15 text-slate-400 border-slate-500/25"
-                  : "bg-emerald-500/15 text-emerald-300 border-emerald-500/25"
-              }`}
-            >
-              {list.status === "DRAFT" ? "Rascunho" : "Publicada"}
-            </span>
             <HeroButton
               onClick={() => setShowPublish(true)}
               className="gap-2 px-4 py-2 text-sm"
@@ -461,21 +433,6 @@ function TeacherDetailView({
             </HeroButton>
           </div>
         </div>
-
-        {/* publications */}
-        {list.classes.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-white/8 flex flex-wrap gap-2">
-            {list.classes.map((cls) => (
-              <span
-                key={cls.classId}
-                className="inline-flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 border border-white/8 px-3 py-1 rounded-full"
-              >
-                <Clock className="w-3 h-3" />
-                Prazo: {new Date(cls.deadline).toLocaleDateString("pt-BR")}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* exercises panel */}
@@ -649,15 +606,6 @@ function ExerciseRow({
       </span>
       <span className="flex-1 text-sm text-slate-200 truncate">
         {item.exercise.title}
-      </span>
-      <span
-        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${
-          item.exercise.status === "PUBLISHED"
-            ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/25"
-            : "bg-slate-500/15 text-slate-400 border-slate-500/25"
-        }`}
-      >
-        {item.exercise.status === "PUBLISHED" ? "Publicado" : "Rascunho"}
       </span>
       <button
         onClick={onRemove}

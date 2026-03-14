@@ -29,9 +29,7 @@ function ListNavigatorSidebar({
 }) {
   const sorted = list.items.slice().sort((a, b) => a.orderIndex - b.orderIndex);
   const currentIdx = sorted.findIndex((i) => i.exerciseId === currentExerciseId);
-  const completedCount = sorted.filter(
-    (i) => i.exercise.status === "PUBLISHED",
-  ).length;
+  const completedCount = sorted.length;
 
   return (
     <div className="w-52 shrink-0 border-r border-white/5 bg-[#0b1719]/80 backdrop-blur-md flex flex-col overflow-hidden">
@@ -350,14 +348,6 @@ function WorkspaceContent({
                 <span>Peso da Nota</span>
                 <span className="text-white font-medium">
                   {exercise.gradeWeight}
-                </span>
-              </div>
-              <div className="flex justify-between text-xs text-slate-500 p-3 bg-white/5 rounded-lg">
-                <span>Status</span>
-                <span
-                  className={`font-medium ${exercise.status === "PUBLISHED" ? "text-emerald-300" : "text-yellow-300"}`}
-                >
-                  {exercise.status === "PUBLISHED" ? "Publicado" : "Rascunho"}
                 </span>
               </div>
               {lastSubmission && (

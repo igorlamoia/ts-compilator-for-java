@@ -11,7 +11,6 @@ export type ExerciseDTO = {
   teacherId: string
   title: string
   description: string
-  status: string
   createdAt: Date
   testCases: TestCaseDTO[]
 }
@@ -22,7 +21,6 @@ export function toExerciseDTO(exercise: {
   title: string
   description: string
   attachments?: string
-  status: string
   createdAt: Date
   testCases?: { id: string; label: string; input: string; expectedOutput: string; orderIndex: number }[]
 }): ExerciseDTO {
@@ -31,7 +29,6 @@ export function toExerciseDTO(exercise: {
     teacherId: exercise.teacherId,
     title: exercise.title,
     description: exercise.description,
-    status: exercise.status,
     createdAt: exercise.createdAt,
     testCases: exercise.testCases ?? [],
   }

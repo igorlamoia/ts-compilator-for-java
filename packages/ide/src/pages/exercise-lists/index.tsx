@@ -49,7 +49,6 @@ type ClassOption = { id: string; name: string };
 type ClassExerciseListEntry = {
   exerciseListId: string;
   classId: string;
-  deadline: string;
   totalGrade: number;
   minRequired: number;
   exerciseList: {
@@ -68,27 +67,14 @@ type ClassExerciseListEntry = {
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
-function deadlineInfo(deadline: string) {
-  const diff = new Date(deadline).getTime() - Date.now();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  if (days < 0) return { text: "Prazo encerrado", cls: "text-red-400 bg-red-500/10 border-red-500/20" };
-  if (days === 0) return { text: "Hoje!", cls: "text-red-400 bg-red-500/10 border-red-500/20" };
-  if (days <= 3) return { text: `Faltam ${days}d`, cls: "text-red-400 bg-red-500/10 border-red-500/20" };
-  if (days <= 7) return { text: `Faltam ${days}d`, cls: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" };
-  return { text: `Faltam ${days}d`, cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" };
-}
-
 function listProgress(completed: number, total: number) {
   if (total === 0) return 0;
   return Math.round((completed / total) * 100);
 }
 
 function studentListStatus(entry: ClassExerciseListEntry) {
-  const overdue = new Date(entry.deadline) < new Date();
   if (entry.completedCount >= entry.minRequired)
     return { text: "Concluída", cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/25" };
-  if (overdue)
-    return { text: "Atrasada", cls: "bg-red-500/15 text-red-300 border-red-500/25" };
   if (entry.completedCount > 0)
     return { text: "Em andamento", cls: "bg-blue-500/15 text-blue-300 border-blue-500/25" };
   return { text: "Não iniciada", cls: "bg-slate-500/15 text-slate-400 border-slate-500/25" };
@@ -210,8 +196,6 @@ function CreateListModal({
 
 // ── teacher view ─────────────────────────────────────────────────────────────
 
-type TeacherFilter = "all" | "DRAFT" | "PUBLISHED";
-
 function TeacherView({
   userId,
   classes,
@@ -222,7 +206,6 @@ function TeacherView({
   const { showToast } = useToast();
   const [lists, setLists] = useState<ExerciseListDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<TeacherFilter>("all");
   const [showCreate, setShowCreate] = useState(false);
 
   const classMap = Object.fromEntries(classes.map((c) => [c.id, c.name]));
@@ -244,8 +227,7 @@ function TeacherView({
     fetchLists();
   }, [fetchLists]);
 
-  const filtered =
-    filter === "all" ? lists : lists.filter((l) => l.status === filter);
+  const filtered = lists;
 
   return (
     <>
@@ -267,40 +249,13 @@ function TeacherView({
         </HeroButton>
       </div>
 
-      {/* filter chips */}
-      <div className="flex gap-2 mb-6">
-        {(
-          [
-            { key: "all", label: "Todas" },
-            { key: "DRAFT", label: "Rascunho" },
-            { key: "PUBLISHED", label: "Publicadas" },
-          ] as { key: TeacherFilter; label: string }[]
-        ).map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-              filter === key
-                ? "bg-[#0dccf2]/15 border-[#0dccf2]/40 text-[#0dccf2]"
-                : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <LoadingSpinner label="Carregando listas..." />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<ListChecks className="w-10 h-10 text-slate-600" />}
           title="Nenhuma lista encontrada"
-          description={
-            filter !== "all"
-              ? "Nenhuma lista com esse filtro."
-              : "Crie sua primeira lista de exercícios para começar."
-          }
+          description="Crie sua primeira lista de exercícios para começar."
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -338,7 +293,6 @@ function TeacherListCard({
   onRefresh: () => void;
 }) {
   const { showToast } = useToast();
-  const isDraft = list.status === "DRAFT";
 
   const classNames = list.classes
     .map((c) => classMap[c.classId] ?? c.classId.slice(0, 6))
@@ -354,15 +308,6 @@ function TeacherListCard({
         <h3 className="font-bold text-slate-100 leading-snug line-clamp-2">
           {list.title}
         </h3>
-        <span
-          className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
-            isDraft
-              ? "bg-slate-500/15 text-slate-400 border-slate-500/25"
-              : "bg-emerald-500/15 text-emerald-300 border-emerald-500/25"
-          }`}
-        >
-          {isDraft ? "Rascunho" : "Publicada"}
-        </span>
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs text-slate-400">
@@ -377,12 +322,6 @@ function TeacherListCard({
             {list.classes.length > 2 && ` +${list.classes.length - 2}`}
           </span>
         )}
-        {list.classes[0]?.deadline && (
-          <span className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-slate-500" />
-            {new Date(list.classes[0].deadline).toLocaleDateString("pt-BR")}
-          </span>
-        )}
       </div>
 
       <div className="flex items-center gap-2 mt-auto pt-3 border-t border-white/5">
@@ -393,17 +332,6 @@ function TeacherListCard({
           Gerenciar
           <ChevronRight className="w-3.5 h-3.5" />
         </Link>
-        {isDraft && (
-          <button
-            title="Publicar lista"
-            onClick={() =>
-              showToast({ type: "info", message: "Abra a lista para publicar." })
-            }
-            className="p-2 rounded-lg bg-white/5 border border-white/8 text-slate-400 hover:text-[#10b981] hover:border-[#10b981]/30 hover:bg-[#10b981]/5 transition-all"
-          >
-            <Send className="w-3.5 h-3.5" />
-          </button>
-        )}
       </div>
     </div>
   );
@@ -508,7 +436,6 @@ function StudentListCard({
   entry: ClassExerciseListEntry;
   classId: string;
 }) {
-  const dl = deadlineInfo(entry.deadline);
   const status = studentListStatus(entry);
   const progress = listProgress(entry.completedCount, entry.totalCount);
 
@@ -526,12 +453,6 @@ function StudentListCard({
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        <span
-          className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${dl.cls}`}
-        >
-          <Clock className="w-3 h-3" />
-          {dl.text}
-        </span>
         <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 border border-white/8 px-2.5 py-1 rounded-full">
           Mínimo: {entry.minRequired} exercício{entry.minRequired !== 1 ? "s" : ""}
         </span>

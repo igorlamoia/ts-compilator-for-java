@@ -43,7 +43,7 @@ export class Interpreter {
     this.stdin = io.stdin;
     this.program = program;
     this.labels = new Map<string, number>();
-    this.variables = new Map<string, unknown>();
+    this.variables = new Map<string, RuntimeSlot>();
     this.callStack = [];
     this.instructionPointer = 0;
     this.locale = locale;

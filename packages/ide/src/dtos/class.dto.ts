@@ -33,7 +33,7 @@ export function toClassDTO(cls: {
     bio?: string | null
     [key: string]: unknown
   } | null
-  _count?: { members: number; exercises: number }
+  _count?: { members: number; exercises?: number; exerciseLists?: number }
 }): ClassDTO {
   return {
     id: cls.id,
@@ -45,6 +45,6 @@ export function toClassDTO(cls: {
     organizationId: cls.organizationId,
     teacherId: cls.teacherId,
     ...(cls.teacher ? { teacher: toUserDTO(cls.teacher) } : {}),
-    ...(cls._count ? { _count: cls._count } : {}),
+    ...(cls._count ? { _count: { members: cls._count.members, exercises: cls._count.exercises ?? cls._count.exerciseLists ?? 0 } } : {}),
   }
 }

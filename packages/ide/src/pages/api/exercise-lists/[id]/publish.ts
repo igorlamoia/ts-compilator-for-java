@@ -12,9 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { classId, deadline, totalGrade, minRequired } = req.body
+      const { classId, totalGrade, minRequired } = req.body
       if (!classId) return res.status(400).json({ error: 'classId e obrigatorio' })
-      if (!deadline) return res.status(400).json({ error: 'deadline e obrigatorio' })
 
       const totalGradeNum = Number(totalGrade)
       const minRequiredNum = Number(minRequired)
@@ -25,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         exerciseListId,
         classId,
         callerId: userId,
-        deadline: new Date(deadline),
         totalGrade: totalGradeNum,
         minRequired: minRequiredNum,
       })
