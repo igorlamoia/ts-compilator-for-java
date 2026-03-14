@@ -11,7 +11,7 @@
     "seed": "npx tsx prisma/seed.ts",
     "prisma:migrate": "node scripts/prisma-generate.mjs migrate deploy",
     "prisma:generate": "node scripts/prisma-generate.mjs generate",
-    "prisma:prepare": "npm run prisma:migrate && npm run prisma:generate",
+    "prisma:prepare": "npm run prisma:migrate && npm run prisma:generate && npm run seed",
     "postinstall": "npm run prisma:generate"
   },
   "prisma": {
