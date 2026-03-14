@@ -1,43 +1,28 @@
-"use client";
-
 import { useEffect } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/api";
-import axios from "axios";
-import { HeroButton } from "@/components/buttons/hero";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { HeroButton } from "@/components/buttons/hero";
 import { TestCaseFields } from "./test-case-fields";
-
-interface TestCase {
-  label: string;
-  input: string;
-  expectedOutput: string;
-}
 
 const testCaseSchema = z.object({
   label: z.string(),
@@ -46,127 +31,89 @@ const testCaseSchema = z.object({
 });
 
 const createExerciseSchema = z.object({
-  exTitle: z.string().min(1, "Título é obrigatório"),
-  exDesc: z.string().min(1, "Descrição é obrigatória"),
-  exWeight: z.string().min(1, "Peso é obrigatório"),
+  title: z.string().min(1, "Título é obrigatório"),
+  description: z.string().min(1, "Descrição é obrigatória"),
   testCases: z.array(testCaseSchema),
 });
 
-type CreateExerciseFormValues = z.infer<typeof createExerciseSchema>;
+type CreateExerciseForm = z.infer<typeof createExerciseSchema>;
 
-const defaultTestCases: TestCase[] = [
+const defaultTestCases = [
   { label: "", input: "", expectedOutput: "" },
   { label: "", input: "", expectedOutput: "" },
   { label: "", input: "", expectedOutput: "" },
 ];
 
-interface CreateExerciseModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  classId: string | null;
-  userId: string;
-  onSuccess?: (message: string) => void;
-  onError?: (message: string) => void;
-}
-
 export function CreateExerciseModal({
   open,
   onOpenChange,
-  classId,
   userId,
-  onSuccess,
-  onError,
-}: CreateExerciseModalProps) {
-  const form = useForm<CreateExerciseFormValues>({
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  userId: string;
+  onCreated: () => void;
+}) {
+  const { showToast } = useToast();
+  const form = useForm<CreateExerciseForm>({
     resolver: zodResolver(createExerciseSchema),
-    defaultValues: {
-      exTitle: "",
-      exDesc: "",
-      exWeight: "1",
-      testCases: defaultTestCases,
-    },
+    defaultValues: { title: "", description: "", testCases: defaultTestCases },
   });
 
-  const { fields } = useFieldArray({
-    control: form.control,
-    name: "testCases",
-  });
+  const { fields } = useFieldArray({ control: form.control, name: "testCases" });
 
   useEffect(() => {
-    if (!open) {
-      resetForm();
-    }
-  }, [open]);
+    if (!open) form.reset({ title: "", description: "", testCases: defaultTestCases });
+  }, [open, form]);
 
-  const handleSubmit = async (values: CreateExerciseFormValues) => {
-    form.clearErrors();
-
+  const onSubmit = async (values: CreateExerciseForm) => {
     try {
       await api.post(
         "/exercises",
         {
-          classId,
-          title: values.exTitle,
-          description: values.exDesc,
-          gradeWeight: values.exWeight,
+          title: values.title,
+          description: values.description,
           testCases: values.testCases.filter(
-            (tc) => tc.input.trim() || tc.expectedOutput.trim(),
+            (tc) => tc.input.trim() || tc.expectedOutput.trim()
           ),
         },
-        {
-          headers: {
-            "x-user-id": userId,
-          },
-        },
+        { headers: { "x-user-id": userId } }
       );
-
-      onSuccess?.("Exercício criado com sucesso!");
-      resetForm();
+      showToast({ type: "success", message: "Exercício criado!" });
+      form.reset();
       onOpenChange(false);
-    } catch (error) {
-      const message =
-        axios.isAxiosError(error) &&
-        typeof error.response?.data?.error === "string"
-          ? error.response.data.error
-          : "Erro ao criar exercício";
-      onError?.(message);
+      onCreated();
+    } catch {
+      showToast({ type: "error", message: "Erro ao criar exercício." });
     }
-  };
-
-  const resetForm = () => {
-    form.reset({
-      exTitle: "",
-      exDesc: "",
-      exWeight: "1",
-      testCases: defaultTestCases,
-    });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl backdrop-blur-3xl">
         <DialogHeader>
-          <DialogTitle>Criar Exercício</DialogTitle>
+          <DialogTitle>Novo Exercício</DialogTitle>
           <DialogDescription className="text-slate-400">
-            Defina os detalhes e casos de teste para o exercício
+            Defina o enunciado e casos de teste para validação automática.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
-            id="create-exercise-form"
-            onSubmit={form.handleSubmit(handleSubmit)}
+            id="create-exercise-page-form"
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 flex-1 overflow-y-auto max-h-[calc(90vh-180px)] p-6 font-sans"
           >
             <FormField
               control={form.control}
-              name="exTitle"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Título</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Ex: Hello World em Java--"
+                      placeholder="Ex: Hello World em Java"
                       className="h-12 bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
                     />
                   </FormControl>
@@ -177,14 +124,14 @@ export function CreateExerciseModal({
 
             <FormField
               control={form.control}
-              name="exDesc"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição / Instruções</FormLabel>
+                  <FormLabel>Descrição / Enunciado</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
-                      rows={4}
+                      rows={5}
                       placeholder="Descreva o exercício em detalhes..."
                       className="bg-black/30 border-white/10 text-slate-100 placeholder:text-slate-600 focus:border-[#0dccf2]/50"
                     />
@@ -194,35 +141,13 @@ export function CreateExerciseModal({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="exWeight"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Peso da Nota</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.1"
-                        {...field}
-                        className="h-12 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="test-cases">
                 <AccordionTrigger>
                   <div className="flex w-full items-center justify-between pr-2">
-                    <span>Casos de Teste (Opcional)</span>
+                    <span>Casos de Teste</span>
                     <span className="text-xs text-slate-500">
-                      Expandir para configurar
+                      {fields.length} casos
                     </span>
                   </div>
                 </AccordionTrigger>
@@ -233,10 +158,8 @@ export function CreateExerciseModal({
             </Accordion>
           </form>
         </Form>
-
         <DialogFooter className="bg-white/5 border-t border-white/10">
           <HeroButton
-            type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
@@ -245,7 +168,7 @@ export function CreateExerciseModal({
           </HeroButton>
           <HeroButton
             type="submit"
-            form="create-exercise-form"
+            form="create-exercise-page-form"
             disabled={form.formState.isSubmitting}
             className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >

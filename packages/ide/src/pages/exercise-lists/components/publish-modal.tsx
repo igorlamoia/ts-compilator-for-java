@@ -1,0 +1,168 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { HeroButton } from "@/components/buttons/hero";
+import type { ClassOption } from "./types";
+
+const publishSchema = z.object({
+  classId: z.string().min(1, "Selecione uma turma"),
+  totalGrade: z.string().min(1, "Nota total é obrigatória"),
+  minRequired: z.string().min(1, "Mínimo obrigatório"),
+});
+type PublishForm = z.infer<typeof publishSchema>;
+
+export function PublishModal({
+  open,
+  onOpenChange,
+  listId,
+  userId,
+  classes,
+  onPublished,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  listId: string;
+  userId: string;
+  classes: ClassOption[];
+  onPublished: () => void;
+}) {
+  const { showToast } = useToast();
+  const form = useForm<PublishForm>({
+    resolver: zodResolver(publishSchema),
+    defaultValues: { classId: "", totalGrade: "10", minRequired: "1" },
+  });
+
+  const onSubmit = async (values: PublishForm) => {
+    try {
+      await api.post(
+        `/exercise-lists/${listId}/publish`,
+        {
+          classId: values.classId,
+          totalGrade: Number(values.totalGrade),
+          minRequired: Number(values.minRequired),
+        },
+        { headers: { "x-user-id": userId } },
+      );
+      showToast({ type: "success", message: "Lista publicada com sucesso!" });
+      form.reset();
+      onOpenChange(false);
+      onPublished();
+    } catch {
+      showToast({ type: "error", message: "Erro ao publicar lista." });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md backdrop-blur-3xl">
+        <DialogHeader>
+          <DialogTitle>Publicar Lista</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Configure prazo e requisitos antes de publicar para a turma.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form
+            id="publish-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 p-1"
+          >
+            <FormField
+              control={form.control}
+              name="classId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Turma</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full h-11 bg-black/30 border border-white/10 rounded-md px-3 text-sm text-slate-100 focus:outline-none focus:border-[#0dccf2]/50"
+                    >
+                      <option value="" className="bg-[#101f22]">Selecione...</option>
+                      {classes.map((c) => (
+                        <option key={c.id} value={c.id} className="bg-[#101f22]">
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="totalGrade"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nota total</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        step="0.5"
+                        {...field}
+                        className="h-11 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="minRequired"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mínimo obrigatório</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        {...field}
+                        className="h-11 bg-black/30 border-white/10 text-slate-100 focus:border-[#0dccf2]/50"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </form>
+        </Form>
+        <DialogFooter className="bg-white/5 border-t border-white/10">
+          <HeroButton
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+          >
+            Cancelar
+          </HeroButton>
+          <HeroButton type="submit" form="publish-form" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Publicando..." : "Publicar"}
+          </HeroButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

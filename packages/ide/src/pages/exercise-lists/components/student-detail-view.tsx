@@ -1,0 +1,143 @@
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
+import { BookOpen, CheckCircle2, ChevronRight, Circle } from "lucide-react";
+import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
+import type { ClassExerciseListEntry } from "./types";
+
+export function StudentDetailView({
+  list,
+  classId,
+  userId,
+}: {
+  list: ExerciseListDTO;
+  classId: string;
+  userId: string;
+}) {
+  const { showToast } = useToast();
+  const [classEntry, setClassEntry] = useState<ClassExerciseListEntry | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!classId) return;
+    setLoading(true);
+    api
+      .get<ClassExerciseListEntry[]>(`/classes/${classId}/exercise-lists`, {
+        headers: { "x-user-id": userId },
+      })
+      .then(({ data }) => {
+        const entry = data.find((e) => e.exerciseListId === list.id) ?? null;
+        setClassEntry(entry);
+      })
+      .catch(() => showToast({ type: "error", message: "Erro ao carregar progresso." }))
+      .finally(() => setLoading(false));
+  }, [classId, list.id, userId, showToast]);
+
+  const submittedIds = new Set(
+    classEntry?.exerciseList.items.filter((i) => i.submitted).map((i) => i.exerciseId) ?? [],
+  );
+
+  const publication = list.classes.find((c) => c.classId === classId);
+  const totalCount = list.items.length;
+  const completedCount = submittedIds.size;
+  const minRequired = publication?.minRequired ?? 0;
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* header card */}
+      <div className="bg-white/3 backdrop-blur-xl border border-white/8 rounded-2xl p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-100">{list.title}</h1>
+            {list.description && (
+              <p className="text-slate-400 text-sm mt-1">{list.description}</p>
+            )}
+          </div>
+
+          {publication && (
+            <div className="shrink-0 flex flex-col items-end gap-2">
+              <span className="text-xs text-slate-500">
+                Mínimo: {minRequired} exercício{minRequired !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* progress */}
+        {!loading && (
+          <div className="mt-5 pt-5 border-t border-white/8">
+            <div className="flex justify-between text-sm text-slate-400 mb-2">
+              <span>
+                {completedCount} de {totalCount} exercícios concluídos
+              </span>
+              <span className="font-semibold text-slate-200">{progress}%</span>
+            </div>
+            <div className="h-2 bg-white/8 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-linear-to-r from-[#0dccf2] to-[#10b981] rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            {completedCount >= minRequired && minRequired > 0 && (
+              <p className="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Requisito mínimo atingido!
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* exercises list */}
+      <div className="bg-white/3 backdrop-blur-xl border border-white/8 rounded-2xl overflow-hidden">
+        <div className="flex items-center gap-2 px-6 py-4 border-b border-white/8">
+          <BookOpen className="w-4 h-4 text-[#0dccf2]" />
+          <h2 className="font-semibold text-slate-200">Exercícios</h2>
+        </div>
+        {list.items.length === 0 ? (
+          <p className="text-center text-slate-500 text-sm py-12">
+            Nenhum exercício nesta lista.
+          </p>
+        ) : (
+          <ul>
+            {list.items
+              .slice()
+              .sort((a, b) => a.orderIndex - b.orderIndex)
+              .map((item, idx) => {
+                const done = submittedIds.has(item.exerciseId);
+                return (
+                  <li
+                    key={item.exerciseId}
+                    className="flex items-center gap-4 px-6 py-4 border-b border-white/5 last:border-0 hover:bg-white/2 transition-colors"
+                  >
+                    <span className="w-5 shrink-0">
+                      {done ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-slate-600" />
+                      )}
+                    </span>
+                    <span className="text-xs font-mono text-slate-500 w-6 text-right shrink-0">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <span className="flex-1 text-sm text-slate-200">
+                      {item.exercise.title}
+                    </span>
+                    <Link
+                      href={`/exercises/${item.exerciseId}?listId=${list.id}&classId=${classId}`}
+                      className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#0dccf2]/10 border border-[#0dccf2]/20 text-[#0dccf2] text-xs font-semibold hover:bg-[#0dccf2]/20 transition-colors"
+                    >
+                      {done ? "Ver solução" : "Resolver"}
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </li>
+                );
+              })}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
