@@ -4,11 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run prisma:prepare && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run --config vitest.integration.config.ts",
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "npx tsx prisma/seed.ts",
+    "prisma:migrate": "node scripts/prisma-generate.mjs migrate deploy",
+    "prisma:generate": "node scripts/prisma-generate.mjs generate",
+    "prisma:prepare": "npm run prisma:migrate && npm run prisma:generate",
+    "postinstall": "npm run prisma:generate"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
