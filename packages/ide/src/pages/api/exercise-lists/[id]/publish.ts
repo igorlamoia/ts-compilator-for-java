@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { classId, totalGrade, minRequired } = req.body
+      const { classId, totalGrade, minRequired, deadline } = req.body
       if (!classId) return res.status(400).json({ error: 'classId e obrigatorio' })
 
       const totalGradeNum = Number(totalGrade)
@@ -20,12 +20,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (isNaN(totalGradeNum)) return res.status(400).json({ error: 'totalGrade invalido' })
       if (isNaN(minRequiredNum)) return res.status(400).json({ error: 'minRequired invalido' })
 
+      const deadlineDate = deadline ? new Date(deadline) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // default 30 days
+      if (isNaN(deadlineDate.getTime())) return res.status(400).json({ error: 'deadline invalida' })
+
       const publication = await publishExerciseListUseCase(prisma, {
         exerciseListId,
         classId,
         callerId: userId,
         totalGrade: totalGradeNum,
         minRequired: minRequiredNum,
+        deadline: deadlineDate,
       })
       return res.status(200).json(publication)
     } catch (error) {

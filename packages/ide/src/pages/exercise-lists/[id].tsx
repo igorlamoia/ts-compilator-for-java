@@ -462,12 +462,6 @@ function TeacherDetailView({
           <div className="flex flex-col items-center justify-center py-12 text-slate-500">
             <BookOpen className="w-8 h-8 mb-3 opacity-40" />
             <p className="text-sm">Nenhum exercício adicionado ainda.</p>
-            <button
-              onClick={() => setShowAddExercise(true)}
-              className="mt-3 text-xs text-[#0dccf2] hover:underline"
-            >
-              Adicionar exercício
-            </button>
           </div>
         ) : (
           <ul>
@@ -485,15 +479,6 @@ function TeacherDetailView({
           </ul>
         )}
 
-        <div className="px-6 py-3 border-t border-white/5">
-          <button
-            onClick={() => setShowAddExercise(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/15 text-slate-500 text-sm hover:border-[#0dccf2]/30 hover:text-[#0dccf2] transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Adicionar Exercício
-          </button>
-        </div>
       </div>
 
       {/* submissions panel */}

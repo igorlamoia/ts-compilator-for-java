@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, LayoutDashboard, ListChecks } from "lucide-react";
+import { BookOpen, Code2, LayoutDashboard, ListChecks } from "lucide-react";
 
 type MenuItem = {
   id: string;
@@ -28,6 +28,13 @@ const teacherMenu: MenuItem[] = [
     icon: <LayoutDashboard className="w-5 h-5" />,
     href: "/dashboard",
     activeMatchers: ["/dashboard", "/classes"],
+  },
+  {
+    id: "exercicios",
+    label: "Meus Exercícios",
+    icon: <Code2 className="w-5 h-5" />,
+    href: "/exercises",
+    activeMatchers: ["/exercises"],
   },
   {
     id: "listas",

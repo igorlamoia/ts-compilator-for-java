@@ -9,9 +9,10 @@ export async function publishExerciseListUseCase(
     callerId: string
     totalGrade: number
     minRequired: number
+    deadline: Date
   },
 ) {
-  const { exerciseListId, classId, callerId, totalGrade, minRequired } = input
+  const { exerciseListId, classId, callerId, totalGrade, minRequired, deadline } = input
 
   if (minRequired < 1) throw new ValidationError('minRequired deve ser pelo menos 1')
   if (totalGrade <= 0) throw new ValidationError('totalGrade deve ser maior que zero')
@@ -22,7 +23,7 @@ export async function publishExerciseListUseCase(
 
   return prisma.classExerciseList.upsert({
     where: { exerciseListId_classId: { exerciseListId, classId } },
-    update: { totalGrade, minRequired },
-    create: { exerciseListId, classId, totalGrade, minRequired },
+    update: { totalGrade, minRequired, deadline },
+    create: { exerciseListId, classId, totalGrade, minRequired, deadline },
   })
 }
