@@ -12,6 +12,7 @@ import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
+import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import Link from "next/link";
 
@@ -54,7 +55,7 @@ export default function Dashboard() {
       });
       setClasses(classesData);
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       showToast({
         type: "error",
         message: error?.response?.data?.error || "Erro ao carregar turmas.",
@@ -86,13 +87,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-screen font-sans overflow-hidden">
+    <div className="flex flex-col h-screen font-sans overflow-hidden bg-[#0A0A0F]">
       <SpaceBackground />
-
-      {/* Top Nav */}
       <Navbar />
-
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+      <div className="flex flex-1 overflow-hidden relative z-10">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-y-auto w-full">
+          <main className="max-w-7xl mx-auto px-6 py-12 w-full">
         {/* Alerts */}
         {error && (
           <Alert variant="error" onClose={() => setError("")} className="mb-8">
@@ -321,6 +322,8 @@ export default function Dashboard() {
         onSuccess={handleExerciseCreated}
         onError={setError}
       />
+        </div>
+      </div>
     </div>
   );
 }

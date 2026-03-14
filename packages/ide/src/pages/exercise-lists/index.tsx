@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SpaceBackground } from "@/components/space-background";
+import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -527,24 +528,24 @@ export default function ExerciseListsPage() {
   if (!userId) return null;
 
   return (
-    <div className="relative min-h-screen font-sans overflow-hidden">
+    <div className="flex flex-col h-screen font-sans overflow-hidden bg-[#0A0A0F]">
       <SpaceBackground />
-      <Navbar
-        links={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Listas", href: "/exercise-lists" },
-        ]}
-      />
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
-        {isTeacher ? (
-          <TeacherView userId={userId} classes={[]} />
-        ) : (
-          <StudentView
-            userId={userId}
-            organizationId={organizationId ?? ""}
-          />
-        )}
-      </main>
+      <Navbar />
+      <div className="flex flex-1 overflow-hidden relative z-10 w-full">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-y-auto w-full">
+          <main className="max-w-7xl mx-auto px-6 py-12 w-full">
+            {isTeacher ? (
+              <TeacherView userId={userId} classes={[]} />
+            ) : (
+              <StudentView
+                userId={userId}
+                organizationId={organizationId ?? ""}
+              />
+            )}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

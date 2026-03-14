@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SpaceBackground } from "@/components/space-background";
+import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -708,15 +709,6 @@ function StudentDetailView({
 
           {publication && (
             <div className="shrink-0 flex flex-col items-end gap-2">
-              {(() => {
-                const dl = deadlineInfo(String(publication.deadline));
-                return (
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full border ${dl.cls}`}>
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    {dl.text}
-                  </span>
-                );
-              })()}
               <span className="text-xs text-slate-500">
                 Mínimo: {minRequired} exercício{minRequired !== 1 ? "s" : ""}
               </span>
@@ -853,41 +845,41 @@ export default function ExerciseListDetailPage() {
   }
 
   return (
-    <div className="relative min-h-screen font-sans overflow-hidden">
+    <div className="flex flex-col h-screen font-sans overflow-hidden bg-[#0A0A0F]">
       <SpaceBackground />
-      <Navbar
-        links={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Listas", href: "/exercise-lists" },
-        ]}
-      />
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-10">
-        {/* breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <Link href="/exercise-lists" className="hover:text-slate-300 transition-colors flex items-center gap-1">
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Listas
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
-          <span className="text-slate-300 font-medium">{list?.title ?? "..."}</span>
-        </nav>
+      <Navbar />
+      <div className="flex flex-1 overflow-hidden relative z-10 w-full">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-y-auto w-full">
+          <main className="max-w-4xl mx-auto px-6 py-10 w-full">
+            {/* breadcrumb */}
+            <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
+              <Link href="/exercise-lists" className="hover:text-slate-300 transition-colors flex items-center gap-1">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Listas
+              </Link>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
+              <span className="text-slate-300 font-medium">{list?.title ?? "..."}</span>
+            </nav>
 
-        {list &&
-          (isTeacher ? (
-            <TeacherDetailView
-              list={list}
-              userId={userId}
-              classes={classes}
-              onRefresh={fetchList}
-            />
-          ) : (
-            <StudentDetailView
-              list={list}
-              classId={classId ?? ""}
-              userId={userId}
-            />
-          ))}
-      </main>
+            {list &&
+              (isTeacher ? (
+                <TeacherDetailView
+                  list={list}
+                  userId={userId}
+                  classes={classes}
+                  onRefresh={fetchList}
+                />
+              ) : (
+                <StudentDetailView
+                  list={list}
+                  classId={classId ?? ""}
+                  userId={userId}
+                />
+              ))}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

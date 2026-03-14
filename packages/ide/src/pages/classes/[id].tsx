@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
+import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -108,10 +109,14 @@ export default function ClassDetail() {
 
   if (isTeacher) {
     return (
-      <div className="relative min-h-screen bg-[#101f22] text-slate-100 font-sans overflow-hidden">
+      <div className="flex flex-col h-screen font-sans overflow-hidden bg-[#0A0A0F] text-slate-100">
         <SpaceBackground />
-        <header className="relative z-20 w-full border-b border-white/5 bg-[#101f22]/80 backdrop-blur-3xl">
-          <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <Navbar />
+        <div className="flex flex-1 overflow-hidden relative z-10 w-full">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-y-auto w-full">
+            <header className="relative z-20 w-full border-b border-white/5 bg-[#0A0A0F]/80 backdrop-blur-xl">
+            <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div className="flex items-center gap-6">
               <Link
                 href="/dashboard"
@@ -228,8 +233,10 @@ export default function ClassDetail() {
             </div>
           )}
         </main>
+        </div>
       </div>
-    );
+    </div>
+  );
   }
 
   // Student View: using the new Members Dashboard Stitch Layout
@@ -248,12 +255,15 @@ export default function ClassDetail() {
   }
 
   return (
-    <div className="relative min-h-screen font-sans overflow-hidden">
+    <div className="flex flex-col h-screen font-sans overflow-hidden bg-[#0A0A0F]">
       <SpaceBackground />
       <Navbar />
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
-        {/* Header Section */}
+      <div className="flex flex-1 overflow-hidden relative z-10">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-y-auto w-full">
+          <main className="max-w-7xl mx-auto px-6 py-12 w-full">
+          {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
             <div className="flex items-center gap-2 text-[#0dccf2] mb-2">
@@ -424,7 +434,9 @@ export default function ClassDetail() {
           </div>
           )}
         </div>
-      </main>
+        </main>
+        </div>
+      </div>
     </div>
   );
 }
