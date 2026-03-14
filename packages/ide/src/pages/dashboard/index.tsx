@@ -97,11 +97,6 @@ export default function Dashboard() {
               isTeacher={isTeacher}
               loading={loading}
               onJoinClass={() => setShowJoinClass(true)}
-              onCreateExercise={(classId: string) => {
-                // TODO: Implement exercise creation modal or navigation
-                setSuccess(`Exercício criado para a turma ${classId}.`);
-                // Optionally, refresh classes or exercises here
-              }}
             />
           </main>
 

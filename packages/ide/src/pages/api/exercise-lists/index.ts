@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     try {
       const lists = await listExerciseListsUseCase(prisma, { teacherId: userId })
-      return res.status(200).json(lists.map(toExerciseListDTO))
+      return res.status(200).json(lists.map((l) => toExerciseListDTO(l)))
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error

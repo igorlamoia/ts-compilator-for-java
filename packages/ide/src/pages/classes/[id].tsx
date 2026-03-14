@@ -7,8 +7,8 @@ import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
-import { MembersTab } from "./components/members-tab";
-import { ListsTab } from "./components/lists-tab";
+import { MembersTab } from "@/views/classes/components/members-tab";
+import { ListsTab } from "@/views/classes/components/lists-tab";
 
 export default function ClassDetail() {
   const router = useRouter();

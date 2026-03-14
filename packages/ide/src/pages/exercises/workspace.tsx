@@ -199,7 +199,7 @@ function WorkspaceContent({
     }
   };
 
-  const formatDate = (d: string) =>
+  const formatDate = (d: string | Date) =>
     new Date(d).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",

@@ -7,9 +7,9 @@ import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { isAxiosError } from "axios";
-import { SubmissionInfoBar } from "./components/submission-info-bar";
-import { GradingPanel } from "./components/grading-panel";
-import { SubmittedCodePanel } from "./components/submitted-code-panel";
+import { SubmissionInfoBar } from "@/views/submissions/components/submission-info-bar";
+import { GradingPanel } from "@/views/submissions/components/grading-panel";
+import { SubmittedCodePanel } from "@/views/submissions/components/submitted-code-panel";
 
 export default function GradeSubmission() {
   const router = useRouter();

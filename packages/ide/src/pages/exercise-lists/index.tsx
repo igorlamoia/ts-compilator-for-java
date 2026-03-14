@@ -2,8 +2,8 @@ import { SpaceBackground } from "@/components/space-background";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { TeacherView } from "./components/teacher-view";
-import { StudentView } from "./components/student-view";
+import { TeacherView } from "@/views/exercise-lists/components/teacher-view";
+import { StudentView } from "@/views/exercise-lists/components/student-view";
 
 export default function ExerciseListsPage() {
   const { userId, user, organizationId } = useAuth();

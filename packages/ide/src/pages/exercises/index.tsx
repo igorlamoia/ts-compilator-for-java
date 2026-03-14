@@ -11,12 +11,12 @@ import { Title } from "@/components/text/title";
 import { Subtitle } from "@/components/text/subtitle";
 import { Plus, Search } from "lucide-react";
 import type { ExerciseDTO } from "@/dtos/exercise.dto";
-import { CreateExerciseModal } from "./components/create-exercise-modal";
-import { ExerciseCard } from "./components/exercise-card";
-import { ExerciseDetailModal } from "./components/exercise-detail-modal";
-import { DeleteConfirmModal } from "./components/delete-confirm-modal";
-import { StatsBar } from "./components/stats-bar";
-import { LoadingSpinner, EmptyState } from "./components/shared";
+import { CreateExerciseModal } from "@/views/exercises/components/create-exercise-modal";
+import { ExerciseCard } from "@/views/exercises/components/exercise-card";
+import { ExerciseDetailModal } from "@/views/exercises/components/exercise-detail-modal";
+import { DeleteConfirmModal } from "@/views/exercises/components/delete-confirm-modal";
+import { StatsBar } from "@/views/exercises/components/stats-bar";
+import { LoadingSpinner, EmptyState } from "@/views/exercises/components/shared";
 
 export default function ExercisesPage() {
   const { userId, user } = useAuth();

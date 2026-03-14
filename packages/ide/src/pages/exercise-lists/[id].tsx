@@ -9,9 +9,9 @@ import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
-import { TeacherDetailView } from "./components/teacher-detail-view";
-import { StudentDetailView } from "./components/student-detail-view";
-import type { ClassOption } from "./components/types";
+import { TeacherDetailView } from "@/views/exercise-lists/components/teacher-detail-view";
+import { StudentDetailView } from "@/views/exercise-lists/components/student-detail-view";
+import type { ClassOption } from "@/views/exercise-lists/components/types";
 
 export default function ExerciseListDetailPage() {
   const router = useRouter();
