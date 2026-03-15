@@ -81,6 +81,27 @@ describe("Lexer Number", () => {
     });
   });
   describe("Integer Cases", () => {
+    it("should scan boolean reserved words and literals", () => {
+      // Arrange
+      const source = `bool flag = true; bool other = false;`;
+      const expected = [
+        new Token(55, "bool", 1, 1),
+        new Token(43, "flag", 1, 6),
+        new Token(15, "=", 1, 11),
+        new Token(56, "true", 1, 13),
+        new Token(36, ";", 1, 17),
+        new Token(55, "bool", 1, 19),
+        new Token(43, "other", 1, 24),
+        new Token(15, "=", 1, 30),
+        new Token(57, "false", 1, 32),
+        new Token(36, ";", 1, 37),
+      ];
+      // Act
+      const lexer = new Lexer(source);
+      const tokens = lexer.scanTokens();
+      // Assert
+      expect(tokens).toEqual(expected);
+    });
     it("should scan an integer number", () => {
       // Arrange
       const source = `int x = 123;`;
