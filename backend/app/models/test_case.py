@@ -1,4 +1,3 @@
-import uuid
 from typing import TYPE_CHECKING
 from sqlalchemy import String, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -11,8 +10,8 @@ if TYPE_CHECKING:
 class TestCase(Base):
     __tablename__ = "test_cases"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    exercise_id: Mapped[str] = mapped_column(String, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
     label: Mapped[str] = mapped_column(String, default="", nullable=False)
     input: Mapped[str] = mapped_column(String, nullable=False)
     expected_output: Mapped[str] = mapped_column(String, nullable=False)

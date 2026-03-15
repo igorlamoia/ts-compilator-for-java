@@ -29,7 +29,7 @@ async def register_user(data: RegisterRequest, session: AsyncSession) -> TokenRe
     session.add(user)
     await session.flush()
 
-    token = create_access_token(user.id)
+    token = create_access_token(str(user.id))
     return TokenResponse(access_token=token)
 
 
@@ -43,7 +43,7 @@ async def login_user(data: LoginRequest, session: AsyncSession) -> TokenResponse
             detail="Invalid credentials",
         )
 
-    token = create_access_token(user.id)
+    token = create_access_token(str(user.id))
     return TokenResponse(access_token=token)
 
 

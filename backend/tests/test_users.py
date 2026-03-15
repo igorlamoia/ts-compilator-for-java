@@ -48,7 +48,7 @@ class TestGetUser:
 
         # Act
         response = await async_client.get(
-            "/users/nonexistent-id", headers={"Authorization": f"Bearer {token}"}
+            "/users/999999", headers={"Authorization": f"Bearer {token}"}
         )
 
         # Assert

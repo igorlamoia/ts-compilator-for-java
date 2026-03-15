@@ -10,8 +10,8 @@ class ExerciseListCreate(BaseModel):
 class ExerciseListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    teacher_id: str
+    id: int
+    teacher_id: int
     title: str
     description: str
     created_at: datetime

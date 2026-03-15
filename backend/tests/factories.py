@@ -1,5 +1,4 @@
 """Factories for creating test data."""
-import uuid
 from datetime import datetime, timezone
 from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +16,6 @@ fake = Faker("pt_BR")
 
 async def create_organization(session: AsyncSession, **kwargs) -> Organization:
     org = Organization(
-        id=kwargs.get("id", str(uuid.uuid4())),
         name=kwargs.get("name", fake.company()),
     )
     session.add(org)
@@ -32,7 +30,6 @@ async def create_user(
     **kwargs,
 ) -> User:
     user = User(
-        id=kwargs.get("id", str(uuid.uuid4())),
         organization_id=organization.id,
         role=role,
         email=kwargs.get("email", fake.unique.email()),
@@ -52,7 +49,7 @@ async def create_class(session: AsyncSession, org, teacher, **kwargs) -> Class:
         teacher_id=teacher.id,
         name=kwargs.get("name", fake.word()),
         description=kwargs.get("description", fake.sentence()),
-        access_code=kwargs.get("access_code", str(uuid.uuid4())[:8].upper()),
+        access_code=kwargs.get("access_code", fake.lexify("????????").upper()),
     )
     session.add(cls)
     await session.flush()

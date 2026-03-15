@@ -1,7 +1,6 @@
-import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import String, func
+from sqlalchemy import Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
 class Organization(Base):
     __tablename__ = "organizations"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now())
 

@@ -5,8 +5,8 @@ from app.models.user import UserRole
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    organization_id: str
+    id: int
+    organization_id: int
     role: UserRole
     email: str
     name: str

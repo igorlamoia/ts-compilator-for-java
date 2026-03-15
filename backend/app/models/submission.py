@@ -1,8 +1,7 @@
 import enum
-import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Float, Enum, ForeignKey, Index, func
+from sqlalchemy import Integer, String, Float, Enum, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -26,11 +25,11 @@ class Submission(Base):
         Index("ix_submissions_student_id", "student_id"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    exercise_id: Mapped[str] = mapped_column(String, ForeignKey("exercises.id"), nullable=False)
-    exercise_list_id: Mapped[str] = mapped_column(String, ForeignKey("exercise_lists.id"), nullable=False)
-    class_id: Mapped[str] = mapped_column(String, ForeignKey("classes.id"), nullable=False)
-    student_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercises.id"), nullable=False)
+    exercise_list_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercise_lists.id"), nullable=False)
+    class_id: Mapped[int] = mapped_column(Integer, ForeignKey("classes.id"), nullable=False)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
     code_snapshot: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[SubmissionStatus] = mapped_column(Enum(SubmissionStatus), default=SubmissionStatus.PENDING, nullable=False)
     score: Mapped[float | None] = mapped_column(Float, nullable=True)

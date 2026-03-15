@@ -1,8 +1,7 @@
 import enum
-import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Enum, ForeignKey, func
+from sqlalchemy import Integer, String, Enum, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -21,9 +20,9 @@ class ClassStatus(str, enum.Enum):
 class Class(Base):
     __tablename__ = "classes"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    organization_id: Mapped[str] = mapped_column(String, ForeignKey("organizations.id"), nullable=False)
-    teacher_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    organization_id: Mapped[int] = mapped_column(Integer, ForeignKey("organizations.id"), nullable=False)
+    teacher_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
     access_code: Mapped[str] = mapped_column(String, unique=True, nullable=False)

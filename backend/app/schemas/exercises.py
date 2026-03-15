@@ -12,8 +12,8 @@ class TestCaseCreate(BaseModel):
 class TestCaseResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    exercise_id: str
+    id: int
+    exercise_id: int
     label: str
     input: str
     expected_output: str
@@ -35,8 +35,8 @@ class ExerciseUpdate(BaseModel):
 class ExerciseResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    teacher_id: str
+    id: int
+    teacher_id: int
     title: str
     description: str
     attachments: str

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Float, Integer, ForeignKey, PrimaryKeyConstraint, Index, func
+from sqlalchemy import Float, Integer, ForeignKey, PrimaryKeyConstraint, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -17,8 +17,8 @@ class ClassExerciseList(Base):
         Index("ix_class_exercise_lists_class_id", "class_id"),
     )
 
-    exercise_list_id: Mapped[str] = mapped_column(String, ForeignKey("exercise_lists.id", ondelete="CASCADE"), nullable=False)
-    class_id: Mapped[str] = mapped_column(String, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
+    exercise_list_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercise_lists.id", ondelete="CASCADE"), nullable=False)
+    class_id: Mapped[int] = mapped_column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
     deadline: Mapped[datetime] = mapped_column(nullable=False)
     total_grade: Mapped[float] = mapped_column(Float, nullable=False)
     min_required: Mapped[int] = mapped_column(Integer, nullable=False)

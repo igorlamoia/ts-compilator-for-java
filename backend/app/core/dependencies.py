@@ -14,18 +14,18 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 async def get_current_user_id(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
-) -> str:
+) -> int:
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authenticated")
     try:
         payload = decode_access_token(credentials.credentials)
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        user_id_str: str = payload.get("sub")
+        if user_id_str is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-        return user_id
-    except jwt.PyJWTError:
+        return int(user_id_str)
+    except (jwt.PyJWTError, ValueError):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
-CurrentUserIdDep = Annotated[str, Depends(get_current_user_id)]
+CurrentUserIdDep = Annotated[int, Depends(get_current_user_id)]

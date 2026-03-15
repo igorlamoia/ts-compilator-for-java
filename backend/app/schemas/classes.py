@@ -18,9 +18,9 @@ class ClassUpdate(BaseModel):
 class ClassResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    organization_id: str
-    teacher_id: str
+    id: int
+    organization_id: int
+    teacher_id: int
     name: str
     description: str
     access_code: str

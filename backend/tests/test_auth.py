@@ -59,7 +59,7 @@ class TestRegister:
             "email": "user@example.com",
             "password": "secret123",
             "name": "User",
-            "organization_id": "nonexistent-org-id",
+            "organization_id": 999999,
         }
 
         # Act

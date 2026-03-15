@@ -4,9 +4,9 @@ from app.models.submission import SubmissionStatus
 
 
 class SubmissionCreate(BaseModel):
-    exercise_id: str
-    exercise_list_id: str
-    class_id: str
+    exercise_id: int
+    exercise_list_id: int
+    class_id: int
     code_snapshot: str
     status: SubmissionStatus = SubmissionStatus.SUBMITTED
 
@@ -19,11 +19,11 @@ class SubmissionGrade(BaseModel):
 class SubmissionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    exercise_id: str
-    exercise_list_id: str
-    class_id: str
-    student_id: str
+    id: int
+    exercise_id: int
+    exercise_list_id: int
+    class_id: int
+    student_id: int
     code_snapshot: str
     status: SubmissionStatus
     score: float | None = None

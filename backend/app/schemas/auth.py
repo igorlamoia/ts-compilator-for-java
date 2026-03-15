@@ -10,7 +10,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     name: str
-    organization_id: str
+    organization_id: int
 
 
 class TokenResponse(BaseModel):
