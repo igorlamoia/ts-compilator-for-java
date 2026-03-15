@@ -28,7 +28,7 @@ async def list_submissions_endpoint(user_id: CurrentUserIdDep, session: SessionD
 async def get_submission_endpoint(
     submission_id: str, user_id: CurrentUserIdDep, session: SessionDep
 ):
-    return await get_submission(submission_id, session)
+    return await get_submission(submission_id, user_id, session)
 
 
 @router.patch("/{submission_id}/grade", response_model=SubmissionResponse)

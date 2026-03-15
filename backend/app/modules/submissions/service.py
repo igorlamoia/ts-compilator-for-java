@@ -38,10 +38,15 @@ async def list_submissions(current_user_id: str, session: AsyncSession) -> list[
     return list(result.scalars().all())
 
 
-async def get_submission(submission_id: str, session: AsyncSession) -> Submission:
+async def get_submission(submission_id: str, current_user_id: str, session: AsyncSession) -> Submission:
     sub = await session.get(Submission, submission_id)
     if not sub:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found")
+
+    current_user = await session.get(User, current_user_id)
+    if current_user.role == UserRole.STUDENT and sub.student_id != current_user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
+
     return sub
 
 
@@ -55,7 +60,7 @@ async def grade_submission(
     if current_user.role == UserRole.STUDENT:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can grade")
 
-    sub = await get_submission(submission_id, session)
+    sub = await get_submission(submission_id, current_user_id, session)
     sub.score = data.score
     sub.teacher_feedback = data.teacher_feedback
     sub.status = SubmissionStatus.GRADED

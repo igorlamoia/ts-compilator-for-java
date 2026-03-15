@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.core.dependencies import SessionDep, CurrentUserIdDep
-from app.modules.classes.service import create_class, list_classes, get_class, join_class
+from app.modules.classes.service import create_class, list_classes, get_class, join_class, remove_member
 from app.schemas.classes import ClassCreate, ClassResponse
 
 router = APIRouter(prefix="/classes", tags=["classes"])
@@ -30,3 +30,8 @@ async def get_class_endpoint(class_id: str, user_id: CurrentUserIdDep, session: 
 @router.post("/{class_id}/join")
 async def join_class_endpoint(class_id: str, data: JoinRequest, user_id: CurrentUserIdDep, session: SessionDep):
     return await join_class(class_id, data.access_code, user_id, session)
+
+
+@router.delete("/{class_id}/members/{student_id}", status_code=204)
+async def remove_member_endpoint(class_id: int, student_id: int, user_id: CurrentUserIdDep, session: SessionDep):
+    await remove_member(class_id, student_id, user_id, session)

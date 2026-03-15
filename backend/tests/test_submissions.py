@@ -153,3 +153,73 @@ class TestGradeSubmission:
         )
 
         assert response.status_code == 403
+
+
+class TestGetSubmission:
+    async def test_student_can_get_own_submission(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        teacher = await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_s5@ex.com", password="secret")
+        student = await create_user(async_session, org, role=UserRole.STUDENT, email="student_s5@ex.com", password="secret")
+        cls = await create_class(async_session, org, teacher)
+        exercise = await create_exercise(async_session, teacher)
+        ex_list = await create_exercise_list(async_session, teacher)
+        await create_class_exercise_list(async_session, ex_list, cls)
+
+        student_token = await get_token(async_client, "student_s5@ex.com", "secret")
+
+        sub_resp = await async_client.post(
+            "/submissions",
+            json={"exercise_id": exercise.id, "exercise_list_id": ex_list.id, "class_id": cls.id, "code_snapshot": "x", "status": "SUBMITTED"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+        sub_id = sub_resp.json()["id"]
+
+        response = await async_client.get(
+            f"/submissions/{sub_id}", headers={"Authorization": f"Bearer {student_token}"}
+        )
+
+        assert response.status_code == 200
+        assert response.json()["id"] == sub_id
+
+    async def test_get_submission_not_found(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_s6@ex.com", password="secret")
+        token = await get_token(async_client, "student_s6@ex.com", "secret")
+
+        response = await async_client.get(
+            "/submissions/999999", headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 404
+
+    async def test_student_cannot_see_other_student_submission(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        teacher = await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_s6@ex.com", password="secret")
+        s1 = await create_user(async_session, org, role=UserRole.STUDENT, email="student_s7@ex.com", password="secret")
+        s2 = await create_user(async_session, org, role=UserRole.STUDENT, email="student_s8@ex.com", password="secret")
+        cls = await create_class(async_session, org, teacher)
+        exercise = await create_exercise(async_session, teacher)
+        ex_list = await create_exercise_list(async_session, teacher)
+        await create_class_exercise_list(async_session, ex_list, cls)
+
+        s1_token = await get_token(async_client, "student_s7@ex.com", "secret")
+        s2_token = await get_token(async_client, "student_s8@ex.com", "secret")
+
+        sub_resp = await async_client.post(
+            "/submissions",
+            json={"exercise_id": exercise.id, "exercise_list_id": ex_list.id, "class_id": cls.id, "code_snapshot": "s1 code", "status": "SUBMITTED"},
+            headers={"Authorization": f"Bearer {s1_token}"},
+        )
+        sub_id = sub_resp.json()["id"]
+
+        response = await async_client.get(
+            f"/submissions/{sub_id}", headers={"Authorization": f"Bearer {s2_token}"}
+        )
+
+        assert response.status_code == 403

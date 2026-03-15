@@ -57,6 +57,25 @@ class JoinClassRequest(BaseModel):
     access_code: str
 
 
+async def remove_member(class_id: int, student_id: int, current_user_id: int, session: AsyncSession):
+    current_user = await session.get(User, current_user_id)
+    if current_user.role == UserRole.STUDENT:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can remove members")
+
+    result = await session.execute(
+        select(ClassMember).where(
+            ClassMember.class_id == class_id,
+            ClassMember.student_id == student_id,
+        )
+    )
+    member = result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found")
+
+    await session.delete(member)
+    await session.flush()
+
+
 async def join_class(class_id: str, access_code: str, student_id: str, session: AsyncSession):
     cls = await get_class(class_id, session)
     if cls.access_code != access_code:

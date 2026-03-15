@@ -163,3 +163,30 @@ class TestTestCases:
 
         assert response.status_code == 201
         assert response.json()["input"] == "hello"
+
+
+class TestListExercises:
+    async def test_teacher_can_list_own_exercises(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_e7@ex.com", password="secret")
+        token = await get_token(async_client, "teacher_e7@ex.com", "secret")
+
+        await async_client.post(
+            "/exercises",
+            json={"title": "List Ex 1", "description": "d", "attachments": ""},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        await async_client.post(
+            "/exercises",
+            json={"title": "List Ex 2", "description": "d", "attachments": ""},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        response = await async_client.get("/exercises", headers={"Authorization": f"Bearer {token}"})
+
+        assert response.status_code == 200
+        titles = [e["title"] for e in response.json()]
+        assert "List Ex 1" in titles
+        assert "List Ex 2" in titles
