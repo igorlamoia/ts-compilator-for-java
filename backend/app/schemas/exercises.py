@@ -1,17 +1,15 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import CamelModel
 
 
-class TestCaseCreate(BaseModel):
+class TestCaseCreate(CamelModel):
     label: str = ""
     input: str
     expected_output: str
     order_index: int = 0
 
 
-class TestCaseResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class TestCaseResponse(CamelModel):
     id: int
     exercise_id: int
     label: str
@@ -20,21 +18,19 @@ class TestCaseResponse(BaseModel):
     order_index: int
 
 
-class ExerciseCreate(BaseModel):
+class ExerciseCreate(CamelModel):
     title: str
     description: str
     attachments: str = ""
 
 
-class ExerciseUpdate(BaseModel):
+class ExerciseUpdate(CamelModel):
     title: str | None = None
     description: str | None = None
     attachments: str | None = None
 
 
-class ExerciseResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class ExerciseResponse(CamelModel):
     id: int
     teacher_id: int
     title: str

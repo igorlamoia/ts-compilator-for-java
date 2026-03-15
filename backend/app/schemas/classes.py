@@ -1,23 +1,21 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import CamelModel
 from app.models.class_ import ClassStatus
 
 
-class ClassCreate(BaseModel):
+class ClassCreate(CamelModel):
     name: str
     description: str
     access_code: str
 
 
-class ClassUpdate(BaseModel):
+class ClassUpdate(CamelModel):
     name: str | None = None
     description: str | None = None
     status: ClassStatus | None = None
 
 
-class ClassResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class ClassResponse(CamelModel):
     id: int
     organization_id: int
     teacher_id: int

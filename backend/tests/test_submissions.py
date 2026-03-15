@@ -15,7 +15,7 @@ from app.models.user import UserRole
 
 async def get_token(client: AsyncClient, email: str, password: str) -> str:
     r = await client.post("/auth/login", json={"email": email, "password": password})
-    return r.json()["access_token"]
+    return r.json()["accessToken"]
 
 
 class TestCreateSubmission:
@@ -49,8 +49,8 @@ class TestCreateSubmission:
         # Assert
         assert response.status_code == 201
         data = response.json()
-        assert data["student_id"] == student.id
-        assert data["code_snapshot"] == "public void main() {}"
+        assert data["studentId"] == student.id
+        assert data["codeSnapshot"] == "public void main() {}"
 
     async def test_submit_requires_auth(self, async_client: AsyncClient):
         response = await async_client.post(
@@ -86,7 +86,7 @@ class TestListSubmissions:
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
-        assert all(s["student_id"] == student.id for s in data)
+        assert all(s["studentId"] == student.id for s in data)
 
 
 class TestGradeSubmission:

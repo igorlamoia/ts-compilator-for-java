@@ -29,8 +29,8 @@ class TestRegister:
         # Assert
         assert response.status_code == 201
         data = response.json()
-        assert "access_token" in data
-        assert data["token_type"] == "bearer"
+        assert "accessToken" in data
+        assert data["tokenType"] == "bearer"
 
     async def test_register_fails_for_duplicate_email(
         self, async_client: AsyncClient, async_session: AsyncSession
@@ -84,8 +84,8 @@ class TestLogin:
         # Assert
         assert response.status_code == 200
         data = response.json()
-        assert "access_token" in data
-        assert data["token_type"] == "bearer"
+        assert "accessToken" in data
+        assert data["tokenType"] == "bearer"
 
     async def test_login_fails_for_wrong_password(
         self, async_client: AsyncClient, async_session: AsyncSession
@@ -124,7 +124,7 @@ class TestMe:
         login_response = await async_client.post(
             "/auth/login", json={"email": "me@example.com", "password": "secret"}
         )
-        token = login_response.json()["access_token"]
+        token = login_response.json()["accessToken"]
 
         # Act
         response = await async_client.get(

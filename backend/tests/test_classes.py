@@ -12,7 +12,7 @@ from app.models.user import UserRole
 
 async def get_token(client: AsyncClient, email: str, password: str) -> str:
     r = await client.post("/auth/login", json={"email": email, "password": password})
-    return r.json()["access_token"]
+    return r.json()["accessToken"]
 
 
 class TestCreateClass:
@@ -32,7 +32,7 @@ class TestCreateClass:
         assert response.status_code == 201
         data = response.json()
         assert data["name"] == "Java Basics"
-        assert data["teacher_id"] == teacher.id
+        assert data["teacherId"] == teacher.id
 
     async def test_student_cannot_create_class(
         self, async_client: AsyncClient, async_session: AsyncSession

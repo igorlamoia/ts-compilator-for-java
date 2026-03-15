@@ -12,7 +12,7 @@ from app.models.user import UserRole
 
 async def get_token(client: AsyncClient, email: str, password: str) -> str:
     r = await client.post("/auth/login", json={"email": email, "password": password})
-    return r.json()["access_token"]
+    return r.json()["accessToken"]
 
 
 class TestCreateExercise:
@@ -32,7 +32,7 @@ class TestCreateExercise:
         assert response.status_code == 201
         data = response.json()
         assert data["title"] == "Hello World"
-        assert data["teacher_id"] == teacher.id
+        assert data["teacherId"] == teacher.id
 
     async def test_student_cannot_create_exercise(
         self, async_client: AsyncClient, async_session: AsyncSession
@@ -79,7 +79,7 @@ class TestGetExercise:
         assert response.status_code == 200
         data = response.json()
         assert data["id"] == ex_id
-        assert len(data["test_cases"]) == 1
+        assert len(data["testCases"]) == 1
 
     async def test_get_exercise_not_found(
         self, async_client: AsyncClient, async_session: AsyncSession

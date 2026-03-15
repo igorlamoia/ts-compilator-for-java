@@ -1,15 +1,13 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import CamelModel
 
 
-class ExerciseListCreate(BaseModel):
+class ExerciseListCreate(CamelModel):
     title: str
     description: str
 
 
-class ExerciseListResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class ExerciseListResponse(CamelModel):
     id: int
     teacher_id: int
     title: str

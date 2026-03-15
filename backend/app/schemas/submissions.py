@@ -1,9 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import CamelModel
 from app.models.submission import SubmissionStatus
 
 
-class SubmissionCreate(BaseModel):
+class SubmissionCreate(CamelModel):
     exercise_id: int
     exercise_list_id: int
     class_id: int
@@ -11,14 +11,12 @@ class SubmissionCreate(BaseModel):
     status: SubmissionStatus = SubmissionStatus.SUBMITTED
 
 
-class SubmissionGrade(BaseModel):
+class SubmissionGrade(CamelModel):
     score: float
     teacher_feedback: str | None = None
 
 
-class SubmissionResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class SubmissionResponse(CamelModel):
     id: int
     exercise_id: int
     exercise_list_id: int

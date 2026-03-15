@@ -15,7 +15,7 @@ async def get_token(async_client: AsyncClient, email: str, password: str) -> str
     response = await async_client.post(
         "/auth/login", json={"email": email, "password": password}
     )
-    return response.json()["access_token"]
+    return response.json()["accessToken"]
 
 
 class TestGetUser:
