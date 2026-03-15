@@ -7,6 +7,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.users.router import router as users_router
 from app.modules.classes.router import router as classes_router
 from app.modules.exercises.router import router as exercises_router
+from app.modules.submissions.router import router as submissions_router
 
 
 @asynccontextmanager
@@ -34,6 +35,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(classes_router)
 app.include_router(exercises_router)
+app.include_router(submissions_router)
 
 
 @app.get("/health")
