@@ -1,0 +1,41 @@
+import enum
+import uuid
+from datetime import datetime
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Enum, ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.organization import Organization
+    from app.models.class_ import Class
+    from app.models.class_member import ClassMember
+    from app.models.exercise import Exercise
+    from app.models.exercise_list import ExerciseList
+    from app.models.submission import Submission
+
+
+class UserRole(str, enum.Enum):
+    ADMIN = "ADMIN"
+    TEACHER = "TEACHER"
+    STUDENT = "STUDENT"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id: Mapped[str] = mapped_column(String, ForeignKey("organizations.id"), nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.STUDENT, nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    bio: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    organization: Mapped["Organization"] = relationship("Organization", back_populates="users")
+    classes_taught: Mapped[list["Class"]] = relationship("Class", back_populates="teacher", foreign_keys="Class.teacher_id")
+    memberships: Mapped[list["ClassMember"]] = relationship("ClassMember", back_populates="student")
+    exercises: Mapped[list["Exercise"]] = relationship("Exercise", back_populates="teacher")
+    exercise_lists: Mapped[list["ExerciseList"]] = relationship("ExerciseList", back_populates="teacher")
+    submissions: Mapped[list["Submission"]] = relationship("Submission", back_populates="student")
