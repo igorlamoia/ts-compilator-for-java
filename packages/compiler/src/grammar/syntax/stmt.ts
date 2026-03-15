@@ -36,9 +36,10 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.switch]: switchStmt,
     [TOKENS.SYMBOLS.left_brace]: blockStmt,
     ...(typingMode === "typed"
-      ? {
+        ? {
           [RESERVEDS.int]: declarationStmt,
           [RESERVEDS.float]: declarationStmt,
+          [RESERVEDS.bool]: declarationStmt,
           [RESERVEDS.string]: declarationStmt,
         }
       : {

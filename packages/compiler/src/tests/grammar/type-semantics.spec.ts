@@ -2,6 +2,41 @@ import { describe, expect, it } from "vitest";
 import { compileProgram, executeProgram } from "./helpers";
 
 describe("Type semantics warnings", () => {
+  it("accepts bool declarations and function signatures", () => {
+    const result = compileProgram(`
+      bool isReady(bool value) {
+        return value;
+      }
+
+      int main() {
+        bool flag = true;
+        return 0;
+      }
+    `);
+
+    expect(result.error).toBeNull();
+    expect(result.warnings).toHaveLength(0);
+    expect(result.instructions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          op: "DECLARE",
+          result: "value",
+          operand1: "bool",
+        }),
+        expect.objectContaining({
+          op: "DECLARE",
+          result: "flag",
+          operand1: "bool",
+        }),
+        expect.objectContaining({
+          op: "=",
+          result: "flag",
+          operand1: "true",
+        }),
+      ]),
+    );
+  });
+
   it("reports a warning when assigning a float literal to an int", () => {
     const result = compileProgram(`
       int main() {

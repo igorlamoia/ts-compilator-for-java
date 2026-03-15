@@ -24,6 +24,8 @@ function isStartToken(type: number): boolean {
     TOKENS.LITERALS.float_literal,
     TOKENS.LITERALS.hex_literal,
     TOKENS.LITERALS.octal_literal,
+    TOKENS.RESERVEDS.true,
+    TOKENS.RESERVEDS.false,
     TOKENS.SYMBOLS.left_paren,
     TOKENS.ARITHMETICS.plus,
     TOKENS.ARITHMETICS.minus,

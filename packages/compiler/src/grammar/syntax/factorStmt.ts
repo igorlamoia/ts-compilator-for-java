@@ -11,7 +11,7 @@ import { functionCallExpr } from "./functionCallExpr";
  */
 export function factorStmt(iterator: TokenIterator): ExprResult {
   const token = iterator.peek();
-  const { LITERALS, SYMBOLS } = TOKENS;
+  const { LITERALS, RESERVEDS, SYMBOLS } = TOKENS;
 
   // Identificadores: podem ser variáveis ou chamadas de função
   if (token.type === LITERALS.identifier) {
@@ -49,6 +49,15 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
 
   // Outros literais (números, strings)
   if (Object.values(LITERALS).includes(token.type)) {
+    const literal = iterator.consume(token.type);
+    return iterator.createExprResult(
+      literal.lexeme,
+      iterator.inferLiteralType(literal),
+      literal,
+    );
+  }
+
+  if (token.type === RESERVEDS.true || token.type === RESERVEDS.false) {
     const literal = iterator.consume(token.type);
     return iterator.createExprResult(
       literal.lexeme,
