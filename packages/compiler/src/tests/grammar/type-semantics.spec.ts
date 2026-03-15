@@ -123,6 +123,33 @@ describe("Type semantics warnings", () => {
 });
 
 describe("Type semantics runtime", () => {
+  it("prints boolean declaration values", async () => {
+    const result = await executeProgram(`
+      int main() {
+        bool flag = true;
+        print(flag);
+        return 0;
+      }
+    `);
+
+    expect(result.output).toBe("true");
+  });
+
+  it("preserves boolean returns through function calls", async () => {
+    const result = await executeProgram(`
+      bool negate(bool value) {
+        return !value;
+      }
+
+      int main() {
+        print(negate(false));
+        return 0;
+      }
+    `);
+
+    expect(result.output).toBe("true");
+  });
+
   it("truncates toward zero when storing float into int", async () => {
     const result = await executeProgram(`
       int main() {

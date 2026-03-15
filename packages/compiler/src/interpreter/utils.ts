@@ -54,12 +54,26 @@ export function truncateTowardZero(value: number): number {
   return value < 0 ? Math.ceil(value) : Math.floor(value);
 }
 
+function normalizeBooleanLike(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return Boolean(value);
+}
+
 export function coerceValueForType(type: string, value: unknown): unknown {
   if (type === "int" && typeof value === "number") {
     return truncateTowardZero(value);
   }
   if (type === "float" && typeof value === "number") {
     return value;
+  }
+  if (type === "bool") {
+    return normalizeBooleanLike(value);
   }
   return value;
 }
@@ -99,6 +113,8 @@ export function parsePiece(piece: string): string | number | boolean | null {
   if (piece === "None") return null;
   if (piece === "True") return true;
   if (piece === "False") return false;
+  if (piece === "true") return true;
+  if (piece === "false") return false;
 
   const asNumber = Number(piece);
   if (!Number.isNaN(asNumber) && piece !== "") return asNumber;
