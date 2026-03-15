@@ -6,6 +6,7 @@ from app.db.session import init_db
 from app.modules.auth.router import router as auth_router
 from app.modules.users.router import router as users_router
 from app.modules.classes.router import router as classes_router
+from app.modules.exercises.router import router as exercises_router
 
 
 @asynccontextmanager
@@ -32,6 +33,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(classes_router)
+app.include_router(exercises_router)
 
 
 @app.get("/health")
