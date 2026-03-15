@@ -3,3 +3,4 @@ packages/ide/prism/test.db
 test.db
 dev.db
 .vscode/*.worktrees/
+.worktrees/
