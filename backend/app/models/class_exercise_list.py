@@ -27,4 +27,8 @@ class ClassExerciseList(Base):
 
     exercise_list: Mapped["ExerciseList"] = relationship("ExerciseList", back_populates="classes")
     class_: Mapped["Class"] = relationship("Class", back_populates="exercise_lists")
-    submissions: Mapped[list["Submission"]] = relationship("Submission", back_populates="publication")
+    submissions: Mapped[list["Submission"]] = relationship(
+        "Submission",
+        back_populates="publication",
+        primaryjoin="and_(ClassExerciseList.exercise_list_id == foreign(Submission.exercise_list_id), ClassExerciseList.class_id == foreign(Submission.class_id))",
+    )

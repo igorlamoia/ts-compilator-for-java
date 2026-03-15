@@ -8,12 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import decode_access_token
 from app.db.session import get_session
 
-bearer_scheme = HTTPBearer()
+# auto_error=False so we can distinguish missing credentials (403) from invalid token (401)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user_id(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
 ) -> str:
+    if credentials is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authenticated")
     try:
         payload = decode_access_token(credentials.credentials)
         user_id: str = payload.get("sub")
