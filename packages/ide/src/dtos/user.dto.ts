@@ -1,19 +1,19 @@
 export type UserDTO = {
-  id: string
+  id: number
   name: string
   email: string
   role: string
-  organizationId: string
+  organizationId: number
   avatarUrl: string | null
   bio: string | null
 }
 
 export function toUserDTO(user: {
-  id: string
+  id: number
   name: string
   email: string
   role: string
-  organizationId: string
+  organizationId: number
   avatarUrl?: string | null
   bio?: string | null
 }): UserDTO {

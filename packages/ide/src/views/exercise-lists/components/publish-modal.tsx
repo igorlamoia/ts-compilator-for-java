@@ -40,14 +40,12 @@ export function PublishModal({
   open,
   onOpenChange,
   listId,
-  userId,
   classes,
   onPublished,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   listId: string;
-  userId: string;
   classes: ClassOption[];
   onPublished: () => void;
 }) {
@@ -67,7 +65,6 @@ export function PublishModal({
           minRequired: Number(values.minRequired),
           deadline: new Date(values.deadline).toISOString(),
         },
-        { headers: { "x-user-id": userId } },
       );
       showToast({ type: "success", message: "Lista publicada com sucesso!" });
       form.reset();

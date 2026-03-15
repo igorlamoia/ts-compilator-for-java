@@ -17,14 +17,12 @@ export function AddExerciseModal({
   open,
   onOpenChange,
   listId,
-  userId,
   existingIds,
   onAdded,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   listId: string;
-  userId: string;
   existingIds: Set<string>;
   onAdded: () => void;
 }) {
@@ -37,11 +35,11 @@ export function AddExerciseModal({
     if (!open) return;
     setLoading(true);
     api
-      .get<ExerciseDTO[]>("/exercises", { headers: { "x-user-id": userId } })
+      .get<ExerciseDTO[]>("/exercises")
       .then(({ data }) => setExercises(data))
       .catch(() => showToast({ type: "error", message: "Erro ao carregar exercícios." }))
       .finally(() => setLoading(false));
-  }, [open, userId, showToast]);
+  }, [open, showToast]);
 
   const handleAdd = async (exerciseId: string) => {
     setAdding(exerciseId);
@@ -49,7 +47,6 @@ export function AddExerciseModal({
       await api.post(
         `/exercise-lists/${listId}/exercises`,
         { exerciseId, gradeWeight: 1 },
-        { headers: { "x-user-id": userId } },
       );
       showToast({ type: "success", message: "Exercício adicionado!" });
       onAdded();

@@ -1,5 +1,5 @@
 export type TestCaseDTO = {
-  id: string
+  id: number
   label: string
   input: string
   expectedOutput: string
@@ -7,8 +7,8 @@ export type TestCaseDTO = {
 }
 
 export type ExerciseDTO = {
-  id: string
-  teacherId: string
+  id: number
+  teacherId: number
   title: string
   description: string
   createdAt: Date
@@ -16,13 +16,13 @@ export type ExerciseDTO = {
 }
 
 export function toExerciseDTO(exercise: {
-  id: string
-  teacherId: string
+  id: number
+  teacherId: number
   title: string
   description: string
   attachments?: string
   createdAt: Date
-  testCases?: { id: string; label: string; input: string; expectedOutput: string; orderIndex: number }[]
+  testCases?: { id: number; label: string; input: string; expectedOutput: string; orderIndex: number }[]
 }): ExerciseDTO {
   return {
     id: exercise.id,

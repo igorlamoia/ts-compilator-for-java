@@ -8,31 +8,30 @@ import {
   useState,
 } from "react";
 import {
-  clearAuthCookies,
-  getAuthCookies,
-  setAuthCookies,
+  clearAuthToken,
+  getAuthToken,
+  setAuthToken,
 } from "@/lib/auth-cookies";
 import { api } from "@/lib/api";
 
 type UserRole = "ADMIN" | "TEACHER" | "STUDENT";
 
 export type AuthUser = {
-  id: string;
+  id: number;
   name: string;
   email: string;
   role: UserRole;
-  organizationId: string;
+  organizationId: number;
 };
 
 type AuthPayload = {
-  userId: string;
-  organizationId: string;
+  token: string;
   user?: AuthUser;
 };
 
 type AuthContextValue = {
-  userId: string | null;
-  organizationId: string | null;
+  userId: number | null;
+  organizationId: number | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
@@ -44,44 +43,34 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [organizationId, setOrganizationId] = useState<number | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
 
-  const fetchProfile = useCallback(
-    async (activeUserId: string, activeOrganizationId: string | null) => {
-      setIsProfileLoading(true);
+  const fetchProfile = useCallback(async () => {
+    setIsProfileLoading(true);
 
-      try {
-        const { data } = await api.get<AuthUser>("/auth/me", {
-          headers: { "x-user-id": activeUserId },
-        });
-        setUser(data);
-      } catch {
-        // Keep auth active with a safe profile fallback.
-        setUser({
-          id: activeUserId,
-          name: "",
-          email: "",
-          role: "STUDENT",
-          organizationId: activeOrganizationId || "",
-        });
-      } finally {
-        setIsProfileLoading(false);
-      }
-    },
-    [],
-  );
+    try {
+      const { data } = await api.get<AuthUser>("/auth/me");
+      setUser(data);
+      setUserId(data.id);
+      setOrganizationId(data.organizationId);
+    } catch {
+      setUser(null);
+      setUserId(null);
+      setOrganizationId(null);
+    } finally {
+      setIsProfileLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const authCookies = getAuthCookies();
-    setUserId(authCookies.userId);
-    setOrganizationId(authCookies.organizationId);
+    const token = getAuthToken();
 
-    if (authCookies.userId) {
-      void fetchProfile(authCookies.userId, authCookies.organizationId);
+    if (token) {
+      void fetchProfile();
     } else {
       setUser(null);
       setIsProfileLoading(false);
@@ -91,24 +80,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchProfile]);
 
   const login = useCallback(
-    ({ userId, organizationId, user }: AuthPayload) => {
-      setAuthCookies(userId, organizationId);
-      setUserId(userId);
-      setOrganizationId(organizationId);
+    ({ token, user }: AuthPayload) => {
+      setAuthToken(token);
 
       if (user) {
         setUser(user);
+        setUserId(user.id);
+        setOrganizationId(user.organizationId);
         setIsProfileLoading(false);
         return;
       }
 
-      void fetchProfile(userId, organizationId);
+      void fetchProfile();
     },
     [fetchProfile],
   );
 
   const logout = useCallback(() => {
-    clearAuthCookies();
+    clearAuthToken();
     setUserId(null);
     setOrganizationId(null);
     setUser(null);

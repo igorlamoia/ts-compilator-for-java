@@ -1,15 +1,17 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from app.core.dependencies import SessionDep, CurrentUserIdDep
-from app.modules.classes.service import create_class, list_classes, get_class, join_class, remove_member
-from app.schemas.classes import ClassCreate, ClassResponse
+from app.modules.classes.service import (
+    create_class, list_classes, get_class, remove_member,
+    join_class_by_code, get_class_members, get_class_exercise_lists,
+)
+from app.schemas.classes import (
+    ClassCreate, ClassResponse, JoinClassRequest, JoinClassResponse,
+    ClassExerciseListWithProgress,
+)
+from app.schemas.users import UserResponse
 
 router = APIRouter(prefix="/classes", tags=["classes"])
-
-
-class JoinRequest(BaseModel):
-    access_code: str
 
 
 @router.post("", response_model=ClassResponse, status_code=201)
@@ -22,14 +24,24 @@ async def list_classes_endpoint(user_id: CurrentUserIdDep, session: SessionDep):
     return await list_classes(user_id, session)
 
 
+@router.post("/join", response_model=JoinClassResponse)
+async def join_class_by_code_endpoint(data: JoinClassRequest, user_id: CurrentUserIdDep, session: SessionDep):
+    return await join_class_by_code(data.access_code, user_id, session)
+
+
 @router.get("/{class_id}", response_model=ClassResponse)
-async def get_class_endpoint(class_id: str, user_id: CurrentUserIdDep, session: SessionDep):
+async def get_class_endpoint(class_id: int, user_id: CurrentUserIdDep, session: SessionDep):
     return await get_class(class_id, session)
 
 
-@router.post("/{class_id}/join")
-async def join_class_endpoint(class_id: str, data: JoinRequest, user_id: CurrentUserIdDep, session: SessionDep):
-    return await join_class(class_id, data.access_code, user_id, session)
+@router.get("/{class_id}/members", response_model=list[UserResponse])
+async def get_class_members_endpoint(class_id: int, user_id: CurrentUserIdDep, session: SessionDep):
+    return await get_class_members(class_id, user_id, session)
+
+
+@router.get("/{class_id}/exercise-lists", response_model=list[ClassExerciseListWithProgress])
+async def get_class_exercise_lists_endpoint(class_id: int, user_id: CurrentUserIdDep, session: SessionDep):
+    return await get_class_exercise_lists(class_id, user_id, session)
 
 
 @router.delete("/{class_id}/members/{student_id}", status_code=204)

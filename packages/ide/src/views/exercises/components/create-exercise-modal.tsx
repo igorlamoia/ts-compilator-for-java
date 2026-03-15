@@ -47,12 +47,10 @@ const defaultTestCases = [
 export function CreateExerciseModal({
   open,
   onOpenChange,
-  userId,
   onCreated,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  userId: string;
   onCreated: () => void;
 }) {
   const { showToast } = useToast();
@@ -78,7 +76,6 @@ export function CreateExerciseModal({
             (tc) => tc.input.trim() || tc.expectedOutput.trim()
           ),
         },
-        { headers: { "x-user-id": userId } }
       );
       showToast({ type: "success", message: "Exercício criado!" });
       form.reset();

@@ -32,12 +32,10 @@ export function deadlineInfo(deadline: string) {
 
 export function TeacherDetailView({
   list,
-  userId,
   classes,
   onRefresh,
 }: {
   list: ExerciseListDTO;
-  userId: string;
   classes: ClassOption[];
   onRefresh: () => void;
 }) {
@@ -58,9 +56,7 @@ export function TeacherDetailView({
       const results = await Promise.all(
         list.items.map((item) =>
           api
-            .get<SubmissionRecord[]>(`/submissions?exerciseId=${item.exerciseId}`, {
-              headers: { "x-user-id": userId },
-            })
+            .get<SubmissionRecord[]>(`/submissions?exerciseId=${item.exerciseId}`)
             .then(({ data }) => data),
         ),
       );
@@ -70,7 +66,7 @@ export function TeacherDetailView({
     } finally {
       setLoadingSubmissions(false);
     }
-  }, [list.items, userId, showToast]);
+  }, [list.items, showToast]);
 
   const handleToggleSubmissions = () => {
     if (!showSubmissions && submissions.length === 0) {
@@ -81,9 +77,7 @@ export function TeacherDetailView({
 
   const handleRemoveExercise = async (exerciseId: string) => {
     try {
-      await api.delete(`/exercise-lists/${list.id}/exercises?exerciseId=${exerciseId}`, {
-        headers: { "x-user-id": userId },
-      });
+      await api.delete(`/exercise-lists/${list.id}/exercises?exerciseId=${exerciseId}`);
       showToast({ type: "success", message: "Exercício removido." });
       onRefresh();
     } catch {
@@ -173,7 +167,6 @@ export function TeacherDetailView({
         open={showPublish}
         onOpenChange={setShowPublish}
         listId={list.id}
-        userId={userId}
         classes={classes}
         onPublished={onRefresh}
       />
@@ -181,7 +174,6 @@ export function TeacherDetailView({
         open={showAddExercise}
         onOpenChange={setShowAddExercise}
         listId={list.id}
-        userId={userId}
         existingIds={existingIds}
         onAdded={onRefresh}
       />

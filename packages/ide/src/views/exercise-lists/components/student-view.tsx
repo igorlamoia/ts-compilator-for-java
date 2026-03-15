@@ -8,20 +8,20 @@ import { Subtitle } from "@/components/text/subtitle";
 import { ChevronRight, ListChecks } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "./shared";
 
-type ClassOption = { id: string; name: string };
+type ClassOption = { id: number; name: string };
 
 type ClassExerciseListEntry = {
-  exerciseListId: string;
-  classId: string;
+  exerciseListId: number;
+  classId: number;
   totalGrade: number;
   minRequired: number;
   exerciseList: {
-    id: string;
+    id: number;
     title: string;
     description: string;
     items: {
-      exerciseId: string;
-      exercise: { id: string; title: string };
+      exerciseId: number;
+      exercise: { id: number; title: string };
       submitted: boolean;
     }[];
   };
@@ -47,7 +47,7 @@ export function StudentListCard({
   classId,
 }: {
   entry: ClassExerciseListEntry;
-  classId: string;
+  classId: number | "";
 }) {
   const status = studentListStatus(entry);
   const progress = listProgress(entry.completedCount, entry.totalCount);
@@ -98,44 +98,34 @@ export function StudentListCard({
   );
 }
 
-export function StudentView({
-  userId,
-  organizationId,
-}: {
-  userId: string;
-  organizationId: string;
-}) {
+export function StudentView() {
   const { showToast } = useToast();
   const [classes, setClasses] = useState<ClassOption[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedClassId, setSelectedClassId] = useState<number | "">("");
   const [entries, setEntries] = useState<ClassExerciseListEntry[]>([]);
   const [loadingClasses, setLoadingClasses] = useState(true);
   const [loadingLists, setLoadingLists] = useState(false);
 
   useEffect(() => {
     api
-      .get<ClassOption[]>("/classes", {
-        headers: { "x-user-id": userId, "x-org-id": organizationId },
-      })
+      .get<ClassOption[]>("/classes")
       .then(({ data }) => {
         setClasses(data);
         if (data[0]) setSelectedClassId(data[0].id);
       })
       .catch(() => showToast({ type: "error", message: "Erro ao carregar turmas." }))
       .finally(() => setLoadingClasses(false));
-  }, [userId, organizationId, showToast]);
+  }, [showToast]);
 
   useEffect(() => {
     if (!selectedClassId) return;
     setLoadingLists(true);
     api
-      .get<ClassExerciseListEntry[]>(`/classes/${selectedClassId}/exercise-lists`, {
-        headers: { "x-user-id": userId },
-      })
+      .get<ClassExerciseListEntry[]>(`/classes/${selectedClassId}/exercise-lists`)
       .then(({ data }) => setEntries(data))
       .catch(() => showToast({ type: "error", message: "Erro ao carregar listas." }))
       .finally(() => setLoadingLists(false));
-  }, [selectedClassId, userId, showToast]);
+  }, [selectedClassId, showToast]);
 
   return (
     <>
@@ -153,7 +143,7 @@ export function StudentView({
         {classes.length > 1 && (
           <select
             value={selectedClassId}
-            onChange={(e) => setSelectedClassId(e.target.value)}
+            onChange={(e) => setSelectedClassId(Number(e.target.value))}
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-[#0dccf2]/50 cursor-pointer"
           >
             {classes.map((c) => (

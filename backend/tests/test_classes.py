@@ -109,7 +109,7 @@ class TestJoinClass:
         class_id = create_resp.json()["id"]
 
         response = await async_client.post(
-            f"/classes/{class_id}/join",
+            "/classes/join",
             json={"access_code": "JOIN1"},
             headers={"Authorization": f"Bearer {student_token}"},
         )
@@ -133,12 +133,12 @@ class TestJoinClass:
         class_id = create_resp.json()["id"]
 
         response = await async_client.post(
-            f"/classes/{class_id}/join",
+            "/classes/join",
             json={"access_code": "WRONG"},
             headers={"Authorization": f"Bearer {student_token}"},
         )
 
-        assert response.status_code == 400
+        assert response.status_code == 404
 
 
 class TestGetClass:
@@ -196,7 +196,7 @@ class TestRemoveMember:
         class_id = create_resp.json()["id"]
 
         join_resp = await async_client.post(
-            f"/classes/{class_id}/join",
+            "/classes/join",
             json={"access_code": "REM001"},
             headers={"Authorization": f"Bearer {student_token}"},
         )
@@ -234,12 +234,12 @@ class TestRemoveMember:
         class_id = create_resp.json()["id"]
 
         await async_client.post(
-            f"/classes/{class_id}/join",
+            "/classes/join",
             json={"access_code": "REM002"},
             headers={"Authorization": f"Bearer {s2_token}"},
         )
         await async_client.post(
-            f"/classes/{class_id}/join",
+            "/classes/join",
             json={"access_code": "REM002"},
             headers={"Authorization": f"Bearer {s3_token}"},
         )
@@ -253,3 +253,261 @@ class TestRemoveMember:
         )
 
         assert response.status_code == 403
+
+
+class TestJoinClassByCode:
+    async def test_join_class_success(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_jc1@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_jc1@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_jc1@ex.com", "secret")
+        student_token = await get_token(async_client, "student_jc1@ex.com", "secret")
+
+        create_resp = await async_client.post(
+            "/classes",
+            json={"name": "Join By Code", "description": "d", "access_code": "JBC001"},
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+        assert create_resp.status_code == 201
+        class_id = create_resp.json()["id"]
+
+        response = await async_client.post(
+            "/classes/join",
+            json={"accessCode": "JBC001"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["classId"] == class_id
+
+    async def test_join_class_not_found(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_jc2@ex.com", password="secret")
+        token = await get_token(async_client, "student_jc2@ex.com", "secret")
+
+        response = await async_client.post(
+            "/classes/join",
+            json={"accessCode": "NONEXISTENT"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert response.status_code == 404
+
+    async def test_join_class_as_teacher_forbidden(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_jc3@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_jc4@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_jc3@ex.com", "secret")
+        other_teacher_token = await get_token(async_client, "teacher_jc4@ex.com", "secret")
+
+        create_resp = await async_client.post(
+            "/classes",
+            json={"name": "Teacher Join Test", "description": "d", "access_code": "JBC003"},
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+        assert create_resp.status_code == 201
+
+        response = await async_client.post(
+            "/classes/join",
+            json={"accessCode": "JBC003"},
+            headers={"Authorization": f"Bearer {other_teacher_token}"},
+        )
+
+        assert response.status_code == 403
+
+    async def test_join_class_already_member(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_jc2@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_jc3@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_jc2@ex.com", "secret")
+        student_token = await get_token(async_client, "student_jc3@ex.com", "secret")
+
+        await async_client.post(
+            "/classes",
+            json={"name": "Already Member", "description": "d", "access_code": "JBC002"},
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+
+        await async_client.post(
+            "/classes/join",
+            json={"accessCode": "JBC002"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+        response = await async_client.post(
+            "/classes/join",
+            json={"accessCode": "JBC002"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        assert response.status_code == 409
+
+
+class TestGetClassMembers:
+    async def test_get_class_members_as_teacher(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_m1@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_m1@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_m1@ex.com", "secret")
+        student_token = await get_token(async_client, "student_m1@ex.com", "secret")
+
+        create_resp = await async_client.post(
+            "/classes",
+            json={"name": "Members Test", "description": "d", "access_code": "MEM001"},
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+        class_id = create_resp.json()["id"]
+
+        await async_client.post(
+            "/classes/join",
+            json={"accessCode": "MEM001"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        response = await async_client.get(
+            f"/classes/{class_id}/members",
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) >= 1
+
+    async def test_get_class_members_forbidden_for_non_teacher(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_m2@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_m2@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_m3@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_m2@ex.com", "secret")
+        student_token = await get_token(async_client, "student_m2@ex.com", "secret")
+        other_token = await get_token(async_client, "student_m3@ex.com", "secret")
+
+        create_resp = await async_client.post(
+            "/classes",
+            json={"name": "Forbidden Members", "description": "d", "access_code": "MEM002"},
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+        class_id = create_resp.json()["id"]
+
+        await async_client.post(
+            "/classes/join",
+            json={"accessCode": "MEM002"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        response = await async_client.get(
+            f"/classes/{class_id}/members",
+            headers={"Authorization": f"Bearer {other_token}"},
+        )
+
+        assert response.status_code == 403
+
+
+class TestGetClassExerciseLists:
+    async def test_get_class_exercise_lists_empty(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        org = await create_organization(async_session)
+        await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_el1@ex.com", password="secret")
+        await create_user(async_session, org, role=UserRole.STUDENT, email="student_el1@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_el1@ex.com", "secret")
+        student_token = await get_token(async_client, "student_el1@ex.com", "secret")
+
+        create_resp = await async_client.post(
+            "/classes",
+            json={"name": "EL Empty Test", "description": "d", "access_code": "EL001"},
+            headers={"Authorization": f"Bearer {teacher_token}"},
+        )
+        class_id = create_resp.json()["id"]
+
+        await async_client.post(
+            "/classes/join",
+            json={"accessCode": "EL001"},
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        response = await async_client.get(
+            f"/classes/{class_id}/exercise-lists",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        assert response.status_code == 200
+        assert response.json() == []
+
+    async def test_get_class_exercise_lists_with_progress(
+        self, async_client: AsyncClient, async_session: AsyncSession
+    ):
+        from tests.factories import (
+            create_class, create_exercise, create_exercise_list,
+            create_class_exercise_list
+        )
+        from app.models.class_member import ClassMember
+        from app.models.exercise_list_item import ExerciseListItem
+        from app.models.submission import Submission
+
+        org = await create_organization(async_session)
+        teacher = await create_user(async_session, org, role=UserRole.TEACHER, email="teacher_el2@ex.com", password="secret")
+        student = await create_user(async_session, org, role=UserRole.STUDENT, email="student_el2@ex.com", password="secret")
+        teacher_token = await get_token(async_client, "teacher_el2@ex.com", "secret")
+        student_token = await get_token(async_client, "student_el2@ex.com", "secret")
+
+        cls = await create_class(async_session, org, teacher, access_code="EL002")
+
+        # Add student as member
+        member = ClassMember(class_id=cls.id, student_id=student.id)
+        async_session.add(member)
+        await async_session.flush()
+
+        exercise = await create_exercise(async_session, teacher)
+        ex_list = await create_exercise_list(async_session, teacher)
+
+        item = ExerciseListItem(
+            exercise_list_id=ex_list.id,
+            exercise_id=exercise.id,
+            grade_weight=1.0,
+            order_index=0,
+        )
+        async_session.add(item)
+        await async_session.flush()
+
+        cel = await create_class_exercise_list(async_session, ex_list, cls)
+
+        submission = Submission(
+            exercise_id=exercise.id,
+            exercise_list_id=ex_list.id,
+            class_id=cls.id,
+            student_id=student.id,
+            code_snapshot="public void main() {}",
+        )
+        async_session.add(submission)
+        await async_session.flush()
+
+        response = await async_client.get(
+            f"/classes/{cls.id}/exercise-lists",
+            headers={"Authorization": f"Bearer {student_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        cel_data = data[0]
+        assert cel_data["exerciseListId"] == ex_list.id
+        assert cel_data["classId"] == cls.id
+        assert cel_data["totalCount"] == 1
+        assert cel_data["completedCount"] == 1
+        items = cel_data["exerciseList"]["items"]
+        assert len(items) == 1
+        assert items[0]["submitted"] is True

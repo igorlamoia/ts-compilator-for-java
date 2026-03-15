@@ -6,7 +6,7 @@ import { TeacherView } from "@/views/exercise-lists/components/teacher-view";
 import { StudentView } from "@/views/exercise-lists/components/student-view";
 
 export default function ExerciseListsPage() {
-  const { userId, user, organizationId } = useAuth();
+  const { userId, user } = useAuth();
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
   if (!userId) return null;
@@ -20,12 +20,9 @@ export default function ExerciseListsPage() {
         <div className="flex-1 flex flex-col overflow-y-auto w-full">
           <main className="max-w-7xl mx-auto px-6 py-12 w-full">
             {isTeacher ? (
-              <TeacherView userId={userId} classes={[]} />
+              <TeacherView classes={[]} />
             ) : (
-              <StudentView
-                userId={userId}
-                organizationId={organizationId ?? ""}
-              />
+              <StudentView />
             )}
           </main>
         </div>

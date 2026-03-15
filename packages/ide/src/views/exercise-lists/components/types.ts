@@ -1,7 +1,7 @@
 export type SubmissionRecord = {
-  id: string;
-  studentId: string;
-  exerciseId: string;
+  id: number;
+  studentId: number;
+  exerciseId: number;
   status: string;
   score: number | null;
   submittedAt: string;
@@ -9,15 +9,15 @@ export type SubmissionRecord = {
   exercise?: { title: string };
 };
 
-export type ClassOption = { id: string; name: string };
+export type ClassOption = { id: number; name: string };
 
 export type ClassExerciseListEntry = {
-  exerciseListId: string;
-  classId: string;
+  exerciseListId: number;
+  classId: number;
   deadline: string;
   completedCount: number;
   totalCount: number;
   exerciseList: {
-    items: { exerciseId: string; submitted: boolean; exercise: { id: string; title: string; status: string } }[];
+    items: { exerciseId: number; submitted: boolean; exercise: { id: number; title: string; status: string } }[];
   };
 };

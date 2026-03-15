@@ -1,0 +1,32 @@
+services:
+  ts-compiler-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ts-compilator-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/tscompilator
+      - SECRET_KEY=substitua-por-uma-chave-real-gerada-com-openssl
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - CORS_ORIGINS=["http://localhost:3000"]
+      - RUN_CREATE_ALL=true
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ts-compiler-frontend:
+    build:
+      context: .
+      dockerfile: packages/ide/Dockerfile
+    container_name: ts-compilator-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./prisma/dev.db
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - ts-compiler-backend

@@ -64,7 +64,6 @@ interface CreateExerciseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   classId: string | null;
-  userId: string;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -73,7 +72,6 @@ export function CreateExerciseModal({
   open,
   onOpenChange,
   classId,
-  userId,
   onSuccess,
   onError,
 }: CreateExerciseModalProps) {
@@ -112,11 +110,6 @@ export function CreateExerciseModal({
           testCases: values.testCases.filter(
             (tc) => tc.input.trim() || tc.expectedOutput.trim(),
           ),
-        },
-        {
-          headers: {
-            "x-user-id": userId,
-          },
         },
       );
 

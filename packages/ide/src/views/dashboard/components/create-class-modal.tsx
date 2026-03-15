@@ -36,8 +36,6 @@ type CreateClassFormValues = z.infer<typeof createClassSchema>;
 interface CreateClassModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userId: string;
-  orgId: string;
   onSuccess?: (message: string, accessCode: string) => void;
   onError?: (message: string) => void;
 }
@@ -45,8 +43,6 @@ interface CreateClassModalProps {
 export function CreateClassModal({
   open,
   onOpenChange,
-  userId,
-  orgId,
   onSuccess,
   onError,
 }: CreateClassModalProps) {
@@ -76,12 +72,6 @@ export function CreateClassModal({
           name: values.className,
           description: values.classDesc,
           accessCode,
-        },
-        {
-          headers: {
-            "x-user-id": userId,
-            "x-org-id": orgId || "",
-          },
         },
       );
 

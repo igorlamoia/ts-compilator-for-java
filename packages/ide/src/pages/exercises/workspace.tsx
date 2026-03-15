@@ -10,6 +10,7 @@ import { TestCaseResults } from "@/components/test-case-results";
 import type { TTestCaseResult } from "@/pages/api/submissions/validate";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { localApi } from "@/lib/local-api";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
 import { useRouter } from "next/router";
@@ -153,7 +154,7 @@ function WorkspaceContent({
     setSubmitting(true);
     try {
       const lexerConfig = buildLexerConfig();
-      const { data } = await api.post(
+      const { data } = await localApi.post(
         "/submissions/validate",
         {
           exerciseId: exercise.id,
@@ -166,6 +167,8 @@ function WorkspaceContent({
           grammar: lexerConfig.grammar,
           locale,
         },
+        // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
+        // It still uses x-user-id for auth since it doesn't go through the JWT interceptor.
         { headers: { "x-user-id": userId } },
       );
 
@@ -413,10 +416,9 @@ export default function ExerciseWorkspace({
     if (!userId || !exerciseId) return;
 
     const requests: [Promise<any>, Promise<any>?] = [
-      api.get(`/exercises/${exerciseId}`, { headers: { "x-user-id": userId } }),
+      api.get(`/exercises/${exerciseId}`),
       listId
         ? api.get<ExerciseListDTO>(`/exercise-lists/${listId}`, {
-            headers: { "x-user-id": userId },
             params: classId ? { classId } : undefined,
           })
         : undefined,
