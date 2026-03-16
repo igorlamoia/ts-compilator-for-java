@@ -1,7 +1,7 @@
 import { ScanHint } from "../../interpreter/constants";
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
-import { parseAssignmentTarget } from "./attributeStmt";
+import { emitAssignmentFromValue, parseAssignmentTarget } from "./attributeStmt";
 import { argumentListStmt } from "./argumentListStmt";
 import { consumeStmtTerminator } from "./statementTerminator";
 
@@ -44,25 +44,30 @@ export function scanStmt(iterator: TokenIterator): void {
 
   const typingMode = iterator.getTypingMode();
   let hint: ScanHint = null;
-  let destination: string;
+  const target = typingMode === "untyped"
+    ? parseAssignmentTarget(iterator)
+    : (() => {
+        hint = parseScanHint(iterator);
+        iterator.consume(SYMBOLS.comma);
+        return parseAssignmentTarget(iterator);
+      })();
 
-  if (typingMode === "untyped") {
-    destination = parseAssignmentTarget(iterator).name;
-  } else {
-    hint = parseScanHint(iterator);
-    iterator.consume(SYMBOLS.comma);
-    const target = parseAssignmentTarget(iterator);
-    destination = target.name;
-
-    if (hint === "float") {
-      iterator.warnIfLossyIntConversion(target.type, "float", target.token);
-    }
+  if (hint === "float") {
+    iterator.warnIfLossyIntConversion(target.type, "float", target.token);
   }
 
   iterator.consume(SYMBOLS.right_paren);
   consumeStmtTerminator(iterator);
 
-  iterator.emitter.emit("CALL", "SCAN", hint, destination);
+  if (target.kind === "scalar") {
+    iterator.emitter.emit("CALL", "SCAN", hint, target.name);
+    return;
+  }
+
+  const temp = iterator.emitter.newTemp();
+  iterator.registerTemp(temp, target.type);
+  iterator.emitter.emit("CALL", "SCAN", hint, temp);
+  emitAssignmentFromValue(iterator, target, temp, target.type, target.token);
 }
 
 function parseScanHint(iterator: TokenIterator): ScanHint {

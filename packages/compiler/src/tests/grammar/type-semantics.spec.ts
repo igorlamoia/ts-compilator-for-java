@@ -133,6 +133,20 @@ describe("Type semantics warnings", () => {
     expect(result.warnings).toHaveLength(1);
   });
 
+  it("warns when a float scan hint writes into an int array element", () => {
+    const result = compileProgram(`
+      int main() {
+        int matriz[2][2];
+        scan(float, matriz[1][1]);
+        return 0;
+      }
+    `, {
+      grammar: { typingMode: "typed", arrayMode: "fixed" },
+    });
+
+    expect(result.warnings).toHaveLength(1);
+  });
+
   it("does not warn when an int scan hint writes into a float variable", () => {
     const result = compileProgram(`
       int main() {
@@ -143,6 +157,25 @@ describe("Type semantics warnings", () => {
     `);
 
     expect(result.warnings).toHaveLength(0);
+  });
+
+  it("emits array write ir for indexed scan targets", () => {
+    const instructions = compileToIr(`
+      int main() {
+        int matriz[2][2];
+        scan(int, matriz[1][1]);
+        return 0;
+      }
+    `, {
+      grammar: { typingMode: "typed", arrayMode: "fixed" },
+    });
+
+    expect(instructions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ op: "CALL", result: "SCAN", operand1: "int" }),
+        expect.objectContaining({ op: "ARRAY_SET", result: "matriz" }),
+      ]),
+    );
   });
 
   it("accepts fixed array declarations in fixed array mode", () => {
@@ -577,6 +610,44 @@ describe("Type semantics runtime", () => {
     );
 
     expect(result.output).toBe("1");
+  });
+
+  it("reads directly into fixed matrix elements at runtime", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int matriz[2][2];
+          scan(int, matriz[0][0]);
+          scan(int, matriz[0][1]);
+          print(matriz[0][0]);
+          print(matriz[0][1]);
+        }
+      `,
+      {
+        grammar: { typingMode: "typed", arrayMode: "fixed" },
+        stdin: createStdin(["4", "7"]),
+      },
+    );
+
+    expect(result.output).toBe("47");
+  });
+
+  it("reads directly into dynamic matrix elements at runtime in untyped mode", async () => {
+    const result = await executeProgram(
+      `
+        funcao main() {
+          lista[] = [];
+          scan(lista[1][2]);
+          print(lista[1][2]);
+        }
+      `,
+      {
+        grammar: { typingMode: "untyped", arrayMode: "dynamic" },
+        stdin: createStdin(["9"]),
+      },
+    );
+
+    expect(result.output).toBe("9");
   });
 
   it("raises runtime error on fixed array out-of-bounds write", async () => {

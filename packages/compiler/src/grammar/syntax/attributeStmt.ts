@@ -187,9 +187,25 @@ export function emitAssignment(
   }
 
   const value = exprStmt(iterator);
-  assertAssignable(iterator, target.type, value.type, value.token);
-  iterator.warnIfLossyIntConversion(target.type, value.type, value.token);
-  iterator.emitter.emit("ARRAY_SET" as never, target.name, target.indexes, value.place);
+  emitAssignmentFromValue(iterator, target, value.place, value.type, value.token);
+}
+
+export function emitAssignmentFromValue(
+  iterator: TokenIterator,
+  target: AssignmentTarget,
+  valuePlace: string,
+  valueType: ValueType,
+  token: Token,
+): void {
+  if (target.kind === "scalar") {
+    iterator.warnIfLossyIntConversion(target.type, valueType, token);
+    iterator.emitter.emit("=", target.name, valuePlace, null);
+    return;
+  }
+
+  assertAssignable(iterator, target.type, valueType, token);
+  iterator.warnIfLossyIntConversion(target.type, valueType, token);
+  iterator.emitter.emit("ARRAY_SET" as never, target.name, target.indexes, valuePlace);
 }
 
 function assertAssignable(
