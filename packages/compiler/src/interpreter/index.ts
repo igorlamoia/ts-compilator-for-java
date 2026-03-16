@@ -1,4 +1,13 @@
-import { makeOperation, makeRelation, parseScanInput } from "./utils";
+import {
+  coerceValueForType,
+  createFixedArrayValue,
+  isRuntimeArrayValue,
+  makeOperation,
+  makeRelation,
+  parseScanInput,
+  readArrayValue,
+  writeArrayValue,
+} from "./utils";
 import {
   ARITHMETICS,
   Instruction,
@@ -11,8 +20,6 @@ import {
 } from "./constants";
 import { RuntimeError } from "./runtime-error";
 import { translate } from "../i18n";
-import { coerceValueForType } from "./utils";
-
 interface CallFrame {
   returnAddress: number;
   returnVariable: string | null;
@@ -328,6 +335,74 @@ export class Interpreter {
 
           this.instructionPointer++;
           continue;
+        } else if (op === "DECLARE_ARRAY") {
+          if (typeof result !== "string")
+            this.throwRuntimeError(
+              "interpreter.declare_requires_string",
+              { result },
+              currentInstruction,
+            );
+
+          const declaredType =
+            typeof operand1 === "string" ? operand1 : "dynamic";
+          const sizes = this.parseArraySizes(operand2, currentInstruction);
+          this.declareVariable(
+            result,
+            declaredType,
+            createFixedArrayValue(declaredType, sizes),
+          );
+          this.instructionPointer++;
+          continue;
+        } else if (op === "ARRAY_GET") {
+          if (typeof operand1 !== "string" || !Array.isArray(operand2)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { operand1, operand2 },
+              currentInstruction,
+            );
+          }
+
+          const arraySlot = this.getVariableSlot(operand1);
+          if (!isRuntimeArrayValue(arraySlot.value)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { operand1 },
+              currentInstruction,
+            );
+          }
+
+          const indexes = operand2.map((index) =>
+            Number(this.parseOrGetVariableWithScope(index)),
+          );
+          const value = readArrayValue(arraySlot.value, indexes);
+          this.setVariable(result, value);
+          this.instructionPointer++;
+          continue;
+        } else if (op === "ARRAY_SET") {
+          if (typeof result !== "string" || !Array.isArray(operand1)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { result, operand1, operand2 },
+              currentInstruction,
+            );
+          }
+
+          const arraySlot = this.getVariableSlot(result);
+          if (!isRuntimeArrayValue(arraySlot.value)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { result },
+              currentInstruction,
+            );
+          }
+
+          const indexes = operand1.map((index) =>
+            Number(this.parseOrGetVariableWithScope(index)),
+          );
+          const nextValue = this.parseOrGetVariableWithScope(operand2);
+          writeArrayValue(arraySlot.value, indexes, nextValue);
+          this.instructionPointer++;
+          continue;
         } else if (op === "RETURN") {
           const returnValue = this.parseOrGetVariableWithScope(result);
           const returnType =
@@ -388,17 +463,21 @@ export class Interpreter {
   }
 
   private getVariable(name: string): unknown {
+    return this.getVariableSlot(name).value;
+  }
+
+  private getVariableSlot(name: string): RuntimeSlot {
     // Procurar no escopo local primeiro
     if (this.callStack.length > 0) {
       const currentScope = this.callStack[this.callStack.length - 1].localScope;
       if (currentScope.has(name)) {
-        return currentScope.get(name)?.value;
+        return currentScope.get(name)!;
       }
     }
 
     // Se não encontrar, procurar no escopo global
     if (this.variables.has(name)) {
-      return this.variables.get(name)?.value;
+      return this.variables.get(name)!;
     }
 
     this.throwRuntimeError("interpreter.variable_not_found", {
@@ -409,6 +488,13 @@ export class Interpreter {
 
   private declareVariable(name: string, type: string, value: unknown): void {
     const currentScope = this.getCurrentScope();
+    if (isRuntimeArrayValue(value)) {
+      currentScope.set(name, {
+        type,
+        value,
+      });
+      return;
+    }
     currentScope.set(name, {
       type,
       value: coerceValueForType(type, value),
@@ -457,6 +543,30 @@ export class Interpreter {
       }
     }
     return value;
+  }
+
+  private parseArraySizes(value: unknown, instruction: Instruction): number[] {
+    if (typeof value !== "string") {
+      this.throwRuntimeError(
+        "interpreter.runtime_error",
+        { value },
+        instruction,
+      );
+    }
+
+    const parsed = JSON.parse(value) as unknown;
+    if (
+      !Array.isArray(parsed) ||
+      parsed.some((item) => typeof item !== "number" || item <= 0)
+    ) {
+      this.throwRuntimeError(
+        "interpreter.runtime_error",
+        { value },
+        instruction,
+      );
+    }
+
+    return parsed;
   }
 }
 

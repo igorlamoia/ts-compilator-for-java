@@ -2,7 +2,12 @@ import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { forStmt } from "./forStmt";
 import { blockStmt } from "./blockStmt";
-import { attributeStmt, emitAssignmentChain } from "./attributeStmt";
+import {
+  attributeStmt,
+  emitAssignment,
+  emitAssignmentChain,
+  parseAssignmentTarget,
+} from "./attributeStmt";
 import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
 import { declarationStmt } from "./declarationStmt";
@@ -130,9 +135,9 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
     consumeStmtTerminator(iterator);
   } else {
-    // É uma atribuição - precisa processar o '=' e o resto
+    const target = parseAssignmentTarget(iterator, identifier);
     iterator.consume(TOKENS.ASSIGNMENTS.equal, "=");
-    emitAssignmentChain(iterator, identifier.lexeme);
+    emitAssignment(iterator, target);
     consumeStmtTerminator(iterator);
   }
 }

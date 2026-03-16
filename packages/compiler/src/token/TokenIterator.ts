@@ -357,4 +357,8 @@ export class TokenIterator {
   getArrayMode(): "fixed" | "dynamic" | null {
     return this.grammar?.arrayMode ?? null;
   }
+
+  isIndexType(type: ValueType): boolean {
+    return type === "int" || type === "dynamic" || type === "unknown";
+  }
 }

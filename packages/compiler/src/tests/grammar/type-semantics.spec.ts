@@ -159,6 +159,28 @@ describe("Type semantics warnings", () => {
     ).not.toThrow();
   });
 
+  it("emits dedicated ir for fixed array declarations", () => {
+    const instructions = compileToIr(
+      `
+        int main() {
+          int matriz[2][2];
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(instructions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          op: "DECLARE_ARRAY",
+          result: "matriz",
+          operand1: "int",
+        }),
+      ]),
+    );
+  });
+
   it("rejects empty dimensions in fixed array mode", () => {
     expect(() =>
       compileToIr(
@@ -179,6 +201,66 @@ describe("Type semantics warnings", () => {
         `
           int main() {
             int tabela[3][];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("accepts fixed array element reads in expressions", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2];
+            print(matriz[1][1]);
+            return matriz[0][0] + 1;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects partial fixed array access", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2];
+            print(matriz[1]);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("accepts fixed array element writes", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][3];
+            matriz[1][2] = 7;
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects incompatible fixed array element writes", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2];
+            matriz[1][1] = "x";
             return 0;
           }
         `,
@@ -308,5 +390,51 @@ describe("Type semantics runtime", () => {
     expect(ifInstruction?.result).not.toMatchObject({
       place: expect.anything(),
     });
+  });
+
+  it("initializes fixed arrays at runtime without crashing", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int matriz[2][2];
+          print(1);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(result.output).toBe("1");
+  });
+
+  it("writes and reads fixed array elements at runtime", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int matriz[2][3];
+          matriz[1][2] = 7;
+          print(matriz[1][2]);
+          return matriz[1][2];
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(result.output).toBe("7");
+  });
+
+  it("raises runtime error on fixed array out-of-bounds write", async () => {
+    await expect(
+      executeProgram(
+        `
+          int main() {
+            int matriz[2][2];
+            matriz[3][0] = 1;
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).rejects.toThrow(/bounds|runtime/i);
   });
 });

@@ -22,6 +22,10 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
       return functionCallExpr(iterator, identifier);
     }
 
+    if (iterator.peek().type === SYMBOLS.left_bracket) {
+      return parseArrayAccess(iterator, identifier);
+    }
+
     // Postfix increment: identifier++
     if (
       iterator.peek().type === TOKENS.ARITHMETICS.plus &&
@@ -79,4 +83,54 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
     line: token.line,
     column: token.column,
   });
+}
+
+function parseArrayAccess(
+  iterator: TokenIterator,
+  identifier: ExprResult["token"],
+): ExprResult {
+  const descriptor = iterator.resolveSymbolDescriptor(identifier.lexeme);
+  if (descriptor.kind !== "array") {
+    iterator.throwError(
+      "grammar.unexpected_statement",
+      identifier.line,
+      identifier.column,
+      { lexeme: identifier.lexeme },
+    );
+  }
+
+  const indexes: string[] = [];
+
+  while (iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    iterator.consume(TOKENS.SYMBOLS.left_bracket);
+    const indexExpr = exprStmt(iterator);
+    if (!iterator.isIndexType(indexExpr.type)) {
+      iterator.throwError(
+        "grammar.unexpected_type",
+        indexExpr.token.line,
+        indexExpr.token.column,
+        {
+          lexeme: indexExpr.token.lexeme,
+          line: indexExpr.token.line,
+          column: indexExpr.token.column,
+        },
+      );
+    }
+    iterator.consume(TOKENS.SYMBOLS.right_bracket);
+    indexes.push(indexExpr.place);
+  }
+
+  if (indexes.length !== descriptor.dimensions) {
+    iterator.throwError(
+      "grammar.unexpected_statement",
+      identifier.line,
+      identifier.column,
+      { lexeme: identifier.lexeme },
+    );
+  }
+
+  const temp = iterator.emitter.newTemp();
+  iterator.emitter.emit("ARRAY_GET" as never, temp, identifier.lexeme, indexes);
+  iterator.registerTemp(temp, descriptor.baseType);
+  return iterator.createExprResult(temp, descriptor.baseType, identifier);
 }

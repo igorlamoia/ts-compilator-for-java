@@ -1,4 +1,10 @@
-import { RuntimeSlot, ScanHint, TArithmetics, TRelational } from "./constants";
+import {
+  RuntimeArrayValue,
+  RuntimeSlot,
+  ScanHint,
+  TArithmetics,
+  TRelational,
+} from "./constants";
 
 export function makeOperation(
   op: TArithmetics,
@@ -136,4 +142,80 @@ export function parseScanInput(hint: ScanHint, rawInput: string): unknown {
   }
 
   return parsePiece(trimmed);
+}
+
+export function createFixedArrayValue(
+  baseType: string,
+  sizes: number[],
+): RuntimeArrayValue {
+  return {
+    kind: "array",
+    arrayMode: "fixed",
+    baseType,
+    dimensions: sizes.length,
+    sizes: [...sizes],
+    elements: buildFixedArrayElements(sizes),
+  };
+}
+
+function buildFixedArrayElements(sizes: number[]): unknown[] {
+  const [current, ...rest] = sizes;
+  if (current === undefined) return [];
+  return Array.from({ length: current }, () =>
+    rest.length === 0 ? null : buildFixedArrayElements(rest),
+  );
+}
+
+export function isRuntimeArrayValue(value: unknown): value is RuntimeArrayValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "kind" in value &&
+    (value as RuntimeArrayValue).kind === "array"
+  );
+}
+
+export function readArrayValue(
+  value: RuntimeArrayValue,
+  indexes: number[],
+): unknown {
+  let current: unknown = value.elements;
+
+  for (const index of indexes) {
+    if (!Array.isArray(current) || index < 0 || index >= current.length) {
+      throw new Error("Array index out of bounds");
+    }
+
+    current = current[index];
+  }
+
+  return current;
+}
+
+export function writeArrayValue(
+  value: RuntimeArrayValue,
+  indexes: number[],
+  nextValue: unknown,
+): void {
+  let current: unknown = value.elements;
+
+  for (let i = 0; i < indexes.length - 1; i++) {
+    const index = indexes[i]!;
+    if (!Array.isArray(current) || index < 0 || index >= current.length) {
+      throw new Error("Array index out of bounds");
+    }
+    current = current[index];
+  }
+
+  const lastIndex = indexes[indexes.length - 1];
+  if (
+    lastIndex === undefined ||
+    !Array.isArray(current) ||
+    lastIndex < 0 ||
+    lastIndex >= current.length
+  ) {
+    throw new Error("Array index out of bounds");
+  }
+
+  current[lastIndex] = coerceValueForType(value.baseType, nextValue);
 }
