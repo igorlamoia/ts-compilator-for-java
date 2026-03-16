@@ -5,7 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.core.config import settings
 from app.db.base import Base
 
-engine = create_async_engine(settings.database_url, echo=False, pool_pre_ping=True)
+engine_kwargs: dict = {"echo": False, "pool_pre_ping": True}
+if settings.database_url.startswith("postgresql"):
+    engine_kwargs["connect_args"] = {
+        "server_settings": {"search_path": settings.database_schema}
+    }
+
+engine = create_async_engine(settings.database_url, **engine_kwargs)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 

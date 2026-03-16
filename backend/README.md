@@ -47,6 +47,7 @@ Edite o `.env` e preencha obrigatoriamente:
 
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/tscompilator
+DATABASE_SCHEMA=dinamic_interpreter
 SECRET_KEY=  # gere com: openssl rand -hex 32
 ```
 
@@ -55,9 +56,6 @@ SECRET_KEY=  # gere com: openssl rand -hex 32
 ### 3. Criar o banco de dados
 
 ```bash
-# Criar o banco no PostgreSQL
-createdb tscompilator
-
 # Aplicar migrações (quando disponíveis)
 uv run alembic upgrade head
 ```
@@ -175,6 +173,7 @@ docker run -p 8000:8000 \
 | Variável | Obrigatória | Default | Descrição |
 |----------|-------------|---------|-----------|
 | `DATABASE_URL` | Sim | — | URL do PostgreSQL (asyncpg) |
+| `DATABASE_SCHEMA` | Não | `ts_compiler` | Schema alvo para migrations e runtime |
 | `SECRET_KEY` | Sim | — | Chave para assinar JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Não | `1440` | Expiração do token (minutos) |
 | `CORS_ORIGINS` | Não | `["http://localhost:3000"]` | Origens permitidas |
@@ -187,12 +186,6 @@ docker run -p 8000:8000 \
 ```bash
 uv run alembic revision --autogenerate -m "describe change"
 uv run alembic upgrade head
-```
-
-### Acessar o banco via Alembic shell
-
-```bash
-uv run alembic shell
 ```
 
 ### Gerar SECRET_KEY segura
