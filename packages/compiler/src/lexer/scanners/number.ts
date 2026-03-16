@@ -85,6 +85,8 @@ const ALLOWED_BEFORE_AFTER = [
   ",",
   "(",
   ")",
+  "[",
+  "]",
   "{",
   "}",
   ":",

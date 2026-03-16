@@ -18,3 +18,8 @@ it("should include boolean reserved tokens", () => {
   expect(TOKENS.BY_DESCRIPTION["true"]).toBeDefined();
   expect(TOKENS.BY_DESCRIPTION["false"]).toBeDefined();
 });
+
+it("should include bracket symbol tokens", () => {
+  expect(TOKENS.BY_DESCRIPTION["left_bracket"]).toBeDefined();
+  expect(TOKENS.BY_DESCRIPTION["right_bracket"]).toBeDefined();
+});

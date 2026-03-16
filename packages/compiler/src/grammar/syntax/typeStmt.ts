@@ -1,4 +1,4 @@
-import { TokenIterator, ValueType } from "../../token/TokenIterator";
+import { TokenIterator, ScalarType } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 
 /**
@@ -11,7 +11,7 @@ import { TOKENS } from "../../token/constants";
 export function typeStmt(
   iterator: TokenIterator,
   allowVoid: boolean = false,
-): ValueType {
+): ScalarType {
   const { int, float, bool, string, void: voidType } = TOKENS.RESERVEDS;
   const token = iterator.peek();
   const validTypes = allowVoid
@@ -26,5 +26,5 @@ export function typeStmt(
     });
   }
 
-  return iterator.consume(token.type).lexeme as ValueType;
+  return iterator.consume(token.type).lexeme as ScalarType;
 }

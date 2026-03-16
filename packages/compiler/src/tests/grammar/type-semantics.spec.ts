@@ -1,7 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { compileProgram, executeProgram } from "./helpers";
+import { compileProgram, compileToIr, executeProgram } from "./helpers";
+import { TokenIterator } from "../../token/TokenIterator";
 
 describe("Type semantics warnings", () => {
+  it("preserves array symbol metadata while resolving scalar element type", () => {
+    const iterator = new TokenIterator([], {
+      grammar: { typingMode: "typed", arrayMode: "fixed" },
+    });
+
+    iterator.declareSymbolDescriptor("matriz", {
+      kind: "array",
+      baseType: "int",
+      dimensions: 2,
+      arrayMode: "fixed",
+      sizes: [3, 3],
+    });
+
+    expect(iterator.resolveSymbol("matriz")).toBe("int");
+    expect(iterator.resolveSymbolDescriptor("matriz")).toEqual({
+      kind: "array",
+      baseType: "int",
+      dimensions: 2,
+      arrayMode: "fixed",
+      sizes: [3, 3],
+    });
+  });
+
   it("accepts bool declarations and function signatures", () => {
     const result = compileProgram(`
       bool isReady(bool value) {
@@ -119,6 +143,48 @@ describe("Type semantics warnings", () => {
     `);
 
     expect(result.warnings).toHaveLength(0);
+  });
+
+  it("accepts fixed array declarations in fixed array mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[3][3];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects empty dimensions in fixed array mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int lista[];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("rejects mixed fixed and dynamic dimensions in fixed array mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int tabela[3][];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
   });
 });
 
