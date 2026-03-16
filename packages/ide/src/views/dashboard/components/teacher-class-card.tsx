@@ -9,7 +9,7 @@ export function TeacherClassCard({
   isTeacher: boolean;
 }) {
   return (
-    <div className="group shadow-[0_1px_10px_rgba(0,0,0,0.1)] dark:shadow-none overflow-hidden relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full">
+    <div className="overflow-hidden group shadow-[0_1px_10px_rgba(0,0,0,0.1)] dark:shadow-none relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full">
       {/* Top gradient accent */}
       <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#0dccf2] to-[#10b981] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-3xl shadow-[0_0_10px_rgba(13,204,242,0.5)]" />
 
