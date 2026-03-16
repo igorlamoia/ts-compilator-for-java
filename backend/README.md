@@ -57,7 +57,7 @@ SECRET_KEY=  # gere com: openssl rand -hex 32
 
 ```bash
 # Aplicar migrações (quando disponíveis)
-uv run alembic upgrade head
+task migrate
 ```
 
 > Durante o desenvolvimento inicial, você pode usar `RUN_CREATE_ALL=true` no `.env` para criar as tabelas automaticamente sem Alembic. **Nunca use isso em produção.**
@@ -65,7 +65,7 @@ uv run alembic upgrade head
 ### 4. Iniciar o servidor
 
 ```bash
-uv run uvicorn app.main:app --reload --port 8000
+task dev
 ```
 
 A API estará disponível em `http://localhost:8000`.
@@ -78,13 +78,10 @@ Os testes usam **SQLite in-memory** — não precisam de PostgreSQL rodando.
 
 ```bash
 # Rodar todos os testes
-uv run pytest
-
-# Com output detalhado
-uv run pytest -v
+task test
 
 # Com cobertura
-uv run pytest --cov=app --cov-report=term-missing
+task cov
 
 # Rodar um arquivo específico
 uv run pytest tests/test_auth.py -v
