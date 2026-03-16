@@ -239,6 +239,34 @@ describe("Type semantics warnings", () => {
     ).toThrow();
   });
 
+  it("rejects partial indexed scan targets", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2];
+            scan(int, matriz[1]);
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("rejects non-assignable scan targets", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int x = 0;
+            scan(int, x + 1);
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
   it("accepts fixed array element writes", () => {
     expect(() =>
       compileToIr(
