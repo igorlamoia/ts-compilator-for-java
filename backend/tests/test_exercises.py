@@ -89,7 +89,7 @@ class TestGetExercise:
         token = await get_token(async_client, "teacher_e3@ex.com", "secret")
 
         response = await async_client.get(
-            "/exercises/nonexistent-id", headers={"Authorization": f"Bearer {token}"}
+            "/exercises/999999", headers={"Authorization": f"Bearer {token}"}
         )
 
         assert response.status_code == 404

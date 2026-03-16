@@ -9,7 +9,7 @@ from app.models.user import User, UserRole
 from app.schemas.exercises import ExerciseCreate, ExerciseUpdate, TestCaseCreate
 
 
-async def create_exercise(data: ExerciseCreate, current_user_id: str, session: AsyncSession) -> Exercise:
+async def create_exercise(data: ExerciseCreate, current_user_id: int, session: AsyncSession) -> Exercise:
     user = await session.get(User, current_user_id)
     if user.role == UserRole.STUDENT:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create exercises")
@@ -25,7 +25,7 @@ async def create_exercise(data: ExerciseCreate, current_user_id: str, session: A
     return await get_exercise(exercise.id, session)
 
 
-async def get_exercise(exercise_id: str, session: AsyncSession) -> Exercise:
+async def get_exercise(exercise_id: int, session: AsyncSession) -> Exercise:
     result = await session.execute(
         select(Exercise)
         .where(Exercise.id == exercise_id)
@@ -37,7 +37,7 @@ async def get_exercise(exercise_id: str, session: AsyncSession) -> Exercise:
     return exercise
 
 
-async def list_exercises(current_user_id: str, session: AsyncSession) -> list[Exercise]:
+async def list_exercises(current_user_id: int, session: AsyncSession) -> list[Exercise]:
     result = await session.execute(
         select(Exercise)
         .where(Exercise.teacher_id == current_user_id)
@@ -47,7 +47,7 @@ async def list_exercises(current_user_id: str, session: AsyncSession) -> list[Ex
 
 
 async def update_exercise(
-    exercise_id: str, current_user_id: str, data: ExerciseUpdate, session: AsyncSession
+    exercise_id: int, current_user_id: int, data: ExerciseUpdate, session: AsyncSession
 ) -> Exercise:
     exercise = await get_exercise(exercise_id, session)
     if exercise.teacher_id != current_user_id:
@@ -60,7 +60,7 @@ async def update_exercise(
     return await get_exercise(exercise.id, session)
 
 
-async def delete_exercise(exercise_id: str, current_user_id: str, session: AsyncSession) -> None:
+async def delete_exercise(exercise_id: int, current_user_id: int, session: AsyncSession) -> None:
     exercise = await get_exercise(exercise_id, session)
     if exercise.teacher_id != current_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
@@ -69,7 +69,7 @@ async def delete_exercise(exercise_id: str, current_user_id: str, session: Async
     await session.flush()
 
 
-async def add_test_case(exercise_id: str, data: TestCaseCreate, current_user_id: str, session: AsyncSession) -> TestCase:
+async def add_test_case(exercise_id: int, data: TestCaseCreate, current_user_id: int, session: AsyncSession) -> TestCase:
     exercise = await get_exercise(exercise_id, session)
     if exercise.teacher_id != current_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
@@ -86,7 +86,7 @@ async def add_test_case(exercise_id: str, data: TestCaseCreate, current_user_id:
     return tc
 
 
-async def delete_test_case(exercise_id: str, tc_id: str, current_user_id: str, session: AsyncSession) -> None:
+async def delete_test_case(exercise_id: int, tc_id: int, current_user_id: int, session: AsyncSession) -> None:
     exercise = await get_exercise(exercise_id, session)
     if exercise.teacher_id != current_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")

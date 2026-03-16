@@ -298,7 +298,18 @@ async def seed(session: AsyncSession) -> None:
 async def main() -> None:
     print("🌱 Seeding database...\n")
 
-    engine = create_async_engine(settings.database_url, echo=False)
+    engine_kwargs: dict = {"echo": False}
+    if settings.database_url.startswith("postgresql"):
+        engine_kwargs["connect_args"] = {
+            "server_settings": {"search_path": settings.database_schema}
+        }
+
+    engine = create_async_engine(settings.database_url, **engine_kwargs)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print(f"✅ Tabelas verificadas/criadas no schema '{settings.database_schema}'\n")
+
     AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
     async with AsyncSessionLocal() as session:

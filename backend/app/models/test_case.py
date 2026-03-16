@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 class TestCase(Base):
     __tablename__ = "test_cases"
+    __test__ = False
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)

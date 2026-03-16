@@ -13,7 +13,7 @@ from app.modules.exercise_lists.router import router as exercise_lists_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # pragma: no cover
     await init_db()
     yield
 
