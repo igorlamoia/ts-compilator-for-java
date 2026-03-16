@@ -1,9 +1,10 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
 
 from app.models.exercise import Exercise
+from app.models.exercise_list_item import ExerciseListItem
 from app.models.test_case import TestCase
 from app.models.user import User, UserRole
 from app.schemas.exercises import ExerciseCreate, ExerciseUpdate, TestCaseCreate
@@ -65,6 +66,11 @@ async def delete_exercise(exercise_id: int, current_user_id: int, session: Async
     if exercise.teacher_id != current_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
 
+    # Remove from all lists before deleting (exercise_id is PK in exercise_list_items,
+    # so SQLAlchemy can't null it out — must delete explicitly)
+    await session.execute(
+        delete(ExerciseListItem).where(ExerciseListItem.exercise_id == exercise_id)
+    )
     await session.delete(exercise)
     await session.flush()
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.schemas.base import CamelModel
 from app.models.class_ import ClassStatus
+from app.models.user import UserRole
 
 
 class ClassCreate(CamelModel):
@@ -47,6 +48,37 @@ class ExerciseListBrief(CamelModel):
     title: str
     description: str | None
     items: list[ExerciseItemProgress]
+
+
+class MemberProgress(CamelModel):
+    completed: int
+    total: int
+    percentage: int
+
+
+class MemberWithProgress(CamelModel):
+    id: int
+    organization_id: int
+    role: UserRole
+    email: str
+    name: str
+    avatar_url: str | None = None
+    bio: str | None = None
+    joined_at: datetime
+    progress: MemberProgress
+
+
+class TeacherBrief(CamelModel):
+    id: int
+    name: str
+    email: str
+    avatar_url: str | None = None
+    role: UserRole
+
+
+class ClassMembersResponse(CamelModel):
+    teacher: TeacherBrief | None
+    members: list[MemberWithProgress]
 
 
 class ClassExerciseListWithProgress(CamelModel):

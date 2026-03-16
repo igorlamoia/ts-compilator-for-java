@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import axios from 'axios'
 import { Lexer } from '@ts-compilator-for-java/compiler/src/lexer'
 import type {
     KeywordMap,
@@ -8,10 +9,11 @@ import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenItera
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
 import { Interpreter } from '@ts-compilator-for-java/compiler/interpreter'
 import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/constants'
-import prisma from '@/lib/prisma'
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
 import { normalizeCompilerConfig } from '../../../lib/compiler-config'
 import type { IDEGrammarConfig } from '@/entities/compiler-config'
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
 export type TTestCaseResult = {
     label: string;
@@ -80,6 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (req.method !== 'POST') return res.status(405).json({ valid: false, errors: ['Metodo nao permitido'], warnings: [] })
 
     const userId = req.headers['x-user-id'] as string
+    const jwtToken = req.headers['x-authorization'] as string | undefined
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
     const { exerciseId, exerciseListId, classId, sourceCode, keywordMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
@@ -160,35 +163,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     let testCasesTotal: number | undefined
 
     if (instructions) {
-        const exercise = await prisma.exercise.findUnique({
-            where: { id: exerciseId },
-            include: { testCases: { orderBy: { orderIndex: 'asc' } } }
-        })
+        try {
+            const exerciseRes = await axios.get(
+                `${BACKEND_URL}/exercises/${exerciseId}`,
+                { headers: jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {} }
+            )
+            const testCases: Array<{ label: string; input: string; expectedOutput: string; orderIndex: number }> =
+                exerciseRes.data?.testCases ?? []
 
-        if (exercise?.testCases && exercise.testCases.length > 0) {
-            testCaseResults = []
-            testCasesTotal = exercise.testCases.length
-            testCasesPassed = 0
+            if (testCases.length > 0) {
+                const sorted = [...testCases].sort((a, b) => a.orderIndex - b.orderIndex)
+                testCaseResults = []
+                testCasesTotal = sorted.length
+                testCasesPassed = 0
 
-            for (const tc of exercise.testCases) {
-                const { output, error } = await runTestCase(instructions, tc.input)
+                for (const tc of sorted) {
+                    const { output, error } = await runTestCase(instructions, tc.input)
 
-                const actualOutput = error
-                    ? `[Erro] ${error}`
-                    : normalizeOutput(output)
-                const expectedNormalized = normalizeOutput(tc.expectedOutput)
-                const passed = !error && actualOutput === expectedNormalized
+                    const actualOutput = error
+                        ? `[Erro] ${error}`
+                        : normalizeOutput(output)
+                    const expectedNormalized = normalizeOutput(tc.expectedOutput)
+                    const passed = !error && actualOutput === expectedNormalized
 
-                if (passed) testCasesPassed++
+                    if (passed) testCasesPassed++
 
-                testCaseResults.push({
-                    label: tc.label || `Caso ${tc.orderIndex + 1}`,
-                    input: tc.input,
-                    expectedOutput: tc.expectedOutput,
-                    actualOutput: error ? `[Erro] ${error}` : output,
-                    passed,
-                })
+                    testCaseResults.push({
+                        label: tc.label || `Caso ${tc.orderIndex + 1}`,
+                        input: tc.input,
+                        expectedOutput: tc.expectedOutput,
+                        actualOutput: error ? `[Erro] ${error}` : output,
+                        passed,
+                    })
+                }
             }
+        } catch {
+            // If fetching test cases fails, proceed without them
         }
     }
 
@@ -205,49 +215,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     try {
-        // Check deadline and determine status
-        let status: 'SUBMITTED' | 'LATE' = 'SUBMITTED'
-
-        if (exerciseListId && classId) {
-            const publication = await prisma.classExerciseList.findUnique({
-                where: { exerciseListId_classId: { exerciseListId, classId } },
-                select: { deadline: true },
-            })
-
-            if (publication && new Date() > publication.deadline) {
-                status = 'LATE'
-                warnings.push('Submissão após o prazo — será marcada como atrasada.')
-            }
-        }
-
-        await prisma.submission.deleteMany({
-            where: { exerciseId, exerciseListId, classId, studentId: userId },
-        })
-
-        const submission = await prisma.submission.create({
-            data: {
-                exerciseId,
-                exerciseListId,
-                classId,
-                studentId: userId,
+        const submissionRes = await axios.post(
+            `${BACKEND_URL}/submissions`,
+            {
+                exerciseId: Number(exerciseId),
+                exerciseListId: Number(exerciseListId),
+                classId: Number(classId),
                 codeSnapshot: sourceCode,
-                status,
+                status: 'SUBMITTED',
+            },
+            {
+                headers: jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {},
             }
-        })
+        )
 
         return res.status(200).json({
             valid: true,
             errors: [],
             warnings,
-            submissionId: submission.id,
+            submissionId: String(submissionRes.data.id),
             testCaseResults,
             testCasesPassed,
             testCasesTotal,
         })
     } catch (error) {
+        console.error('[validate] Erro ao salvar submissão:', error)
+        const msg = axios.isAxiosError(error)
+            ? JSON.stringify(error.response?.data) ?? error.message
+            : (error as Error).message
         return res.status(500).json({
             valid: false,
-            errors: ['Erro ao salvar a submissão no banco de dados'],
+            errors: [`Erro ao salvar a submissão: ${msg}`],
             warnings
         })
     }

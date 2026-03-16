@@ -7,9 +7,8 @@ from app.modules.classes.service import (
 )
 from app.schemas.classes import (
     ClassCreate, ClassResponse, JoinClassRequest, JoinClassResponse,
-    ClassExerciseListWithProgress,
+    ClassExerciseListWithProgress, ClassMembersResponse,
 )
-from app.schemas.users import UserResponse
 
 router = APIRouter(prefix="/classes", tags=["classes"])
 
@@ -34,7 +33,7 @@ async def get_class_endpoint(class_id: int, user_id: CurrentUserIdDep, session: 
     return await get_class(class_id, session)
 
 
-@router.get("/{class_id}/members", response_model=list[UserResponse])
+@router.get("/{class_id}/members", response_model=ClassMembersResponse)
 async def get_class_members_endpoint(class_id: int, user_id: CurrentUserIdDep, session: SessionDep):
     return await get_class_members(class_id, user_id, session)
 

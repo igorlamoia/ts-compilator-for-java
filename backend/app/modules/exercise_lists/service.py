@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -129,6 +129,10 @@ async def publish_exercise_list(
     el = await get_exercise_list(list_id, session)
     if el.teacher_id != caller_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
+
+    # Normalize to naive UTC (PostgreSQL TIMESTAMP WITHOUT TIME ZONE)
+    if deadline.tzinfo is not None:
+        deadline = deadline.astimezone(timezone.utc).replace(tzinfo=None)
 
     # Upsert: check if publication already exists
     result = await session.execute(

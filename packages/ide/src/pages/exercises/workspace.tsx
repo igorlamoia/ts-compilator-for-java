@@ -14,6 +14,7 @@ import { localApi } from "@/lib/local-api";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
 import { useRouter } from "next/router";
+import { getAuthToken } from "@/lib/auth-cookies";
 import { CheckCircle2, Circle, ChevronRight, ListChecks } from "lucide-react";
 import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
 
@@ -168,8 +169,8 @@ function WorkspaceContent({
           locale,
         },
         // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
-        // It still uses x-user-id for auth since it doesn't go through the JWT interceptor.
-        { headers: { "x-user-id": userId } },
+        // Passes x-user-id and the JWT token so the route can forward to the Python backend.
+        { headers: { "x-user-id": userId, "x-authorization": getAuthToken() ?? "" } },
       );
 
       if (!data.valid) {

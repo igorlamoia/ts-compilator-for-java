@@ -23,7 +23,7 @@ export function TeacherListCard({
   onRefresh: () => void;
 }) {
   const classNames = list.classes
-    .map((c) => classMap[c.classId] ?? c.classId.slice(0, 6))
+    .map((c) => classMap[c.classId] ?? String(c.classId).slice(0, 6))
     .filter(Boolean)
     .slice(0, 2);
 

@@ -60,7 +60,7 @@ export function PublishModal({
       await api.post(
         `/exercise-lists/${listId}/publish`,
         {
-          classId: values.classId,
+          classId: Number(values.classId),
           totalGrade: Number(values.totalGrade),
           minRequired: Number(values.minRequired),
           deadline: new Date(values.deadline).toISOString(),
@@ -70,8 +70,11 @@ export function PublishModal({
       form.reset();
       onOpenChange(false);
       onPublished();
-    } catch {
-      showToast({ type: "error", message: "Erro ao publicar lista." });
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { detail?: string } } };
+      const detail = axiosError?.response?.data?.detail;
+      console.error('[publish] erro:', err);
+      showToast({ type: "error", message: detail ? `Erro: ${detail}` : "Erro ao publicar lista." });
     }
   };
 

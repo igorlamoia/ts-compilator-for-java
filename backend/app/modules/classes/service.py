@@ -112,15 +112,83 @@ async def get_class_members(class_id: int, current_user_id: int, session: AsyncS
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Class not found")
 
     current_user = await session.get(User, current_user_id)
-    if current_user.role != UserRole.ADMIN and cls.teacher_id != current_user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado")
 
-    result = await session.execute(
-        select(User)
-        .join(ClassMember, ClassMember.student_id == User.id)
+    is_admin = current_user.role == UserRole.ADMIN
+    is_teacher = cls.teacher_id == current_user_id
+
+    if not is_admin and not is_teacher:
+        membership_result = await session.execute(
+            select(ClassMember).where(
+                ClassMember.class_id == class_id,
+                ClassMember.student_id == current_user_id,
+            )
+        )
+        is_member = membership_result.scalar_one_or_none() is not None
+        if not is_member:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado")
+
+    # Load teacher
+    teacher = await session.get(User, cls.teacher_id)
+
+    # Load class members with joined_at
+    members_result = await session.execute(
+        select(ClassMember)
         .where(ClassMember.class_id == class_id)
     )
-    return list(result.scalars().all())
+    class_members = list(members_result.scalars().all())
+
+    # Count total exercises across all exercise lists in this class
+    lists_result = await session.execute(
+        select(ClassExerciseList).where(ClassExerciseList.class_id == class_id)
+    )
+    class_exercise_lists = list(lists_result.scalars().all())
+
+    max_exercises = 0
+    for cel in class_exercise_lists:
+        count_result = await session.execute(
+            select(ExerciseListItem).where(ExerciseListItem.exercise_list_id == cel.exercise_list_id)
+        )
+        max_exercises += len(list(count_result.scalars().all()))
+
+    # Build members with progress
+    members_with_progress = []
+    for cm in class_members:
+        student = await session.get(User, cm.student_id)
+        graded_count_result = await session.execute(
+            select(Submission).where(
+                Submission.class_id == class_id,
+                Submission.student_id == cm.student_id,
+                Submission.status == "GRADED",
+            )
+        )
+        graded_count = len(list(graded_count_result.scalars().all()))
+        percentage = round((graded_count / max_exercises) * 100) if max_exercises > 0 else 0
+        members_with_progress.append({
+            "id": student.id,
+            "organization_id": student.organization_id,
+            "role": student.role,
+            "email": student.email,
+            "name": student.name,
+            "avatar_url": student.avatar_url,
+            "bio": student.bio,
+            "joined_at": cm.joined_at,
+            "progress": {
+                "completed": graded_count,
+                "total": max_exercises,
+                "percentage": percentage,
+            },
+        })
+
+    return {
+        "teacher": {
+            "id": teacher.id,
+            "name": teacher.name,
+            "email": teacher.email,
+            "avatar_url": teacher.avatar_url,
+            "role": teacher.role,
+        } if teacher else None,
+        "members": members_with_progress,
+    }
 
 
 async def get_class_exercise_lists(
