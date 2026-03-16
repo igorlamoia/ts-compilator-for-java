@@ -10,7 +10,10 @@ import {
 } from "./attributeStmt";
 import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
-import { declarationStmt } from "./declarationStmt";
+import {
+  declarationStmt,
+  declareUntypedDynamicArray,
+} from "./declarationStmt";
 import { printStmt, scanStmt } from "./ioStmt";
 import { returnStmt } from "./returnStmt";
 import { functionCallExpr } from "./functionCallExpr";
@@ -120,6 +123,21 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
   // Consumir o identificador
   const identifier = iterator.consume(TOKENS.LITERALS.identifier);
   const { plus } = TOKENS.ARITHMETICS;
+  const typingMode = iterator.getTypingMode();
+  const arrayMode = iterator.getArrayMode();
+
+  if (
+    typingMode === "untyped" &&
+    arrayMode === "dynamic" &&
+    iterator.match(TOKENS.SYMBOLS.left_bracket) &&
+    iterator.peekAt(1)?.type === TOKENS.SYMBOLS.right_bracket &&
+    iterator.peekAt(2)?.type === TOKENS.ASSIGNMENTS.equal &&
+    iterator.peekAt(3)?.type === TOKENS.SYMBOLS.left_bracket &&
+    iterator.peekAt(4)?.type === TOKENS.SYMBOLS.right_bracket
+  ) {
+    declareUntypedDynamicArray(iterator, identifier);
+    return;
+  }
 
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
   if (iterator.peek().type === TOKENS.SYMBOLS.left_paren) {

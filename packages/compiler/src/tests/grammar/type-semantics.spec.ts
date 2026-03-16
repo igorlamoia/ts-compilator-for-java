@@ -254,6 +254,34 @@ describe("Type semantics warnings", () => {
     ).not.toThrow();
   });
 
+  it("accepts dynamic typed array declarations in dynamic mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int lista[];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects explicit sizes in dynamic array mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[3][3];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+      ),
+    ).toThrow();
+  });
+
   it("rejects incompatible fixed array element writes", () => {
     expect(() =>
       compileToIr(
@@ -423,6 +451,107 @@ describe("Type semantics runtime", () => {
     expect(result.output).toBe("7");
   });
 
+  it("auto-grows dynamic arrays on write", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int lista[];
+          lista[4] = 10;
+          print(lista[4]);
+          return lista[4];
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+    );
+
+    expect(result.output).toBe("10");
+  });
+
+  it("raises runtime error on fixed array out-of-bounds read", async () => {
+    await expect(
+      executeProgram(
+        `
+          int main() {
+            int matriz[2][2];
+            print(matriz[3][0]);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).rejects.toMatchObject({
+      code: "interpreter.array_read_out_of_bounds",
+    });
+  });
+
+  it("raises runtime error on dynamic array missing read", async () => {
+    await expect(
+      executeProgram(
+        `
+          int main() {
+            int lista[];
+            print(lista[2]);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+      ),
+    ).rejects.toMatchObject({
+      code: "interpreter.array_missing_value",
+    });
+  });
+
+  it("supports multidimensional dynamic writes then reads", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int matriz[][];
+          matriz[1][2] = 9;
+          print(matriz[1][2]);
+          return matriz[1][2];
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+    );
+
+    expect(result.output).toBe("9");
+  });
+
+  it("preserves bool and string array element value types", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          bool flags[];
+          string nomes[];
+          flags[0] = true;
+          nomes[0] = "ok";
+          print(flags[0]);
+          print(nomes[0]);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+    );
+
+    expect(result.output).toBe("trueok");
+  });
+
+  it("supports untyped dynamic array declaration syntax at runtime", async () => {
+    const result = await executeProgram(
+      `
+        funcao main() {
+          lista[] = [];
+          lista[0] = 1;
+          print(lista[0]);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "untyped", arrayMode: "dynamic" } },
+    );
+
+    expect(result.output).toBe("1");
+  });
+
   it("raises runtime error on fixed array out-of-bounds write", async () => {
     await expect(
       executeProgram(
@@ -435,6 +564,8 @@ describe("Type semantics runtime", () => {
         `,
         { grammar: { typingMode: "typed", arrayMode: "fixed" } },
       ),
-    ).rejects.toThrow(/bounds|runtime/i);
+    ).rejects.toMatchObject({
+      code: "interpreter.array_write_out_of_bounds",
+    });
   });
 });

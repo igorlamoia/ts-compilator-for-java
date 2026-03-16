@@ -103,4 +103,32 @@ describe("Grammar Typing Mode", () => {
       ),
     ).toThrow();
   });
+
+  it("accepts untyped dynamic array declaration syntax in dynamic mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            lista[] = [];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "untyped", arrayMode: "dynamic" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects untyped dynamic array declaration syntax in fixed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            lista[] = [];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "untyped", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
 });

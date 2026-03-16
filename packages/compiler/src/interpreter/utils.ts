@@ -158,6 +158,20 @@ export function createFixedArrayValue(
   };
 }
 
+export function createDynamicArrayValue(
+  baseType: string,
+  dimensions: number,
+): RuntimeArrayValue {
+  return {
+    kind: "array",
+    arrayMode: "dynamic",
+    baseType,
+    dimensions,
+    sizes: [],
+    elements: [],
+  };
+}
+
 function buildFixedArrayElements(sizes: number[]): unknown[] {
   const [current, ...rest] = sizes;
   if (current === undefined) return [];
@@ -178,15 +192,35 @@ export function isRuntimeArrayValue(value: unknown): value is RuntimeArrayValue 
 export function readArrayValue(
   value: RuntimeArrayValue,
   indexes: number[],
+  throwError?: (code: string, params?: Record<string, unknown>) => never,
 ): unknown {
   let current: unknown = value.elements;
 
   for (const index of indexes) {
     if (!Array.isArray(current) || index < 0 || index >= current.length) {
+      if (throwError) {
+        throwError(
+          value.arrayMode === "dynamic"
+            ? "interpreter.array_missing_value"
+            : "interpreter.array_read_out_of_bounds",
+          { index },
+        );
+      }
       throw new Error("Array index out of bounds");
     }
 
     current = current[index];
+    if (current === undefined) {
+      if (throwError) {
+        throwError(
+          value.arrayMode === "dynamic"
+            ? "interpreter.array_missing_value"
+            : "interpreter.array_read_out_of_bounds",
+          { index },
+        );
+      }
+      throw new Error("Array index out of bounds");
+    }
   }
 
   return current;
@@ -196,12 +230,21 @@ export function writeArrayValue(
   value: RuntimeArrayValue,
   indexes: number[],
   nextValue: unknown,
+  throwError?: (code: string, params?: Record<string, unknown>) => never,
 ): void {
+  if (value.arrayMode === "dynamic") {
+    writeDynamicArrayValue(value, indexes, nextValue, throwError);
+    return;
+  }
+
   let current: unknown = value.elements;
 
   for (let i = 0; i < indexes.length - 1; i++) {
     const index = indexes[i]!;
     if (!Array.isArray(current) || index < 0 || index >= current.length) {
+      if (throwError) {
+        throwError("interpreter.array_write_out_of_bounds", { index });
+      }
       throw new Error("Array index out of bounds");
     }
     current = current[index];
@@ -214,6 +257,42 @@ export function writeArrayValue(
     lastIndex < 0 ||
     lastIndex >= current.length
   ) {
+    if (throwError) {
+      throwError("interpreter.array_write_out_of_bounds", { index: lastIndex });
+    }
+    throw new Error("Array index out of bounds");
+  }
+
+  current[lastIndex] = coerceValueForType(value.baseType, nextValue);
+}
+
+function writeDynamicArrayValue(
+  value: RuntimeArrayValue,
+  indexes: number[],
+  nextValue: unknown,
+  throwError?: (code: string, params?: Record<string, unknown>) => never,
+): void {
+  let current: unknown[] = value.elements;
+
+  for (let i = 0; i < indexes.length - 1; i++) {
+    const index = indexes[i]!;
+    if (index < 0) {
+      if (throwError) {
+        throwError("interpreter.array_write_out_of_bounds", { index });
+      }
+      throw new Error("Array index out of bounds");
+    }
+    if (!Array.isArray(current[index])) {
+      current[index] = [];
+    }
+    current = current[index] as unknown[];
+  }
+
+  const lastIndex = indexes[indexes.length - 1];
+  if (lastIndex === undefined || lastIndex < 0) {
+    if (throwError) {
+      throwError("interpreter.array_write_out_of_bounds", { index: lastIndex });
+    }
     throw new Error("Array index out of bounds");
   }
 

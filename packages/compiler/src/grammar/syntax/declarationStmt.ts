@@ -1,4 +1,5 @@
 import { TokenIterator } from "../../token/TokenIterator";
+import { Token } from "../../token";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 import { emitAssignmentChain } from "./attributeStmt";
@@ -21,30 +22,21 @@ export function declarationStmt(iterator: TokenIterator): void {
   while (true) {
     const identToken = iterator.consume(TOKENS.LITERALS.identifier);
     const varName = identToken.lexeme;
-    const dimensions = readArrayDimensions(iterator);
+    const arrayDeclaration = readArrayDeclaration(iterator, arrayMode);
 
-    if (dimensions.length > 0) {
-      if (arrayMode !== "fixed") {
-        iterator.throwError(
-          "grammar.unexpected_statement",
-          identToken.line,
-          identToken.column,
-          { lexeme: identToken.lexeme },
-        );
-      }
-
+    if (arrayDeclaration.dimensions > 0) {
       iterator.declareSymbolDescriptor(varName, {
         kind: "array",
         baseType: type,
-        dimensions: dimensions.length,
-        arrayMode: "fixed",
-        sizes: dimensions,
+        dimensions: arrayDeclaration.dimensions,
+        arrayMode: arrayDeclaration.mode,
+        sizes: arrayDeclaration.sizes,
       });
       emitter.emit(
         "DECLARE_ARRAY" as never,
         varName,
         type,
-        JSON.stringify(dimensions),
+        JSON.stringify(arrayDeclaration),
       );
     } else {
       iterator.declareSymbol(varName, type);
@@ -63,12 +55,66 @@ export function declarationStmt(iterator: TokenIterator): void {
   consumeStmtTerminator(iterator);
 }
 
-function readArrayDimensions(iterator: TokenIterator): number[] {
-  const dimensions: number[] = [];
+export function declareUntypedDynamicArray(
+  iterator: TokenIterator,
+  identToken: Token,
+): void {
+  iterator.consume(TOKENS.SYMBOLS.left_bracket);
+  iterator.consume(TOKENS.SYMBOLS.right_bracket);
+  iterator.consume(TOKENS.ASSIGNMENTS.equal);
+  iterator.consume(TOKENS.SYMBOLS.left_bracket);
+  iterator.consume(TOKENS.SYMBOLS.right_bracket);
+
+  iterator.declareSymbolDescriptor(identToken.lexeme, {
+    kind: "array",
+    baseType: "dynamic",
+    dimensions: 1,
+    arrayMode: "dynamic",
+    sizes: [],
+  });
+  iterator.emitter.emit(
+    "DECLARE_ARRAY" as never,
+    identToken.lexeme,
+    "dynamic",
+    JSON.stringify({
+      mode: "dynamic",
+      dimensions: 1,
+      sizes: [],
+    }),
+  );
+  consumeStmtTerminator(iterator);
+}
+
+type ParsedArrayDeclaration = {
+  mode: "fixed" | "dynamic";
+  dimensions: number;
+  sizes: number[];
+};
+
+function readArrayDeclaration(
+  iterator: TokenIterator,
+  arrayMode: "fixed" | "dynamic" | null,
+): ParsedArrayDeclaration {
+  const sizes: number[] = [];
+  let dimensions = 0;
 
   while (iterator.match(TOKENS.SYMBOLS.left_bracket)) {
-    const bracket = iterator.consume(TOKENS.SYMBOLS.left_bracket);
+    iterator.consume(TOKENS.SYMBOLS.left_bracket);
     const sizeToken = iterator.peek();
+
+    if (arrayMode === "dynamic") {
+      if (sizeToken.type !== TOKENS.SYMBOLS.right_bracket) {
+        iterator.throwError(
+          "grammar.unexpected_statement",
+          sizeToken.line,
+          sizeToken.column,
+          { lexeme: sizeToken.lexeme },
+        );
+      }
+      iterator.consume(TOKENS.SYMBOLS.right_bracket);
+      dimensions++;
+      continue;
+    }
 
     if (sizeToken.type !== TOKENS.LITERALS.integer_literal) {
       iterator.throwError(
@@ -92,17 +138,22 @@ function readArrayDimensions(iterator: TokenIterator): number[] {
     if (!Number.isInteger(parsedSize) || parsedSize <= 0) {
       iterator.throwError(
         "grammar.unexpected_statement",
-        bracket.line,
-        bracket.column,
-        { lexeme: bracket.lexeme },
+        sizeToken.line,
+        sizeToken.column,
+        { lexeme: sizeToken.lexeme },
       );
     }
 
     iterator.consume(TOKENS.SYMBOLS.right_bracket);
-    dimensions.push(parsedSize);
+    sizes.push(parsedSize);
+    dimensions++;
   }
 
-  return dimensions;
+  return {
+    mode: arrayMode ?? "fixed",
+    dimensions,
+    sizes,
+  };
 }
 
 // import { identListStmt } from "./identListStmt";

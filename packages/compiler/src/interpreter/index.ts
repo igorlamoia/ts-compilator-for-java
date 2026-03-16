@@ -1,5 +1,6 @@
 import {
   coerceValueForType,
+  createDynamicArrayValue,
   createFixedArrayValue,
   isRuntimeArrayValue,
   makeOperation,
@@ -345,11 +346,19 @@ export class Interpreter {
 
           const declaredType =
             typeof operand1 === "string" ? operand1 : "dynamic";
-          const sizes = this.parseArraySizes(operand2, currentInstruction);
+          const arrayDeclaration = this.parseArrayDeclaration(
+            operand2,
+            currentInstruction,
+          );
           this.declareVariable(
             result,
             declaredType,
-            createFixedArrayValue(declaredType, sizes),
+            arrayDeclaration.mode === "fixed"
+              ? createFixedArrayValue(declaredType, arrayDeclaration.sizes)
+              : createDynamicArrayValue(
+                  declaredType,
+                  arrayDeclaration.dimensions,
+                ),
           );
           this.instructionPointer++;
           continue;
@@ -374,7 +383,9 @@ export class Interpreter {
           const indexes = operand2.map((index) =>
             Number(this.parseOrGetVariableWithScope(index)),
           );
-          const value = readArrayValue(arraySlot.value, indexes);
+          const value = readArrayValue(arraySlot.value, indexes, (code, params) =>
+            this.throwRuntimeError(code, params, currentInstruction),
+          );
           this.setVariable(result, value);
           this.instructionPointer++;
           continue;
@@ -400,7 +411,13 @@ export class Interpreter {
             Number(this.parseOrGetVariableWithScope(index)),
           );
           const nextValue = this.parseOrGetVariableWithScope(operand2);
-          writeArrayValue(arraySlot.value, indexes, nextValue);
+          writeArrayValue(
+            arraySlot.value,
+            indexes,
+            nextValue,
+            (code, params) =>
+              this.throwRuntimeError(code, params, currentInstruction),
+          );
           this.instructionPointer++;
           continue;
         } else if (op === "RETURN") {
@@ -545,7 +562,10 @@ export class Interpreter {
     return value;
   }
 
-  private parseArraySizes(value: unknown, instruction: Instruction): number[] {
+  private parseArrayDeclaration(
+    value: unknown,
+    instruction: Instruction,
+  ): { mode: "fixed" | "dynamic"; dimensions: number; sizes: number[] } {
     if (typeof value !== "string") {
       this.throwRuntimeError(
         "interpreter.runtime_error",
@@ -556,8 +576,11 @@ export class Interpreter {
 
     const parsed = JSON.parse(value) as unknown;
     if (
-      !Array.isArray(parsed) ||
-      parsed.some((item) => typeof item !== "number" || item <= 0)
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !("mode" in parsed) ||
+      !("dimensions" in parsed) ||
+      !("sizes" in parsed)
     ) {
       this.throwRuntimeError(
         "interpreter.runtime_error",
@@ -566,7 +589,24 @@ export class Interpreter {
       );
     }
 
-    return parsed;
+    const declaration = parsed as {
+      mode: "fixed" | "dynamic";
+      dimensions: number;
+      sizes: number[];
+    };
+    if (
+      (declaration.mode !== "fixed" && declaration.mode !== "dynamic") ||
+      typeof declaration.dimensions !== "number" ||
+      !Array.isArray(declaration.sizes)
+    ) {
+      this.throwRuntimeError(
+        "interpreter.runtime_error",
+        { value },
+        instruction,
+      );
+    }
+
+    return declaration;
   }
 }
 
