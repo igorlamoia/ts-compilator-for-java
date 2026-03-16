@@ -47,7 +47,7 @@ export function scanStmt(iterator: TokenIterator): void {
   let destination: string;
 
   if (typingMode === "untyped") {
-    destination = iterator.consume(LITERALS.identifier).lexeme;
+    destination = parseAssignmentTarget(iterator).name;
   } else {
     hint = parseScanHint(iterator);
     iterator.consume(SYMBOLS.comma);

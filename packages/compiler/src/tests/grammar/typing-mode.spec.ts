@@ -106,6 +106,20 @@ describe("Grammar Typing Mode", () => {
     ).not.toThrow();
   });
 
+  it("accepts bare scan syntax with indexed assignable targets in untyped mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            lista[] = [];
+            scan(lista[1][2]);
+          }
+        `,
+        { grammar: { typingMode: "untyped", arrayMode: "dynamic" } },
+      ),
+    ).not.toThrow();
+  });
+
   it("rejects typed scan syntax in untyped mode", () => {
     expect(() =>
       compileToIr(

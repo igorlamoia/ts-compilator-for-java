@@ -153,7 +153,12 @@ export function parseAssignmentTarget(
     indexes.push(indexExpr.place);
   }
 
-  if (indexes.length !== descriptor.dimensions) {
+  const hasValidDimensions =
+    descriptor.arrayMode === "dynamic"
+      ? indexes.length >= descriptor.dimensions
+      : indexes.length === descriptor.dimensions;
+
+  if (!hasValidDimensions) {
     iterator.throwError(
       "grammar.invalid_assignment_operator",
       token.line,
