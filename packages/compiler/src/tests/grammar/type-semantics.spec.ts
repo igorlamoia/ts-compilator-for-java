@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compileProgram, compileToIr, executeProgram } from "./helpers";
+import { compileProgram, compileToIr, createStdin, executeProgram } from "./helpers";
 import { TokenIterator } from "../../token/TokenIterator";
 
 describe("Type semantics warnings", () => {
@@ -121,7 +121,7 @@ describe("Type semantics warnings", () => {
     expect(result.warnings).toHaveLength(1);
   });
 
-  it('warns when a %f scan hint writes into an int variable', () => {
+  it("warns when a %f scan hint writes into an int variable", () => {
     const result = compileProgram(`
       int main() {
         int x = 0;
@@ -442,7 +442,6 @@ describe("Type semantics runtime", () => {
           int matriz[2][3];
           matriz[1][2] = 7;
           print(matriz[1][2]);
-          return matriz[1][2];
         }
       `,
       { grammar: { typingMode: "typed", arrayMode: "fixed" } },
@@ -567,5 +566,63 @@ describe("Type semantics runtime", () => {
     ).rejects.toMatchObject({
       code: "interpreter.array_write_out_of_bounds",
     });
+  });
+  it("supports multidimensional fixed arrays", async () => {
+    const result = await executeProgram(
+      `int main() {
+        int matriz[3][3];
+        int i, j;
+
+        for(i=0;i<3;i++) {
+          for(j=0;j<3;j++)
+          {
+            matriz[i][j] = i;
+          }
+        }
+
+        for(i=0;i<3;i++){
+          for(j=0;j<3;j++)
+          {
+            print(matriz[i][j]);
+          }
+        }
+      }
+      `,
+      {
+        grammar: { typingMode: "typed", arrayMode: "fixed" },
+      },
+    );
+
+    expect(result.output).toBe("000111222");
+  });
+
+  it("supports multidimensional fixed array with scan", async () => {
+    const result = await executeProgram(
+      `int main() {
+          int matriz[3][3];
+          int i, j,aux;
+
+          for ( i=0; i<3; i++ ) {
+            for ( j=0; j<3; j++ )
+            {
+              scan("%d", aux);
+              matriz[i][j] = aux;
+            }
+          }
+
+          for( i=0; i<3; i++ ){
+            for( j=0; j<3; j++ )
+            {
+              print(matriz[i][j]);
+            }
+          }
+        }
+        `,
+      {
+        grammar: { typingMode: "typed", arrayMode: "fixed" },
+        stdin: createStdin(["1","2","3","4","5","6","7","8","9"]),
+      },
+    );
+    expect(result.output).toBe("123456789");
   });
 });

@@ -48,6 +48,15 @@ export function compileProgram(source: string, options?: CompileToIrOptions) {
   };
 }
 
+/**
+ * Returns a stdin callback that yields one value per scan() call.
+ * Each entry in `values` is returned in order; falls back to "" when exhausted.
+ */
+export function createStdin(values: string[]): () => Promise<string> {
+  let index = 0;
+  return async () => values[index++] ?? "";
+}
+
 export async function executeProgram(
   source: string,
   options?: CompileToIrOptions & { stdin?: () => Promise<string> },
