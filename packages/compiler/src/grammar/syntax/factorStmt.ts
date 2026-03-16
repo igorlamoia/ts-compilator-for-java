@@ -120,7 +120,12 @@ function parseArrayAccess(
     indexes.push(indexExpr.place);
   }
 
-  if (indexes.length !== descriptor.dimensions) {
+  const hasValidDimensions =
+    descriptor.arrayMode === "dynamic"
+      ? indexes.length >= descriptor.dimensions
+      : indexes.length === descriptor.dimensions;
+
+  if (!hasValidDimensions) {
     iterator.throwError(
       "grammar.unexpected_statement",
       identifier.line,
