@@ -76,6 +76,22 @@ describe("Grammar Typing Mode", () => {
     ).not.toThrow();
   });
 
+  it("accepts typed scan syntax with indexed assignable targets", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int vetor[3];
+            int matriz[2][2];
+            scan(int, vetor[1]);
+            scan("%d", matriz[1][1]);
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
   it("accepts bare scan syntax in untyped mode", () => {
     expect(() =>
       compileToIr(

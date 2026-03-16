@@ -1,6 +1,7 @@
 import { ScanHint } from "../../interpreter/constants";
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import { parseAssignmentTarget } from "./attributeStmt";
 import { argumentListStmt } from "./argumentListStmt";
 import { consumeStmtTerminator } from "./statementTerminator";
 
@@ -43,24 +44,25 @@ export function scanStmt(iterator: TokenIterator): void {
 
   const typingMode = iterator.getTypingMode();
   let hint: ScanHint = null;
-  let ident;
+  let destination: string;
 
   if (typingMode === "untyped") {
-    ident = iterator.consume(LITERALS.identifier);
+    destination = iterator.consume(LITERALS.identifier).lexeme;
   } else {
     hint = parseScanHint(iterator);
     iterator.consume(SYMBOLS.comma);
-    ident = iterator.consume(LITERALS.identifier);
+    const target = parseAssignmentTarget(iterator);
+    destination = target.name;
 
     if (hint === "float") {
-      iterator.warnIfLossyWriteToSymbol(ident.lexeme, "float", ident);
+      iterator.warnIfLossyIntConversion(target.type, "float", target.token);
     }
   }
 
   iterator.consume(SYMBOLS.right_paren);
   consumeStmtTerminator(iterator);
 
-  iterator.emitter.emit("CALL", "SCAN", hint, ident.lexeme);
+  iterator.emitter.emit("CALL", "SCAN", hint, destination);
 }
 
 function parseScanHint(iterator: TokenIterator): ScanHint {
