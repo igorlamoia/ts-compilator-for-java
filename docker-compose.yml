@@ -13,7 +13,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
       - CORS_ORIGINS=${CORS_ORIGINS}
-      - RUN_CREATE_ALL=true
+      - RUN_CREATE_ALL=false
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
