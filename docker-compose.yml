@@ -1,21 +1,32 @@
 services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+
   ts-compiler-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: ts-compilator-backend
     restart: always
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/tscompilator
-      - SECRET_KEY=substitua-por-uma-chave-real-gerada-com-openssl
-      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
-      - CORS_ORIGINS=["http://localhost:3000"]
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - CORS_ORIGINS=${CORS_ORIGINS}
       - RUN_CREATE_ALL=true
-    depends_on:
-      db:
-        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   ts-compiler-frontend:
     build:
@@ -23,10 +34,14 @@ services:
       dockerfile: packages/ide/Dockerfile
     container_name: ts-compilator-frontend
     restart: always
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - DATABASE_URL=file:./prisma/dev.db
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
       - ts-compiler-backend
+
+volumes:
+  npm_data:
+  npm_letsencrypt:
