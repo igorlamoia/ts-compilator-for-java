@@ -13,10 +13,10 @@ function SubmissionRow({ submission }: { submission: SubmissionRecord }) {
   return (
     <tr className="border-b border-white/5 hover:bg-white/2 transition-colors">
       <td className="px-6 py-3.5 text-slate-300 font-medium">
-        {submission.student?.name ?? submission.studentId.slice(0, 8)}
+        {submission.student?.name ?? String(submission.studentId).slice(0, 8)}
       </td>
       <td className="px-6 py-3.5 text-slate-400 text-sm">
-        {submission.exercise?.title ?? submission.exerciseId.slice(0, 8)}
+        {submission.exercise?.title ?? String(submission.exerciseId).slice(0, 8)}
       </td>
       <td className="px-6 py-3.5 text-slate-500 text-xs">
         {new Date(submission.submittedAt).toLocaleString("pt-BR", {

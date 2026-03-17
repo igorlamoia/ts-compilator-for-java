@@ -29,7 +29,7 @@ export default function ClassDetail() {
   useEffect(() => {
     if (!userId) return;
     api
-      .get("/auth/me", { headers: { "x-user-id": userId } })
+      .get("/auth/me")
       .then(({ data }) => setUser(data))
       .catch(() => {
         showToast({ type: "error", message: "Erro ao carregar usuário." });
@@ -42,7 +42,6 @@ export default function ClassDetail() {
     api
       .get("/exercises", {
         params: { classId: id },
-        headers: { "x-user-id": userId },
       })
       .then(({ data }) => data)
       .then((data) => {
@@ -61,7 +60,7 @@ export default function ClassDetail() {
   useEffect(() => {
     if (!id || !userId || !user) return;
     api
-      .get(`/classes/${id}/members`, { headers: { "x-user-id": userId } })
+      .get(`/classes/${id}/members`)
       .then(({ data }) => setMembersData(data))
       .catch((err) => console.error("Erro ao carregar membros.", err));
   }, [id, userId, user?.id]);
@@ -71,7 +70,7 @@ export default function ClassDetail() {
     if (!id || !userId) return;
     setLoadingLists(true);
     api
-      .get(`/classes/${id}/exercise-lists`, { headers: { "x-user-id": userId } })
+      .get(`/classes/${id}/exercise-lists`)
       .then(({ data }) => { if (Array.isArray(data)) setExerciseLists(data); })
       .catch(() => showToast({ type: "error", message: "Erro ao carregar listas." }))
       .finally(() => setLoadingLists(false));

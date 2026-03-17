@@ -40,14 +40,12 @@ export function PublishModal({
   open,
   onOpenChange,
   listId,
-  userId,
   classes,
   onPublished,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   listId: string;
-  userId: string;
   classes: ClassOption[];
   onPublished: () => void;
 }) {
@@ -62,19 +60,21 @@ export function PublishModal({
       await api.post(
         `/exercise-lists/${listId}/publish`,
         {
-          classId: values.classId,
+          classId: Number(values.classId),
           totalGrade: Number(values.totalGrade),
           minRequired: Number(values.minRequired),
           deadline: new Date(values.deadline).toISOString(),
         },
-        { headers: { "x-user-id": userId } },
       );
       showToast({ type: "success", message: "Lista publicada com sucesso!" });
       form.reset();
       onOpenChange(false);
       onPublished();
-    } catch {
-      showToast({ type: "error", message: "Erro ao publicar lista." });
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { detail?: string } } };
+      const detail = axiosError?.response?.data?.detail;
+      console.error('[publish] erro:', err);
+      showToast({ type: "error", message: detail ? `Erro: ${detail}` : "Erro ao publicar lista." });
     }
   };
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { localApi } from "@/lib/local-api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { isAxiosError } from "axios";
@@ -29,7 +30,7 @@ export default function GradeSubmission() {
   useEffect(() => {
     if (!id || !userId) return;
     api
-      .get(`/submissions/${id}`, { headers: { "x-user-id": userId } })
+      .get(`/submissions/${id}`)
       .then(({ data }) => {
         setSubmission(data);
         if (data.score != null) setScore(String(data.score));
@@ -52,7 +53,6 @@ export default function GradeSubmission() {
       await api.patch(
         `/submissions/${id}`,
         { score: Number(score), teacherFeedback: feedback },
-        { headers: { "x-user-id": userId! } },
       );
       setSaved(true);
       setSaving(false);
@@ -69,9 +69,11 @@ export default function GradeSubmission() {
     setCompiling(true);
     setCompileResult(null);
     try {
-      const { data } = await api.post(
+      const { data } = await localApi.post(
         "/submissions/validate",
         { exerciseId: submission.exerciseId, sourceCode: submission.codeSnapshot },
+        // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
+        // It still uses x-user-id for auth since it doesn't go through the JWT interceptor.
         { params: { dryRun: "true" }, headers: { "x-user-id": userId! } },
       );
       setCompileResult(data);

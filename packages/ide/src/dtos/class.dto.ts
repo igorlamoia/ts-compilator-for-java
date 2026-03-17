@@ -2,33 +2,33 @@ import type { UserDTO } from './user.dto'
 import { toUserDTO } from './user.dto'
 
 export type ClassDTO = {
-  id: string
+  id: number
   name: string
   description: string
   accessCode: string
   status: string
   createdAt: Date
-  organizationId: string
-  teacherId: string
+  organizationId: number
+  teacherId: number
   teacher?: UserDTO
   _count?: { members: number; exercises: number }
 }
 
 export function toClassDTO(cls: {
-  id: string
+  id: number
   name: string
   description: string
   accessCode: string
   status: string
   createdAt: Date
-  organizationId: string
-  teacherId: string
+  organizationId: number
+  teacherId: number
   teacher?: {
-    id: string
+    id: number
     name: string
     email: string
     role: string
-    organizationId: string
+    organizationId: number
     avatarUrl?: string | null
     bio?: string | null
     [key: string]: unknown

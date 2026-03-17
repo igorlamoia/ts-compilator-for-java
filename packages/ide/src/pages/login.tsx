@@ -34,12 +34,8 @@ export default function Login() {
     setServerError("");
 
     try {
-      const { data } = await api.post("/auth/login", values);
-      login({
-        userId: data.user.id,
-        organizationId: data.user.organizationId,
-        user: data.user,
-      });
+      const { data } = await api.post<{ accessToken: string }>("/auth/login", values);
+      login({ token: data.accessToken });
       router.push("/dashboard");
     } catch (error) {
       const message = getApiErrorMessage(error, "Falha ao entrar");

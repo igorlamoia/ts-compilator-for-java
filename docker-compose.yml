@@ -1,0 +1,39 @@
+services:
+  dynamic-interpreter-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dynamic-interpreter-backend
+    restart: always
+    ports:
+      - "9090:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - RUN_CREATE_ALL=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - shared
+
+  dynamic-interpreter-frontend:
+    build:
+      context: .
+      dockerfile: packages/ide/Dockerfile
+    container_name: dynamic-interpreter-frontend
+    restart: always
+    ports:
+      - "9080:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - dynamic-interpreter-backend
+    networks:
+      - shared
+
+networks:
+  shared:
+    external: true
+    name: shared-network

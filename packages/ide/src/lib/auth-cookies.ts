@@ -1,5 +1,4 @@
-const USER_ID_COOKIE = "lms_user_id";
-const ORG_ID_COOKIE = "lms_org_id";
+const TOKEN_COOKIE = "lms_access_token";
 const ONE_WEEK_SECONDS = 60 * 60 * 24 * 7;
 
 function isClient() {
@@ -34,19 +33,14 @@ function clearCookie(name: string) {
   document.cookie = `${encodeURIComponent(name)}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
 
-export function getAuthCookies() {
-  return {
-    userId: readCookie(USER_ID_COOKIE),
-    organizationId: readCookie(ORG_ID_COOKIE),
-  };
+export function getAuthToken(): string | null {
+  return readCookie(TOKEN_COOKIE);
 }
 
-export function setAuthCookies(userId: string, organizationId: string) {
-  writeCookie(USER_ID_COOKIE, userId);
-  writeCookie(ORG_ID_COOKIE, organizationId);
+export function setAuthToken(token: string): void {
+  writeCookie(TOKEN_COOKIE, token);
 }
 
-export function clearAuthCookies() {
-  clearCookie(USER_ID_COOKIE);
-  clearCookie(ORG_ID_COOKIE);
+export function clearAuthToken(): void {
+  clearCookie(TOKEN_COOKIE);
 }

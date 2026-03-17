@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
 import { Alert } from "@/components/ui/alert";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type AuthUser } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
@@ -12,18 +12,10 @@ import { CreateClassModal } from "@/views/dashboard/components/create-class-moda
 import { DashboardHeader } from "@/views/dashboard/components/dashboard-header";
 import { JoinClassModal } from "@/views/dashboard/components/join-class-modal";
 
-type UserData = {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  organizationId: string;
-};
-
 export default function Dashboard() {
-  const { userId, organizationId } = useAuth();
+  const { userId } = useAuth();
   const { showToast } = useToast();
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,9 +27,7 @@ export default function Dashboard() {
 
   const fetchClasses = async () => {
     try {
-      const { data: classesData } = await api.get("/classes", {
-        headers: { "x-user-id": userId!, "x-org-id": organizationId || "" },
-      });
+      const { data: classesData } = await api.get("/classes");
       setClasses(classesData);
       setLoading(false);
     } catch (error: any) {
@@ -51,7 +41,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!userId) return;
-    api.get("/auth/me", { headers: { "x-user-id": userId } })
+    api.get("/auth/me")
       .then(({ data }) => { setUser(data); fetchClasses(); });
   }, [userId]);
 
@@ -104,8 +94,6 @@ export default function Dashboard() {
           <CreateClassModal
             open={showCreateClass}
             onOpenChange={setShowCreateClass}
-            userId={userId!}
-            orgId={organizationId || ""}
             onSuccess={handleClassCreated}
             onError={setError}
           />
@@ -113,7 +101,6 @@ export default function Dashboard() {
           <JoinClassModal
             open={showJoinClass}
             onOpenChange={setShowJoinClass}
-            userId={userId!}
             onSuccess={handleClassJoined}
             onError={setError}
           />

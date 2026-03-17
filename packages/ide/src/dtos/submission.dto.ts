@@ -1,11 +1,11 @@
 export type SubmissionStudentDTO = {
-  id: string
+  id: number
   name: string
   email: string
 }
 
 export type SubmissionExerciseDTO = {
-  id: string
+  id: number
   title: string
   description: string
 }
@@ -17,11 +17,11 @@ export type SubmissionPublicationDTO = {
 }
 
 export type SubmissionDTO = {
-  id: string
-  exerciseId: string
-  exerciseListId: string
-  classId: string
-  studentId: string
+  id: number
+  exerciseId: number
+  exerciseListId: number
+  classId: number
+  studentId: number
   codeSnapshot: string
   status: string
   score: number | null
@@ -33,18 +33,18 @@ export type SubmissionDTO = {
 }
 
 export function toSubmissionDTO(submission: {
-  id: string
-  exerciseId: string
-  exerciseListId: string
-  classId: string
-  studentId: string
+  id: number
+  exerciseId: number
+  exerciseListId: number
+  classId: number
+  studentId: number
   codeSnapshot: string
   status: string
   score: number | null
   teacherFeedback: string | null
   submittedAt: Date
-  student?: { id: string; name: string; email: string; [key: string]: unknown } | null
-  exercise?: { id: string; title: string; description: string } | null
+  student?: { id: number; name: string; email: string; [key: string]: unknown } | null
+  exercise?: { id: number; title: string; description: string } | null
   publication?: { totalGrade: number; deadline: Date; minRequired: number } | null
 }): SubmissionDTO {
   return {

@@ -10,9 +10,11 @@ import { TestCaseResults } from "@/components/test-case-results";
 import type { TTestCaseResult } from "@/pages/api/submissions/validate";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { localApi } from "@/lib/local-api";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
 import { useRouter } from "next/router";
+import { getAuthToken } from "@/lib/auth-cookies";
 import { CheckCircle2, Circle, ChevronRight, ListChecks } from "lucide-react";
 import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
 
@@ -153,7 +155,7 @@ function WorkspaceContent({
     setSubmitting(true);
     try {
       const lexerConfig = buildLexerConfig();
-      const { data } = await api.post(
+      const { data } = await localApi.post(
         "/submissions/validate",
         {
           exerciseId: exercise.id,
@@ -166,7 +168,9 @@ function WorkspaceContent({
           grammar: lexerConfig.grammar,
           locale,
         },
-        { headers: { "x-user-id": userId } },
+        // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
+        // Passes x-user-id and the JWT token so the route can forward to the Python backend.
+        { headers: { "x-user-id": userId, "x-authorization": getAuthToken() ?? "" } },
       );
 
       if (!data.valid) {
@@ -413,10 +417,9 @@ export default function ExerciseWorkspace({
     if (!userId || !exerciseId) return;
 
     const requests: [Promise<any>, Promise<any>?] = [
-      api.get(`/exercises/${exerciseId}`, { headers: { "x-user-id": userId } }),
+      api.get(`/exercises/${exerciseId}`),
       listId
         ? api.get<ExerciseListDTO>(`/exercise-lists/${listId}`, {
-            headers: { "x-user-id": userId },
             params: classId ? { classId } : undefined,
           })
         : undefined,

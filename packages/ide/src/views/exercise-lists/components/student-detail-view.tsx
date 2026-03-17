@@ -9,11 +9,9 @@ import type { ClassExerciseListEntry } from "./types";
 export function StudentDetailView({
   list,
   classId,
-  userId,
 }: {
   list: ExerciseListDTO;
   classId: string;
-  userId: string;
 }) {
   const { showToast } = useToast();
   const [classEntry, setClassEntry] = useState<ClassExerciseListEntry | null>(null);
@@ -23,16 +21,14 @@ export function StudentDetailView({
     if (!classId) return;
     setLoading(true);
     api
-      .get<ClassExerciseListEntry[]>(`/classes/${classId}/exercise-lists`, {
-        headers: { "x-user-id": userId },
-      })
+      .get<ClassExerciseListEntry[]>(`/classes/${classId}/exercise-lists`)
       .then(({ data }) => {
         const entry = data.find((e) => e.exerciseListId === list.id) ?? null;
         setClassEntry(entry);
       })
       .catch(() => showToast({ type: "error", message: "Erro ao carregar progresso." }))
       .finally(() => setLoading(false));
-  }, [classId, list.id, userId, showToast]);
+  }, [classId, list.id, showToast]);
 
   const submittedIds = new Set(
     classEntry?.exerciseList.items.filter((i) => i.submitted).map((i) => i.exerciseId) ?? [],

@@ -16,16 +16,14 @@ type ClassOption = { id: string; name: string };
 export function TeacherListCard({
   list,
   classMap,
-  userId,
   onRefresh,
 }: {
   list: ExerciseListDTO;
   classMap: Record<string, string>;
-  userId: string;
   onRefresh: () => void;
 }) {
   const classNames = list.classes
-    .map((c) => classMap[c.classId] ?? c.classId.slice(0, 6))
+    .map((c) => classMap[c.classId] ?? String(c.classId).slice(0, 6))
     .filter(Boolean)
     .slice(0, 2);
 
@@ -68,10 +66,8 @@ export function TeacherListCard({
 }
 
 export function TeacherView({
-  userId,
   classes,
 }: {
-  userId: string;
   classes: ClassOption[];
 }) {
   const { showToast } = useToast();
@@ -86,16 +82,14 @@ export function TeacherView({
 
   const fetchLists = useCallback(async () => {
     try {
-      const { data } = await api.get<ExerciseListDTO[]>("/exercise-lists", {
-        headers: { "x-user-id": userId },
-      });
+      const { data } = await api.get<ExerciseListDTO[]>("/exercise-lists");
       setLists(data);
     } catch {
       showToast({ type: "error", message: "Erro ao carregar listas." });
     } finally {
       setLoading(false);
     }
-  }, [userId, showToast]);
+  }, [showToast]);
 
   useEffect(() => {
     fetchLists();
@@ -139,7 +133,6 @@ export function TeacherView({
               list={list}
               classMap={classMap}
               onRefresh={fetchLists}
-              userId={userId}
             />
           ))}
         </div>
@@ -148,7 +141,6 @@ export function TeacherView({
       <CreateListModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        userId={userId}
         onCreated={fetchLists}
       />
     </>

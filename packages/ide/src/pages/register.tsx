@@ -7,17 +7,17 @@ import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from "axios";
 import { Navbar } from "@/components/navbar";
 import { Copyright } from "@/components/copyright";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type AuthUser } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { setAuthToken } from "@/lib/auth-cookies";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { RegisterForm, registerSchema, type RegisterFormValues } from "@/components/auth/register-form";
 import { SocialLogin } from "@/components/auth/social-login";
 
-type Organization = { id: string; name: string };
+type Organization = { id: number; name: string };
 
 export default function Register() {
   const router = useRouter();
@@ -50,14 +50,10 @@ export default function Register() {
     setServerError("");
 
     try {
-      const { data } = await api.post("/auth/register", values);
-
-      login({
-        userId: data.user.id,
-        organizationId: data.user.organizationId,
-        user: data.user,
-      });
-
+      const { data } = await api.post<{ accessToken: string }>("/auth/register", values);
+      setAuthToken(data.accessToken);
+      const { data: user } = await api.get<AuthUser>("/auth/me");
+      login({ token: data.accessToken, user });
       router.push("/dashboard");
     } catch (error) {
       const message = getApiErrorMessage(

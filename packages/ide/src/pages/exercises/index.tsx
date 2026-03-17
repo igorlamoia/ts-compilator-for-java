@@ -34,9 +34,7 @@ export default function ExercisesPage() {
   const fetchExercises = useCallback(async () => {
     if (!userId) return;
     try {
-      const { data } = await api.get<ExerciseDTO[]>("/exercises", {
-        headers: { "x-user-id": userId },
-      });
+      const { data } = await api.get<ExerciseDTO[]>("/exercises");
       setExercises(data);
     } catch {
       showToast({ type: "error", message: "Erro ao carregar exercícios." });
@@ -53,9 +51,7 @@ export default function ExercisesPage() {
     if (!deleteTarget || !userId) return;
     setIsDeleting(true);
     try {
-      await api.delete(`/exercises/${deleteTarget.id}`, {
-        headers: { "x-user-id": userId },
-      });
+      await api.delete(`/exercises/${deleteTarget.id}`);
       showToast({ type: "success", message: "Exercício excluído." });
       setDeleteTarget(null);
       fetchExercises();
@@ -156,7 +152,6 @@ export default function ExercisesPage() {
       <CreateExerciseModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        userId={userId}
         onCreated={fetchExercises}
       />
 

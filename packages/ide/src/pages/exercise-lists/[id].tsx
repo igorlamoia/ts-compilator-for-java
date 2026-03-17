@@ -16,7 +16,7 @@ import type { ClassOption } from "@/views/exercise-lists/components/types";
 export default function ExerciseListDetailPage() {
   const router = useRouter();
   const { id, classId } = router.query as { id?: string; classId?: string };
-  const { userId, user, organizationId } = useAuth();
+  const { userId, user } = useAuth();
   const { showToast } = useToast();
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
@@ -28,16 +28,9 @@ export default function ExerciseListDetailPage() {
     if (!userId || !id) return;
     try {
       const [listRes, classesRes] = await Promise.all([
-        api.get<ExerciseListDTO>(`/exercise-lists/${id}`, {
-          headers: { "x-user-id": userId },
-        }),
+        api.get<ExerciseListDTO>(`/exercise-lists/${id}`),
         isTeacher
-          ? api.get<ClassOption[]>("/classes", {
-              headers: {
-                "x-user-id": userId,
-                "x-org-id": organizationId ?? "",
-              },
-            })
+          ? api.get<ClassOption[]>("/classes")
           : Promise.resolve({ data: [] }),
       ]);
       setList(listRes.data);
@@ -48,7 +41,7 @@ export default function ExerciseListDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [userId, id, isTeacher, organizationId, showToast, router]);
+  }, [userId, id, isTeacher, showToast, router]);
 
   useEffect(() => {
     fetchList();
@@ -84,7 +77,6 @@ export default function ExerciseListDetailPage() {
               (isTeacher ? (
                 <TeacherDetailView
                   list={list}
-                  userId={userId}
                   classes={classes}
                   onRefresh={fetchList}
                 />
@@ -92,7 +84,6 @@ export default function ExerciseListDetailPage() {
                 <StudentDetailView
                   list={list}
                   classId={classId ?? ""}
-                  userId={userId}
                 />
               ))}
           </main>
