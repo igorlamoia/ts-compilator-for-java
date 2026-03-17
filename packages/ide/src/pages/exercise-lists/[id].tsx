@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
-import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
+import type { ExerciseList } from "@/types/api";
 import { TeacherDetailView } from "@/views/exercise-lists/components/teacher-detail-view";
 import { StudentDetailView } from "@/views/exercise-lists/components/student-detail-view";
 import type { ClassOption } from "@/views/exercise-lists/components/types";
@@ -20,7 +20,7 @@ export default function ExerciseListDetailPage() {
   const { showToast } = useToast();
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
-  const [list, setList] = useState<ExerciseListDTO | null>(null);
+  const [list, setList] = useState<ExerciseList | null>(null);
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,7 @@ export default function ExerciseListDetailPage() {
     if (!userId || !id) return;
     try {
       const [listRes, classesRes] = await Promise.all([
-        api.get<ExerciseListDTO>(`/exercise-lists/${id}`),
+        api.get<ExerciseList>(`/exercise-lists/${id}`),
         isTeacher
           ? api.get<ClassOption[]>("/classes")
           : Promise.resolve({ data: [] }),

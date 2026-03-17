@@ -2,7 +2,6 @@ import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getExerciseUseCase } from '@/use-cases/exercises/get'
 import { HttpError, ForbiddenError } from '@/lib/errors'
-import { toExerciseDTO } from '@/dtos/exercise.dto'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const userId = req.headers['x-user-id'] as string
@@ -14,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     try {
       const exercise = await getExerciseUseCase(prisma, id)
-      return res.status(200).json(toExerciseDTO(exercise))
+      return res.status(200).json(exercise)
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error

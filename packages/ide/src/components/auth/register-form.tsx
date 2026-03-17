@@ -23,7 +23,7 @@ export const registerSchema = z.object({
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 
-type Organization = { id: string; name: string };
+type Organization = { id: number; name: string };
 
 export function RegisterForm({
   form,

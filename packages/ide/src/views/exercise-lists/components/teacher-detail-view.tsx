@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { HeroButton } from "@/components/buttons/hero";
 import { BookOpen, Plus, Send } from "lucide-react";
-import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
+import type { ExerciseList } from "@/types/api";
 import type { ClassOption, SubmissionRecord } from "./types";
 import { PublishModal } from "./publish-modal";
 import { AddExerciseModal } from "./add-exercise-modal";
@@ -35,7 +35,7 @@ export function TeacherDetailView({
   classes,
   onRefresh,
 }: {
-  list: ExerciseListDTO;
+  list: ExerciseList;
   classes: ClassOption[];
   onRefresh: () => void;
 }) {
@@ -147,7 +147,7 @@ export function TeacherDetailView({
                   key={item.exerciseId}
                   item={item}
                   index={idx}
-                  onRemove={() => setRemoveTarget(item.exerciseId)}
+                  onRemove={() => setRemoveTarget(String(item.exerciseId))}
                 />
               ))}
           </ul>
@@ -166,14 +166,14 @@ export function TeacherDetailView({
       <PublishModal
         open={showPublish}
         onOpenChange={setShowPublish}
-        listId={list.id}
+        listId={String(list.id)}
         classes={classes}
         onPublished={onRefresh}
       />
       <AddExerciseModal
         open={showAddExercise}
         onOpenChange={setShowAddExercise}
-        listId={list.id}
+        listId={String(list.id)}
         existingIds={existingIds}
         onAdded={onRefresh}
       />

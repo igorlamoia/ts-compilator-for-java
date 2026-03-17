@@ -16,7 +16,7 @@ import { useKeywords } from "@/contexts/KeywordContext";
 import { useRouter } from "next/router";
 import { getAuthToken } from "@/lib/auth-cookies";
 import { CheckCircle2, Circle, ChevronRight, ListChecks } from "lucide-react";
-import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
+import type { ExerciseList } from "@/types/api";
 
 // ── list navigator sidebar ───────────────────────────────────────────────────
 
@@ -25,14 +25,14 @@ function ListNavigatorSidebar({
   currentExerciseId,
   classId,
 }: {
-  list: ExerciseListDTO;
-  currentExerciseId: string;
+  list: ExerciseList;
+  currentExerciseId: string | number;
   classId?: string;
 }) {
   const sorted = list.items.slice().sort((a, b) => a.orderIndex - b.orderIndex);
   const currentIdx = sorted.findIndex((i) => i.exerciseId === currentExerciseId);
 
-  const submittedSet = new Set<string>(list.submittedExerciseIds ?? []);
+  const submittedSet = new Set<number>(list.submittedExerciseIds ?? []);
 
   const completedCount = sorted.filter((i) => submittedSet.has(i.exerciseId)).length;
 
@@ -112,10 +112,10 @@ function WorkspaceContent({
   onSubmitSuccess,
 }: {
   exercise: any;
-  userId: string;
-  list?: ExerciseListDTO;
+  userId: number;
+  list?: ExerciseList;
   classId?: string;
-  onSubmitSuccess?: (exerciseId: string) => void;
+  onSubmitSuccess?: (exerciseId: string | number) => void;
 }) {
   const { showToast } = useToast();
   const { locale } = useRouter();
@@ -170,7 +170,7 @@ function WorkspaceContent({
         },
         // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
         // Passes x-user-id and the JWT token so the route can forward to the Python backend.
-        { headers: { "x-user-id": userId, "x-authorization": getAuthToken() ?? "" } },
+        { headers: { "x-user-id": String(userId), "x-authorization": getAuthToken() ?? "" } },
       );
 
       if (!data.valid) {
@@ -212,7 +212,7 @@ function WorkspaceContent({
       minute: "2-digit",
     });
 
-  const publication = list?.classes?.find((c) => c.classId === classId);
+  const publication = list?.classes?.find((c) => c.classId === Number(classId));
   const deadlineStr = publication?.deadline;
   const isOverdue = deadlineStr ? new Date(deadlineStr) < new Date() : false;
 
@@ -408,10 +408,10 @@ export default function ExerciseWorkspace({
   const { userId } = useAuth();
   const { showToast } = useToast();
   const [exercise, setExercise] = useState<any>(null);
-  const [list, setList] = useState<ExerciseListDTO | undefined>(undefined);
+  const [list, setList] = useState<ExerciseList | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [localSubmittedIds, setLocalSubmittedIds] = useState<string[]>([]);
+  const [localSubmittedIds, setLocalSubmittedIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!userId || !exerciseId) return;
@@ -419,7 +419,7 @@ export default function ExerciseWorkspace({
     const requests: [Promise<any>, Promise<any>?] = [
       api.get(`/exercises/${exerciseId}`),
       listId
-        ? api.get<ExerciseListDTO>(`/exercise-lists/${listId}`, {
+        ? api.get<ExerciseList>(`/exercise-lists/${listId}`, {
             params: classId ? { classId } : undefined,
           })
         : undefined,
@@ -472,7 +472,10 @@ export default function ExerciseWorkspace({
                 userId={userId!}
                 list={list ? { ...list, submittedExerciseIds: [...(list.submittedExerciseIds ?? []), ...localSubmittedIds] } : undefined}
                 classId={classId}
-                onSubmitSuccess={(id) => setLocalSubmittedIds((prev) => prev.includes(id) ? prev : [...prev, id])}
+                onSubmitSuccess={(id) => {
+                  const parsedId = Number(id);
+                  setLocalSubmittedIds((prev) => (prev.includes(parsedId) ? prev : [...prev, parsedId]));
+                }}
               />
             </TerminalProvider>
           </RuntimeErrorProvider>

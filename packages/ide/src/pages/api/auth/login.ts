@@ -2,7 +2,6 @@ import prisma from "../../../lib/prisma";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { loginUseCase } from "@/use-cases/auth/login";
 import { HttpError } from "@/lib/errors";
-import { toUserDTO } from "@/dtos/user.dto";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +14,7 @@ export default async function handler(
     const user = await loginUseCase(prisma, req.body);
     return res
       .status(200)
-      .json({ message: "Login successful", user: toUserDTO(user) });
+      .json({ message: "Login successful", user });
   } catch (error) {
     if (error instanceof HttpError)
       return res.status(error.statusCode).json({ error: error.message });

@@ -1,12 +1,12 @@
 import { GripVertical, X } from "lucide-react";
-import type { ExerciseListItemDTO } from "@/dtos/exercise-list.dto";
+import type { ExerciseListItem } from "@/types/api";
 
 export function ExerciseRow({
   item,
   index,
   onRemove,
 }: {
-  item: ExerciseListItemDTO;
+  item: ExerciseListItem;
   index: number;
   onRemove: () => void;
 }) {

@@ -1,12 +1,12 @@
 import { Calendar, Code2, Eye, FlaskConical, Trash2 } from "lucide-react";
-import type { ExerciseDTO } from "@/dtos/exercise.dto";
+import type { Exercise } from "@/types/api";
 
 export function ExerciseCard({
   exercise,
   onView,
   onDelete,
 }: {
-  exercise: ExerciseDTO;
+  exercise: Exercise;
   onView: () => void;
   onDelete: () => void;
 }) {

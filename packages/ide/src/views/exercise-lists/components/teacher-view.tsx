@@ -7,7 +7,7 @@ import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
 import { Subtitle } from "@/components/text/subtitle";
 import { BookOpen, ChevronRight, ListChecks, Plus, Users } from "lucide-react";
-import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
+import type { ExerciseList } from "@/types/api";
 import { LoadingSpinner, EmptyState } from "./shared";
 import { CreateListModal } from "./create-list-modal";
 
@@ -18,7 +18,7 @@ export function TeacherListCard({
   classMap,
   onRefresh,
 }: {
-  list: ExerciseListDTO;
+  list: ExerciseList;
   classMap: Record<string, string>;
   onRefresh: () => void;
 }) {
@@ -71,7 +71,7 @@ export function TeacherView({
   classes: ClassOption[];
 }) {
   const { showToast } = useToast();
-  const [lists, setLists] = useState<ExerciseListDTO[]>([]);
+  const [lists, setLists] = useState<ExerciseList[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
 
@@ -82,7 +82,7 @@ export function TeacherView({
 
   const fetchLists = useCallback(async () => {
     try {
-      const { data } = await api.get<ExerciseListDTO[]>("/exercise-lists");
+      const { data } = await api.get<ExerciseList[]>("/exercise-lists");
       setLists(data);
     } catch {
       showToast({ type: "error", message: "Erro ao carregar listas." });
