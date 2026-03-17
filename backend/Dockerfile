@@ -25,4 +25,4 @@ EXPOSE 8000
 
 # Run migrations and start the app
 # Using a shell script or a combined command to ensure migrations run
-CMD ["uv", "run", "fastapi", "run", "app/main.py", "--port", "8000", "--host", "0.0.0.0"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--port", "8000", "--host", "0.0.0.0"]

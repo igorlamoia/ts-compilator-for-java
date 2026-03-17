@@ -24,7 +24,7 @@ services:
     container_name: dynamic-interpreter-frontend
     restart: always
     expose:
-      - "3000"
+      - "3001"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:

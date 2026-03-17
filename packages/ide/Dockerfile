@@ -33,7 +33,7 @@ ENV NODE_ENV production
 # Copy built files and dependencies from base
 COPY --from=base /app ./
 
-EXPOSE 3000
+EXPOSE 3001
 
 WORKDIR /app/packages/ide
 # Run migrations/generate before starting (Prisma)
