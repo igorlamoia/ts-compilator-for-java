@@ -16,6 +16,6 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          command_timeout: 10m   # build pode demorar
+          command_timeout: 30m   # build pode demorar
           script: |
             /home/vitola/scripts/deploy-tcc/deploy.sh
