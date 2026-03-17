@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: dynamic-interpreter-backend
     restart: always
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"  # Acessa via localhost:8000
     environment:
       - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
       - DATABASE_SCHEMA=${DATABASE_SCHEMA}
@@ -23,8 +23,8 @@ services:
       dockerfile: packages/ide/Dockerfile
     container_name: dynamic-interpreter-frontend
     restart: always
-    expose:
-      - "3001"
+    ports:
+      - "3001:3001"  # Acessa via localhost:3001
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
