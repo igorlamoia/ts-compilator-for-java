@@ -1,24 +1,12 @@
 services:
-  nginx-proxy-manager:
-    image: jc21/nginx-proxy-manager:latest
-    container_name: nginx-proxy-manager
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "81:81"
-    volumes:
-      - npm_data:/data
-      - npm_letsencrypt:/etc/letsencrypt
-
-  ts-compiler-backend:
+  dynamic-interpreter-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ts-compilator-backend
+    container_name: dynamic-interpreter-backend
     restart: always
-    expose:
-      - "8000"
+    ports:
+      - "9090:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
       - SECRET_KEY=${SECRET_KEY}
@@ -27,21 +15,25 @@ services:
       - RUN_CREATE_ALL=true
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - shared
 
-  ts-compiler-frontend:
+  dynamic-interpreter-frontend:
     build:
       context: .
       dockerfile: packages/ide/Dockerfile
-    container_name: ts-compilator-frontend
+    container_name: dynamic-interpreter-frontend
     restart: always
-    expose:
-      - "3000"
+    ports:
+      - "9080:3000"
     environment:
-      - DATABASE_URL=file:./prisma/dev.db
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
-      - ts-compiler-backend
+      - dynamic-interpreter-backend
+    networks:
+      - shared
 
-volumes:
-  npm_data:
-  npm_letsencrypt:
+networks:
+  shared:
+    external: true
+    name: shared-network
