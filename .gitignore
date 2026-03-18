@@ -6,3 +6,4 @@ dev.db
 .vscode/*.worktrees/
 .worktrees/
 *.sh
+*.log
