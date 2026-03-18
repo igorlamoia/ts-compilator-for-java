@@ -5,5 +5,4 @@ dev.db
 .env
 .vscode/*.worktrees/
 .worktrees/
-*.sh
 *.log
