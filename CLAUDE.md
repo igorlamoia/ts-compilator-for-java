@@ -31,7 +31,7 @@ npm run test
 ```bash
 cd packages/ide
 
-# Start Next.js development server (runs on localhost:3000)
+# Start Next.js development server (runs on localhost:3001)
 npm install && npm run dev
 
 # Build for production

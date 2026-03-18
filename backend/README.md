@@ -173,7 +173,7 @@ docker run -p 8000:8000 \
 | `DATABASE_SCHEMA` | Não | `ts_compiler` | Schema alvo para migrations e runtime |
 | `SECRET_KEY` | Sim | — | Chave para assinar JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Não | `1440` | Expiração do token (minutos) |
-| `CORS_ORIGINS` | Não | `["http://localhost:3000"]` | Origens permitidas |
+| `CORS_ORIGINS` | Não | `["http://localhost:3001"]` | Origens permitidas |
 | `RUN_CREATE_ALL` | Não | `false` | Criar tabelas automaticamente (dev only) |
 
 ## Desenvolvimento

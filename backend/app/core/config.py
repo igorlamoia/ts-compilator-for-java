@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     database_schema: str = "public"
     secret_key: str  # sem default — obrigatório via .env
     access_token_expire_minutes: int = 60 * 24  # 24 horas
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:3001"]
     run_create_all: bool = False  # use True apenas em dev/testes, nunca em produção
 
 
