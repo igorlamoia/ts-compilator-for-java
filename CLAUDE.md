@@ -136,7 +136,7 @@ npx prisma studio         # Open Prisma database GUI
 
 - The IDE imports the compiler package directly as a local dependency (`@ts-compilator-for-java/compiler`).
 
-### Key Design Patterns
+### Key Design Patterns 
 - **Scanner Factory Pattern**: `LexerScannerFactory.getInstance()` returns appropriate scanner based on character
 - **Recursive Descent Parsing**: Each grammar rule is a function that calls other rule functions
 - **Three-Address Code**: All intermediate instructions have at most one operator and three addresses
