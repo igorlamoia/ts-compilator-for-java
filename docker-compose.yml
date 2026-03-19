@@ -21,12 +21,12 @@ services:
     build:
       context: .
       dockerfile: packages/ide/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: dynamic-interpreter-frontend
     restart: always
     ports:
       - "3001:3001"  # Acessa via localhost:3001
-    environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
       - dynamic-interpreter-backend
 

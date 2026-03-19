@@ -21,6 +21,11 @@ RUN npm run build -w @ts-compilator-for-java/compiler
 
 # Build frontend
 WORKDIR /app/packages/ide
+
+# Inject NEXT_PUBLIC_API_URL at build time (NEXT_PUBLIC_* vars are baked into the JS bundle)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 RUN npm run build
 
 # Stage 2: Runner
