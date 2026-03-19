@@ -4,17 +4,17 @@ Serviço FastAPI independente que substitui as API Routes do Next.js. Fornece au
 
 ## Stack
 
-| Tecnologia | Uso |
-|---|---|
-| Python 3.12+ | Linguagem |
-| FastAPI | Framework web (async-first) |
-| SQLAlchemy 2.0 async + asyncpg | ORM + driver PostgreSQL |
-| Pydantic V2 | Validação de schemas |
-| Alembic | Migrações de banco |
-| PyJWT + Passlib/BCrypt | Autenticação JWT e hashing |
-| pydantic-settings | Configuração via `.env` |
-| uv | Gerenciador de pacotes |
-| pytest + pytest-asyncio | Testes com SQLite in-memory |
+| Tecnologia                     | Uso                         |
+| ------------------------------ | --------------------------- |
+| Python 3.12+                   | Linguagem                   |
+| FastAPI                        | Framework web (async-first) |
+| SQLAlchemy 2.0 async + asyncpg | ORM + driver PostgreSQL     |
+| Pydantic V2                    | Validação de schemas        |
+| Alembic                        | Migrações de banco          |
+| PyJWT + Passlib/BCrypt         | Autenticação JWT e hashing  |
+| pydantic-settings              | Configuração via `.env`     |
+| uv                             | Gerenciador de pacotes      |
+| pytest + pytest-asyncio        | Testes com SQLite in-memory |
 
 ## Pré-requisitos
 
@@ -49,6 +49,12 @@ Edite o `.env` e preencha obrigatoriamente:
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/tscompilator
 DATABASE_SCHEMA=dinamic_interpreter
 SECRET_KEY=  # gere com: openssl rand -hex 32
+```
+
+### 3. Ativar ambiente virtual
+
+```bash
+source .venv/bin/activate
 ```
 
 > **SECRET_KEY é obrigatória.** O servidor não sobe sem ela.
@@ -127,30 +133,30 @@ backend/
 
 ## Endpoints
 
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| POST | `/auth/register` | Registrar usuário | — |
-| POST | `/auth/login` | Login, retorna JWT | — |
-| GET | `/auth/me` | Usuário autenticado | Bearer |
-| GET | `/users` | Listar usuários da org | ADMIN/TEACHER |
-| GET | `/users/{id}` | Perfil do usuário | Bearer |
-| PATCH | `/users/{id}` | Atualizar perfil | Bearer |
-| POST | `/classes` | Criar turma | TEACHER |
-| GET | `/classes` | Listar turmas | Bearer |
-| GET | `/classes/{id}` | Detalhe da turma | Bearer |
-| POST | `/classes/{id}/join` | Entrar na turma via código | STUDENT |
-| POST | `/exercises` | Criar exercício | TEACHER |
-| GET | `/exercises` | Listar exercícios | Bearer |
-| GET | `/exercises/{id}` | Detalhe + test cases | Bearer |
-| PATCH | `/exercises/{id}` | Atualizar exercício | Owner |
-| DELETE | `/exercises/{id}` | Deletar exercício | Owner |
-| POST | `/exercises/{id}/test-cases` | Adicionar test case | Owner |
-| DELETE | `/exercises/{id}/test-cases/{tcId}` | Remover test case | Owner |
-| POST | `/submissions` | Enviar submissão | STUDENT |
-| GET | `/submissions` | Listar submissões | Bearer |
-| GET | `/submissions/{id}` | Detalhe | Bearer |
-| PATCH | `/submissions/{id}/grade` | Dar nota e feedback | TEACHER |
-| GET | `/health` | Health check | — |
+| Método | Rota                                | Descrição                  | Auth          |
+| ------ | ----------------------------------- | -------------------------- | ------------- |
+| POST   | `/auth/register`                    | Registrar usuário          | —             |
+| POST   | `/auth/login`                       | Login, retorna JWT         | —             |
+| GET    | `/auth/me`                          | Usuário autenticado        | Bearer        |
+| GET    | `/users`                            | Listar usuários da org     | ADMIN/TEACHER |
+| GET    | `/users/{id}`                       | Perfil do usuário          | Bearer        |
+| PATCH  | `/users/{id}`                       | Atualizar perfil           | Bearer        |
+| POST   | `/classes`                          | Criar turma                | TEACHER       |
+| GET    | `/classes`                          | Listar turmas              | Bearer        |
+| GET    | `/classes/{id}`                     | Detalhe da turma           | Bearer        |
+| POST   | `/classes/{id}/join`                | Entrar na turma via código | STUDENT       |
+| POST   | `/exercises`                        | Criar exercício            | TEACHER       |
+| GET    | `/exercises`                        | Listar exercícios          | Bearer        |
+| GET    | `/exercises/{id}`                   | Detalhe + test cases       | Bearer        |
+| PATCH  | `/exercises/{id}`                   | Atualizar exercício        | Owner         |
+| DELETE | `/exercises/{id}`                   | Deletar exercício          | Owner         |
+| POST   | `/exercises/{id}/test-cases`        | Adicionar test case        | Owner         |
+| DELETE | `/exercises/{id}/test-cases/{tcId}` | Remover test case          | Owner         |
+| POST   | `/submissions`                      | Enviar submissão           | STUDENT       |
+| GET    | `/submissions`                      | Listar submissões          | Bearer        |
+| GET    | `/submissions/{id}`                 | Detalhe                    | Bearer        |
+| PATCH  | `/submissions/{id}/grade`           | Dar nota e feedback        | TEACHER       |
+| GET    | `/health`                           | Health check               | —             |
 
 ## Docker
 
@@ -167,14 +173,14 @@ docker run -p 8000:8000 \
 
 ## Variáveis de Ambiente
 
-| Variável | Obrigatória | Default | Descrição |
-|----------|-------------|---------|-----------|
-| `DATABASE_URL` | Sim | — | URL do PostgreSQL (asyncpg) |
-| `DATABASE_SCHEMA` | Não | `ts_compiler` | Schema alvo para migrations e runtime |
-| `SECRET_KEY` | Sim | — | Chave para assinar JWT |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Não | `1440` | Expiração do token (minutos) |
-| `CORS_ORIGINS` | Não | `["http://localhost:3001"]` | Origens permitidas |
-| `RUN_CREATE_ALL` | Não | `false` | Criar tabelas automaticamente (dev only) |
+| Variável                      | Obrigatória | Default                     | Descrição                                |
+| ----------------------------- | ----------- | --------------------------- | ---------------------------------------- |
+| `DATABASE_URL`                | Sim         | —                           | URL do PostgreSQL (asyncpg)              |
+| `DATABASE_SCHEMA`             | Não         | `ts_compiler`               | Schema alvo para migrations e runtime    |
+| `SECRET_KEY`                  | Sim         | —                           | Chave para assinar JWT                   |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Não         | `1440`                      | Expiração do token (minutos)             |
+| `CORS_ORIGINS`                | Não         | `["http://localhost:3001"]` | Origens permitidas                       |
+| `RUN_CREATE_ALL`              | Não         | `false`                     | Criar tabelas automaticamente (dev only) |
 
 ## Desenvolvimento
 
