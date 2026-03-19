@@ -108,7 +108,7 @@ npm run start  # Compiles src/resource/input-code.java
 ```bash
 cd packages/ide
 npm install
-npm run dev    # Starts on localhost:3000
+npm run dev    # Starts on localhost:3001
 ```
 
 ### Testing

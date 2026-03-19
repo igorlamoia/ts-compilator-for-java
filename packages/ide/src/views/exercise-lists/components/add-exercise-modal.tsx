@@ -11,25 +11,23 @@ import {
 } from "@/components/ui/dialog";
 import { HeroButton } from "@/components/buttons/hero";
 import { Loader2 } from "lucide-react";
-import type { ExerciseDTO } from "@/dtos/exercise.dto";
+import type { Exercise } from "@/types/api";
 
 export function AddExerciseModal({
   open,
   onOpenChange,
   listId,
-  userId,
   existingIds,
   onAdded,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   listId: string;
-  userId: string;
-  existingIds: Set<string>;
+  existingIds: Set<number>;
   onAdded: () => void;
 }) {
   const { showToast } = useToast();
-  const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
 
@@ -37,11 +35,11 @@ export function AddExerciseModal({
     if (!open) return;
     setLoading(true);
     api
-      .get<ExerciseDTO[]>("/exercises", { headers: { "x-user-id": userId } })
+      .get<Exercise[]>("/exercises")
       .then(({ data }) => setExercises(data))
       .catch(() => showToast({ type: "error", message: "Erro ao carregar exercícios." }))
       .finally(() => setLoading(false));
-  }, [open, userId, showToast]);
+  }, [open, showToast]);
 
   const handleAdd = async (exerciseId: string) => {
     setAdding(exerciseId);
@@ -49,7 +47,6 @@ export function AddExerciseModal({
       await api.post(
         `/exercise-lists/${listId}/exercises`,
         { exerciseId, gradeWeight: 1 },
-        { headers: { "x-user-id": userId } },
       );
       showToast({ type: "success", message: "Exercício adicionado!" });
       onAdded();
@@ -95,11 +92,11 @@ export function AddExerciseModal({
                   </p>
                 </div>
                 <button
-                  onClick={() => handleAdd(ex.id)}
-                  disabled={adding === ex.id}
+                  onClick={() => handleAdd(String(ex.id))}
+                  disabled={adding === String(ex.id)}
                   className="shrink-0 px-3 py-1.5 rounded-lg bg-[#0dccf2]/10 border border-[#0dccf2]/20 text-[#0dccf2] text-xs font-semibold hover:bg-[#0dccf2]/20 transition-colors disabled:opacity-50"
                 >
-                  {adding === ex.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Adicionar"}
+                  {adding === String(ex.id) ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Adicionar"}
                 </button>
               </div>
             ))

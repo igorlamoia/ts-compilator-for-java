@@ -1,6 +1,6 @@
-import type { ExerciseDTO } from "@/dtos/exercise.dto";
+import type { Exercise } from "@/types/api";
 
-export function StatsBar({ exercises }: { exercises: ExerciseDTO[] }) {
+export function StatsBar({ exercises }: { exercises: Exercise[] }) {
   const totalTests = exercises.reduce((s, e) => s + e.testCases.length, 0);
 
   const stats = [

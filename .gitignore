@@ -2,4 +2,7 @@ node_modules
 packages/ide/prism/test.db
 test.db
 dev.db
+.env
 .vscode/*.worktrees/
+.worktrees/
+*.log

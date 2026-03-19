@@ -12,7 +12,7 @@ type ToastOptions = {
 
 const DEFAULT_TOAST_OPTIONS: ToastOptions = {
   message: "",
-  duration: 3000,
+  duration: 3001,
   position: "top-right",
   type: "info",
 };
@@ -22,7 +22,7 @@ type ToastContextType = {
 };
 
 const ToastContext = createContext<ToastContextType>({
-  showToast: () => {},
+  showToast: () => { },
 });
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {

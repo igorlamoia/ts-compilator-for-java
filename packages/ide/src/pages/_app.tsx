@@ -42,16 +42,18 @@ function AuthGuard({
   requireAuth?: boolean;
   children: ReactNode;
 }) {
-  const { isAuthenticated, isHydrated } = useAuth();
+  const { isAuthenticated, isHydrated, isProfileLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!requireAuth || !isHydrated || isAuthenticated) return;
+    if (!requireAuth || !isHydrated || isProfileLoading || isAuthenticated) {
+      return;
+    }
     void router.push("/login");
-  }, [isAuthenticated, isHydrated, requireAuth, router]);
+  }, [isAuthenticated, isHydrated, isProfileLoading, requireAuth, router]);
 
   // TODO create a better loading state with a skeleton or with a logo spinner
-  if (requireAuth && (!isHydrated || !isAuthenticated)) {
+  if (requireAuth && (!isHydrated || isProfileLoading || !isAuthenticated)) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-500 dark:text-slate-400">
         Carregando...

@@ -3,17 +3,15 @@ import Link from "next/link";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import { BookOpen, CheckCircle2, ChevronRight, Circle } from "lucide-react";
-import type { ExerciseListDTO } from "@/dtos/exercise-list.dto";
+import type { ExerciseList } from "@/types/api";
 import type { ClassExerciseListEntry } from "./types";
 
 export function StudentDetailView({
   list,
   classId,
-  userId,
 }: {
-  list: ExerciseListDTO;
+  list: ExerciseList;
   classId: string;
-  userId: string;
 }) {
   const { showToast } = useToast();
   const [classEntry, setClassEntry] = useState<ClassExerciseListEntry | null>(null);
@@ -23,22 +21,20 @@ export function StudentDetailView({
     if (!classId) return;
     setLoading(true);
     api
-      .get<ClassExerciseListEntry[]>(`/classes/${classId}/exercise-lists`, {
-        headers: { "x-user-id": userId },
-      })
+      .get<ClassExerciseListEntry[]>(`/classes/${classId}/exercise-lists`)
       .then(({ data }) => {
         const entry = data.find((e) => e.exerciseListId === list.id) ?? null;
         setClassEntry(entry);
       })
       .catch(() => showToast({ type: "error", message: "Erro ao carregar progresso." }))
       .finally(() => setLoading(false));
-  }, [classId, list.id, userId, showToast]);
+  }, [classId, list.id, showToast]);
 
-  const submittedIds = new Set(
+  const submittedIds = new Set<number>(
     classEntry?.exerciseList.items.filter((i) => i.submitted).map((i) => i.exerciseId) ?? [],
   );
 
-  const publication = list.classes.find((c) => c.classId === classId);
+  const publication = list.classes.find((c) => c.classId === Number(classId));
   const totalCount = list.items.length;
   const completedCount = submittedIds.size;
   const minRequired = publication?.minRequired ?? 0;

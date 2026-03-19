@@ -37,7 +37,6 @@ type JoinClassFormValues = z.infer<typeof joinClassSchema>;
 interface JoinClassModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userId: string;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -45,7 +44,6 @@ interface JoinClassModalProps {
 export function JoinClassModal({
   open,
   onOpenChange,
-  userId,
   onSuccess,
   onError,
 }: JoinClassModalProps) {
@@ -69,9 +67,6 @@ export function JoinClassModal({
       await api.post(
         "/classes/join",
         { accessCode: values.joinCode.toUpperCase() },
-        {
-          headers: { "x-user-id": userId },
-        },
       );
 
       onSuccess?.("Você entrou na turma!");

@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { HeroButton } from "@/components/buttons/hero";
-import type { ExerciseDTO } from "@/dtos/exercise.dto";
+import type { Exercise } from "@/types/api";
 
 export function ExerciseDetailModal({
   open,
@@ -16,7 +16,7 @@ export function ExerciseDetailModal({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  exercise: ExerciseDTO | null;
+  exercise: Exercise | null;
 }) {
   if (!exercise) return null;
 

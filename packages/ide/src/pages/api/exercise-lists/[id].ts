@@ -2,7 +2,6 @@ import prisma from '@/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getExerciseListUseCase } from '@/use-cases/exercise-lists/get'
 import { HttpError } from '@/lib/errors'
-import { toExerciseListDTO } from '@/dtos/exercise-list.dto'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const userId = req.headers['x-user-id'] as string
@@ -25,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         submittedExerciseIds = submissions.map((s) => s.exerciseId)
       }
 
-      return res.status(200).json(toExerciseListDTO(list, submittedExerciseIds))
+      return res.status(200).json({ ...list, submittedExerciseIds })
     } catch (error) {
       if (error instanceof HttpError) return res.status(error.statusCode).json({ error: error.message })
       throw error

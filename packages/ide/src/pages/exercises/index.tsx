@@ -10,7 +10,7 @@ import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
 import { Subtitle } from "@/components/text/subtitle";
 import { Plus, Search } from "lucide-react";
-import type { ExerciseDTO } from "@/dtos/exercise.dto";
+import type { Exercise } from "@/types/api";
 import { CreateExerciseModal } from "@/views/exercises/components/create-exercise-modal";
 import { ExerciseCard } from "@/views/exercises/components/exercise-card";
 import { ExerciseDetailModal } from "@/views/exercises/components/exercise-detail-modal";
@@ -23,20 +23,18 @@ export default function ExercisesPage() {
   const { showToast } = useToast();
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
-  const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [viewExercise, setViewExercise] = useState<ExerciseDTO | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ExerciseDTO | null>(null);
+  const [viewExercise, setViewExercise] = useState<Exercise | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Exercise | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchExercises = useCallback(async () => {
     if (!userId) return;
     try {
-      const { data } = await api.get<ExerciseDTO[]>("/exercises", {
-        headers: { "x-user-id": userId },
-      });
+      const { data } = await api.get<Exercise[]>("/exercises");
       setExercises(data);
     } catch {
       showToast({ type: "error", message: "Erro ao carregar exercícios." });
@@ -53,9 +51,7 @@ export default function ExercisesPage() {
     if (!deleteTarget || !userId) return;
     setIsDeleting(true);
     try {
-      await api.delete(`/exercises/${deleteTarget.id}`, {
-        headers: { "x-user-id": userId },
-      });
+      await api.delete(`/exercises/${deleteTarget.id}`);
       showToast({ type: "success", message: "Exercício excluído." });
       setDeleteTarget(null);
       fetchExercises();
@@ -156,7 +152,6 @@ export default function ExercisesPage() {
       <CreateExerciseModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        userId={userId}
         onCreated={fetchExercises}
       />
 

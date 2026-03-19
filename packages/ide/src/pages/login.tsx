@@ -9,7 +9,7 @@ import { Subtitle } from "@/components/text/subtitle";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "@/components/navbar";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type AuthUser } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
@@ -34,13 +34,25 @@ export default function Login() {
     setServerError("");
 
     try {
-      const { data } = await api.post("/auth/login", values);
-      login({
-        userId: data.user.id,
-        organizationId: data.user.organizationId,
-        user: data.user,
-      });
-      router.push("/dashboard");
+      const { data } = await api.post<{ accessToken: string; user?: AuthUser }>(
+        "/auth/login",
+        values,
+      );
+
+      if (!data.accessToken) {
+        throw new Error("Resposta de login sem token");
+      }
+
+      if (data.user) {
+        login({ token: data.accessToken, user: data.user });
+      } else {
+        const { data: user } = await api.get<AuthUser>("/auth/me", {
+          headers: { Authorization: `Bearer ${data.accessToken}` },
+        });
+        login({ token: data.accessToken, user });
+      }
+
+      await router.push("/dashboard");
     } catch (error) {
       const message = getApiErrorMessage(error, "Falha ao entrar");
       setServerError(message);

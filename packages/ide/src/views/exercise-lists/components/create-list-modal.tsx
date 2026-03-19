@@ -32,12 +32,10 @@ type CreateListForm = z.infer<typeof createListSchema>;
 export function CreateListModal({
   open,
   onOpenChange,
-  userId,
   onCreated,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  userId: string;
   onCreated: () => void;
 }) {
   const { showToast } = useToast();
@@ -51,7 +49,6 @@ export function CreateListModal({
       await api.post(
         "/exercise-lists",
         { title: values.title, description: values.description },
-        { headers: { "x-user-id": userId } },
       );
       showToast({ type: "success", message: "Lista criada com sucesso!" });
       form.reset();

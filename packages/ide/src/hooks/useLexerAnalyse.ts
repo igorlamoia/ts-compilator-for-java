@@ -2,7 +2,7 @@ import type { MarkerSeverity } from "monaco-editor";
 import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
 import { TLexerAnalyseData } from "@/pages/api/lexer";
-import { api } from "@/utils/axios";
+import { localApi as api } from "@/lib/local-api";
 import { useState, useContext } from "react";
 import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
 import { AxiosError } from "axios";
