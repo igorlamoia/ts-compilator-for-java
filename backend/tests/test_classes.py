@@ -381,8 +381,9 @@ class TestGetClassMembers:
 
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) >= 1
+        assert "members" in data
+        assert "teacher" in data
+        assert len(data["members"]) >= 1
 
     async def test_get_class_members_forbidden_for_non_teacher(
         self, async_client: AsyncClient, async_session: AsyncSession
