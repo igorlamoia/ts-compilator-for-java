@@ -9,6 +9,7 @@ const DEFAULT_GRAMMAR: IDEGrammarConfig = {
   semicolonMode: "optional-eol",
   blockMode: "delimited",
   typingMode: "typed",
+  arrayMode: "fixed",
 };
 
 function normalizeOperatorWordMap(
@@ -34,11 +35,21 @@ function normalizeOperatorWordMap(
 export function normalizeCompilerConfig(
   input: IDEPartialCompilerConfigPayload,
 ): IDECompilerConfigPayload {
+  const typingMode = input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode;
+  const requestedArrayMode = input.grammar?.arrayMode;
+  const arrayMode =
+    typingMode === "untyped"
+      ? "dynamic"
+      : requestedArrayMode === "fixed" || requestedArrayMode === "dynamic"
+        ? requestedArrayMode
+        : DEFAULT_GRAMMAR.arrayMode;
+
   const grammar: IDEGrammarConfig = {
     semicolonMode:
       input.grammar?.semicolonMode ?? DEFAULT_GRAMMAR.semicolonMode,
     blockMode: input.grammar?.blockMode ?? DEFAULT_GRAMMAR.blockMode,
-    typingMode: input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode,
+    typingMode,
+    arrayMode,
   };
 
   const indentationBlock = grammar.blockMode === "indentation";

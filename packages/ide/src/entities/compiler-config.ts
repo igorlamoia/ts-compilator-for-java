@@ -1,6 +1,7 @@
 export type IDESemicolonMode = "optional-eol" | "required";
 export type IDEBlockMode = "delimited" | "indentation";
 export type IDETypingMode = "typed" | "untyped";
+export type IDEArrayMode = "fixed" | "dynamic";
 
 export type IDEOperatorWordMap = {
   logical_or?: string;
@@ -18,6 +19,7 @@ export type IDEGrammarConfig = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
   typingMode: IDETypingMode;
+  arrayMode: IDEArrayMode;
 };
 
 export type IDECompilerConfigPayload = {

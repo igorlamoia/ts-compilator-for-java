@@ -107,6 +107,7 @@ describe("/api/submissions/validate config propagation", () => {
           semicolonMode: "required",
           blockMode: "indentation",
           typingMode: "untyped",
+          arrayMode: "dynamic",
         },
       },
     } as any;
@@ -129,6 +130,7 @@ describe("/api/submissions/validate config propagation", () => {
         semicolonMode: "required",
         blockMode: "indentation",
         typingMode: "untyped",
+        arrayMode: "dynamic",
       },
     });
   });
