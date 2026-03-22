@@ -9,16 +9,8 @@ import {
   IssueDetails,
   IssueError,
 } from "@ts-compilator-for-java/compiler/issue";
-import { TToken } from "@/@types/token";
 import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
-
-export type TLexerAnalyseData = {
-  tokens: TToken[];
-  warnings: IssueDetails[];
-  infos: IssueDetails[];
-  error: IssueDetails | null;
-  message?: string;
-};
+import { TLexerAnalyseData } from "@/types/compiler";
 
 export default function handler(
   req: NextApiRequest,

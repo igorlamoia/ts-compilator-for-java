@@ -1,7 +1,7 @@
 import type { MarkerSeverity } from "monaco-editor";
 import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
-import { TLexerAnalyseData } from "@/pages/api/lexer";
+import { TLexerAnalyseData } from "@/types/compiler";
 import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
 import { useState, useContext } from "react";
 import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";

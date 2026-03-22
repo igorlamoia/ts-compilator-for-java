@@ -1,7 +1,7 @@
 import { MainButton } from "@/components/buttons/main";
 import { TokenCard } from "@/components/token-card";
 import { NumberTicker } from "@/components/ui/number-ticker";
-import { TLexerAnalyseData } from "@/pages/api/lexer";
+import { TLexerAnalyseData } from "@/types/compiler";
 import { Classification } from "@/utils/compiler/classification";
 import { classifyTokens } from "@/utils/compiler/editor/tokens";
 import { AnimatePresence, motion } from "motion/react";

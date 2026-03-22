@@ -12,26 +12,9 @@ import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/c
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
 import { normalizeCompilerConfig } from '../../../lib/compiler-config'
 import type { IDEGrammarConfig } from '@/entities/compiler-config'
+import type { TTestCaseResult, TValidationResult } from '@/types/submissions'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-
-export type TTestCaseResult = {
-    label: string;
-    input: string;
-    expectedOutput: string;
-    actualOutput: string;
-    passed: boolean;
-}
-
-export type TValidationResult = {
-    valid: boolean;
-    errors: string[];
-    warnings: string[];
-    submissionId?: string;
-    testCaseResults?: TTestCaseResult[];
-    testCasesPassed?: number;
-    testCasesTotal?: number;
-}
 
 async function runTestCase(
     instructions: Instruction[],

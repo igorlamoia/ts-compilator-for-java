@@ -7,7 +7,7 @@ import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
 import { IDE } from "@/views/ide";
 import { TerminalProvider } from "@/contexts/TerminalContext";
 import { TestCaseResults } from "@/components/test-case-results";
-import type { TTestCaseResult } from "@/pages/api/submissions/validate";
+import type { TTestCaseResult } from "@/types/submissions";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { localApi } from "@/lib/local-api";

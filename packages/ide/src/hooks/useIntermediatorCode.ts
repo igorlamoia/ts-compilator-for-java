@@ -1,7 +1,7 @@
 import type { MarkerSeverity } from "monaco-editor";
 import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
-import { TIntermediateCodeData } from "@/pages/api/intermediator";
+import { TIntermediateCodeData } from "@/types/compiler";
 import { useState, useContext } from "react";
 import { IssueDetails, IssueError } from "@ts-compilator-for-java/compiler/issue";
 import { useToast } from "@/contexts/ToastContext";
