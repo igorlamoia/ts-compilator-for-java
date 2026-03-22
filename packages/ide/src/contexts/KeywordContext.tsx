@@ -10,6 +10,7 @@ import { z } from "zod";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
 import type {
+  IDEArrayMode,
   IDEBlockMode,
   IDECompilerConfigPayload,
   IDEOperatorWordMap,
@@ -62,6 +63,7 @@ type StoredKeywordCustomization = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
   typingMode: IDETypingMode;
+  arrayMode: IDEArrayMode;
 };
 
 type KeywordContextType = {
@@ -105,6 +107,10 @@ type KeywordContextType = {
   typingMode: IDETypingMode;
   /** Define modo de tipagem da gramática */
   setTypingMode: (value: IDETypingMode) => void;
+  /** Modo de vetores e matrizes da gramática */
+  arrayMode: IDEArrayMode;
+  /** Define modo de vetores e matrizes da gramática */
+  setArrayMode: (value: IDEArrayMode) => void;
   /** Valida se uma palavra customizada é válida */
   validateKeyword: (
     original: string,
@@ -193,6 +199,17 @@ function getDefaultTypingMode(): IDETypingMode {
   return "typed";
 }
 
+function getDefaultArrayMode(): IDEArrayMode {
+  return "fixed";
+}
+
+function normalizeArrayMode(
+  typingMode: IDETypingMode,
+  arrayMode: IDEArrayMode,
+): IDEArrayMode {
+  return typingMode === "untyped" ? "dynamic" : arrayMode;
+}
+
 function loadCustomization(): StoredKeywordCustomization {
   const defaults: StoredKeywordCustomization = {
     mappings: getDefaultKeywordMappings(),
@@ -201,6 +218,7 @@ function loadCustomization(): StoredKeywordCustomization {
     semicolonMode: getDefaultSemicolonMode(),
     blockMode: getDefaultBlockMode(),
     typingMode: getDefaultTypingMode(),
+    arrayMode: getDefaultArrayMode(),
   };
 
   if (typeof window === "undefined") return defaults;
@@ -224,6 +242,10 @@ function loadCustomization(): StoredKeywordCustomization {
         parsed.typingMode === "typed" || parsed.typingMode === "untyped"
           ? parsed.typingMode
           : getDefaultTypingMode();
+      const rawArrayMode =
+        parsed.arrayMode === "fixed" || parsed.arrayMode === "dynamic"
+          ? parsed.arrayMode
+          : getDefaultArrayMode();
 
       if (!isValidStoredMappings(mappings)) return defaults;
 
@@ -239,6 +261,7 @@ function loadCustomization(): StoredKeywordCustomization {
         semicolonMode,
         blockMode,
         typingMode,
+        arrayMode: normalizeArrayMode(typingMode, rawArrayMode),
       };
     }
 
@@ -255,6 +278,7 @@ function loadCustomization(): StoredKeywordCustomization {
       semicolonMode: getDefaultSemicolonMode(),
       blockMode: getDefaultBlockMode(),
       typingMode: getDefaultTypingMode(),
+      arrayMode: getDefaultArrayMode(),
     };
   } catch {
     return defaults;
@@ -283,6 +307,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const [typingMode, setTypingMode] = useState<IDETypingMode>(
     getDefaultTypingMode(),
   );
+  const [arrayMode, setArrayMode] = useState<IDEArrayMode>(getDefaultArrayMode);
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
 
@@ -297,6 +322,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setSemicolonMode(loadedCustomization.semicolonMode);
     setBlockMode(loadedCustomization.blockMode);
     setTypingMode(loadedCustomization.typingMode);
+    setArrayMode(loadedCustomization.arrayMode);
     persistCustomization(loadedCustomization);
     setIsHydrated(true);
   }, []);
@@ -311,6 +337,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       semicolonMode,
       blockMode,
       typingMode,
+      arrayMode,
     });
   }, [
     mappings,
@@ -319,8 +346,15 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     semicolonMode,
     blockMode,
     typingMode,
+    arrayMode,
     isHydrated,
   ]);
+
+  useEffect(() => {
+    if (typingMode === "untyped" && arrayMode !== "dynamic") {
+      setArrayMode("dynamic");
+    }
+  }, [typingMode, arrayMode]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -381,6 +415,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setSemicolonMode(getDefaultSemicolonMode());
     setBlockMode(getDefaultBlockMode());
     setTypingMode(getDefaultTypingMode());
+    setArrayMode(getDefaultArrayMode());
   }, []);
 
   const buildKeywordMap = useCallback((): Record<string, number> => {
@@ -444,6 +479,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       semicolonMode,
       blockMode,
       typingMode,
+      arrayMode: normalizeArrayMode(typingMode, arrayMode),
     };
 
     return {
@@ -468,6 +504,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     semicolonMode,
     blockMode,
     typingMode,
+    arrayMode,
   ]);
 
   return (
@@ -491,6 +528,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         setBlockMode,
         typingMode,
         setTypingMode,
+        arrayMode,
+        setArrayMode,
         validateKeyword,
         isOpenKeywordCustomizer,
         setIsOpenKeywordCustomizer,

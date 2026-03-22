@@ -28,7 +28,12 @@ const {
     keywordMap: { inteiro: 21 },
     blockDelimiters: { open: "begin", close: "end" },
     indentationBlock: false,
-    grammar: {},
+    grammar: {
+      semicolonMode: "required",
+      blockMode: "delimited",
+      typingMode: "typed",
+      arrayMode: "fixed",
+    },
     operatorWordMap: { logical_and: "and" },
   })),
   saveCurrentFileMock: vi.fn(),
@@ -164,6 +169,7 @@ describe("useLexerAnalyse", () => {
       expect.objectContaining({ type: "warning" }),
     );
     expect(saveCurrentFileMock).toHaveBeenCalledWith("Main.java");
+    expect(buildLexerConfigMock).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();

@@ -27,6 +27,7 @@ const {
       semicolonMode: "required",
       blockMode: "indentation",
       typingMode: "untyped",
+      arrayMode: "dynamic",
     },
     operatorWordMap: { logical_and: "and" },
   })),
@@ -150,6 +151,7 @@ describe("useIntermediatorCode", () => {
         semicolonMode: "required",
         blockMode: "indentation",
         typingMode: "untyped",
+        arrayMode: "dynamic",
       },
       operatorWordMap: { logical_and: "and" },
     });
@@ -162,6 +164,7 @@ describe("useIntermediatorCode", () => {
       expect.objectContaining({ type: "warning" }),
     );
     expect(saveCurrentFileMock).toHaveBeenCalledWith("Main.java");
+    expect(buildLexerConfigMock).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();
