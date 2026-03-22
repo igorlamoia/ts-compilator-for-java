@@ -1,6 +1,7 @@
 import type * as monacoEditor from "monaco-editor";
 import type { IDEOperatorWordMap } from "@/entities/compiler-config";
 import {
+  JavaMMArrayMode,
   JavaMMBlockMode,
   JavaMMSnippetVariant,
   JavaMMTypingMode,
@@ -38,7 +39,10 @@ export type JavaMMLanguageOptions = {
   blockDelimiters?: JavaMMBlockDelimiters;
   operatorWordMap?: IDEOperatorWordMap;
   typingMode?: "typed" | "untyped";
+  arrayMode?: "fixed" | "dynamic";
 };
+
+const BUILT_IN_LITERALS = ["true", "false"];
 
 const DEFAULT_OPERATORS = [
   "=",
@@ -178,7 +182,7 @@ export function buildJavaMMLanguageConfiguration(
 }
 
 const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
-  types: new Set(["int", "float", "string", "void", "variavel", "funcao"]),
+  types: new Set(["int", "float", "bool", "string", "void", "variavel", "funcao"]),
   conditionals: new Set(["if", "else", "switch", "case", "default"]),
   loops: new Set(["for", "while"]),
   flow: new Set(["break", "continue", "return"]),
@@ -218,9 +222,14 @@ export function buildJavaMMLanguageMetadata(
   }
 
   return {
-    allKeywords: keywordMappings
-      .map((mapping) => mapping.custom.trim())
-      .filter(Boolean),
+    allKeywords: Array.from(
+      new Set([
+        ...keywordMappings
+          .map((mapping) => mapping.custom.trim())
+          .filter(Boolean),
+        ...BUILT_IN_LITERALS,
+      ]),
+    ),
     operatorWords,
     semanticGroups,
   };
@@ -254,11 +263,13 @@ function isSnippetSupported(
   snippet: JavaMMSnippetVariant,
   typingMode: JavaMMTypingMode,
   blockMode: JavaMMBlockMode,
+  arrayMode: JavaMMArrayMode,
 ): boolean {
   const supportsTyping =
     !snippet.typingMode || snippet.typingMode === typingMode;
   const supportsBlock = !snippet.blockMode || snippet.blockMode === blockMode;
-  return supportsTyping && supportsBlock;
+  const supportsArray = !snippet.arrayMode || snippet.arrayMode === arrayMode;
+  return supportsTyping && supportsBlock && supportsArray;
 }
 
 let completionProviderDisposable: monacoEditor.IDisposable | null = null;
@@ -317,6 +328,8 @@ export function registerJavaMMLanguage(
         };
 
         const suggestions: monacoEditor.languages.CompletionItem[] = [];
+        const preferredArrayMode: JavaMMArrayMode =
+          options.arrayMode ?? "fixed";
 
         for (const mapping of keywordMappings) {
           const keyword = mapping.custom.trim();
@@ -349,6 +362,7 @@ export function registerJavaMMLanguage(
                 snippet,
                 preferredTypingMode,
                 preferredBlockMode,
+                preferredArrayMode,
               )
             ) {
               continue;

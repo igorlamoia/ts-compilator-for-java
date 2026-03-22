@@ -365,6 +365,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         blockDelimiters,
         operatorWordMap,
         typingMode,
+        arrayMode,
       });
       retokenize();
     }
@@ -374,6 +375,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     blockDelimiters,
     operatorWordMap,
     typingMode,
+    arrayMode,
     monacoRef,
     retokenize,
   ]);

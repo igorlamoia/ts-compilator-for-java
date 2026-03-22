@@ -11,6 +11,30 @@ export const KEYWORD_SNIPPETS: Record<string, JavaMMSnippetVariant[]> = {
       description: "Declarar int",
       typingMode: "typed",
     },
+    {
+      body: "int ${1:vetor}[${2:10}];",
+      description: "Declarar vetor fixo",
+      typingMode: "typed",
+      arrayMode: "fixed",
+    },
+    {
+      body: "int ${1:matriz}[${2:3}][${3:3}];",
+      description: "Declarar matriz fixa",
+      typingMode: "typed",
+      arrayMode: "fixed",
+    },
+    {
+      body: "int ${1:vetor}[];",
+      description: "Declarar vetor dinâmico",
+      typingMode: "typed",
+      arrayMode: "dynamic",
+    },
+    {
+      body: "int ${1:matriz}[][];",
+      description: "Declarar matriz dinâmica",
+      typingMode: "typed",
+      arrayMode: "dynamic",
+    },
   ],
   float: [
     {
@@ -26,12 +50,26 @@ export const KEYWORD_SNIPPETS: Record<string, JavaMMSnippetVariant[]> = {
       typingMode: "typed",
     },
   ],
+  bool: [
+    {
+      body: "bool ${1:nome};",
+      description: "Declarar bool",
+      typingMode: "typed",
+    },
+  ],
   variavel: [
     {
       body: "variavel ${1:nome} = ${2:valor};",
       description: "Declaração não tipada",
       typingMode: "untyped",
       labelSuffix: "não tipado",
+    },
+    {
+      body: "variavel ${1:lista}[] = [];",
+      description: "Declaração de vetor dinâmico não tipado",
+      typingMode: "untyped",
+      arrayMode: "dynamic",
+      labelSuffix: "vetor dinâmico",
     },
   ],
   void: [
