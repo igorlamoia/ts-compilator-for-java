@@ -5,6 +5,7 @@ import {
   BlockDelimiters,
 } from "@/contexts/KeywordContext";
 import type {
+  IDEArrayMode,
   IDEBlockMode,
   IDEOperatorWordMap,
   IDESemicolonMode,
@@ -28,6 +29,7 @@ import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 const KEYWORD_EXPLANATIONS: Record<string, string> = {
   int: "Tipo numérico para números inteiros.",
   float: "Tipo numérico para números com casas decimais.",
+  bool: "Tipo lógico com os valores true e false.",
   string: "Tipo de texto.",
   void: "Usado quando uma função não retorna valor.",
   for: "Laço de repetição com início, condição e incremento.",
@@ -63,6 +65,8 @@ export function KeywordCustomizer() {
     setBlockMode,
     typingMode,
     setTypingMode,
+    arrayMode,
+    setArrayMode,
     isOpenKeywordCustomizer: isOpen,
     setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
@@ -76,6 +80,7 @@ export function KeywordCustomizer() {
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
   const [draftTypingMode, setDraftTypingMode] = useState<IDETypingMode>(typingMode);
+  const [draftArrayMode, setDraftArrayMode] = useState<IDEArrayMode>(arrayMode);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
@@ -90,6 +95,7 @@ export function KeywordCustomizer() {
       setDraftSemicolonMode(semicolonMode);
       setDraftBlockMode(blockMode);
       setDraftTypingMode(typingMode);
+      setDraftArrayMode(arrayMode);
       setCurrentStep(0);
       setCurrentError(null);
       setDelimiterError(null);
@@ -103,7 +109,14 @@ export function KeywordCustomizer() {
     semicolonMode,
     blockMode,
     typingMode,
+    arrayMode,
   ]);
+
+  useEffect(() => {
+    if (draftTypingMode === "untyped" && draftArrayMode !== "dynamic") {
+      setDraftArrayMode("dynamic");
+    }
+  }, [draftTypingMode, draftArrayMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -146,7 +159,8 @@ export function KeywordCustomizer() {
       draftBlockDelimiters.close !== blockDelimiters.close ||
       draftSemicolonMode !== semicolonMode ||
       draftBlockMode !== blockMode ||
-      draftTypingMode !== typingMode,
+      draftTypingMode !== typingMode ||
+      draftArrayMode !== arrayMode,
     [
       draftMappings,
       draftOperatorWordMap,
@@ -159,6 +173,8 @@ export function KeywordCustomizer() {
       blockMode,
       draftTypingMode,
       typingMode,
+      draftArrayMode,
+      arrayMode,
     ],
   );
 
@@ -197,18 +213,21 @@ export function KeywordCustomizer() {
     const resetSemicolonMode: IDESemicolonMode = "optional-eol";
     const resetBlockMode: IDEBlockMode = "delimited";
     const resetTypingMode: IDETypingMode = "typed";
+    const resetArrayMode: IDEArrayMode = "fixed";
     setDraftMappings(resetMappings);
     setDraftBlockDelimiters(resetBlockDelimiters);
     setDraftOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
     setDraftSemicolonMode(resetSemicolonMode);
     setDraftBlockMode(resetBlockMode);
     setDraftTypingMode(resetTypingMode);
+    setDraftArrayMode(resetArrayMode);
     replaceKeywords(resetMappings);
     setOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
     setBlockDelimiters(resetBlockDelimiters);
     setSemicolonMode(resetSemicolonMode);
     setBlockMode(resetBlockMode);
     setTypingMode(resetTypingMode);
+    setArrayMode(resetArrayMode);
     setCurrentError(null);
     setDelimiterError(null);
     setOperatorError(null);
@@ -266,6 +285,9 @@ export function KeywordCustomizer() {
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
     setTypingMode(draftTypingMode);
+    setArrayMode(
+      draftTypingMode === "untyped" ? "dynamic" : draftArrayMode,
+    );
     setBlockDelimiters({
       open: draftBlockDelimiters.open.trim(),
       close: draftBlockDelimiters.close.trim(),
@@ -317,6 +339,13 @@ export function KeywordCustomizer() {
         getOperatorValidationDelimiters(),
       ),
     );
+  };
+
+  const handleTypingModeChange = (nextTypingMode: IDETypingMode) => {
+    setDraftTypingMode(nextTypingMode);
+    if (nextTypingMode === "untyped") {
+      setDraftArrayMode("dynamic");
+    }
   };
 
   if (!currentMapping) return null;
@@ -539,7 +568,7 @@ export function KeywordCustomizer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setDraftTypingMode("typed")}
+                  onClick={() => handleTypingModeChange("typed")}
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
                     draftTypingMode === "typed"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
@@ -550,7 +579,7 @@ export function KeywordCustomizer() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDraftTypingMode("untyped")}
+                  onClick={() => handleTypingModeChange("untyped")}
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
                     draftTypingMode === "untyped"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
@@ -560,6 +589,43 @@ export function KeywordCustomizer() {
                   Não tipado
                 </button>
               </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Vetores e Matrizes
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftArrayMode("fixed")}
+                  disabled={draftTypingMode === "untyped"}
+                  className={`px-3 py-2 text-sm rounded-md border text-left disabled:opacity-50 disabled:cursor-not-allowed ${
+                    draftArrayMode === "fixed"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Tamanho fixo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftArrayMode("dynamic")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftArrayMode === "dynamic"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Tamanho dinâmico
+                </button>
+              </div>
+              {draftTypingMode === "untyped" && (
+                <p className="text-sm dark:text-gray-400 text-gray-500">
+                  Vetores/matrizes com tamanho fixo só estão disponíveis no
+                  modo tipado.
+                </p>
+              )}
             </div>
 
             <div className="mt-6 flex flex-col gap-3">

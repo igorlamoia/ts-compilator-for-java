@@ -24,6 +24,7 @@ import { validateOperatorWordMap as validateOperatorWordMapValue } from "@/lib/o
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
   int: 21,
   float: 22,
+  bool: 55,
   string: 23,
   void: 49,
   for: 24,
