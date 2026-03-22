@@ -43,6 +43,7 @@ export type JavaMMLanguageOptions = {
 };
 
 const BUILT_IN_LITERALS = ["true", "false"];
+const BUILT_IN_LITERAL_LABEL = "Literal booleano";
 
 const DEFAULT_OPERATORS = [
   "=",
@@ -399,6 +400,18 @@ export function registerJavaMMLanguage(
             kind: monaco.languages.CompletionItemKind.Operator,
             detail: "Operador",
             insertText: operatorWord,
+            range,
+          });
+        }
+
+        for (const literal of BUILT_IN_LITERALS) {
+          suggestions.push({
+            label: literal,
+            kind:
+              monaco.languages.CompletionItemKind.Value ??
+              monaco.languages.CompletionItemKind.Keyword,
+            detail: BUILT_IN_LITERAL_LABEL,
+            insertText: literal,
             range,
           });
         }

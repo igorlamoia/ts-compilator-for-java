@@ -170,11 +170,41 @@ export function getDefaultKeywordMappings(): KeywordMapping[] {
   }));
 }
 
-function isValidStoredMappings(parsed: KeywordMapping[]): boolean {
-  return (
-    parsed.length === ORIGINAL_KEYWORDS.length &&
-    ORIGINAL_KEYWORDS.every((kw) => parsed.some((m) => m.original === kw))
+export function migrateStoredMappings(
+  parsed: KeywordMapping[],
+): KeywordMapping[] | null {
+  const defaultsByOriginal = new Map(
+    getDefaultKeywordMappings().map((mapping) => [mapping.original, mapping]),
   );
+  const nextMappings: KeywordMapping[] = [];
+
+  for (const original of ORIGINAL_KEYWORDS) {
+    const storedMapping = parsed.find((mapping) => mapping.original === original);
+    const defaultMapping = defaultsByOriginal.get(original);
+    if (!defaultMapping) {
+      return null;
+    }
+
+    if (!storedMapping) {
+      nextMappings.push(defaultMapping);
+      continue;
+    }
+
+    if (
+      typeof storedMapping.custom !== "string" ||
+      typeof storedMapping.original !== "string"
+    ) {
+      return null;
+    }
+
+    nextMappings.push({
+      original: defaultMapping.original,
+      custom: storedMapping.custom,
+      tokenId: defaultMapping.tokenId,
+    });
+  }
+
+  return nextMappings;
 }
 
 function getDefaultBlockDelimiters(): BlockDelimiters {
@@ -247,11 +277,12 @@ function loadCustomization(): StoredKeywordCustomization {
         parsed.arrayMode === "fixed" || parsed.arrayMode === "dynamic"
           ? parsed.arrayMode
           : getDefaultArrayMode();
+      const migratedMappings = migrateStoredMappings(mappings);
 
-      if (!isValidStoredMappings(mappings)) return defaults;
+      if (!migratedMappings) return defaults;
 
       return {
-        mappings,
+        mappings: migratedMappings,
         operatorWordMap: sanitizeOperatorWordMap(parsed.operatorWordMap),
         blockDelimiters:
           delimiters &&
@@ -270,10 +301,11 @@ function loadCustomization(): StoredKeywordCustomization {
     if (!legacyStored) return defaults;
 
     const parsedLegacy = JSON.parse(legacyStored) as KeywordMapping[];
-    if (!isValidStoredMappings(parsedLegacy)) return defaults;
+    const migratedLegacyMappings = migrateStoredMappings(parsedLegacy);
+    if (!migratedLegacyMappings) return defaults;
 
     return {
-      mappings: parsedLegacy,
+      mappings: migratedLegacyMappings,
       operatorWordMap: getDefaultOperatorWordMap(),
       blockDelimiters: getDefaultBlockDelimiters(),
       semicolonMode: getDefaultSemicolonMode(),

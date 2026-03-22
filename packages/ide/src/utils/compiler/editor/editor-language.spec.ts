@@ -143,6 +143,57 @@ describe("buildJavaMMLanguageMetadata", () => {
     });
   });
 
+  it("offers built-in boolean literals in autocomplete", () => {
+    const registerCompletionItemProvider = vi.fn(() => ({
+      dispose: vi.fn(),
+    }));
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+        registerCompletionItemProvider,
+        CompletionItemKind: {
+          Keyword: 1,
+          Snippet: 2,
+          Operator: 3,
+          Value: 4,
+        },
+        CompletionItemInsertTextRule: {
+          InsertAsSnippet: 4,
+        },
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [{ original: "bool", custom: "bool", tokenId: 55 }] as never,
+      {
+        typingMode: "typed",
+        blockMode: "delimited",
+        arrayMode: "fixed",
+      } as never,
+    );
+
+    const provider = registerCompletionItemProvider.mock.calls[0]?.[1];
+    const result = provider.provideCompletionItems(
+      {
+        getWordUntilPosition: () => ({
+          startColumn: 1,
+          endColumn: 1,
+        }),
+      },
+      { lineNumber: 1, column: 1 },
+    );
+
+    const labels = result.suggestions.map(
+      (suggestion: { label: string }) => suggestion.label,
+    );
+
+    expect(labels).toEqual(expect.arrayContaining(["true", "false"]));
+  });
+
   it("filters typed fixed array snippets by array mode", () => {
     const registerCompletionItemProvider = vi.fn(() => ({
       dispose: vi.fn(),
