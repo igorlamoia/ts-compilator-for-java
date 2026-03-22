@@ -135,6 +135,7 @@ export function useKeywords() {
 const LEGACY_STORAGE_KEY = "keyword-mappings";
 const STORAGE_KEY = "keyword-customization";
 const WORD_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const RESERVED_LITERAL_WORDS = new Set(["true", "false"]);
 
 function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
   return z
@@ -150,6 +151,14 @@ function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
         ),
     })
     .superRefine((value, ctx) => {
+      if (RESERVED_LITERAL_WORDS.has(value.custom)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `"${value.custom}" é reservado como literal da linguagem.`,
+        });
+        return;
+      }
+
       const conflict = mappingsToValidate.find(
         (m) => m.original !== value.original && m.custom === value.custom,
       );
@@ -160,6 +169,22 @@ function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
         });
       }
     });
+}
+
+export function validateCustomKeyword(
+  original: string,
+  custom: string,
+  mappingsToValidate: KeywordMapping[],
+): string | null {
+  const parsed = createKeywordSchema(mappingsToValidate).safeParse({
+    original,
+    custom,
+  });
+  if (!parsed.success) {
+    return parsed.error.issues[0]?.message ?? "Valor inválido.";
+  }
+
+  return null;
 }
 
 export function getDefaultKeywordMappings(): KeywordMapping[] {
@@ -418,15 +443,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       custom: string,
       mappingsToValidate: KeywordMapping[] = mappings,
     ): string | null => {
-      const parsed = createKeywordSchema(mappingsToValidate).safeParse({
-        original,
-        custom,
-      });
-      if (!parsed.success) {
-        return parsed.error.issues[0]?.message ?? "Valor inválido.";
-      }
-
-      return null; // válido
+      return validateCustomKeyword(original, custom, mappingsToValidate);
     },
     [mappings],
   );

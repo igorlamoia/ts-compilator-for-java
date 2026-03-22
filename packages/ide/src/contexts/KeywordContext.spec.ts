@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getDefaultKeywordMappings,
   migrateStoredMappings,
+  validateCustomKeyword,
 } from "@/contexts/KeywordContext";
 
 describe("migrateStoredMappings", () => {
@@ -32,5 +33,27 @@ describe("migrateStoredMappings", () => {
       custom: "bool",
       tokenId: 55,
     });
+  });
+});
+
+describe("validateCustomKeyword", () => {
+  it("rejects true as a custom keyword", () => {
+    const error = validateCustomKeyword(
+      "int",
+      "true",
+      getDefaultKeywordMappings(),
+    );
+
+    expect(error).toBe('"true" é reservado como literal da linguagem.');
+  });
+
+  it("rejects false as a custom keyword", () => {
+    const error = validateCustomKeyword(
+      "print",
+      "false",
+      getDefaultKeywordMappings(),
+    );
+
+    expect(error).toBe('"false" é reservado como literal da linguagem.');
   });
 });
