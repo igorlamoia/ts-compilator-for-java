@@ -1,7 +1,10 @@
 import { ScanHint } from "../../interpreter/constants";
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
-import { emitAssignmentFromValue, parseAssignmentTarget } from "./attributeStmt";
+import {
+  emitAssignmentFromValue,
+  parseAssignmentTarget,
+} from "./attributeStmt";
 import { argumentListStmt } from "./argumentListStmt";
 import { consumeStmtTerminator } from "./statementTerminator";
 
@@ -44,13 +47,14 @@ export function scanStmt(iterator: TokenIterator): void {
 
   const typingMode = iterator.getTypingMode();
   let hint: ScanHint = null;
-  const target = typingMode === "untyped"
-    ? parseAssignmentTarget(iterator)
-    : (() => {
-        hint = parseScanHint(iterator);
-        iterator.consume(SYMBOLS.comma);
-        return parseAssignmentTarget(iterator);
-      })();
+  const target =
+    typingMode === "untyped"
+      ? parseAssignmentTarget(iterator)
+      : (() => {
+          hint = parseScanHint(iterator);
+          iterator.consume(SYMBOLS.comma);
+          return parseAssignmentTarget(iterator);
+        })();
 
   if (hint === "float") {
     iterator.warnIfLossyIntConversion(target.type, "float", target.token);
@@ -73,11 +77,12 @@ export function scanStmt(iterator: TokenIterator): void {
 function parseScanHint(iterator: TokenIterator): ScanHint {
   const token = iterator.peek();
 
-  if (
-    token.type === RESERVEDS.int ||
-    token.type === RESERVEDS.float
-  ) {
-    return iterator.consume(token.type).lexeme as ScanHint;
+  if (token.type === RESERVEDS.int || token.type === RESERVEDS.float) {
+    iterator.consume(token.type);
+    const semanticType = iterator.mapTokenTypeToSemanticType(token.type);
+    if (semanticType === "int" || semanticType === "float") {
+      return semanticType;
+    }
   }
 
   if (token.type === LITERALS.string_literal) {

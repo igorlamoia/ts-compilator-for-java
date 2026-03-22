@@ -308,6 +308,18 @@ export class TokenIterator {
     );
   }
 
+  mapTokenTypeToSemanticType(tokenType: number): ScalarType {
+    const { int, float, bool, string, void: voidType } = TOKENS.RESERVEDS;
+
+    if (tokenType === int) return "int";
+    if (tokenType === float) return "float";
+    if (tokenType === bool) return "bool";
+    if (tokenType === string) return "string";
+    if (tokenType === voidType) return "void";
+
+    return "unknown";
+  }
+
   inferLiteralType(token: Token): ValueType {
     if (
       token.type === TOKENS.LITERALS.integer_literal ||

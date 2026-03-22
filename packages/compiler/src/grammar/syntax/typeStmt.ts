@@ -26,5 +26,6 @@ export function typeStmt(
     });
   }
 
-  return iterator.consume(token.type).lexeme as ScalarType;
+  iterator.consume(token.type);
+  return iterator.mapTokenTypeToSemanticType(token.type);
 }

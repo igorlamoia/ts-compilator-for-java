@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { compileProgram, compileToIr, createStdin, executeProgram } from "./helpers";
+import {
+  compileProgram,
+  compileToIr,
+  createStdin,
+  executeProgram,
+} from "./helpers";
 import { TokenIterator } from "../../token/TokenIterator";
 
 describe("Type semantics warnings", () => {
@@ -134,15 +139,18 @@ describe("Type semantics warnings", () => {
   });
 
   it("warns when a float scan hint writes into an int array element", () => {
-    const result = compileProgram(`
+    const result = compileProgram(
+      `
       int main() {
         int matriz[2][2];
         scan(float, matriz[1][1]);
         return 0;
       }
-    `, {
-      grammar: { typingMode: "typed", arrayMode: "fixed" },
-    });
+    `,
+      {
+        grammar: { typingMode: "typed", arrayMode: "fixed" },
+      },
+    );
 
     expect(result.warnings).toHaveLength(1);
   });
@@ -160,19 +168,26 @@ describe("Type semantics warnings", () => {
   });
 
   it("emits array write ir for indexed scan targets", () => {
-    const instructions = compileToIr(`
+    const instructions = compileToIr(
+      `
       int main() {
         int matriz[2][2];
         scan(int, matriz[1][1]);
         return 0;
       }
-    `, {
-      grammar: { typingMode: "typed", arrayMode: "fixed" },
-    });
+    `,
+      {
+        grammar: { typingMode: "typed", arrayMode: "fixed" },
+      },
+    );
 
     expect(instructions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ op: "CALL", result: "SCAN", operand1: "int" }),
+        expect.objectContaining({
+          op: "CALL",
+          result: "SCAN",
+          operand1: "int",
+        }),
         expect.objectContaining({ op: "ARRAY_SET", result: "matriz" }),
       ]),
     );
@@ -719,9 +734,122 @@ describe("Type semantics runtime", () => {
         `,
       {
         grammar: { typingMode: "typed", arrayMode: "fixed" },
-        stdin: createStdin(["1","2","3","4","5","6","7","8","9"]),
+        stdin: createStdin(["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
       },
     );
     expect(result.output).toBe("123456789");
+  });
+});
+
+describe("Type semantics with custom keywords", () => {
+  it("should still warn for lossy float-to-int conversion when int keyword is customized", () => {
+    const result = compileProgram(
+      `
+      inteiro main() {
+        inteiro x = 3.9;
+        return x;
+      }
+    `,
+      {
+        lexer: {
+          customKeywords: {
+            inteiro: 21, // maps custom "inteiro" to int token ID
+          },
+        },
+        grammar: { typingMode: "typed" },
+      },
+    );
+
+    expect(result.error).toBeNull();
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]?.code).toMatch(/int|lossy|conversion/i);
+  });
+
+  it("should warn when returning a float from a customized int function", () => {
+    const result = compileProgram(
+      `
+      inteiro main() {
+        return 3.9;
+      }
+    `,
+      {
+        lexer: {
+          customKeywords: {
+            inteiro: 21,
+          },
+        },
+        grammar: { typingMode: "typed" },
+      },
+    );
+
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]?.code).toMatch(/int|lossy|conversion/i);
+  });
+
+  it("should warn when passing float to customized int parameter", () => {
+    const result = compileProgram(
+      `
+      inteiro soma(inteiro a) { return a; }
+      inteiro main() { return soma(4.2); }
+    `,
+      {
+        lexer: {
+          customKeywords: {
+            inteiro: 21,
+          },
+        },
+        grammar: { typingMode: "typed" },
+      },
+    );
+
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]?.code).toMatch(/int|lossy|conversion/i);
+  });
+
+  it("should respect float keyword customization in scan hint", () => {
+    const result = compileProgram(
+      `
+      inteiro main() {
+        inteiro x;
+        scan(flutuante, x);
+        return 0;
+      }
+    `,
+      {
+        lexer: {
+          customKeywords: {
+            inteiro: 21,
+            flutuante: 22,
+          },
+        },
+        grammar: { typingMode: "typed" },
+      },
+    );
+
+    expect(result.error).toBeNull();
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]?.code).toMatch(/int|lossy|conversion/i);
+  });
+
+  it("should not warn when assigning float to customized float variable", () => {
+    const result = compileProgram(
+      `
+      flutuante main() {
+        flutuante x = 3.9;
+        return x;
+      }
+    `,
+      {
+        lexer: {
+          customKeywords: {
+            flutuante: 22,
+          },
+        },
+        grammar: { typingMode: "typed" },
+      },
+    );
+
+    expect(result.error).toBeNull();
+    expect(result.warnings).toHaveLength(0);
   });
 });
