@@ -2,15 +2,60 @@ import type { MarkerSeverity } from "monaco-editor";
 import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
 import { TLexerAnalyseData } from "@/pages/api/lexer";
-import { localApi as api } from "@/lib/local-api";
+import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
 import { useState, useContext } from "react";
-import { IssueDetails } from "@ts-compilator-for-java/compiler/issue";
-import { AxiosError } from "axios";
+import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
+import type {
+  KeywordMap,
+  LexerBlockDelimiters,
+  OperatorWordMap,
+} from "@ts-compilator-for-java/compiler/src/lexer/config";
+import { IssueDetails, IssueError } from "@ts-compilator-for-java/compiler/issue";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/KeywordContext";
 import { EditorContext } from "@/contexts/editor/EditorContext";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
+
+type RunLexerAnalyseInput = {
+  sourceCode: string;
+  keywordMap?: KeywordMap;
+  blockDelimiters?: LexerBlockDelimiters;
+  indentationBlock?: boolean;
+  grammar?: unknown;
+  operatorWordMap?: OperatorWordMap;
+  locale?: string;
+};
+
+async function runLexerAnalyse(
+  input: RunLexerAnalyseInput,
+): Promise<TLexerAnalyseData> {
+  try {
+    const effectiveKeywordMap = buildEffectiveKeywordMap(input.keywordMap);
+    const lexer = new Lexer(input.sourceCode, {
+      customKeywords: effectiveKeywordMap,
+      operatorWordMap: input.operatorWordMap,
+      blockDelimiters: input.blockDelimiters,
+      locale: input.locale,
+      indentationBlock: input.indentationBlock,
+    });
+    const tokens = lexer.scanTokens();
+    const warnings = lexer.warnings;
+    const infos = lexer.infos;
+
+    return {
+      message:
+        "Lexical Analysis completed" + (warnings.length ? " with warnings" : ""),
+      tokens,
+      warnings,
+      infos,
+      error: null,
+    };
+  } catch (error) {
+    if (error instanceof IssueError) throw error;
+    throw new Error((error as Error).message || "Codigo nao suportado");
+  }
+}
 
 export function useLexerAnalyse() {
   const { showToast } = useToast();
@@ -31,7 +76,7 @@ export function useLexerAnalyse() {
     try {
       cleanIssues();
       const lexerConfig = buildLexerConfig();
-      const { data } = await api.post<TLexerAnalyseData>("/lexer", {
+      const data = await runLexerAnalyse({
         sourceCode: code,
         keywordMap: lexerConfig.keywordMap,
         blockDelimiters: lexerConfig.blockDelimiters,
@@ -59,14 +104,11 @@ export function useLexerAnalyse() {
       return data.tokens;
     } catch (error) {
       setAnalyseData({} as TLexerAnalyseData);
-      if (error instanceof AxiosError) {
-        const { error: lexerError, message } = (error?.response?.data ||
-          {}) as TLexerAnalyseData;
+      if (error instanceof IssueError) {
+        const lexerError = error.details;
         if (lexerError) handleIssues([lexerError], true);
         showToast({
-          message: lexerError
-            ? lexerError.message
-            : message || t(locale, "toast.error_occurred"),
+          message: lexerError.message || t(locale, "toast.error_occurred"),
           type: "error",
         });
         return;
