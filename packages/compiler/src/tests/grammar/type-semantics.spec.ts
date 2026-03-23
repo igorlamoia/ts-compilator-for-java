@@ -767,6 +767,24 @@ describe("Type semantics runtime", () => {
     );
     expect(result.output).toBe("123456789");
   });
+
+  it("accepts typed declaration in for initializer", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          for (int i = 0; i < 4; i++) {
+            print(i);
+          }
+          return 0;
+        }
+      `,
+      {
+        grammar: { typingMode: "typed", arrayMode: "fixed" },
+      },
+    );
+
+    expect(result.output).toBe("0123");
+  });
 });
 
 describe("Type semantics with custom keywords", () => {

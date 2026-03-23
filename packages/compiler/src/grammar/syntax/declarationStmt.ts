@@ -11,6 +11,19 @@ import { consumeStmtTerminator } from "./statementTerminator";
  * @derivation `<declaration> -> <type> <identList> ';'`
  */
 export function declarationStmt(iterator: TokenIterator): void {
+  declarationStmtCore(iterator, true);
+}
+
+export function declarationStmtWithoutTerminator(
+  iterator: TokenIterator,
+): void {
+  declarationStmtCore(iterator, false);
+}
+
+function declarationStmtCore(
+  iterator: TokenIterator,
+  consumeTerminator: boolean,
+): void {
   const typingMode = iterator.getTypingMode();
   const arrayMode = iterator.getArrayMode();
   const type =
@@ -52,7 +65,9 @@ export function declarationStmt(iterator: TokenIterator): void {
     iterator.consume(TOKENS.SYMBOLS.comma); // consume ","
   }
 
-  consumeStmtTerminator(iterator);
+  if (consumeTerminator) {
+    consumeStmtTerminator(iterator);
+  }
 }
 
 export function declareUntypedDynamicArray(

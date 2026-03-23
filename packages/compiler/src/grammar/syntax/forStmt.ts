@@ -3,6 +3,7 @@ import { TOKENS } from "../../token/constants";
 import { optAttributeStmt } from "./optAttributeStmt";
 import { optExprStmt } from "./optExprStmt";
 import { stmt } from "./stmt";
+import { declarationStmtWithoutTerminator } from "./declarationStmt";
 
 /**
  * Parses a `for` loop and emits control flow instructions.
@@ -16,7 +17,11 @@ export function forStmt(iterator: TokenIterator): void {
   iterator.consume(left_paren);
 
   // (1) Init
-  optAttributeStmt(iterator);
+  if (isTypedDeclarationStart(iterator)) {
+    declarationStmtWithoutTerminator(iterator);
+  } else {
+    optAttributeStmt(iterator);
+  }
   iterator.consume(semicolon);
 
   const labelStart = iterator.emitter.newLabel();
@@ -58,4 +63,18 @@ export function forStmt(iterator: TokenIterator): void {
 
   // (5) Fim
   iterator.emitter.emit("LABEL", labelEnd, null, null);
+}
+
+function isTypedDeclarationStart(iterator: TokenIterator): boolean {
+  if (iterator.getTypingMode() !== "typed") {
+    return false;
+  }
+
+  const tokenType = iterator.peek().type;
+  return [
+    TOKENS.RESERVEDS.int,
+    TOKENS.RESERVEDS.float,
+    TOKENS.RESERVEDS.bool,
+    TOKENS.RESERVEDS.string,
+  ].includes(tokenType);
 }
