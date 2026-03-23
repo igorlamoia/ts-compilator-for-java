@@ -1,4 +1,5 @@
 import type {
+  IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
   IDEGrammarConfig,
   IDEOperatorWordMap,
@@ -9,6 +10,7 @@ const DEFAULT_GRAMMAR: IDEGrammarConfig = {
   semicolonMode: "optional-eol",
   blockMode: "delimited",
   typingMode: "typed",
+  arrayMode: "fixed",
 };
 
 function normalizeOperatorWordMap(
@@ -31,14 +33,44 @@ function normalizeOperatorWordMap(
   }, {} as IDEOperatorWordMap);
 }
 
+function normalizeBooleanLiteralMap(
+  input: IDEBooleanLiteralMap | undefined,
+): IDEBooleanLiteralMap {
+  if (!input) return {};
+
+  return Object.entries(input).reduce((acc, [key, value]) => {
+    if (typeof value !== "string") {
+      return acc;
+    }
+
+    const normalizedValue = value.trim();
+    if (normalizedValue.length === 0) {
+      return acc;
+    }
+
+    acc[key as keyof IDEBooleanLiteralMap] = normalizedValue;
+    return acc;
+  }, {} as IDEBooleanLiteralMap);
+}
+
 export function normalizeCompilerConfig(
   input: IDEPartialCompilerConfigPayload,
 ): IDECompilerConfigPayload {
+  const typingMode = input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode;
+  const requestedArrayMode = input.grammar?.arrayMode;
+  const arrayMode =
+    typingMode === "untyped"
+      ? "dynamic"
+      : requestedArrayMode === "fixed" || requestedArrayMode === "dynamic"
+        ? requestedArrayMode
+        : DEFAULT_GRAMMAR.arrayMode;
+
   const grammar: IDEGrammarConfig = {
     semicolonMode:
       input.grammar?.semicolonMode ?? DEFAULT_GRAMMAR.semicolonMode,
     blockMode: input.grammar?.blockMode ?? DEFAULT_GRAMMAR.blockMode,
-    typingMode: input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode,
+    typingMode,
+    arrayMode,
   };
 
   const indentationBlock = grammar.blockMode === "indentation";
@@ -51,6 +83,7 @@ export function normalizeCompilerConfig(
   return {
     keywordMap: input.keywordMap ?? {},
     operatorWordMap: normalizeOperatorWordMap(input.operatorWordMap),
+    booleanLiteralMap: normalizeBooleanLiteralMap(input.booleanLiteralMap),
     grammar,
     indentationBlock,
     ...(grammar.blockMode === "delimited" && hasDelimiters

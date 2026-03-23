@@ -1,4 +1,10 @@
-import { RuntimeSlot, ScanHint, TArithmetics, TRelational } from "./constants";
+import {
+  RuntimeArrayValue,
+  RuntimeSlot,
+  ScanHint,
+  TArithmetics,
+  TRelational,
+} from "./constants";
 
 export function makeOperation(
   op: TArithmetics,
@@ -54,12 +60,26 @@ export function truncateTowardZero(value: number): number {
   return value < 0 ? Math.ceil(value) : Math.floor(value);
 }
 
+function normalizeBooleanLike(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return Boolean(value);
+}
+
 export function coerceValueForType(type: string, value: unknown): unknown {
   if (type === "int" && typeof value === "number") {
     return truncateTowardZero(value);
   }
   if (type === "float" && typeof value === "number") {
     return value;
+  }
+  if (type === "bool") {
+    return normalizeBooleanLike(value);
   }
   return value;
 }
@@ -99,6 +119,8 @@ export function parsePiece(piece: string): string | number | boolean | null {
   if (piece === "None") return null;
   if (piece === "True") return true;
   if (piece === "False") return false;
+  if (piece === "true") return true;
+  if (piece === "false") return false;
 
   const asNumber = Number(piece);
   if (!Number.isNaN(asNumber) && piece !== "") return asNumber;
@@ -120,4 +142,159 @@ export function parseScanInput(hint: ScanHint, rawInput: string): unknown {
   }
 
   return parsePiece(trimmed);
+}
+
+export function createFixedArrayValue(
+  baseType: string,
+  sizes: number[],
+): RuntimeArrayValue {
+  return {
+    kind: "array",
+    arrayMode: "fixed",
+    baseType,
+    dimensions: sizes.length,
+    sizes: [...sizes],
+    elements: buildFixedArrayElements(sizes),
+  };
+}
+
+export function createDynamicArrayValue(
+  baseType: string,
+  dimensions: number,
+): RuntimeArrayValue {
+  return {
+    kind: "array",
+    arrayMode: "dynamic",
+    baseType,
+    dimensions,
+    sizes: [],
+    elements: [],
+  };
+}
+
+function buildFixedArrayElements(sizes: number[]): unknown[] {
+  const [current, ...rest] = sizes;
+  if (current === undefined) return [];
+  return Array.from({ length: current }, () =>
+    rest.length === 0 ? null : buildFixedArrayElements(rest),
+  );
+}
+
+export function isRuntimeArrayValue(value: unknown): value is RuntimeArrayValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "kind" in value &&
+    (value as RuntimeArrayValue).kind === "array"
+  );
+}
+
+export function readArrayValue(
+  value: RuntimeArrayValue,
+  indexes: number[],
+  throwError?: (code: string, params?: Record<string, unknown>) => never,
+): unknown {
+  let current: unknown = value.elements;
+
+  for (const index of indexes) {
+    if (!Array.isArray(current) || index < 0 || index >= current.length) {
+      if (throwError) {
+        throwError(
+          value.arrayMode === "dynamic"
+            ? "interpreter.array_missing_value"
+            : "interpreter.array_read_out_of_bounds",
+          { index },
+        );
+      }
+      throw new Error("Array index out of bounds");
+    }
+
+    current = current[index];
+    if (current === undefined) {
+      if (throwError) {
+        throwError(
+          value.arrayMode === "dynamic"
+            ? "interpreter.array_missing_value"
+            : "interpreter.array_read_out_of_bounds",
+          { index },
+        );
+      }
+      throw new Error("Array index out of bounds");
+    }
+  }
+
+  return current;
+}
+
+export function writeArrayValue(
+  value: RuntimeArrayValue,
+  indexes: number[],
+  nextValue: unknown,
+  throwError?: (code: string, params?: Record<string, unknown>) => never,
+): void {
+  if (value.arrayMode === "dynamic") {
+    writeDynamicArrayValue(value, indexes, nextValue, throwError);
+    return;
+  }
+
+  let current: unknown = value.elements;
+
+  for (let i = 0; i < indexes.length - 1; i++) {
+    const index = indexes[i]!;
+    if (!Array.isArray(current) || index < 0 || index >= current.length) {
+      if (throwError) {
+        throwError("interpreter.array_write_out_of_bounds", { index });
+      }
+      throw new Error("Array index out of bounds");
+    }
+    current = current[index];
+  }
+
+  const lastIndex = indexes[indexes.length - 1];
+  if (
+    lastIndex === undefined ||
+    !Array.isArray(current) ||
+    lastIndex < 0 ||
+    lastIndex >= current.length
+  ) {
+    if (throwError) {
+      throwError("interpreter.array_write_out_of_bounds", { index: lastIndex });
+    }
+    throw new Error("Array index out of bounds");
+  }
+
+  current[lastIndex] = coerceValueForType(value.baseType, nextValue);
+}
+
+function writeDynamicArrayValue(
+  value: RuntimeArrayValue,
+  indexes: number[],
+  nextValue: unknown,
+  throwError?: (code: string, params?: Record<string, unknown>) => never,
+): void {
+  let current: unknown[] = value.elements;
+
+  for (let i = 0; i < indexes.length - 1; i++) {
+    const index = indexes[i]!;
+    if (index < 0) {
+      if (throwError) {
+        throwError("interpreter.array_write_out_of_bounds", { index });
+      }
+      throw new Error("Array index out of bounds");
+    }
+    if (!Array.isArray(current[index])) {
+      current[index] = [];
+    }
+    current = current[index] as unknown[];
+  }
+
+  const lastIndex = indexes[indexes.length - 1];
+  if (lastIndex === undefined || lastIndex < 0) {
+    if (throwError) {
+      throwError("interpreter.array_write_out_of_bounds", { index: lastIndex });
+    }
+    throw new Error("Array index out of bounds");
+  }
+
+  current[lastIndex] = coerceValueForType(value.baseType, nextValue);
 }

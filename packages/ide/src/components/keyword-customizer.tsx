@@ -5,6 +5,8 @@ import {
   BlockDelimiters,
 } from "@/contexts/KeywordContext";
 import type {
+  IDEArrayMode,
+  IDEBooleanLiteralMap,
   IDEBlockMode,
   IDEOperatorWordMap,
   IDESemicolonMode,
@@ -22,12 +24,16 @@ import {
 import { X } from "lucide-react";
 import { BorderBeam } from "./ui/border-beam";
 import { HeroButton } from "./buttons/hero";
-import { DEFAULT_OPERATOR_WORD_MAP } from "@/lib/keyword-map";
+import {
+  DEFAULT_BOOLEAN_LITERAL_MAP,
+  DEFAULT_OPERATOR_WORD_MAP,
+} from "@/lib/keyword-map";
 import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 
 const KEYWORD_EXPLANATIONS: Record<string, string> = {
   int: "Tipo numérico para números inteiros.",
   float: "Tipo numérico para números com casas decimais.",
+  bool: "Tipo lógico com os valores true e false.",
   string: "Tipo de texto.",
   void: "Usado quando uma função não retorna valor.",
   for: "Laço de repetição com início, condição e incremento.",
@@ -51,10 +57,13 @@ export function KeywordCustomizer() {
     mappings,
     blockDelimiters,
     operatorWordMap,
+    booleanLiteralMap,
     replaceKeywords,
     setOperatorWordMap,
+    setBooleanLiteralMap,
     setBlockDelimiters,
     validateKeyword,
+    validateBooleanLiteralMap,
     validateOperatorWordMap,
     validateBlockDelimiters,
     semicolonMode,
@@ -63,6 +72,8 @@ export function KeywordCustomizer() {
     setBlockMode,
     typingMode,
     setTypingMode,
+    arrayMode,
+    setArrayMode,
     isOpenKeywordCustomizer: isOpen,
     setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
@@ -72,13 +83,19 @@ export function KeywordCustomizer() {
     useState<BlockDelimiters>(blockDelimiters);
   const [draftOperatorWordMap, setDraftOperatorWordMap] =
     useState<IDEOperatorWordMap>(operatorWordMap);
+  const [draftBooleanLiteralMap, setDraftBooleanLiteralMap] =
+    useState<IDEBooleanLiteralMap>(booleanLiteralMap);
   const [draftSemicolonMode, setDraftSemicolonMode] =
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
   const [draftTypingMode, setDraftTypingMode] = useState<IDETypingMode>(typingMode);
+  const [draftArrayMode, setDraftArrayMode] = useState<IDEArrayMode>(arrayMode);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
+  const [booleanLiteralError, setBooleanLiteralError] = useState<string | null>(
+    null,
+  );
   const [operatorError, setOperatorError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -87,12 +104,15 @@ export function KeywordCustomizer() {
       setDraftMappings(mappings);
       setDraftBlockDelimiters(blockDelimiters);
       setDraftOperatorWordMap(operatorWordMap);
+      setDraftBooleanLiteralMap(booleanLiteralMap);
       setDraftSemicolonMode(semicolonMode);
       setDraftBlockMode(blockMode);
       setDraftTypingMode(typingMode);
+      setDraftArrayMode(arrayMode);
       setCurrentStep(0);
       setCurrentError(null);
       setDelimiterError(null);
+      setBooleanLiteralError(null);
       setOperatorError(null);
     }
   }, [
@@ -100,10 +120,18 @@ export function KeywordCustomizer() {
     mappings,
     blockDelimiters,
     operatorWordMap,
+    booleanLiteralMap,
     semicolonMode,
     blockMode,
     typingMode,
+    arrayMode,
   ]);
+
+  useEffect(() => {
+    if (draftTypingMode === "untyped" && draftArrayMode !== "dynamic") {
+      setDraftArrayMode("dynamic");
+    }
+  }, [draftTypingMode, draftArrayMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -121,15 +149,35 @@ export function KeywordCustomizer() {
   }, [draftBlockMode, draftBlockDelimiters, validateBlockDelimiters]);
 
   useEffect(() => {
+    setBooleanLiteralError(
+      validateBooleanLiteralMap(
+        draftBooleanLiteralMap,
+        draftMappings,
+        draftOperatorWordMap,
+        getOperatorValidationDelimiters(),
+      ),
+    );
+  }, [
+    draftBooleanLiteralMap,
+    draftMappings,
+    draftOperatorWordMap,
+    draftBlockDelimiters,
+    draftBlockMode,
+    validateBooleanLiteralMap,
+  ]);
+
+  useEffect(() => {
     setOperatorError(
       validateOperatorWordMap(
         draftOperatorWordMap,
         draftMappings,
         getOperatorValidationDelimiters(),
+        draftBooleanLiteralMap,
       ),
     );
   }, [
     draftOperatorWordMap,
+    draftBooleanLiteralMap,
     draftMappings,
     draftBlockDelimiters,
     draftBlockMode,
@@ -142,15 +190,20 @@ export function KeywordCustomizer() {
       OPERATOR_WORD_FIELDS.some(
         ({ key }) => draftOperatorWordMap[key] !== operatorWordMap[key],
       ) ||
+      draftBooleanLiteralMap.true !== booleanLiteralMap.true ||
+      draftBooleanLiteralMap.false !== booleanLiteralMap.false ||
       draftBlockDelimiters.open !== blockDelimiters.open ||
       draftBlockDelimiters.close !== blockDelimiters.close ||
       draftSemicolonMode !== semicolonMode ||
       draftBlockMode !== blockMode ||
-      draftTypingMode !== typingMode,
+      draftTypingMode !== typingMode ||
+      draftArrayMode !== arrayMode,
     [
       draftMappings,
       draftOperatorWordMap,
       operatorWordMap,
+      draftBooleanLiteralMap,
+      booleanLiteralMap,
       draftBlockDelimiters,
       blockDelimiters,
       draftSemicolonMode,
@@ -159,6 +212,8 @@ export function KeywordCustomizer() {
       blockMode,
       draftTypingMode,
       typingMode,
+      draftArrayMode,
+      arrayMode,
     ],
   );
 
@@ -197,20 +252,26 @@ export function KeywordCustomizer() {
     const resetSemicolonMode: IDESemicolonMode = "optional-eol";
     const resetBlockMode: IDEBlockMode = "delimited";
     const resetTypingMode: IDETypingMode = "typed";
+    const resetArrayMode: IDEArrayMode = "fixed";
     setDraftMappings(resetMappings);
     setDraftBlockDelimiters(resetBlockDelimiters);
     setDraftOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
+    setDraftBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
     setDraftSemicolonMode(resetSemicolonMode);
     setDraftBlockMode(resetBlockMode);
     setDraftTypingMode(resetTypingMode);
+    setDraftArrayMode(resetArrayMode);
     replaceKeywords(resetMappings);
     setOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
+    setBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
     setBlockDelimiters(resetBlockDelimiters);
     setSemicolonMode(resetSemicolonMode);
     setBlockMode(resetBlockMode);
     setTypingMode(resetTypingMode);
+    setArrayMode(resetArrayMode);
     setCurrentError(null);
     setDelimiterError(null);
+    setBooleanLiteralError(null);
     setOperatorError(null);
   };
 
@@ -256,22 +317,41 @@ export function KeywordCustomizer() {
       draftOperatorWordMap,
       draftMappings,
       getOperatorValidationDelimiters(),
+      draftBooleanLiteralMap,
     );
     if (nextOperatorError) {
       setOperatorError(nextOperatorError);
       return;
     }
+    const nextBooleanLiteralError = validateBooleanLiteralMap(
+      draftBooleanLiteralMap,
+      draftMappings,
+      draftOperatorWordMap,
+      getOperatorValidationDelimiters(),
+    );
+    if (nextBooleanLiteralError) {
+      setBooleanLiteralError(nextBooleanLiteralError);
+      return;
+    }
     replaceKeywords(draftMappings);
     setOperatorWordMap(draftOperatorWordMap);
+    setBooleanLiteralMap({
+      true: draftBooleanLiteralMap.true?.trim() ?? "",
+      false: draftBooleanLiteralMap.false?.trim() ?? "",
+    });
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
     setTypingMode(draftTypingMode);
+    setArrayMode(
+      draftTypingMode === "untyped" ? "dynamic" : draftArrayMode,
+    );
     setBlockDelimiters({
       open: draftBlockDelimiters.open.trim(),
       close: draftBlockDelimiters.close.trim(),
     });
     setCurrentError(null);
     setDelimiterError(null);
+    setBooleanLiteralError(null);
     setOperatorError(null);
     setIsOpen(false);
   };
@@ -315,8 +395,35 @@ export function KeywordCustomizer() {
         next,
         draftMappings,
         getOperatorValidationDelimiters(),
+        draftBooleanLiteralMap,
       ),
     );
+  };
+
+  const handleBooleanLiteralChange = (
+    field: keyof IDEBooleanLiteralMap,
+    value: string,
+  ) => {
+    const next = {
+      ...draftBooleanLiteralMap,
+      [field]: value,
+    };
+    setDraftBooleanLiteralMap(next);
+    setBooleanLiteralError(
+      validateBooleanLiteralMap(
+        next,
+        draftMappings,
+        draftOperatorWordMap,
+        getOperatorValidationDelimiters(),
+      ),
+    );
+  };
+
+  const handleTypingModeChange = (nextTypingMode: IDETypingMode) => {
+    setDraftTypingMode(nextTypingMode);
+    if (nextTypingMode === "untyped") {
+      setDraftArrayMode("dynamic");
+    }
   };
 
   if (!currentMapping) return null;
@@ -539,7 +646,7 @@ export function KeywordCustomizer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setDraftTypingMode("typed")}
+                  onClick={() => handleTypingModeChange("typed")}
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
                     draftTypingMode === "typed"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
@@ -550,7 +657,7 @@ export function KeywordCustomizer() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDraftTypingMode("untyped")}
+                  onClick={() => handleTypingModeChange("untyped")}
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
                     draftTypingMode === "untyped"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
@@ -560,6 +667,92 @@ export function KeywordCustomizer() {
                   Não tipado
                 </button>
               </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Modo de Vetores e Matrizes
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftArrayMode("fixed")}
+                  disabled={draftTypingMode === "untyped"}
+                  className={`px-3 py-2 text-sm rounded-md border text-left disabled:opacity-50 disabled:cursor-not-allowed ${
+                    draftArrayMode === "fixed"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Tamanho fixo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraftArrayMode("dynamic")}
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
+                    draftArrayMode === "dynamic"
+                      ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
+                      : "dark:border-slate-600 border-gray-300"
+                  }`}
+                >
+                  Tamanho dinâmico
+                </button>
+              </div>
+              {draftTypingMode === "untyped" && (
+                <p className="text-sm dark:text-gray-400 text-gray-500">
+                  Vetores/matrizes com tamanho fixo só estão disponíveis no
+                  modo tipado.
+                </p>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Literais Booleanos
+              </p>
+              <p className="text-sm dark:text-gray-400 text-gray-500">
+                Configure as palavras usadas para os valores booleanos da
+                linguagem.
+              </p>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(["true", "false"] as const).map((field) => (
+                  <label
+                    key={field}
+                    className="flex flex-col gap-2 rounded-md border border-gray-300 bg-gray-50 p-3 text-sm dark:border-slate-600 dark:bg-slate-800"
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="dark:text-gray-200 text-gray-800">
+                        {field}
+                      </span>
+                      <span className="font-mono text-cyan-600 dark:text-(--color-primary)">
+                        {draftBooleanLiteralMap[field] ?? field}
+                      </span>
+                    </span>
+                    <input
+                      type="text"
+                      value={draftBooleanLiteralMap[field] ?? ""}
+                      onChange={(e) =>
+                        handleBooleanLiteralChange(field, e.target.value)
+                      }
+                      placeholder={DEFAULT_BOOLEAN_LITERAL_MAP[field]}
+                      spellCheck={false}
+                      className={`
+                        w-full rounded-md border px-3 py-2 font-mono text-sm outline-none transition-colors
+                        dark:bg-slate-900 dark:text-gray-200 bg-white text-gray-800
+                        focus:ring-2 focus:ring-cyan-500/50
+                        ${booleanLiteralError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                      `}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              {booleanLiteralError && (
+                <span className="text-xs text-red-500">
+                  {booleanLiteralError}
+                </span>
+              )}
             </div>
 
             <div className="mt-6 flex flex-col gap-3">

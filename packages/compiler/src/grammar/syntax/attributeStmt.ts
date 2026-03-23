@@ -1,6 +1,22 @@
 import { TOKENS } from "../../token/constants";
-import { TokenIterator } from "../../token/TokenIterator";
+import { Token } from "../../token";
+import { TokenIterator, ValueType } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
+
+export type AssignmentTarget =
+  | {
+      kind: "scalar";
+      name: string;
+      type: ValueType;
+      token: Token;
+    }
+  | {
+      kind: "array";
+      name: string;
+      type: ValueType;
+      token: Token;
+      indexes: string[];
+    };
 /**
  * Processes an attribute statement by first parsing an identifier token,
  *  and then call the expression statement.
@@ -21,28 +37,36 @@ export function attributeStmt(iterator: TokenIterator): void {
     return;
   }
 
-  const token = iterator.consume(TOKENS.LITERALS.identifier);
+  const target = parseAssignmentTarget(iterator);
 
   // Postfix increment statement: identifier++
   if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
+    if (target.kind !== "scalar") {
+      iterator.throwError(
+        "grammar.invalid_assignment_operator",
+        target.token.line,
+        target.token.column,
+        { lexeme: target.name, line: target.token.line, column: target.token.column },
+      );
+    }
     iterator.consume(plus, "++");
     const incremented = iterator.emitter.newTemp();
-    iterator.emitter.emit("+", incremented, token.lexeme, "1");
-    iterator.registerTemp(incremented, iterator.resolveSymbol(token.lexeme));
-    iterator.emitter.emit("=", token.lexeme, incremented, null);
+    iterator.emitter.emit("+", incremented, target.name, "1");
+    iterator.registerTemp(incremented, iterator.resolveSymbol(target.name));
+    iterator.emitter.emit("=", target.name, incremented, null);
     return;
   }
 
   if (!Object.values(TOKENS.ASSIGNMENTS).includes(iterator.peek().type))
     iterator.throwError(
       "grammar.invalid_assignment_operator",
-      token.line,
-      token.column,
-      { lexeme: token.lexeme, line: token.line, column: token.column },
+      target.token.line,
+      target.token.column,
+      { lexeme: target.name, line: target.token.line, column: target.token.column },
     );
   const assignmentType = iterator.peek().type;
   iterator.consume(assignmentType);
-  emitAssignmentChain(iterator, token.lexeme, assignmentType);
+  emitAssignment(iterator, target, assignmentType);
 }
 
 export function emitAssignmentChain(
@@ -82,4 +106,130 @@ export function emitAssignmentChain(
       currentValue.token,
     );
   }
+}
+
+export function parseAssignmentTarget(
+  iterator: TokenIterator,
+  firstToken?: Token,
+): AssignmentTarget {
+  const token = firstToken ?? iterator.consume(TOKENS.LITERALS.identifier);
+  const descriptor = iterator.resolveSymbolDescriptor(token.lexeme);
+
+  if (!iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    return {
+      kind: "scalar",
+      name: token.lexeme,
+      type: iterator.resolveSymbol(token.lexeme),
+      token,
+    };
+  }
+
+  if (descriptor.kind !== "array") {
+    iterator.throwError(
+      "grammar.invalid_assignment_operator",
+      token.line,
+      token.column,
+      { lexeme: token.lexeme, line: token.line, column: token.column },
+    );
+  }
+
+  const indexes: string[] = [];
+  while (iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    iterator.consume(TOKENS.SYMBOLS.left_bracket);
+    const indexExpr = exprStmt(iterator);
+    if (!iterator.isIndexType(indexExpr.type)) {
+      iterator.throwError(
+        "grammar.unexpected_type",
+        indexExpr.token.line,
+        indexExpr.token.column,
+        {
+          lexeme: indexExpr.token.lexeme,
+          line: indexExpr.token.line,
+          column: indexExpr.token.column,
+        },
+      );
+    }
+    iterator.consume(TOKENS.SYMBOLS.right_bracket);
+    indexes.push(indexExpr.place);
+  }
+
+  const hasValidDimensions =
+    descriptor.arrayMode === "dynamic"
+      ? indexes.length >= descriptor.dimensions
+      : indexes.length === descriptor.dimensions;
+
+  if (!hasValidDimensions) {
+    iterator.throwError(
+      "grammar.invalid_assignment_operator",
+      token.line,
+      token.column,
+      { lexeme: token.lexeme, line: token.line, column: token.column },
+    );
+  }
+
+  return {
+    kind: "array",
+    name: token.lexeme,
+    type: descriptor.baseType,
+    token,
+    indexes,
+  };
+}
+
+export function emitAssignment(
+  iterator: TokenIterator,
+  target: AssignmentTarget,
+  firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal,
+): void {
+  if (target.kind === "scalar") {
+    emitAssignmentChain(iterator, target.name, firstAssignmentType);
+    return;
+  }
+
+  const value = exprStmt(iterator);
+  emitAssignmentFromValue(iterator, target, value.place, value.type, value.token);
+}
+
+export function emitAssignmentFromValue(
+  iterator: TokenIterator,
+  target: AssignmentTarget,
+  valuePlace: string,
+  valueType: ValueType,
+  token: Token,
+): void {
+  if (target.kind === "scalar") {
+    iterator.warnIfLossyIntConversion(target.type, valueType, token);
+    iterator.emitter.emit("=", target.name, valuePlace, null);
+    return;
+  }
+
+  assertAssignable(iterator, target.type, valueType, token);
+  iterator.warnIfLossyIntConversion(target.type, valueType, token);
+  iterator.emitter.emit("ARRAY_SET" as never, target.name, target.indexes, valuePlace);
+}
+
+function assertAssignable(
+  iterator: TokenIterator,
+  targetType: ValueType,
+  sourceType: ValueType,
+  token: Token,
+): void {
+  if (targetType === "dynamic" || sourceType === "dynamic" || sourceType === "unknown") {
+    return;
+  }
+  if (targetType === sourceType) {
+    return;
+  }
+  if (targetType === "float" && sourceType === "int") {
+    return;
+  }
+  if (targetType === "int" && sourceType === "float") {
+    return;
+  }
+
+  iterator.throwError("grammar.unexpected_type", token.line, token.column, {
+    lexeme: token.lexeme,
+    line: token.line,
+    column: token.column,
+  });
 }

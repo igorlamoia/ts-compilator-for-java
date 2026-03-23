@@ -1,6 +1,10 @@
 import { ScanHint } from "../../interpreter/constants";
 import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
+import {
+  emitAssignmentFromValue,
+  parseAssignmentTarget,
+} from "./attributeStmt";
 import { argumentListStmt } from "./argumentListStmt";
 import { consumeStmtTerminator } from "./statementTerminator";
 
@@ -43,34 +47,42 @@ export function scanStmt(iterator: TokenIterator): void {
 
   const typingMode = iterator.getTypingMode();
   let hint: ScanHint = null;
-  let ident;
+  const target =
+    typingMode === "untyped"
+      ? parseAssignmentTarget(iterator)
+      : (() => {
+          hint = parseScanHint(iterator);
+          iterator.consume(SYMBOLS.comma);
+          return parseAssignmentTarget(iterator);
+        })();
 
-  if (typingMode === "untyped") {
-    ident = iterator.consume(LITERALS.identifier);
-  } else {
-    hint = parseScanHint(iterator);
-    iterator.consume(SYMBOLS.comma);
-    ident = iterator.consume(LITERALS.identifier);
-
-    if (hint === "float") {
-      iterator.warnIfLossyWriteToSymbol(ident.lexeme, "float", ident);
-    }
+  if (hint === "float") {
+    iterator.warnIfLossyIntConversion(target.type, "float", target.token);
   }
 
   iterator.consume(SYMBOLS.right_paren);
   consumeStmtTerminator(iterator);
 
-  iterator.emitter.emit("CALL", "SCAN", hint, ident.lexeme);
+  if (target.kind === "scalar") {
+    iterator.emitter.emit("CALL", "SCAN", hint, target.name);
+    return;
+  }
+
+  const temp = iterator.emitter.newTemp();
+  iterator.registerTemp(temp, target.type);
+  iterator.emitter.emit("CALL", "SCAN", hint, temp);
+  emitAssignmentFromValue(iterator, target, temp, target.type, target.token);
 }
 
 function parseScanHint(iterator: TokenIterator): ScanHint {
   const token = iterator.peek();
 
-  if (
-    token.type === RESERVEDS.int ||
-    token.type === RESERVEDS.float
-  ) {
-    return iterator.consume(token.type).lexeme as ScanHint;
+  if (token.type === RESERVEDS.int || token.type === RESERVEDS.float) {
+    iterator.consume(token.type);
+    const semanticType = iterator.mapTokenTypeToSemanticType(token.type);
+    if (semanticType === "int" || semanticType === "float") {
+      return semanticType;
+    }
   }
 
   if (token.type === LITERALS.string_literal) {

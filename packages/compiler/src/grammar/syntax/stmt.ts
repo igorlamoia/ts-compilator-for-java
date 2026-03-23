@@ -2,10 +2,18 @@ import { TOKENS } from "../../token/constants";
 import { TokenIterator } from "../../token/TokenIterator";
 import { forStmt } from "./forStmt";
 import { blockStmt } from "./blockStmt";
-import { attributeStmt, emitAssignmentChain } from "./attributeStmt";
+import {
+  attributeStmt,
+  emitAssignment,
+  emitAssignmentChain,
+  parseAssignmentTarget,
+} from "./attributeStmt";
 import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
-import { declarationStmt } from "./declarationStmt";
+import {
+  declarationStmt,
+  declareUntypedDynamicArray,
+} from "./declarationStmt";
 import { printStmt, scanStmt } from "./ioStmt";
 import { returnStmt } from "./returnStmt";
 import { functionCallExpr } from "./functionCallExpr";
@@ -36,9 +44,10 @@ export function stmt(iterator: TokenIterator): void {
     [RESERVEDS.switch]: switchStmt,
     [TOKENS.SYMBOLS.left_brace]: blockStmt,
     ...(typingMode === "typed"
-      ? {
+        ? {
           [RESERVEDS.int]: declarationStmt,
           [RESERVEDS.float]: declarationStmt,
+          [RESERVEDS.bool]: declarationStmt,
           [RESERVEDS.string]: declarationStmt,
         }
       : {
@@ -114,6 +123,32 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
   // Consumir o identificador
   const identifier = iterator.consume(TOKENS.LITERALS.identifier);
   const { plus } = TOKENS.ARITHMETICS;
+  const typingMode = iterator.getTypingMode();
+  const arrayMode = iterator.getArrayMode();
+
+  if (
+    typingMode === "untyped" &&
+    arrayMode === "dynamic" &&
+    iterator.match(TOKENS.SYMBOLS.left_bracket) &&
+    iterator.peekAt(1)?.type === TOKENS.SYMBOLS.right_bracket
+  ) {
+    let offset = 0;
+    while (
+      iterator.peekAt(offset)?.type === TOKENS.SYMBOLS.left_bracket &&
+      iterator.peekAt(offset + 1)?.type === TOKENS.SYMBOLS.right_bracket
+    ) {
+      offset += 2;
+    }
+
+    if (
+      offset > 0 &&
+      iterator.peekAt(offset)?.type === TOKENS.ASSIGNMENTS.equal &&
+      iterator.peekAt(offset + 1)?.type === TOKENS.SYMBOLS.left_bracket
+    ) {
+      declareUntypedDynamicArray(iterator, identifier);
+      return;
+    }
+  }
 
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
   if (iterator.peek().type === TOKENS.SYMBOLS.left_paren) {
@@ -129,9 +164,9 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);
     consumeStmtTerminator(iterator);
   } else {
-    // É uma atribuição - precisa processar o '=' e o resto
+    const target = parseAssignmentTarget(iterator, identifier);
     iterator.consume(TOKENS.ASSIGNMENTS.equal, "=");
-    emitAssignmentChain(iterator, identifier.lexeme);
+    emitAssignment(iterator, target);
     consumeStmtTerminator(iterator);
   }
 }

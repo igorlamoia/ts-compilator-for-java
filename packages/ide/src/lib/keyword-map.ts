@@ -1,9 +1,13 @@
 import type {
+  BooleanLiteralMap,
   KeywordMap,
   OperatorWordMap,
 } from "@ts-compilator-for-java/compiler/src/lexer/config";
 import { TOKENS } from "@ts-compilator-for-java/compiler/src/token/constants";
-import type { IDEOperatorWordMap } from "@/entities/compiler-config";
+import type {
+  IDEBooleanLiteralMap,
+  IDEOperatorWordMap,
+} from "@/entities/compiler-config";
 
 export const DEFAULT_OPERATOR_WORD_MAP: IDEOperatorWordMap = {
   logical_or: "or",
@@ -15,6 +19,11 @@ export const DEFAULT_OPERATOR_WORD_MAP: IDEOperatorWordMap = {
   greater_equal: "greater_equal",
   equal_equal: "equal",
   not_equal: "not_equal",
+};
+
+export const DEFAULT_BOOLEAN_LITERAL_MAP: IDEBooleanLiteralMap = {
+  true: "true",
+  false: "false",
 };
 
 function isValidKeywordEntry(value: unknown): value is [string, number] {
@@ -82,6 +91,30 @@ export function sanitizeOperatorWordMap(value: unknown): OperatorWordMap {
       }
       seenValues.add(alias);
     }
+  }
+
+  return next;
+}
+
+export function sanitizeBooleanLiteralMap(value: unknown): BooleanLiteralMap {
+  if (!value || typeof value !== "object") {
+    return { ...DEFAULT_BOOLEAN_LITERAL_MAP };
+  }
+
+  const next: IDEBooleanLiteralMap = { ...DEFAULT_BOOLEAN_LITERAL_MAP };
+
+  for (const [key, alias] of Object.entries(value)) {
+    if (key !== "true" && key !== "false") continue;
+    if (typeof alias !== "string") continue;
+
+    const normalizedAlias = alias.trim();
+    if (normalizedAlias.length === 0) continue;
+
+    next[key as keyof IDEBooleanLiteralMap] = normalizedAlias;
+  }
+
+  if (next.true === next.false) {
+    return { ...DEFAULT_BOOLEAN_LITERAL_MAP };
   }
 
   return next;

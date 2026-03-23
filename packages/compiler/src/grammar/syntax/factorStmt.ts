@@ -11,7 +11,7 @@ import { functionCallExpr } from "./functionCallExpr";
  */
 export function factorStmt(iterator: TokenIterator): ExprResult {
   const token = iterator.peek();
-  const { LITERALS, SYMBOLS } = TOKENS;
+  const { LITERALS, RESERVEDS, SYMBOLS } = TOKENS;
 
   // Identificadores: podem ser variáveis ou chamadas de função
   if (token.type === LITERALS.identifier) {
@@ -20,6 +20,10 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
     // Verificar se é chamada de função (seguido por '(')
     if (iterator.peek().type === SYMBOLS.left_paren) {
       return functionCallExpr(iterator, identifier);
+    }
+
+    if (iterator.peek().type === SYMBOLS.left_bracket) {
+      return parseArrayAccess(iterator, identifier);
     }
 
     // Postfix increment: identifier++
@@ -57,6 +61,17 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
     );
   }
 
+  if (token.type === RESERVEDS.true || token.type === RESERVEDS.false) {
+    const literal = iterator.consume(token.type);
+    const canonicalBooleanLexeme =
+      literal.type === RESERVEDS.true ? "true" : "false";
+    return iterator.createExprResult(
+      canonicalBooleanLexeme,
+      iterator.inferLiteralType(literal),
+      literal,
+    );
+  }
+
   // Parênteses: (expr)
   if (iterator.match(SYMBOLS.left_paren)) {
     iterator.consume(SYMBOLS.left_paren);
@@ -70,4 +85,59 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
     line: token.line,
     column: token.column,
   });
+}
+
+function parseArrayAccess(
+  iterator: TokenIterator,
+  identifier: ExprResult["token"],
+): ExprResult {
+  const descriptor = iterator.resolveSymbolDescriptor(identifier.lexeme);
+  if (descriptor.kind !== "array") {
+    iterator.throwError(
+      "grammar.unexpected_statement",
+      identifier.line,
+      identifier.column,
+      { lexeme: identifier.lexeme },
+    );
+  }
+
+  const indexes: string[] = [];
+
+  while (iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    iterator.consume(TOKENS.SYMBOLS.left_bracket);
+    const indexExpr = exprStmt(iterator);
+    if (!iterator.isIndexType(indexExpr.type)) {
+      iterator.throwError(
+        "grammar.unexpected_type",
+        indexExpr.token.line,
+        indexExpr.token.column,
+        {
+          lexeme: indexExpr.token.lexeme,
+          line: indexExpr.token.line,
+          column: indexExpr.token.column,
+        },
+      );
+    }
+    iterator.consume(TOKENS.SYMBOLS.right_bracket);
+    indexes.push(indexExpr.place);
+  }
+
+  const hasValidDimensions =
+    descriptor.arrayMode === "dynamic"
+      ? indexes.length >= descriptor.dimensions
+      : indexes.length === descriptor.dimensions;
+
+  if (!hasValidDimensions) {
+    iterator.throwError(
+      "grammar.unexpected_statement",
+      identifier.line,
+      identifier.column,
+      { lexeme: identifier.lexeme },
+    );
+  }
+
+  const temp = iterator.emitter.newTemp();
+  iterator.emitter.emit("ARRAY_GET" as never, temp, identifier.lexeme, indexes);
+  iterator.registerTemp(temp, descriptor.baseType);
+  return iterator.createExprResult(temp, descriptor.baseType, identifier);
 }

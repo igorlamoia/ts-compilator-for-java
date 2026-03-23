@@ -1,4 +1,4 @@
-import { TIntermediateCodeData } from "@/pages/api/intermediator";
+import { TIntermediateCodeData } from "@/types/compiler";
 import { useRuntimeError } from "@/contexts/RuntimeErrorContext";
 import { motion } from "motion/react";
 import { useEffect } from "react";

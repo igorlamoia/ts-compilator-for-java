@@ -1,6 +1,7 @@
 export const RESERVEDS = {
   int: 21,
   float: 22,
+  bool: 55,
   string: 23,
   void: 49,
   for: 24,
@@ -17,6 +18,8 @@ export const RESERVEDS = {
   default: 52,
   variavel: 53,
   funcao: 54,
+  true: 56,
+  false: 57,
 };
 
 export const RESERVEDS_STYLE = {

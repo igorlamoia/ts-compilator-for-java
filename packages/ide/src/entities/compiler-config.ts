@@ -1,6 +1,7 @@
 export type IDESemicolonMode = "optional-eol" | "required";
 export type IDEBlockMode = "delimited" | "indentation";
 export type IDETypingMode = "typed" | "untyped";
+export type IDEArrayMode = "fixed" | "dynamic";
 
 export type IDEOperatorWordMap = {
   logical_or?: string;
@@ -14,15 +15,22 @@ export type IDEOperatorWordMap = {
   not_equal?: string;
 };
 
+export type IDEBooleanLiteralMap = {
+  true?: string;
+  false?: string;
+};
+
 export type IDEGrammarConfig = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
   typingMode: IDETypingMode;
+  arrayMode: IDEArrayMode;
 };
 
 export type IDECompilerConfigPayload = {
   keywordMap: Record<string, number>;
   operatorWordMap: IDEOperatorWordMap;
+  booleanLiteralMap: IDEBooleanLiteralMap;
   blockDelimiters?: { open: string; close: string };
   indentationBlock: boolean;
   grammar: IDEGrammarConfig;
@@ -31,6 +39,7 @@ export type IDECompilerConfigPayload = {
 export type IDEPartialCompilerConfigPayload = {
   keywordMap?: Record<string, number>;
   operatorWordMap?: IDEOperatorWordMap;
+  booleanLiteralMap?: IDEBooleanLiteralMap;
   blockDelimiters?: { open: string; close: string };
   indentationBlock?: boolean;
   grammar?: Partial<IDEGrammarConfig>;

@@ -16,7 +16,7 @@ export function ExerciseCard({
   });
 
   return (
-    <div className="group relative bg-white/3 backdrop-blur-xl border border-white/8 rounded-2xl p-5 hover:border-[#0dccf2]/35 hover:shadow-[0_4px_24px_rgba(13,204,242,0.1)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col gap-3">
+    <div className="overflow-hidden group relative bg-white/3 backdrop-blur-xl border border-white/8 rounded-2xl p-5 hover:border-[#0dccf2]/35 hover:shadow-[0_4px_24px_rgba(13,204,242,0.1)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col gap-3">
       {/* top accent on hover */}
       <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-[#0dccf2] to-[#10b981] opacity-0 group-hover:opacity-100 transition-opacity rounded-t-2xl" />
 
@@ -38,8 +38,8 @@ export function ExerciseCard({
       <div className="flex flex-wrap gap-3 text-xs text-slate-400">
         <span className="flex items-center gap-1.5">
           <FlaskConical className="w-3.5 h-3.5 text-emerald-400/60" />
-          {exercise.testCases.length} caso{exercise.testCases.length !== 1 ? "s" : ""} de
-          teste
+          {exercise.testCases.length} caso
+          {exercise.testCases.length !== 1 ? "s" : ""} de teste
         </span>
         <span className="flex items-center gap-1.5">
           <Calendar className="w-3.5 h-3.5 text-slate-500/60" />

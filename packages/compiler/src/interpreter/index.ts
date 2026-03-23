@@ -1,4 +1,14 @@
-import { makeOperation, makeRelation, parseScanInput } from "./utils";
+import {
+  coerceValueForType,
+  createDynamicArrayValue,
+  createFixedArrayValue,
+  isRuntimeArrayValue,
+  makeOperation,
+  makeRelation,
+  parseScanInput,
+  readArrayValue,
+  writeArrayValue,
+} from "./utils";
 import {
   ARITHMETICS,
   Instruction,
@@ -11,8 +21,6 @@ import {
 } from "./constants";
 import { RuntimeError } from "./runtime-error";
 import { translate } from "../i18n";
-import { coerceValueForType } from "./utils";
-
 interface CallFrame {
   returnAddress: number;
   returnVariable: string | null;
@@ -328,6 +336,90 @@ export class Interpreter {
 
           this.instructionPointer++;
           continue;
+        } else if (op === "DECLARE_ARRAY") {
+          if (typeof result !== "string")
+            this.throwRuntimeError(
+              "interpreter.declare_requires_string",
+              { result },
+              currentInstruction,
+            );
+
+          const declaredType =
+            typeof operand1 === "string" ? operand1 : "dynamic";
+          const arrayDeclaration = this.parseArrayDeclaration(
+            operand2,
+            currentInstruction,
+          );
+          this.declareVariable(
+            result,
+            declaredType,
+            arrayDeclaration.mode === "fixed"
+              ? createFixedArrayValue(declaredType, arrayDeclaration.sizes)
+              : createDynamicArrayValue(
+                  declaredType,
+                  arrayDeclaration.dimensions,
+                ),
+          );
+          this.instructionPointer++;
+          continue;
+        } else if (op === "ARRAY_GET") {
+          if (typeof operand1 !== "string" || !Array.isArray(operand2)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { operand1, operand2 },
+              currentInstruction,
+            );
+          }
+
+          const arraySlot = this.getVariableSlot(operand1);
+          if (!isRuntimeArrayValue(arraySlot.value)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { operand1 },
+              currentInstruction,
+            );
+          }
+
+          const indexes = operand2.map((index) =>
+            Number(this.parseOrGetVariableWithScope(index)),
+          );
+          const value = readArrayValue(arraySlot.value, indexes, (code, params) =>
+            this.throwRuntimeError(code, params, currentInstruction),
+          );
+          this.setVariable(result, value);
+          this.instructionPointer++;
+          continue;
+        } else if (op === "ARRAY_SET") {
+          if (typeof result !== "string" || !Array.isArray(operand1)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { result, operand1, operand2 },
+              currentInstruction,
+            );
+          }
+
+          const arraySlot = this.getVariableSlot(result);
+          if (!isRuntimeArrayValue(arraySlot.value)) {
+            this.throwRuntimeError(
+              "interpreter.runtime_error",
+              { result },
+              currentInstruction,
+            );
+          }
+
+          const indexes = operand1.map((index) =>
+            Number(this.parseOrGetVariableWithScope(index)),
+          );
+          const nextValue = this.parseOrGetVariableWithScope(operand2);
+          writeArrayValue(
+            arraySlot.value,
+            indexes,
+            nextValue,
+            (code, params) =>
+              this.throwRuntimeError(code, params, currentInstruction),
+          );
+          this.instructionPointer++;
+          continue;
         } else if (op === "RETURN") {
           const returnValue = this.parseOrGetVariableWithScope(result);
           const returnType =
@@ -388,17 +480,21 @@ export class Interpreter {
   }
 
   private getVariable(name: string): unknown {
+    return this.getVariableSlot(name).value;
+  }
+
+  private getVariableSlot(name: string): RuntimeSlot {
     // Procurar no escopo local primeiro
     if (this.callStack.length > 0) {
       const currentScope = this.callStack[this.callStack.length - 1].localScope;
       if (currentScope.has(name)) {
-        return currentScope.get(name)?.value;
+        return currentScope.get(name)!;
       }
     }
 
     // Se não encontrar, procurar no escopo global
     if (this.variables.has(name)) {
-      return this.variables.get(name)?.value;
+      return this.variables.get(name)!;
     }
 
     this.throwRuntimeError("interpreter.variable_not_found", {
@@ -409,6 +505,13 @@ export class Interpreter {
 
   private declareVariable(name: string, type: string, value: unknown): void {
     const currentScope = this.getCurrentScope();
+    if (isRuntimeArrayValue(value)) {
+      currentScope.set(name, {
+        type,
+        value,
+      });
+      return;
+    }
     currentScope.set(name, {
       type,
       value: coerceValueForType(type, value),
@@ -441,6 +544,9 @@ export class Interpreter {
 
   private parseOrGetVariableWithScope(value: unknown): unknown {
     if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "true") return true;
+      if (normalized === "false") return false;
       // Tentar parsear como número
       if (/^-?\d+(\.\d+)?$/.test(value)) {
         return Number(value);
@@ -454,6 +560,53 @@ export class Interpreter {
       }
     }
     return value;
+  }
+
+  private parseArrayDeclaration(
+    value: unknown,
+    instruction: Instruction,
+  ): { mode: "fixed" | "dynamic"; dimensions: number; sizes: number[] } {
+    if (typeof value !== "string") {
+      this.throwRuntimeError(
+        "interpreter.runtime_error",
+        { value },
+        instruction,
+      );
+    }
+
+    const parsed = JSON.parse(value) as unknown;
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !("mode" in parsed) ||
+      !("dimensions" in parsed) ||
+      !("sizes" in parsed)
+    ) {
+      this.throwRuntimeError(
+        "interpreter.runtime_error",
+        { value },
+        instruction,
+      );
+    }
+
+    const declaration = parsed as {
+      mode: "fixed" | "dynamic";
+      dimensions: number;
+      sizes: number[];
+    };
+    if (
+      (declaration.mode !== "fixed" && declaration.mode !== "dynamic") ||
+      typeof declaration.dimensions !== "number" ||
+      !Array.isArray(declaration.sizes)
+    ) {
+      this.throwRuntimeError(
+        "interpreter.runtime_error",
+        { value },
+        instruction,
+      );
+    }
+
+    return declaration;
   }
 }
 

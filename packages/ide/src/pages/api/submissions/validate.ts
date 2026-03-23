@@ -2,8 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios'
 import { Lexer } from '@ts-compilator-for-java/compiler/src/lexer'
 import type {
+    BooleanLiteralMap,
     KeywordMap,
     LexerBlockDelimiters,
+    OperatorWordMap,
 } from '@ts-compilator-for-java/compiler/src/lexer/config'
 import { TokenIterator } from '@ts-compilator-for-java/compiler/token/TokenIterator'
 import { IssueError } from '@ts-compilator-for-java/compiler/issue'
@@ -12,26 +14,9 @@ import type { Instruction } from '@ts-compilator-for-java/compiler/interpreter/c
 import { buildEffectiveKeywordMap } from '@/lib/keyword-map'
 import { normalizeCompilerConfig } from '../../../lib/compiler-config'
 import type { IDEGrammarConfig } from '@/entities/compiler-config'
+import type { TTestCaseResult, TValidationResult } from '@/types/submissions'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-
-export type TTestCaseResult = {
-    label: string;
-    input: string;
-    expectedOutput: string;
-    actualOutput: string;
-    passed: boolean;
-}
-
-export type TValidationResult = {
-    valid: boolean;
-    errors: string[];
-    warnings: string[];
-    submissionId?: string;
-    testCaseResults?: TTestCaseResult[];
-    testCasesPassed?: number;
-    testCasesTotal?: number;
-}
 
 async function runTestCase(
     instructions: Instruction[],
@@ -85,12 +70,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const jwtToken = req.headers['x-authorization'] as string | undefined
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, exerciseListId, classId, sourceCode, keywordMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
+    const { exerciseId, exerciseListId, classId, sourceCode, keywordMap, operatorWordMap, booleanLiteralMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
         exerciseId: string
         exerciseListId: string
         classId: string
         sourceCode: string
         keywordMap?: KeywordMap
+        operatorWordMap?: OperatorWordMap
+        booleanLiteralMap?: BooleanLiteralMap
         blockDelimiters?: LexerBlockDelimiters
         indentationBlock?: boolean
         grammar?: Partial<IDEGrammarConfig>
@@ -114,6 +101,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     try {
         const normalized = normalizeCompilerConfig({
             keywordMap,
+            operatorWordMap,
+            booleanLiteralMap,
             blockDelimiters,
             indentationBlock,
             grammar,
@@ -121,6 +110,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         const effectiveKeywordMap = buildEffectiveKeywordMap(normalized.keywordMap)
         const lexer = new Lexer(sourceCode, {
             customKeywords: effectiveKeywordMap,
+            operatorWordMap: normalized.operatorWordMap,
+            booleanLiteralMap: normalized.booleanLiteralMap,
             blockDelimiters: normalized.blockDelimiters,
             indentationBlock: normalized.indentationBlock,
         })

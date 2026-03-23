@@ -10,19 +10,27 @@ import { z } from "zod";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
 import type {
+  IDEArrayMode,
+  IDEBooleanLiteralMap,
   IDEBlockMode,
   IDECompilerConfigPayload,
   IDEOperatorWordMap,
   IDESemicolonMode,
   IDETypingMode,
 } from "@/entities/compiler-config";
-import { DEFAULT_OPERATOR_WORD_MAP, sanitizeOperatorWordMap } from "@/lib/keyword-map";
+import {
+  DEFAULT_BOOLEAN_LITERAL_MAP,
+  DEFAULT_OPERATOR_WORD_MAP,
+  sanitizeBooleanLiteralMap,
+  sanitizeOperatorWordMap,
+} from "@/lib/keyword-map";
 import { validateOperatorWordMap as validateOperatorWordMapValue } from "@/lib/operator-word-map";
 
 /** As 13 keywords editáveis com seus IDs numéricos de token */
 const CUSTOMIZABLE_KEYWORDS: Record<string, number> = {
   int: 21,
   float: 22,
+  bool: 55,
   string: 23,
   void: 49,
   for: 24,
@@ -58,10 +66,12 @@ export type BlockDelimiters = {
 type StoredKeywordCustomization = {
   mappings: KeywordMapping[];
   operatorWordMap: IDEOperatorWordMap;
+  booleanLiteralMap: IDEBooleanLiteralMap;
   blockDelimiters: BlockDelimiters;
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
   typingMode: IDETypingMode;
+  arrayMode: IDEArrayMode;
 };
 
 type KeywordContextType = {
@@ -87,6 +97,17 @@ type KeywordContextType = {
     mappingsToValidate?: KeywordMapping[],
     delimitersToValidate?: BlockDelimiters,
   ) => string | null;
+  /** Literais booleanos customizados */
+  booleanLiteralMap: IDEBooleanLiteralMap;
+  /** Atualiza os literais booleanos customizados */
+  setBooleanLiteralMap: (value: IDEBooleanLiteralMap) => void;
+  /** Valida literais booleanos customizados */
+  validateBooleanLiteralMap: (
+    value: IDEBooleanLiteralMap,
+    mappingsToValidate?: KeywordMapping[],
+    operatorWordMapToValidate?: IDEOperatorWordMap,
+    delimitersToValidate?: BlockDelimiters,
+  ) => string | null;
   /** Atualiza delimitadores customizados de bloco */
   setBlockDelimiters: (value: BlockDelimiters) => void;
   /** Valida delimitadores customizados de bloco */
@@ -105,6 +126,10 @@ type KeywordContextType = {
   typingMode: IDETypingMode;
   /** Define modo de tipagem da gramática */
   setTypingMode: (value: IDETypingMode) => void;
+  /** Modo de vetores e matrizes da gramática */
+  arrayMode: IDEArrayMode;
+  /** Define modo de vetores e matrizes da gramática */
+  setArrayMode: (value: IDEArrayMode) => void;
   /** Valida se uma palavra customizada é válida */
   validateKeyword: (
     original: string,
@@ -129,7 +154,10 @@ const LEGACY_STORAGE_KEY = "keyword-mappings";
 const STORAGE_KEY = "keyword-customization";
 const WORD_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
-function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
+function createKeywordSchema(
+  mappingsToValidate: KeywordMapping[],
+  booleanLiteralMap: IDEBooleanLiteralMap,
+) {
   return z
     .object({
       original: z.string(),
@@ -143,6 +171,20 @@ function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
         ),
     })
     .superRefine((value, ctx) => {
+      const booleanLiteralWords = new Set(
+        Object.values(booleanLiteralMap)
+          .map((item) => item?.trim())
+          .filter((item): item is string => Boolean(item)),
+      );
+
+      if (booleanLiteralWords.has(value.custom)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `"${value.custom}" já está sendo usada como literal booleano.`,
+        });
+        return;
+      }
+
       const conflict = mappingsToValidate.find(
         (m) => m.original !== value.original && m.custom === value.custom,
       );
@@ -155,6 +197,81 @@ function createKeywordSchema(mappingsToValidate: KeywordMapping[]) {
     });
 }
 
+export function validateCustomKeyword(
+  original: string,
+  custom: string,
+  mappingsToValidate: KeywordMapping[],
+  booleanLiteralMap: IDEBooleanLiteralMap = DEFAULT_BOOLEAN_LITERAL_MAP,
+): string | null {
+  const parsed = createKeywordSchema(
+    mappingsToValidate,
+    booleanLiteralMap,
+  ).safeParse({
+    original,
+    custom,
+  });
+  if (!parsed.success) {
+    return parsed.error.issues[0]?.message ?? "Valor inválido.";
+  }
+
+  return null;
+}
+
+export function getDefaultBooleanLiteralMap(): IDEBooleanLiteralMap {
+  return { ...DEFAULT_BOOLEAN_LITERAL_MAP };
+}
+
+export function validateBooleanLiteralAliases(
+  value: IDEBooleanLiteralMap,
+  mappings: KeywordMapping[],
+  operatorWordMap: IDEOperatorWordMap,
+  blockDelimiters: BlockDelimiters,
+): string | null {
+  const seenAliases = new Set<string>();
+  const keywordSet = new Set(
+    mappings.map((mapping) => mapping.custom.trim()).filter(Boolean),
+  );
+  const operatorAliases = new Set(
+    Object.values(operatorWordMap)
+      .map((alias) => alias?.trim())
+      .filter((alias): alias is string => Boolean(alias)),
+  );
+  const openDelimiter = blockDelimiters.open.trim();
+  const closeDelimiter = blockDelimiters.close.trim();
+
+  for (const field of ["true", "false"] as const) {
+    const rawAlias = value[field];
+    const alias = typeof rawAlias === "string" ? rawAlias.trim() : "";
+
+    if (!alias) {
+      return "Preencha os literais true e false.";
+    }
+
+    if (!WORD_REGEX.test(alias)) {
+      return "Use palavras válidas para literais booleanos (letras, números e _).";
+    }
+
+    if (seenAliases.has(alias)) {
+      return "Os literais booleanos precisam ser diferentes.";
+    }
+    seenAliases.add(alias);
+
+    if (keywordSet.has(alias)) {
+      return `"${alias}" conflicts with an existing keyword customization.`;
+    }
+
+    if (operatorAliases.has(alias)) {
+      return `"${alias}" conflicts with an existing operator alias.`;
+    }
+
+    if (alias === openDelimiter || alias === closeDelimiter) {
+      return `"${alias}" conflicts with the configured block delimiters.`;
+    }
+  }
+
+  return null;
+}
+
 export function getDefaultKeywordMappings(): KeywordMapping[] {
   return ORIGINAL_KEYWORDS.map((word) => ({
     original: word,
@@ -163,11 +280,41 @@ export function getDefaultKeywordMappings(): KeywordMapping[] {
   }));
 }
 
-function isValidStoredMappings(parsed: KeywordMapping[]): boolean {
-  return (
-    parsed.length === ORIGINAL_KEYWORDS.length &&
-    ORIGINAL_KEYWORDS.every((kw) => parsed.some((m) => m.original === kw))
+export function migrateStoredMappings(
+  parsed: KeywordMapping[],
+): KeywordMapping[] | null {
+  const defaultsByOriginal = new Map(
+    getDefaultKeywordMappings().map((mapping) => [mapping.original, mapping]),
   );
+  const nextMappings: KeywordMapping[] = [];
+
+  for (const original of ORIGINAL_KEYWORDS) {
+    const storedMapping = parsed.find((mapping) => mapping.original === original);
+    const defaultMapping = defaultsByOriginal.get(original);
+    if (!defaultMapping) {
+      return null;
+    }
+
+    if (!storedMapping) {
+      nextMappings.push(defaultMapping);
+      continue;
+    }
+
+    if (
+      typeof storedMapping.custom !== "string" ||
+      typeof storedMapping.original !== "string"
+    ) {
+      return null;
+    }
+
+    nextMappings.push({
+      original: defaultMapping.original,
+      custom: storedMapping.custom,
+      tokenId: defaultMapping.tokenId,
+    });
+  }
+
+  return nextMappings;
 }
 
 function getDefaultBlockDelimiters(): BlockDelimiters {
@@ -193,14 +340,27 @@ function getDefaultTypingMode(): IDETypingMode {
   return "typed";
 }
 
+function getDefaultArrayMode(): IDEArrayMode {
+  return "fixed";
+}
+
+function normalizeArrayMode(
+  typingMode: IDETypingMode,
+  arrayMode: IDEArrayMode,
+): IDEArrayMode {
+  return typingMode === "untyped" ? "dynamic" : arrayMode;
+}
+
 function loadCustomization(): StoredKeywordCustomization {
   const defaults: StoredKeywordCustomization = {
     mappings: getDefaultKeywordMappings(),
     operatorWordMap: getDefaultOperatorWordMap(),
+    booleanLiteralMap: getDefaultBooleanLiteralMap(),
     blockDelimiters: getDefaultBlockDelimiters(),
     semicolonMode: getDefaultSemicolonMode(),
     blockMode: getDefaultBlockMode(),
     typingMode: getDefaultTypingMode(),
+    arrayMode: getDefaultArrayMode(),
   };
 
   if (typeof window === "undefined") return defaults;
@@ -224,12 +384,18 @@ function loadCustomization(): StoredKeywordCustomization {
         parsed.typingMode === "typed" || parsed.typingMode === "untyped"
           ? parsed.typingMode
           : getDefaultTypingMode();
+      const rawArrayMode =
+        parsed.arrayMode === "fixed" || parsed.arrayMode === "dynamic"
+          ? parsed.arrayMode
+          : getDefaultArrayMode();
+      const migratedMappings = migrateStoredMappings(mappings);
 
-      if (!isValidStoredMappings(mappings)) return defaults;
+      if (!migratedMappings) return defaults;
 
       return {
-        mappings,
+        mappings: migratedMappings,
         operatorWordMap: sanitizeOperatorWordMap(parsed.operatorWordMap),
+        booleanLiteralMap: sanitizeBooleanLiteralMap(parsed.booleanLiteralMap),
         blockDelimiters:
           delimiters &&
           typeof delimiters.open === "string" &&
@@ -239,6 +405,7 @@ function loadCustomization(): StoredKeywordCustomization {
         semicolonMode,
         blockMode,
         typingMode,
+        arrayMode: normalizeArrayMode(typingMode, rawArrayMode),
       };
     }
 
@@ -246,15 +413,18 @@ function loadCustomization(): StoredKeywordCustomization {
     if (!legacyStored) return defaults;
 
     const parsedLegacy = JSON.parse(legacyStored) as KeywordMapping[];
-    if (!isValidStoredMappings(parsedLegacy)) return defaults;
+    const migratedLegacyMappings = migrateStoredMappings(parsedLegacy);
+    if (!migratedLegacyMappings) return defaults;
 
     return {
-      mappings: parsedLegacy,
+      mappings: migratedLegacyMappings,
       operatorWordMap: getDefaultOperatorWordMap(),
+      booleanLiteralMap: getDefaultBooleanLiteralMap(),
       blockDelimiters: getDefaultBlockDelimiters(),
       semicolonMode: getDefaultSemicolonMode(),
       blockMode: getDefaultBlockMode(),
       typingMode: getDefaultTypingMode(),
+      arrayMode: getDefaultArrayMode(),
     };
   } catch {
     return defaults;
@@ -276,6 +446,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const [operatorWordMap, setOperatorWordMap] = useState<IDEOperatorWordMap>(
     getDefaultOperatorWordMap(),
   );
+  const [booleanLiteralMap, setBooleanLiteralMap] =
+    useState<IDEBooleanLiteralMap>(getDefaultBooleanLiteralMap());
   const [semicolonMode, setSemicolonMode] = useState<IDESemicolonMode>(
     getDefaultSemicolonMode(),
   );
@@ -283,6 +455,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const [typingMode, setTypingMode] = useState<IDETypingMode>(
     getDefaultTypingMode(),
   );
+  const [arrayMode, setArrayMode] = useState<IDEArrayMode>(getDefaultArrayMode);
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
 
@@ -293,10 +466,12 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     const loadedCustomization = loadCustomization();
     setMappings(loadedCustomization.mappings);
     setOperatorWordMap(loadedCustomization.operatorWordMap);
+    setBooleanLiteralMap(loadedCustomization.booleanLiteralMap);
     setBlockDelimiters(loadedCustomization.blockDelimiters);
     setSemicolonMode(loadedCustomization.semicolonMode);
     setBlockMode(loadedCustomization.blockMode);
     setTypingMode(loadedCustomization.typingMode);
+    setArrayMode(loadedCustomization.arrayMode);
     persistCustomization(loadedCustomization);
     setIsHydrated(true);
   }, []);
@@ -307,20 +482,30 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     persistCustomization({
       mappings,
       operatorWordMap,
+      booleanLiteralMap,
       blockDelimiters,
       semicolonMode,
       blockMode,
       typingMode,
+      arrayMode,
     });
   }, [
     mappings,
     operatorWordMap,
+    booleanLiteralMap,
     blockDelimiters,
     semicolonMode,
     blockMode,
     typingMode,
+    arrayMode,
     isHydrated,
   ]);
+
+  useEffect(() => {
+    if (typingMode === "untyped" && arrayMode !== "dynamic") {
+      setArrayMode("dynamic");
+    }
+  }, [typingMode, arrayMode]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -329,7 +514,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         blockMode,
         blockDelimiters,
         operatorWordMap,
+        booleanLiteralMap,
         typingMode,
+        arrayMode,
       });
       retokenize();
     }
@@ -338,7 +525,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     blockMode,
     blockDelimiters,
     operatorWordMap,
+    booleanLiteralMap,
     typingMode,
+    arrayMode,
     monacoRef,
     retokenize,
   ]);
@@ -349,17 +538,14 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       custom: string,
       mappingsToValidate: KeywordMapping[] = mappings,
     ): string | null => {
-      const parsed = createKeywordSchema(mappingsToValidate).safeParse({
+      return validateCustomKeyword(
         original,
         custom,
-      });
-      if (!parsed.success) {
-        return parsed.error.issues[0]?.message ?? "Valor inválido.";
-      }
-
-      return null; // válido
+        mappingsToValidate,
+        booleanLiteralMap,
+      );
     },
-    [mappings],
+    [mappings, booleanLiteralMap],
   );
 
   const updateKeyword = useCallback((original: string, custom: string) => {
@@ -377,10 +563,12 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const resetKeywords = useCallback(() => {
     setMappings(getDefaultKeywordMappings());
     setOperatorWordMap(getDefaultOperatorWordMap());
+    setBooleanLiteralMap(getDefaultBooleanLiteralMap());
     setBlockDelimiters(getDefaultBlockDelimiters());
     setSemicolonMode(getDefaultSemicolonMode());
     setBlockMode(getDefaultBlockMode());
     setTypingMode(getDefaultTypingMode());
+    setArrayMode(getDefaultArrayMode());
   }, []);
 
   const buildKeywordMap = useCallback((): Record<string, number> => {
@@ -421,6 +609,22 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const validateBooleanLiteralMap = useCallback(
+    (
+      value: IDEBooleanLiteralMap,
+      mappingsToValidate: KeywordMapping[] = mappings,
+      operatorWordMapToValidate: IDEOperatorWordMap = operatorWordMap,
+      delimitersToValidate: BlockDelimiters = blockDelimiters,
+    ): string | null =>
+      validateBooleanLiteralAliases(
+        value,
+        mappingsToValidate,
+        operatorWordMapToValidate,
+        delimitersToValidate,
+      ),
+    [mappings, operatorWordMap, blockDelimiters],
+  );
+
   const validateOperatorWordMap = useCallback(
     (
       value: IDEOperatorWordMap,
@@ -431,8 +635,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         value,
         mappingsToValidate,
         delimitersToValidate,
+        booleanLiteralMap,
       ),
-    [mappings, blockDelimiters],
+    [mappings, blockDelimiters, booleanLiteralMap],
   );
 
   const buildLexerConfig = useCallback((): IDECompilerConfigPayload => {
@@ -444,11 +649,13 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       semicolonMode,
       blockMode,
       typingMode,
+      arrayMode: normalizeArrayMode(typingMode, arrayMode),
     };
 
     return {
       keywordMap,
       operatorWordMap,
+      booleanLiteralMap,
       grammar,
       indentationBlock: blockMode === "indentation",
       ...(blockMode === "delimited" && open && close && isBlockDelimiterValid
@@ -463,11 +670,13 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   }, [
     buildKeywordMap,
     operatorWordMap,
+    booleanLiteralMap,
     blockDelimiters,
     validateBlockDelimiters,
     semicolonMode,
     blockMode,
     typingMode,
+    arrayMode,
   ]);
 
   return (
@@ -480,6 +689,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         buildKeywordMap,
         blockDelimiters,
         operatorWordMap,
+        booleanLiteralMap,
+        setBooleanLiteralMap,
+        validateBooleanLiteralMap,
         setOperatorWordMap,
         validateOperatorWordMap,
         setBlockDelimiters,
@@ -491,6 +703,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         setBlockMode,
         typingMode,
         setTypingMode,
+        arrayMode,
+        setArrayMode,
         validateKeyword,
         isOpenKeywordCustomizer,
         setIsOpenKeywordCustomizer,

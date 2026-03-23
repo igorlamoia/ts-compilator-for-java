@@ -9,6 +9,7 @@ describe("normalizeCompilerConfig", () => {
       semicolonMode: "optional-eol",
       blockMode: "delimited",
       typingMode: "typed",
+      arrayMode: "fixed",
     });
     expect(normalized.indentationBlock).toBe(false);
     expect(normalized.blockDelimiters).toBeUndefined();
@@ -31,11 +32,36 @@ describe("normalizeCompilerConfig", () => {
         semicolonMode: "required",
         blockMode: "delimited",
         typingMode: "untyped",
+        arrayMode: "dynamic",
       },
     });
 
     expect(normalized.grammar.semicolonMode).toBe("required");
     expect(normalized.grammar.typingMode).toBe("untyped");
+    expect(normalized.grammar.arrayMode).toBe("dynamic");
+  });
+
+  it("preserves arrayMode when valid in typed mode", () => {
+    const normalized = normalizeCompilerConfig({
+      grammar: {
+        typingMode: "typed",
+        arrayMode: "dynamic",
+      },
+    });
+
+    expect(normalized.grammar.arrayMode).toBe("dynamic");
+  });
+
+  it("coerces arrayMode to dynamic in untyped mode", () => {
+    const normalized = normalizeCompilerConfig({
+      grammar: {
+        typingMode: "untyped",
+        arrayMode: "fixed",
+      },
+    });
+
+    expect(normalized.grammar.typingMode).toBe("untyped");
+    expect(normalized.grammar.arrayMode).toBe("dynamic");
   });
 
   it("preserves operator word aliases in the normalized payload", () => {
@@ -49,6 +75,33 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.operatorWordMap).toEqual({
       logical_and: "and",
       less_equal: "less_equal",
+    });
+  });
+
+  it("preserves boolean literal aliases in the normalized payload", () => {
+    const normalized = normalizeCompilerConfig({
+      booleanLiteralMap: {
+        true: "verdadeiro",
+        false: "falso",
+      },
+    });
+
+    expect(normalized.booleanLiteralMap).toEqual({
+      true: "verdadeiro",
+      false: "falso",
+    });
+  });
+
+  it("trims boolean literal aliases and drops empty values", () => {
+    const normalized = normalizeCompilerConfig({
+      booleanLiteralMap: {
+        true: "  sim  ",
+        false: "   ",
+      },
+    });
+
+    expect(normalized.booleanLiteralMap).toEqual({
+      true: "sim",
     });
   });
 });

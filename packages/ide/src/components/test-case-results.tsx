@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TTestCaseResult } from "@/pages/api/submissions/validate";
+import type { TTestCaseResult } from "@/types/submissions";
 import { OutputComparison } from "@/components/ui/output-comparison";
 
 type Props = {

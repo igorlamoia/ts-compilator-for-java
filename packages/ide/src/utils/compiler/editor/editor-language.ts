@@ -1,6 +1,11 @@
 import type * as monacoEditor from "monaco-editor";
-import type { IDEOperatorWordMap } from "@/entities/compiler-config";
+import type {
+  IDEBooleanLiteralMap,
+  IDEOperatorWordMap,
+} from "@/entities/compiler-config";
+import { DEFAULT_BOOLEAN_LITERAL_MAP } from "@/lib/keyword-map";
 import {
+  JavaMMArrayMode,
   JavaMMBlockMode,
   JavaMMSnippetVariant,
   JavaMMTypingMode,
@@ -37,8 +42,12 @@ export type JavaMMLanguageOptions = {
   blockMode?: "delimited" | "indentation";
   blockDelimiters?: JavaMMBlockDelimiters;
   operatorWordMap?: IDEOperatorWordMap;
+  booleanLiteralMap?: IDEBooleanLiteralMap;
   typingMode?: "typed" | "untyped";
+  arrayMode?: "fixed" | "dynamic";
 };
+
+const BUILT_IN_LITERAL_LABEL = "Literal booleano";
 
 const DEFAULT_OPERATORS = [
   "=",
@@ -178,7 +187,7 @@ export function buildJavaMMLanguageConfiguration(
 }
 
 const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
-  types: new Set(["int", "float", "string", "void", "variavel", "funcao"]),
+  types: new Set(["int", "float", "bool", "string", "void", "variavel", "funcao"]),
   conditionals: new Set(["if", "else", "switch", "case", "default"]),
   loops: new Set(["for", "while"]),
   flow: new Set(["break", "continue", "return"]),
@@ -188,6 +197,7 @@ const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
 export function buildJavaMMLanguageMetadata(
   keywordMappings: JavaMMKeywordMapping[],
   operatorWordMap: IDEOperatorWordMap = {},
+  booleanLiteralMap: IDEBooleanLiteralMap = DEFAULT_BOOLEAN_LITERAL_MAP,
 ): JavaMMLanguageMetadata {
   const semanticGroups: JavaMMLanguageMetadata["semanticGroups"] = {
     types: [],
@@ -199,6 +209,17 @@ export function buildJavaMMLanguageMetadata(
   const operatorWords = Array.from(
     new Set(
       Object.values(operatorWordMap)
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+
+  const booleanLiterals = Array.from(
+    new Set(
+      Object.values({
+        ...DEFAULT_BOOLEAN_LITERAL_MAP,
+        ...booleanLiteralMap,
+      })
         .map((value) => value?.trim())
         .filter((value): value is string => Boolean(value)),
     ),
@@ -218,9 +239,14 @@ export function buildJavaMMLanguageMetadata(
   }
 
   return {
-    allKeywords: keywordMappings
-      .map((mapping) => mapping.custom.trim())
-      .filter(Boolean),
+    allKeywords: Array.from(
+      new Set([
+        ...keywordMappings
+          .map((mapping) => mapping.custom.trim())
+          .filter(Boolean),
+        ...booleanLiterals,
+      ]),
+    ),
     operatorWords,
     semanticGroups,
   };
@@ -254,11 +280,13 @@ function isSnippetSupported(
   snippet: JavaMMSnippetVariant,
   typingMode: JavaMMTypingMode,
   blockMode: JavaMMBlockMode,
+  arrayMode: JavaMMArrayMode,
 ): boolean {
   const supportsTyping =
     !snippet.typingMode || snippet.typingMode === typingMode;
   const supportsBlock = !snippet.blockMode || snippet.blockMode === blockMode;
-  return supportsTyping && supportsBlock;
+  const supportsArray = !snippet.arrayMode || snippet.arrayMode === arrayMode;
+  return supportsTyping && supportsBlock && supportsArray;
 }
 
 let completionProviderDisposable: monacoEditor.IDisposable | null = null;
@@ -281,6 +309,7 @@ export function registerJavaMMLanguage(
   const metadata = buildJavaMMLanguageMetadata(
     keywordMappings,
     options.operatorWordMap,
+    options.booleanLiteralMap,
   );
 
   // (Re)definir o tokenizer Monarch
@@ -317,6 +346,8 @@ export function registerJavaMMLanguage(
         };
 
         const suggestions: monacoEditor.languages.CompletionItem[] = [];
+        const preferredArrayMode: JavaMMArrayMode =
+          options.arrayMode ?? "fixed";
 
         for (const mapping of keywordMappings) {
           const keyword = mapping.custom.trim();
@@ -349,6 +380,7 @@ export function registerJavaMMLanguage(
                 snippet,
                 preferredTypingMode,
                 preferredBlockMode,
+                preferredArrayMode,
               )
             ) {
               continue;
@@ -378,6 +410,7 @@ export function registerJavaMMLanguage(
         const metadata = buildJavaMMLanguageMetadata(
           keywordMappings,
           options.operatorWordMap,
+          options.booleanLiteralMap,
         );
         for (const operatorWord of metadata.operatorWords) {
           suggestions.push({
@@ -385,6 +418,29 @@ export function registerJavaMMLanguage(
             kind: monaco.languages.CompletionItemKind.Operator,
             detail: "Operador",
             insertText: operatorWord,
+            range,
+          });
+        }
+
+        const booleanLiterals = Array.from(
+          new Set(
+            Object.values({
+              ...DEFAULT_BOOLEAN_LITERAL_MAP,
+              ...options.booleanLiteralMap,
+            })
+              .map((value) => value?.trim())
+              .filter((value): value is string => Boolean(value)),
+          ),
+        );
+
+        for (const literal of booleanLiterals) {
+          suggestions.push({
+            label: literal,
+            kind:
+              monaco.languages.CompletionItemKind.Value ??
+              monaco.languages.CompletionItemKind.Keyword,
+            detail: BUILT_IN_LITERAL_LABEL,
+            insertText: literal,
             range,
           });
         }

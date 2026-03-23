@@ -12,3 +12,14 @@ it("should include switch/case/default and colon tokens", () => {
   expect(TOKENS.BY_DESCRIPTION["default"]).toBeDefined();
   expect(TOKENS.BY_DESCRIPTION["colon"]).toBeDefined();
 });
+
+it("should include boolean reserved tokens", () => {
+  expect(TOKENS.BY_DESCRIPTION["bool"]).toBeDefined();
+  expect(TOKENS.BY_DESCRIPTION["true"]).toBeDefined();
+  expect(TOKENS.BY_DESCRIPTION["false"]).toBeDefined();
+});
+
+it("should include bracket symbol tokens", () => {
+  expect(TOKENS.BY_DESCRIPTION["left_bracket"]).toBeDefined();
+  expect(TOKENS.BY_DESCRIPTION["right_bracket"]).toBeDefined();
+});

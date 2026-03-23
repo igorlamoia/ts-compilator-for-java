@@ -18,4 +18,15 @@ describe("Lexer indentation tokens", () => {
       ]),
     );
   });
+
+  it("tokenizes bracket symbols", () => {
+    const tokens = new Lexer("int values[2];").scanTokens();
+
+    expect(tokens.map((t) => t.type)).toEqual(
+      expect.arrayContaining([
+        TOKENS.SYMBOLS.left_bracket,
+        TOKENS.SYMBOLS.right_bracket,
+      ]),
+    );
+  });
 });

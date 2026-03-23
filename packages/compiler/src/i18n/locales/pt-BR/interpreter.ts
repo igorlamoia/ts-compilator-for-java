@@ -24,6 +24,11 @@ const interpreter = {
   unknown_relational_operator: "Operador relacional desconhecido '{op}'",
   invalid_operand_type: "Tipo de operando inválido: {operand}",
   variable_not_defined: "Variável '{operand}' ainda não foi definida!",
+  array_read_out_of_bounds: "Leitura de array fora dos limites no índice '{index}'",
+  array_write_out_of_bounds:
+    "Escrita em array fora dos limites no índice '{index}'",
+  array_missing_value:
+    "Leitura de array dinâmico sem valor no índice '{index}'",
 };
 
 export default interpreter;

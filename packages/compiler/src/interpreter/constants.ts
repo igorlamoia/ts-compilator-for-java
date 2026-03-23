@@ -6,7 +6,8 @@ export type TAssignment = "=";
 export type TFlowControl = "IF" | "JUMP" | "RETURN";
 export type TSystemCalls = "CALL"; // e.g. PRINT, SCAN
 export type TLabel = "LABEL";
-export type TDeclaration = "DECLARE";
+export type TDeclaration = "DECLARE" | "DECLARE_ARRAY";
+export type TArrayOp = "ARRAY_GET" | "ARRAY_SET";
 export type ScanHint = "int" | "float" | null;
 
 export const ARITHMETICS: TArithmetics[] = ["+", "-", "*", "/", "%", "//"];
@@ -22,13 +23,23 @@ export type OpName =
   | TFlowControl
   | TSystemCalls
   | TLabel
-  | TDeclaration;
+  | TDeclaration
+  | TArrayOp;
 
 export interface Instruction {
   op: OpName;
   result: string;
-  operand1: string | number | boolean | string[] | ScanHint;
-  operand2: string | number | boolean | null;
+  operand1: unknown;
+  operand2: unknown;
+}
+
+export interface RuntimeArrayValue {
+  kind: "array";
+  arrayMode: "fixed" | "dynamic";
+  baseType: string;
+  dimensions: number;
+  sizes: number[];
+  elements: unknown[];
 }
 
 export interface RuntimeSlot {

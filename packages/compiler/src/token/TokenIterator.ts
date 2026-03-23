@@ -16,7 +16,7 @@ interface SwitchContext {
   breakLabel: string;
 }
 
-export type ValueType =
+export type ScalarType =
   | "int"
   | "float"
   | "string"
@@ -25,12 +25,24 @@ export type ValueType =
   | "dynamic"
   | "unknown";
 
+export type ValueType = ScalarType;
+
+export type SymbolDescriptor =
+  | { kind: "scalar"; type: ScalarType }
+  | {
+      kind: "array";
+      baseType: ScalarType;
+      dimensions: number;
+      arrayMode: "fixed" | "dynamic";
+      sizes: number[];
+    };
+
 type FunctionSignature = {
   returnType: ValueType;
   params: ValueType[];
 };
 
-type Scope = Map<string, ValueType>;
+type Scope = Map<string, SymbolDescriptor>;
 
 export type ExprResult = {
   place: string;
@@ -42,6 +54,7 @@ export type GrammarConfig = {
   semicolonMode?: "optional-eol" | "required";
   blockMode?: "delimited" | "indentation";
   typingMode?: "typed" | "untyped";
+  arrayMode?: "fixed" | "dynamic";
 };
 
 type TokenIteratorConfig = {
@@ -81,7 +94,7 @@ export class TokenIterator {
     this.grammar = config.grammar;
     this.warnings = [];
     this.infos = [];
-    this.scopes = [new Map<string, ValueType>()];
+    this.scopes = [new Map<string, SymbolDescriptor>()];
     this.functions = new Map<string, FunctionSignature>();
     this.currentFunctionReturnType = null;
   }
@@ -216,7 +229,7 @@ export class TokenIterator {
   }
 
   enterScope(): void {
-    this.scopes.push(new Map<string, ValueType>());
+    this.scopes.push(new Map<string, SymbolDescriptor>());
   }
 
   exitScope(): void {
@@ -226,15 +239,27 @@ export class TokenIterator {
   }
 
   declareSymbol(name: string, type: ValueType): void {
-    this.scopes[this.scopes.length - 1]?.set(name, type);
+    this.declareSymbolDescriptor(name, { kind: "scalar", type });
+  }
+
+  declareSymbolDescriptor(name: string, descriptor: SymbolDescriptor): void {
+    this.scopes[this.scopes.length - 1]?.set(name, descriptor);
   }
 
   resolveSymbol(name: string): ValueType {
+    const descriptor = this.resolveSymbolDescriptor(name);
+    if (descriptor.kind === "array") {
+      return descriptor.baseType;
+    }
+    return descriptor.type;
+  }
+
+  resolveSymbolDescriptor(name: string): SymbolDescriptor {
     for (let i = this.scopes.length - 1; i >= 0; i--) {
       const resolved = this.scopes[i]?.get(name);
       if (resolved) return resolved;
     }
-    return "unknown";
+    return { kind: "scalar", type: "unknown" };
   }
 
   declareFunction(
@@ -283,6 +308,18 @@ export class TokenIterator {
     );
   }
 
+  mapTokenTypeToSemanticType(tokenType: number): ScalarType {
+    const { int, float, bool, string, void: voidType } = TOKENS.RESERVEDS;
+
+    if (tokenType === int) return "int";
+    if (tokenType === float) return "float";
+    if (tokenType === bool) return "bool";
+    if (tokenType === string) return "string";
+    if (tokenType === voidType) return "void";
+
+    return "unknown";
+  }
+
   inferLiteralType(token: Token): ValueType {
     if (
       token.type === TOKENS.LITERALS.integer_literal ||
@@ -297,7 +334,10 @@ export class TokenIterator {
     if (token.type === TOKENS.LITERALS.string_literal) {
       return "string";
     }
-    if (token.lexeme === "true" || token.lexeme === "false") {
+    if (
+      token.type === TOKENS.RESERVEDS.true ||
+      token.type === TOKENS.RESERVEDS.false
+    ) {
       return "bool";
     }
     return "unknown";
@@ -327,5 +367,13 @@ export class TokenIterator {
 
   getTypingMode(): "typed" | "untyped" {
     return this.grammar?.typingMode ?? "typed";
+  }
+
+  getArrayMode(): "fixed" | "dynamic" | null {
+    return this.grammar?.arrayMode ?? null;
+  }
+
+  isIndexType(type: ValueType): boolean {
+    return type === "int" || type === "dynamic" || type === "unknown";
   }
 }
