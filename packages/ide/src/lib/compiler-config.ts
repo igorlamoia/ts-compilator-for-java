@@ -1,4 +1,5 @@
 import type {
+  IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
   IDEGrammarConfig,
   IDEOperatorWordMap,
@@ -32,6 +33,26 @@ function normalizeOperatorWordMap(
   }, {} as IDEOperatorWordMap);
 }
 
+function normalizeBooleanLiteralMap(
+  input: IDEBooleanLiteralMap | undefined,
+): IDEBooleanLiteralMap {
+  if (!input) return {};
+
+  return Object.entries(input).reduce((acc, [key, value]) => {
+    if (typeof value !== "string") {
+      return acc;
+    }
+
+    const normalizedValue = value.trim();
+    if (normalizedValue.length === 0) {
+      return acc;
+    }
+
+    acc[key as keyof IDEBooleanLiteralMap] = normalizedValue;
+    return acc;
+  }, {} as IDEBooleanLiteralMap);
+}
+
 export function normalizeCompilerConfig(
   input: IDEPartialCompilerConfigPayload,
 ): IDECompilerConfigPayload {
@@ -62,6 +83,7 @@ export function normalizeCompilerConfig(
   return {
     keywordMap: input.keywordMap ?? {},
     operatorWordMap: normalizeOperatorWordMap(input.operatorWordMap),
+    booleanLiteralMap: normalizeBooleanLiteralMap(input.booleanLiteralMap),
     grammar,
     indentationBlock,
     ...(grammar.blockMode === "delimited" && hasDelimiters

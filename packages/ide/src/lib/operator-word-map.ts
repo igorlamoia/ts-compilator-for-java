@@ -1,4 +1,7 @@
-import type { IDEOperatorWordMap } from "@/entities/compiler-config";
+import type {
+  IDEBooleanLiteralMap,
+  IDEOperatorWordMap,
+} from "@/entities/compiler-config";
 import type {
   BlockDelimiters,
   KeywordMapping,
@@ -26,10 +29,16 @@ export function validateOperatorWordMap(
   operatorWordMap: IDEOperatorWordMap,
   mappings: KeywordMapping[],
   blockDelimiters: BlockDelimiters,
+  booleanLiteralMap: IDEBooleanLiteralMap = {},
 ): string | null {
   const seenAliases = new Map<string, keyof IDEOperatorWordMap>();
   const keywordSet = new Set(
     mappings.map((mapping) => mapping.custom.trim()).filter(Boolean),
+  );
+  const booleanLiteralSet = new Set(
+    Object.values(booleanLiteralMap)
+      .map((alias) => alias?.trim())
+      .filter((alias): alias is string => Boolean(alias)),
   );
   const openDelimiter = blockDelimiters.open.trim();
   const closeDelimiter = blockDelimiters.close.trim();
@@ -53,6 +62,10 @@ export function validateOperatorWordMap(
 
     if (keywordSet.has(alias)) {
       return `"${alias}" conflicts with an existing keyword customization.`;
+    }
+
+    if (booleanLiteralSet.has(alias)) {
+      return `"${alias}" conflicts with an existing boolean literal alias.`;
     }
 
     if (alias === openDelimiter || alias === closeDelimiter) {

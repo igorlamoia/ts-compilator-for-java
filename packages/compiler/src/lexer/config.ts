@@ -12,6 +12,11 @@ export type OperatorWordMap = {
   not_equal?: string;
 };
 
+export type BooleanLiteralMap = {
+  true?: string;
+  false?: string;
+};
+
 export type LexerBlockDelimiters = {
   open: string;
   close: string;
@@ -20,6 +25,7 @@ export type LexerBlockDelimiters = {
 export type LexerConfig = {
   customKeywords?: KeywordMap;
   operatorWordMap?: OperatorWordMap;
+  booleanLiteralMap?: BooleanLiteralMap;
   blockDelimiters?: LexerBlockDelimiters;
   locale?: string;
   indentationBlock?: boolean;
@@ -38,6 +44,11 @@ const OPERATOR_WORD_TOKEN_IDS = {
   greater_equal: 12,
   less: 13,
   less_equal: 14,
+} as const;
+
+const BOOLEAN_LITERAL_TOKEN_IDS = {
+  true: 56,
+  false: 57,
 } as const;
 
 export function buildOperatorWordTokenMap(
@@ -61,6 +72,27 @@ export function buildOperatorWordTokenMap(
   }, {} as KeywordMap);
 }
 
+export function buildBooleanLiteralTokenMap(
+  booleanLiteralMap: BooleanLiteralMap | undefined,
+): KeywordMap {
+  if (!booleanLiteralMap) return {};
+
+  return Object.entries(booleanLiteralMap).reduce((acc, [slot, alias]) => {
+    if (typeof alias !== "string") {
+      return acc;
+    }
+
+    const normalizedAlias = alias.trim();
+    if (normalizedAlias.length === 0) {
+      return acc;
+    }
+
+    acc[normalizedAlias] =
+      BOOLEAN_LITERAL_TOKEN_IDS[slot as keyof typeof BOOLEAN_LITERAL_TOKEN_IDS];
+    return acc;
+  }, {} as KeywordMap);
+}
+
 export function validateBlockDelimiters(
   delimiters: LexerBlockDelimiters,
   reserved: KeywordMap,
@@ -77,6 +109,71 @@ export function validateBlockDelimiters(
 
   if (reserved[open] !== undefined || reserved[close] !== undefined) {
     throw new Error("block delimiters cannot reuse reserved keywords");
+  }
+}
+
+export function validateBooleanLiteralMap(
+  booleanLiteralMap: BooleanLiteralMap,
+  reserved: KeywordMap,
+  customKeywords: KeywordMap = {},
+  operatorWordMap: OperatorWordMap = {},
+  blockDelimiters?: LexerBlockDelimiters,
+): void {
+  const seenAliases = new Set<string>();
+  const operatorAliases = new Set(
+    Object.values(operatorWordMap)
+      .filter((alias): alias is string => typeof alias === "string")
+      .map((alias) => alias.trim())
+      .filter((alias) => alias.length > 0),
+  );
+
+  for (const [slot, alias] of Object.entries(booleanLiteralMap)) {
+    if (typeof alias !== "string") {
+      continue;
+    }
+
+    const normalizedAlias = alias.trim();
+    if (normalizedAlias.length === 0) {
+      continue;
+    }
+
+    if (!WORD_REGEX.test(normalizedAlias)) {
+      throw new Error("boolean literal aliases must be identifier-like words");
+    }
+
+    if (seenAliases.has(normalizedAlias)) {
+      throw new Error("boolean literal aliases cannot be duplicated");
+    }
+    seenAliases.add(normalizedAlias);
+
+    if (
+      reserved[normalizedAlias] !== undefined &&
+      normalizedAlias !== slot
+    ) {
+      throw new Error("boolean literal aliases cannot reuse reserved keywords");
+    }
+
+    if (customKeywords[normalizedAlias] !== undefined) {
+      throw new Error(
+        "boolean literal aliases cannot conflict with keyword overrides",
+      );
+    }
+
+    if (operatorAliases.has(normalizedAlias)) {
+      throw new Error(
+        "boolean literal aliases cannot conflict with operator aliases",
+      );
+    }
+
+    if (
+      blockDelimiters &&
+      (normalizedAlias === blockDelimiters.open ||
+        normalizedAlias === blockDelimiters.close)
+    ) {
+      throw new Error(
+        "boolean literal aliases cannot conflict with block delimiters",
+      );
+    }
   }
 }
 

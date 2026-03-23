@@ -44,4 +44,37 @@ describe("operator word aliases", () => {
         }),
     ).toThrow(/conflict|reserved|keyword/i);
   });
+
+  it("tokenizes customized boolean literal aliases with the existing token IDs", () => {
+    const lexer = new Lexer("yes no", {
+      booleanLiteralMap: {
+        true: "yes",
+        false: "no",
+      },
+    });
+
+    const tokens = lexer.scanTokens();
+
+    expect(tokens.map((token) => token.type)).toEqual(
+      expect.arrayContaining([
+        TOKENS.RESERVEDS.true,
+        TOKENS.RESERVEDS.false,
+      ]),
+    );
+  });
+
+  it("rejects boolean literal aliases that conflict with operator aliases", () => {
+    expect(
+      () =>
+        new Lexer("yes and no", {
+          booleanLiteralMap: {
+            true: "yes",
+            false: "no",
+          },
+          operatorWordMap: {
+            logical_and: "yes",
+          },
+        }),
+    ).toThrow(/conflict|reserved|alias|keyword/i);
+  });
 });

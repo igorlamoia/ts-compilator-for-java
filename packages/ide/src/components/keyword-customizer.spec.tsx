@@ -71,10 +71,13 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
     mappings,
     blockDelimiters: { open: "", close: "" },
     operatorWordMap: {},
+    booleanLiteralMap: { true: "true", false: "false" },
     replaceKeywords: vi.fn(),
     setOperatorWordMap: vi.fn(),
+    setBooleanLiteralMap: vi.fn(),
     setBlockDelimiters: vi.fn(),
     validateKeyword: vi.fn(() => null),
+    validateBooleanLiteralMap: vi.fn(() => null),
     validateOperatorWordMap: vi.fn(() => null),
     validateBlockDelimiters: vi.fn(() => null),
     semicolonMode: "optional-eol",
@@ -138,6 +141,20 @@ describe("KeywordCustomizer", () => {
     expect(container.textContent).toContain(
       "Vetores/matrizes com tamanho fixo só estão disponíveis no modo tipado.",
     );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows a dedicated boolean literals section", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    expect(container.textContent).toContain("Literais Booleanos");
+    expect(container.textContent).toContain("true");
+    expect(container.textContent).toContain("false");
 
     act(() => {
       root.unmount();

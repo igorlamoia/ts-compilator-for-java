@@ -6,6 +6,7 @@ import {
 } from "@/contexts/KeywordContext";
 import type {
   IDEArrayMode,
+  IDEBooleanLiteralMap,
   IDEBlockMode,
   IDEOperatorWordMap,
   IDESemicolonMode,
@@ -23,7 +24,10 @@ import {
 import { X } from "lucide-react";
 import { BorderBeam } from "./ui/border-beam";
 import { HeroButton } from "./buttons/hero";
-import { DEFAULT_OPERATOR_WORD_MAP } from "@/lib/keyword-map";
+import {
+  DEFAULT_BOOLEAN_LITERAL_MAP,
+  DEFAULT_OPERATOR_WORD_MAP,
+} from "@/lib/keyword-map";
 import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 
 const KEYWORD_EXPLANATIONS: Record<string, string> = {
@@ -53,10 +57,13 @@ export function KeywordCustomizer() {
     mappings,
     blockDelimiters,
     operatorWordMap,
+    booleanLiteralMap,
     replaceKeywords,
     setOperatorWordMap,
+    setBooleanLiteralMap,
     setBlockDelimiters,
     validateKeyword,
+    validateBooleanLiteralMap,
     validateOperatorWordMap,
     validateBlockDelimiters,
     semicolonMode,
@@ -76,6 +83,8 @@ export function KeywordCustomizer() {
     useState<BlockDelimiters>(blockDelimiters);
   const [draftOperatorWordMap, setDraftOperatorWordMap] =
     useState<IDEOperatorWordMap>(operatorWordMap);
+  const [draftBooleanLiteralMap, setDraftBooleanLiteralMap] =
+    useState<IDEBooleanLiteralMap>(booleanLiteralMap);
   const [draftSemicolonMode, setDraftSemicolonMode] =
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
@@ -84,6 +93,9 @@ export function KeywordCustomizer() {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
+  const [booleanLiteralError, setBooleanLiteralError] = useState<string | null>(
+    null,
+  );
   const [operatorError, setOperatorError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -92,6 +104,7 @@ export function KeywordCustomizer() {
       setDraftMappings(mappings);
       setDraftBlockDelimiters(blockDelimiters);
       setDraftOperatorWordMap(operatorWordMap);
+      setDraftBooleanLiteralMap(booleanLiteralMap);
       setDraftSemicolonMode(semicolonMode);
       setDraftBlockMode(blockMode);
       setDraftTypingMode(typingMode);
@@ -99,6 +112,7 @@ export function KeywordCustomizer() {
       setCurrentStep(0);
       setCurrentError(null);
       setDelimiterError(null);
+      setBooleanLiteralError(null);
       setOperatorError(null);
     }
   }, [
@@ -106,6 +120,7 @@ export function KeywordCustomizer() {
     mappings,
     blockDelimiters,
     operatorWordMap,
+    booleanLiteralMap,
     semicolonMode,
     blockMode,
     typingMode,
@@ -134,15 +149,35 @@ export function KeywordCustomizer() {
   }, [draftBlockMode, draftBlockDelimiters, validateBlockDelimiters]);
 
   useEffect(() => {
+    setBooleanLiteralError(
+      validateBooleanLiteralMap(
+        draftBooleanLiteralMap,
+        draftMappings,
+        draftOperatorWordMap,
+        getOperatorValidationDelimiters(),
+      ),
+    );
+  }, [
+    draftBooleanLiteralMap,
+    draftMappings,
+    draftOperatorWordMap,
+    draftBlockDelimiters,
+    draftBlockMode,
+    validateBooleanLiteralMap,
+  ]);
+
+  useEffect(() => {
     setOperatorError(
       validateOperatorWordMap(
         draftOperatorWordMap,
         draftMappings,
         getOperatorValidationDelimiters(),
+        draftBooleanLiteralMap,
       ),
     );
   }, [
     draftOperatorWordMap,
+    draftBooleanLiteralMap,
     draftMappings,
     draftBlockDelimiters,
     draftBlockMode,
@@ -155,6 +190,8 @@ export function KeywordCustomizer() {
       OPERATOR_WORD_FIELDS.some(
         ({ key }) => draftOperatorWordMap[key] !== operatorWordMap[key],
       ) ||
+      draftBooleanLiteralMap.true !== booleanLiteralMap.true ||
+      draftBooleanLiteralMap.false !== booleanLiteralMap.false ||
       draftBlockDelimiters.open !== blockDelimiters.open ||
       draftBlockDelimiters.close !== blockDelimiters.close ||
       draftSemicolonMode !== semicolonMode ||
@@ -165,6 +202,8 @@ export function KeywordCustomizer() {
       draftMappings,
       draftOperatorWordMap,
       operatorWordMap,
+      draftBooleanLiteralMap,
+      booleanLiteralMap,
       draftBlockDelimiters,
       blockDelimiters,
       draftSemicolonMode,
@@ -217,12 +256,14 @@ export function KeywordCustomizer() {
     setDraftMappings(resetMappings);
     setDraftBlockDelimiters(resetBlockDelimiters);
     setDraftOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
+    setDraftBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
     setDraftSemicolonMode(resetSemicolonMode);
     setDraftBlockMode(resetBlockMode);
     setDraftTypingMode(resetTypingMode);
     setDraftArrayMode(resetArrayMode);
     replaceKeywords(resetMappings);
     setOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
+    setBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
     setBlockDelimiters(resetBlockDelimiters);
     setSemicolonMode(resetSemicolonMode);
     setBlockMode(resetBlockMode);
@@ -230,6 +271,7 @@ export function KeywordCustomizer() {
     setArrayMode(resetArrayMode);
     setCurrentError(null);
     setDelimiterError(null);
+    setBooleanLiteralError(null);
     setOperatorError(null);
   };
 
@@ -275,13 +317,28 @@ export function KeywordCustomizer() {
       draftOperatorWordMap,
       draftMappings,
       getOperatorValidationDelimiters(),
+      draftBooleanLiteralMap,
     );
     if (nextOperatorError) {
       setOperatorError(nextOperatorError);
       return;
     }
+    const nextBooleanLiteralError = validateBooleanLiteralMap(
+      draftBooleanLiteralMap,
+      draftMappings,
+      draftOperatorWordMap,
+      getOperatorValidationDelimiters(),
+    );
+    if (nextBooleanLiteralError) {
+      setBooleanLiteralError(nextBooleanLiteralError);
+      return;
+    }
     replaceKeywords(draftMappings);
     setOperatorWordMap(draftOperatorWordMap);
+    setBooleanLiteralMap({
+      true: draftBooleanLiteralMap.true?.trim() ?? "",
+      false: draftBooleanLiteralMap.false?.trim() ?? "",
+    });
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
     setTypingMode(draftTypingMode);
@@ -294,6 +351,7 @@ export function KeywordCustomizer() {
     });
     setCurrentError(null);
     setDelimiterError(null);
+    setBooleanLiteralError(null);
     setOperatorError(null);
     setIsOpen(false);
   };
@@ -336,6 +394,26 @@ export function KeywordCustomizer() {
       validateOperatorWordMap(
         next,
         draftMappings,
+        getOperatorValidationDelimiters(),
+        draftBooleanLiteralMap,
+      ),
+    );
+  };
+
+  const handleBooleanLiteralChange = (
+    field: keyof IDEBooleanLiteralMap,
+    value: string,
+  ) => {
+    const next = {
+      ...draftBooleanLiteralMap,
+      [field]: value,
+    };
+    setDraftBooleanLiteralMap(next);
+    setBooleanLiteralError(
+      validateBooleanLiteralMap(
+        next,
+        draftMappings,
+        draftOperatorWordMap,
         getOperatorValidationDelimiters(),
       ),
     );
@@ -625,6 +703,55 @@ export function KeywordCustomizer() {
                   Vetores/matrizes com tamanho fixo só estão disponíveis no
                   modo tipado.
                 </p>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Literais Booleanos
+              </p>
+              <p className="text-sm dark:text-gray-400 text-gray-500">
+                Configure as palavras usadas para os valores booleanos da
+                linguagem.
+              </p>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(["true", "false"] as const).map((field) => (
+                  <label
+                    key={field}
+                    className="flex flex-col gap-2 rounded-md border border-gray-300 bg-gray-50 p-3 text-sm dark:border-slate-600 dark:bg-slate-800"
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="dark:text-gray-200 text-gray-800">
+                        {field}
+                      </span>
+                      <span className="font-mono text-cyan-600 dark:text-(--color-primary)">
+                        {draftBooleanLiteralMap[field] ?? field}
+                      </span>
+                    </span>
+                    <input
+                      type="text"
+                      value={draftBooleanLiteralMap[field] ?? ""}
+                      onChange={(e) =>
+                        handleBooleanLiteralChange(field, e.target.value)
+                      }
+                      placeholder={DEFAULT_BOOLEAN_LITERAL_MAP[field]}
+                      spellCheck={false}
+                      className={`
+                        w-full rounded-md border px-3 py-2 font-mono text-sm outline-none transition-colors
+                        dark:bg-slate-900 dark:text-gray-200 bg-white text-gray-800
+                        focus:ring-2 focus:ring-cyan-500/50
+                        ${booleanLiteralError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                      `}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              {booleanLiteralError && (
+                <span className="text-xs text-red-500">
+                  {booleanLiteralError}
+                </span>
               )}
             </div>
 

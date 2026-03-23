@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  getDefaultBooleanLiteralMap,
   getDefaultKeywordMappings,
   migrateStoredMappings,
+  validateBooleanLiteralAliases,
   validateCustomKeyword,
 } from "@/contexts/KeywordContext";
 
@@ -37,23 +39,60 @@ describe("migrateStoredMappings", () => {
 });
 
 describe("validateCustomKeyword", () => {
-  it("rejects true as a custom keyword", () => {
+  it("allows true when boolean literal aliases are customized away from defaults", () => {
     const error = validateCustomKeyword(
       "int",
       "true",
       getDefaultKeywordMappings(),
+      { true: "yes", false: "no" },
     );
 
-    expect(error).toBe('"true" é reservado como literal da linguagem.');
+    expect(error).toBeNull();
   });
 
-  it("rejects false as a custom keyword", () => {
+  it("rejects conflicts with the active boolean literal aliases", () => {
     const error = validateCustomKeyword(
       "print",
-      "false",
+      "yes",
       getDefaultKeywordMappings(),
+      { true: "yes", false: "no" },
     );
 
-    expect(error).toBe('"false" é reservado como literal da linguagem.');
+    expect(error).toBe('"yes" já está sendo usada como literal booleano.');
+  });
+});
+
+describe("boolean literal customization", () => {
+  it("returns true and false as the default boolean literal aliases", () => {
+    expect(getDefaultBooleanLiteralMap()).toEqual({
+      true: "true",
+      false: "false",
+    });
+  });
+
+  it("rejects duplicate boolean literal aliases", () => {
+    const error = validateBooleanLiteralAliases(
+      { true: "sim", false: "sim" },
+      getDefaultKeywordMappings(),
+      {},
+      { open: "", close: "" },
+    );
+
+    expect(error).toBe("Os literais booleanos precisam ser diferentes.");
+  });
+
+  it("rejects boolean literal aliases that conflict with keyword customizations", () => {
+    const mappings = getDefaultKeywordMappings().map((mapping) =>
+      mapping.original === "int" ? { ...mapping, custom: "inteiro" } : mapping,
+    );
+
+    const error = validateBooleanLiteralAliases(
+      { true: "inteiro", false: "falso" },
+      mappings,
+      {},
+      { open: "", close: "" },
+    );
+
+    expect(error).toBe('"inteiro" conflicts with an existing keyword customization.');
   });
 });

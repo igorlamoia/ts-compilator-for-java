@@ -6,6 +6,7 @@ import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
 import { useState, useContext } from "react";
 import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
 import type {
+  BooleanLiteralMap,
   KeywordMap,
   LexerBlockDelimiters,
   OperatorWordMap,
@@ -24,6 +25,7 @@ type RunLexerAnalyseInput = {
   indentationBlock?: boolean;
   grammar?: unknown;
   operatorWordMap?: OperatorWordMap;
+  booleanLiteralMap?: BooleanLiteralMap;
   locale?: string;
 };
 
@@ -35,6 +37,7 @@ async function runLexerAnalyse(
     const lexer = new Lexer(input.sourceCode, {
       customKeywords: effectiveKeywordMap,
       operatorWordMap: input.operatorWordMap,
+      booleanLiteralMap: input.booleanLiteralMap,
       blockDelimiters: input.blockDelimiters,
       locale: input.locale,
       indentationBlock: input.indentationBlock,
@@ -83,6 +86,7 @@ export function useLexerAnalyse() {
         indentationBlock: lexerConfig.indentationBlock,
         grammar: lexerConfig.grammar,
         operatorWordMap: lexerConfig.operatorWordMap,
+        booleanLiteralMap: lexerConfig.booleanLiteralMap,
         locale: locale,
       });
       const issues = [...data.warnings, ...data.infos];

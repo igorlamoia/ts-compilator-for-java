@@ -35,6 +35,21 @@ describe("buildJavaMMLanguageMetadata", () => {
     );
   });
 
+  it("uses configured boolean literals in metadata instead of the built-in defaults", () => {
+    const metadata = buildJavaMMLanguageMetadata(
+      [{ original: "bool", custom: "bool", tokenId: 55 }],
+      {},
+      { true: "yes", false: "no" },
+    );
+
+    expect(metadata.allKeywords).toEqual(
+      expect.arrayContaining(["bool", "yes", "no"]),
+    );
+    expect(metadata.allKeywords).not.toEqual(
+      expect.arrayContaining(["true", "false"]),
+    );
+  });
+
   it("assigns semantic Monaco token classes", () => {
     const metadata = buildJavaMMLanguageMetadata([
       { original: "if", custom: "se", tokenId: 28 },
@@ -143,7 +158,7 @@ describe("buildJavaMMLanguageMetadata", () => {
     });
   });
 
-  it("offers built-in boolean literals in autocomplete", () => {
+  it("offers configured boolean literals in autocomplete", () => {
     const registerCompletionItemProvider = vi.fn(() => ({
       dispose: vi.fn(),
     }));
@@ -170,6 +185,7 @@ describe("buildJavaMMLanguageMetadata", () => {
       monaco as never,
       [{ original: "bool", custom: "bool", tokenId: 55 }] as never,
       {
+        booleanLiteralMap: { true: "yes", false: "no" },
         typingMode: "typed",
         blockMode: "delimited",
         arrayMode: "fixed",
@@ -191,7 +207,8 @@ describe("buildJavaMMLanguageMetadata", () => {
       (suggestion: { label: string }) => suggestion.label,
     );
 
-    expect(labels).toEqual(expect.arrayContaining(["true", "false"]));
+    expect(labels).toEqual(expect.arrayContaining(["yes", "no"]));
+    expect(labels).not.toEqual(expect.arrayContaining(["true", "false"]));
   });
 
   it("filters typed fixed array snippets by array mode", () => {

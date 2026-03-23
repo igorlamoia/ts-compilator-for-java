@@ -26,6 +26,7 @@ const {
   showToastMock: vi.fn(),
   buildLexerConfigMock: vi.fn(() => ({
     keywordMap: { inteiro: 21 },
+    booleanLiteralMap: { true: "yes", false: "no" },
     blockDelimiters: { open: "begin", close: "end" },
     indentationBlock: false,
     grammar: {
@@ -155,6 +156,7 @@ describe("useLexerAnalyse", () => {
       "int x = 0;",
       expect.objectContaining({
         customKeywords: expect.objectContaining({ inteiro: 21 }),
+        booleanLiteralMap: { true: "yes", false: "no" },
         blockDelimiters: { open: "begin", close: "end" },
         indentationBlock: false,
         operatorWordMap: { logical_and: "and" },

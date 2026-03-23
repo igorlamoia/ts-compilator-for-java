@@ -63,8 +63,10 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
 
   if (token.type === RESERVEDS.true || token.type === RESERVEDS.false) {
     const literal = iterator.consume(token.type);
+    const canonicalBooleanLexeme =
+      literal.type === RESERVEDS.true ? "true" : "false";
     return iterator.createExprResult(
-      literal.lexeme,
+      canonicalBooleanLexeme,
       iterator.inferLiteralType(literal),
       literal,
     );

@@ -6,9 +6,11 @@ import { IssueWarning, IssueInfo, IssueError } from "../issue";
 import { TIssueParams } from "../issue/details";
 import { translate } from "../i18n";
 import {
+  buildBooleanLiteralTokenMap,
   buildOperatorWordTokenMap,
   LexerConfig,
   validateBlockDelimiters,
+  validateBooleanLiteralMap,
   validateOperatorWordMap,
   type KeywordMap,
 } from "./config";
@@ -20,6 +22,7 @@ function isLexerConfig(value: unknown): value is LexerConfig {
   return (
     "customKeywords" in value ||
     "operatorWordMap" in value ||
+    "booleanLiteralMap" in value ||
     "blockDelimiters" in value ||
     "locale" in value ||
     "indentationBlock" in value ||
@@ -62,6 +65,7 @@ export class Lexer {
       ...(TOKENS.RESERVEDS as KeywordMap),
       ...(config.customKeywords ?? {}),
       ...buildOperatorWordTokenMap(config.operatorWordMap),
+      ...buildBooleanLiteralTokenMap(config.booleanLiteralMap),
     };
     this.locale = config.locale;
     this.indentationBlock = config.indentationBlock ?? false;
@@ -76,6 +80,15 @@ export class Lexer {
         config.operatorWordMap,
         TOKENS.RESERVEDS as KeywordMap,
         config.customKeywords,
+        delimiters,
+      );
+    }
+    if (config.booleanLiteralMap) {
+      validateBooleanLiteralMap(
+        config.booleanLiteralMap,
+        TOKENS.RESERVEDS as KeywordMap,
+        config.customKeywords,
+        config.operatorWordMap,
         delimiters,
       );
     }

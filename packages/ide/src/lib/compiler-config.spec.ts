@@ -77,4 +77,31 @@ describe("normalizeCompilerConfig", () => {
       less_equal: "less_equal",
     });
   });
+
+  it("preserves boolean literal aliases in the normalized payload", () => {
+    const normalized = normalizeCompilerConfig({
+      booleanLiteralMap: {
+        true: "verdadeiro",
+        false: "falso",
+      },
+    });
+
+    expect(normalized.booleanLiteralMap).toEqual({
+      true: "verdadeiro",
+      false: "falso",
+    });
+  });
+
+  it("trims boolean literal aliases and drops empty values", () => {
+    const normalized = normalizeCompilerConfig({
+      booleanLiteralMap: {
+        true: "  sim  ",
+        false: "   ",
+      },
+    });
+
+    expect(normalized.booleanLiteralMap).toEqual({
+      true: "sim",
+    });
+  });
 });

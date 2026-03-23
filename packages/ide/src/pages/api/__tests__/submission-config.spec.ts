@@ -101,6 +101,8 @@ describe("/api/submissions/validate config propagation", () => {
         sourceCode: "main() { print(1) }",
         locale: "pt-BR",
         keywordMap: { exibir: 33 },
+        operatorWordMap: { logical_and: "and" },
+        booleanLiteralMap: { true: "yes", false: "no" },
         indentationBlock: false,
         blockDelimiters: { open: "begin", close: "end" },
         grammar: {
@@ -120,6 +122,8 @@ describe("/api/submissions/validate config propagation", () => {
 
     expect(LexerMock).toHaveBeenCalledWith("main() { print(1) }", {
       customKeywords: { exibir: 33 },
+      operatorWordMap: { logical_and: "and" },
+      booleanLiteralMap: { true: "yes", false: "no" },
       blockDelimiters: undefined,
       indentationBlock: true,
     });

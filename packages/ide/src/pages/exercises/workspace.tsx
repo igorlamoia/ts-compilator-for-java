@@ -163,6 +163,8 @@ function WorkspaceContent({
           classId,
           sourceCode: code,
           keywordMap: lexerConfig.keywordMap,
+          operatorWordMap: lexerConfig.operatorWordMap,
+          booleanLiteralMap: lexerConfig.booleanLiteralMap,
           blockDelimiters: lexerConfig.blockDelimiters,
           indentationBlock: lexerConfig.indentationBlock,
           grammar: lexerConfig.grammar,

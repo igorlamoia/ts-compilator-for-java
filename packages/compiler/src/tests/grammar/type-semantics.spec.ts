@@ -375,6 +375,34 @@ describe("Type semantics warnings", () => {
 });
 
 describe("Type semantics runtime", () => {
+  it("executes customized boolean literal aliases in declarations and conditions", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          bool oi = mentira;
+          if (oi) {
+            print("nao deveria");
+          }
+          oi = vdd;
+          if (oi) {
+            print("ok");
+          }
+          return 0;
+        }
+      `,
+      {
+        lexer: {
+          booleanLiteralMap: {
+            true: "vdd",
+            false: "mentira",
+          },
+        },
+      },
+    );
+
+    expect(result.output).toBe("ok");
+  });
+
   it("prints boolean declaration values", async () => {
     const result = await executeProgram(`
       int main() {

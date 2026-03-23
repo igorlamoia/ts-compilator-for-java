@@ -15,6 +15,11 @@ export type IDEOperatorWordMap = {
   not_equal?: string;
 };
 
+export type IDEBooleanLiteralMap = {
+  true?: string;
+  false?: string;
+};
+
 export type IDEGrammarConfig = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
@@ -25,6 +30,7 @@ export type IDEGrammarConfig = {
 export type IDECompilerConfigPayload = {
   keywordMap: Record<string, number>;
   operatorWordMap: IDEOperatorWordMap;
+  booleanLiteralMap: IDEBooleanLiteralMap;
   blockDelimiters?: { open: string; close: string };
   indentationBlock: boolean;
   grammar: IDEGrammarConfig;
@@ -33,6 +39,7 @@ export type IDECompilerConfigPayload = {
 export type IDEPartialCompilerConfigPayload = {
   keywordMap?: Record<string, number>;
   operatorWordMap?: IDEOperatorWordMap;
+  booleanLiteralMap?: IDEBooleanLiteralMap;
   blockDelimiters?: { open: string; close: string };
   indentationBlock?: boolean;
   grammar?: Partial<IDEGrammarConfig>;

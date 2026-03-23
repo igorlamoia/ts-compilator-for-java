@@ -334,7 +334,10 @@ export class TokenIterator {
     if (token.type === TOKENS.LITERALS.string_literal) {
       return "string";
     }
-    if (token.lexeme === "true" || token.lexeme === "false") {
+    if (
+      token.type === TOKENS.RESERVEDS.true ||
+      token.type === TOKENS.RESERVEDS.false
+    ) {
       return "bool";
     }
     return "unknown";
