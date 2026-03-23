@@ -229,6 +229,77 @@ describe("Type semantics warnings", () => {
     );
   });
 
+  it("accepts fixed array initialization literals in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int vetor[2] = [0, 1];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("accepts fixed matrix initialization literals in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2] = [[0, 1], [2, 3]];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("accepts declaration-time array initialization literals in untyped mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            vetor[] = [0, 1];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "untyped", arrayMode: "dynamic" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects array literals in plain assignments", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int vetor[2];
+            vetor = [0, 1];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("rejects malformed array literal separators", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2] = [[0, 1] [2, 3]];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
   it("rejects empty dimensions in fixed array mode", () => {
     expect(() =>
       compileToIr(
