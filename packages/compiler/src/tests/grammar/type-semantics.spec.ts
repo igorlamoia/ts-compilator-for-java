@@ -300,6 +300,94 @@ describe("Type semantics warnings", () => {
     ).toThrow();
   });
 
+  it("rejects fixed array initialization literals with wrong size", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int vetor[2] = [0, 1, 2];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("rejects fixed matrix initialization literals with wrong depth", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int matriz[2][2] = [0, 1];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("rejects incompatible typed array literal elements", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int vetor[2] = [0, "x"];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("emits array writes for declaration-time initializer literals", () => {
+    const instructions = compileToIr(
+      `
+        int main() {
+          int matriz[2][2] = [[0, 1], [2, 3]];
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(instructions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          op: "DECLARE_ARRAY",
+          result: "matriz",
+          operand1: "int",
+        }),
+        expect.objectContaining({
+          op: "ARRAY_SET",
+          result: "matriz",
+          operand1: ["0", "0"],
+          operand2: "0",
+        }),
+        expect.objectContaining({
+          op: "ARRAY_SET",
+          result: "matriz",
+          operand1: ["0", "1"],
+          operand2: "1",
+        }),
+        expect.objectContaining({
+          op: "ARRAY_SET",
+          result: "matriz",
+          operand1: ["1", "0"],
+          operand2: "2",
+        }),
+        expect.objectContaining({
+          op: "ARRAY_SET",
+          result: "matriz",
+          operand1: ["1", "1"],
+          operand2: "3",
+        }),
+      ]),
+    );
+  });
+
   it("rejects empty dimensions in fixed array mode", () => {
     expect(() =>
       compileToIr(
@@ -724,6 +812,54 @@ describe("Type semantics runtime", () => {
     );
 
     expect(result.output).toBe("1");
+  });
+
+  it("reads initialized fixed array values at runtime", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int vetor[2] = [0, 1];
+          print(vetor[0]);
+          print(vetor[1]);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(result.output).toBe("01");
+  });
+
+  it("reads initialized fixed matrix values at runtime", async () => {
+    const result = await executeProgram(
+      `
+        int main() {
+          int matriz[2][2] = [[0, 1], [2, 3]];
+          print(matriz[1][0]);
+          print(matriz[1][1]);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(result.output).toBe("23");
+  });
+
+  it("reads initialized untyped dynamic array values at runtime", async () => {
+    const result = await executeProgram(
+      `
+        funcao main() {
+          vetor[] = [0, 1];
+          print(vetor[0]);
+          print(vetor[1]);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "untyped", arrayMode: "dynamic" } },
+    );
+
+    expect(result.output).toBe("01");
   });
 
   it("reads directly into fixed matrix elements at runtime", async () => {

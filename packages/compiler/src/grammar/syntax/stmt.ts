@@ -130,13 +130,24 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
     typingMode === "untyped" &&
     arrayMode === "dynamic" &&
     iterator.match(TOKENS.SYMBOLS.left_bracket) &&
-    iterator.peekAt(1)?.type === TOKENS.SYMBOLS.right_bracket &&
-    iterator.peekAt(2)?.type === TOKENS.ASSIGNMENTS.equal &&
-    iterator.peekAt(3)?.type === TOKENS.SYMBOLS.left_bracket &&
-    iterator.peekAt(4)?.type === TOKENS.SYMBOLS.right_bracket
+    iterator.peekAt(1)?.type === TOKENS.SYMBOLS.right_bracket
   ) {
-    declareUntypedDynamicArray(iterator, identifier);
-    return;
+    let offset = 0;
+    while (
+      iterator.peekAt(offset)?.type === TOKENS.SYMBOLS.left_bracket &&
+      iterator.peekAt(offset + 1)?.type === TOKENS.SYMBOLS.right_bracket
+    ) {
+      offset += 2;
+    }
+
+    if (
+      offset > 0 &&
+      iterator.peekAt(offset)?.type === TOKENS.ASSIGNMENTS.equal &&
+      iterator.peekAt(offset + 1)?.type === TOKENS.SYMBOLS.left_bracket
+    ) {
+      declareUntypedDynamicArray(iterator, identifier);
+      return;
+    }
   }
 
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
