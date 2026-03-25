@@ -6,6 +6,7 @@ const JAVA_MM_THEME_RULES_DARK = [
   { token: "keyword.io", foreground: "34d399", fontStyle: "bold" },
   { token: "operator", foreground: "f59e0b", fontStyle: "bold" },
   { token: "operator.word", foreground: "fcd34d", fontStyle: "bold" },
+  { token: "delimiter", foreground: "f87171", fontStyle: "bold" },
 ];
 
 const JAVA_MM_THEME_RULES_LIGHT = [
@@ -16,6 +17,7 @@ const JAVA_MM_THEME_RULES_LIGHT = [
   { token: "keyword.io", foreground: "047857", fontStyle: "bold" },
   { token: "operator", foreground: "c2410c", fontStyle: "bold" },
   { token: "operator.word", foreground: "d97706", fontStyle: "bold" },
+  { token: "delimiter", foreground: "dc2626", fontStyle: "bold" },
 ];
 
 export const DarkTheme = {
