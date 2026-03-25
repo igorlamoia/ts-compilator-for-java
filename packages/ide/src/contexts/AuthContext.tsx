@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserId(data.id);
       setOrganizationId(data.organizationId);
     } catch {
+      clearAuthToken();
       setUser(null);
       setUserId(null);
       setOrganizationId(null);
