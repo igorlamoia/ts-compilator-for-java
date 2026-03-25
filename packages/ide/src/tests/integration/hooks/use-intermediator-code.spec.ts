@@ -23,6 +23,7 @@ const {
   cleanIssuesMock: vi.fn(),
   showToastMock: vi.fn(),
   buildLexerConfigMock: vi.fn(() => ({
+    statementTerminatorLexeme: "@@",
     grammar: {
       semicolonMode: "required",
       blockMode: "indentation",
@@ -147,6 +148,7 @@ describe("useIntermediatorCode", () => {
     expect(postMock).not.toHaveBeenCalled();
     expect(TokenIteratorMock).toHaveBeenCalledWith(tokens, {
       locale: "en",
+      statementTerminatorLexeme: "@@",
       grammar: {
         semicolonMode: "required",
         blockMode: "indentation",

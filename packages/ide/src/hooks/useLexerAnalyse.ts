@@ -26,6 +26,7 @@ type RunLexerAnalyseInput = {
   grammar?: unknown;
   operatorWordMap?: OperatorWordMap;
   booleanLiteralMap?: BooleanLiteralMap;
+  statementTerminatorLexeme?: string;
   locale?: string;
 };
 
@@ -38,6 +39,7 @@ async function runLexerAnalyse(
       customKeywords: effectiveKeywordMap,
       operatorWordMap: input.operatorWordMap,
       booleanLiteralMap: input.booleanLiteralMap,
+      statementTerminatorLexeme: input.statementTerminatorLexeme,
       blockDelimiters: input.blockDelimiters,
       locale: input.locale,
       indentationBlock: input.indentationBlock,
@@ -87,6 +89,7 @@ export function useLexerAnalyse() {
         grammar: lexerConfig.grammar,
         operatorWordMap: lexerConfig.operatorWordMap,
         booleanLiteralMap: lexerConfig.booleanLiteralMap,
+        statementTerminatorLexeme: lexerConfig.statementTerminatorLexeme,
         locale: locale,
       });
       const issues = [...data.warnings, ...data.infos];

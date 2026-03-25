@@ -165,6 +165,7 @@ function WorkspaceContent({
           keywordMap: lexerConfig.keywordMap,
           operatorWordMap: lexerConfig.operatorWordMap,
           booleanLiteralMap: lexerConfig.booleanLiteralMap,
+          statementTerminatorLexeme: lexerConfig.statementTerminatorLexeme,
           blockDelimiters: lexerConfig.blockDelimiters,
           indentationBlock: lexerConfig.indentationBlock,
           grammar: lexerConfig.grammar,
