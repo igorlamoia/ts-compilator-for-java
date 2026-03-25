@@ -56,4 +56,46 @@ describe("statement terminator config", () => {
     expect(semicolonTokens).toHaveLength(1);
     expect(semicolonTokens[0]?.lexeme).toBe("@@");
   });
+
+  it("tokenizes an identifier-like terminator as semicolon token", () => {
+    const lexer = new Lexer("int main() { print(1) uai }", {
+      statementTerminatorLexeme: "uai",
+      locale: "en",
+    });
+
+    const semicolonTokens = lexer
+      .scanTokens()
+      .filter((token) => token.type === TOKENS.SYMBOLS.semicolon);
+
+    expect(semicolonTokens).toHaveLength(1);
+    expect(semicolonTokens[0]?.lexeme).toBe("uai");
+  });
+
+  it("tokenizes an underscore-prefixed terminator as semicolon token", () => {
+    const lexer = new Lexer("int main() { print(1) _uai }", {
+      statementTerminatorLexeme: "_uai",
+      locale: "en",
+    });
+
+    const semicolonTokens = lexer
+      .scanTokens()
+      .filter((token) => token.type === TOKENS.SYMBOLS.semicolon);
+
+    expect(semicolonTokens).toHaveLength(1);
+    expect(semicolonTokens[0]?.lexeme).toBe("_uai");
+  });
+
+  it("does not match an identifier-like terminator inside a larger identifier", () => {
+    const lexer = new Lexer("int main() { int uai123 = 1; }", {
+      statementTerminatorLexeme: "uai",
+      locale: "en",
+    });
+
+    const identifierLexemes = lexer
+      .scanTokens()
+      .filter((token) => token.type === TOKENS.LITERALS.identifier)
+      .map((token) => token.lexeme);
+
+    expect(identifierLexemes).toContain("uai123");
+  });
 });
