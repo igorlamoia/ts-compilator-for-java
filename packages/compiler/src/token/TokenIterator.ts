@@ -61,6 +61,7 @@ type TokenIteratorConfig = {
   locale?: string;
   grammar?: GrammarConfig;
   operatorWordMap?: OperatorWordMap;
+  statementTerminatorLexeme?: string;
 };
 
 export class TokenIterator {
@@ -72,6 +73,7 @@ export class TokenIterator {
   private breakStack: string[];
   private locale: string | undefined;
   private grammar: GrammarConfig | undefined;
+  private statementTerminatorLexeme: string | undefined;
   private warnings: IssueWarning[];
   private infos: IssueInfo[];
   private scopes: Scope[];
@@ -92,6 +94,7 @@ export class TokenIterator {
     this.breakStack = [];
     this.locale = config.locale;
     this.grammar = config.grammar;
+    this.statementTerminatorLexeme = config.statementTerminatorLexeme;
     this.warnings = [];
     this.infos = [];
     this.scopes = [new Map<string, SymbolDescriptor>()];
@@ -359,6 +362,10 @@ export class TokenIterator {
 
   getSemicolonMode(): "optional-eol" | "required" {
     return this.grammar?.semicolonMode ?? "optional-eol";
+  }
+
+  getStatementTerminatorLexeme(): string | undefined {
+    return this.statementTerminatorLexeme;
   }
 
   getBlockMode(): "delimited" | "indentation" {

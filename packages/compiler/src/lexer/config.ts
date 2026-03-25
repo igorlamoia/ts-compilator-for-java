@@ -52,6 +52,30 @@ const BOOLEAN_LITERAL_TOKEN_IDS = {
   false: 57,
 } as const;
 
+const FIXED_TOKEN_CHARS = new Set([
+  ";",
+  ",",
+  "{",
+  "}",
+  "(",
+  ")",
+  "[",
+  "]",
+  ".",
+  ":",
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "=",
+  ">",
+  "<",
+  "!",
+  "|",
+  "&",
+]);
+
 export function normalizeStatementTerminatorLexeme(
   value: string | undefined,
 ): string | undefined {
@@ -74,6 +98,12 @@ export function validateStatementTerminatorLexeme(lexeme: string): void {
 
   if (lexeme === ";") {
     throw new Error("statement terminator cannot reuse semicolon");
+  }
+
+  if ([...lexeme].some((char) => FIXED_TOKEN_CHARS.has(char))) {
+    throw new Error(
+      "statement terminator cannot reuse fixed operator or symbol characters",
+    );
   }
 }
 

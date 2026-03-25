@@ -44,6 +44,7 @@ export class Lexer {
   infos: IssueInfo[] = [];
   keywordMap: KeywordMap;
   locale: string | undefined;
+  statementTerminatorLexeme: string | undefined;
   private indentationBlock: boolean;
   private tabWidth: number;
   private indentStack: number[] = [0];
@@ -107,6 +108,7 @@ export class Lexer {
     const statementTerminatorLexeme = normalizeStatementTerminatorLexeme(
       config.statementTerminatorLexeme,
     );
+    this.statementTerminatorLexeme = statementTerminatorLexeme;
     if (config.statementTerminatorLexeme !== undefined) {
       if (!statementTerminatorLexeme) {
         throw new Error("statement terminator cannot be empty");

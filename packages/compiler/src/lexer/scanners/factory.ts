@@ -18,6 +18,8 @@ export default class LexerScannerFactory {
     if (isIdentifierStart(char)) return new IdentifierScanner(lexer);
     if (char === "/" && ["*", "/"].includes(lexer.peek()))
       return new CommentScanner(lexer);
+    if (lexer.statementTerminatorLexeme?.startsWith(char))
+      return new SymbolAndOperatorScanner(lexer);
     if (Object.keys(TOKENS_MAP).includes(char))
       return new SymbolAndOperatorScanner(lexer);
     return null;
