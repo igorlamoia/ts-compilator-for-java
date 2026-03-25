@@ -582,6 +582,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         blockDelimiters,
         operatorWordMap,
         booleanLiteralMap,
+        statementTerminatorLexeme,
         typingMode,
         arrayMode,
       });
@@ -593,6 +594,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     blockDelimiters,
     operatorWordMap,
     booleanLiteralMap,
+    statementTerminatorLexeme,
     typingMode,
     arrayMode,
     monacoRef,
