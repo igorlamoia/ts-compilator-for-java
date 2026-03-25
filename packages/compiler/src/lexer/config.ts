@@ -52,6 +52,31 @@ const BOOLEAN_LITERAL_TOKEN_IDS = {
   false: 57,
 } as const;
 
+export function normalizeStatementTerminatorLexeme(
+  value: string | undefined,
+): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalizedValue = value.trim();
+  return normalizedValue.length > 0 ? normalizedValue : undefined;
+}
+
+export function validateStatementTerminatorLexeme(lexeme: string): void {
+  if (lexeme.trim().length === 0) {
+    throw new Error("statement terminator cannot be empty");
+  }
+
+  if (/\s/.test(lexeme)) {
+    throw new Error("statement terminator cannot contain whitespace");
+  }
+
+  if (lexeme === ";") {
+    throw new Error("statement terminator cannot reuse semicolon");
+  }
+}
+
 export function buildOperatorWordTokenMap(
   operatorWordMap: OperatorWordMap | undefined,
 ): KeywordMap {
