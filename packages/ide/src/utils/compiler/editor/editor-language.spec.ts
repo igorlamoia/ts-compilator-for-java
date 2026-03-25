@@ -5,6 +5,17 @@ import {
   registerJavaMMLanguage,
 } from "@/utils/compiler/editor/editor-language";
 
+function getDelimiterRules(
+  language: ReturnType<typeof buildJavaMMMonarchLanguage>,
+) {
+  return language.tokenizer.root
+    .filter(
+      (rule): rule is [RegExp, string] =>
+        Array.isArray(rule) && rule[1] === "delimiter",
+    )
+    .map(([pattern]) => pattern);
+}
+
 describe("buildJavaMMLanguageMetadata", () => {
   it("maps customized words into semantic keyword groups", () => {
     const metadata = buildJavaMMLanguageMetadata([
@@ -50,6 +61,17 @@ describe("buildJavaMMLanguageMetadata", () => {
     );
   });
 
+  it("includes a configured statement terminator in metadata", () => {
+    const metadata = buildJavaMMLanguageMetadata(
+      [{ original: "if", custom: "if", tokenId: 28 }],
+      {},
+      undefined,
+      "uai",
+    );
+
+    expect(metadata.statementTerminators).toEqual([";", "uai"]);
+  });
+
   it("assigns semantic Monaco token classes", () => {
     const metadata = buildJavaMMLanguageMetadata([
       { original: "if", custom: "se", tokenId: 28 },
@@ -58,15 +80,45 @@ describe("buildJavaMMLanguageMetadata", () => {
     ]);
 
     const language = buildJavaMMMonarchLanguage(metadata);
-    const rootTokenizer = language.tokenizer.root[0];
+    const rootTokenizer = language.tokenizer.root.find(
+      (rule): rule is [RegExp, { cases: Record<string, string> }] =>
+        Array.isArray(rule) &&
+        typeof rule[1] === "object" &&
+        rule[1] !== null &&
+        "cases" in rule[1],
+    );
 
-    if (!Array.isArray(rootTokenizer) || !("cases" in rootTokenizer[1])) {
+    if (!rootTokenizer || !("cases" in rootTokenizer[1])) {
       throw new Error("Unexpected Monarch tokenizer shape");
     }
 
     expect(rootTokenizer[1].cases["@conditionals"]).toBe("keyword.conditional");
     expect(rootTokenizer[1].cases["@loops"]).toBe("keyword.loop");
     expect(rootTokenizer[1].cases["@types"]).toBe("keyword.type");
+  });
+
+  it("highlights only semicolon and configured word-like terminators", () => {
+    const language = buildJavaMMMonarchLanguage({
+      allKeywords: [],
+      operatorWords: [],
+      statementTerminators: [";", "uai", "_uai"],
+      semanticGroups: {
+        types: [],
+        conditionals: [],
+        loops: [],
+        flow: [],
+        io: [],
+      },
+    });
+
+    const delimiterRules = getDelimiterRules(language);
+
+    expect(delimiterRules.some((rule) => rule.test(";"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("uai"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("_uai"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("uai123"))).toBe(false);
+    expect(delimiterRules.some((rule) => rule.test(","))).toBe(false);
+    expect(delimiterRules.some((rule) => rule.test("."))).toBe(false);
   });
 
   it("preserves semantic meaning after keyword customization", () => {
@@ -90,6 +142,31 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(language.flow).toContain("retorne");
     expect(language.io).toContain("leia");
     expect(language.conditionals).toContain("escolha");
+  });
+
+  it("forwards a configured statement terminator into Monaco registration", () => {
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [{ original: "if", custom: "if", tokenId: 28 }] as never,
+      {
+        statementTerminatorLexeme: "uai",
+      } as never,
+    );
+
+    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const delimiterRules = getDelimiterRules(language);
+
+    expect(delimiterRules.some((rule) => rule.test("uai"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("uai123"))).toBe(false);
   });
 
   it("includes configured operator aliases in Monarch operators", () => {
