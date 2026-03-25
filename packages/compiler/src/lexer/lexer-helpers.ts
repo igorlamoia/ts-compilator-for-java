@@ -18,6 +18,10 @@ export function isIdentifierStart(c: string): boolean {
   return isAlpha(c) || c === "_";
 }
 
+export function isIdentifierPart(c: string): boolean {
+  return isIdentifierStart(c) || isDigit(c);
+}
+
 export function isAlphaNumeric(c: string): boolean {
   return isIdentifierStart(c) || isDigit(c);
 }
