@@ -124,4 +124,69 @@ describe("statement terminator customization", () => {
       "O terminador não pode reutilizar símbolos ou operadores fixos da linguagem.",
     );
   });
+
+  it("rejects terminators that collide with keyword customizations", () => {
+    const error = validateStatementTerminatorLexeme(
+      "uai",
+      [
+        { original: "if", custom: "uai", tokenId: 28 },
+        { original: "while", custom: "enquanto", tokenId: 25 },
+      ],
+    );
+
+    expect(error).toBe('"uai" conflicts with an existing keyword customization.');
+  });
+
+  it("rejects original reserved keywords even after customization remaps them", () => {
+    const error = validateStatementTerminatorLexeme(
+      "if",
+      [{ original: "if", custom: "se", tokenId: 28 }],
+    );
+
+    expect(error).toBe('"if" conflicts with an existing keyword customization.');
+  });
+
+  it("rejects terminators that collide with operator aliases", () => {
+    const error = validateStatementTerminatorLexeme(
+      "uai",
+      getDefaultKeywordMappings(),
+      { logical_and: "uai" },
+    );
+
+    expect(error).toBe('"uai" conflicts with an existing operator alias.');
+  });
+
+  it("rejects terminators that collide with boolean aliases", () => {
+    const error = validateStatementTerminatorLexeme(
+      "uai",
+      getDefaultKeywordMappings(),
+      {},
+      { true: "uai", false: "nao" },
+    );
+
+    expect(error).toBe('"uai" conflicts with an existing boolean literal alias.');
+  });
+
+  it("rejects default boolean literals even after customization remaps them", () => {
+    const error = validateStatementTerminatorLexeme(
+      "true",
+      getDefaultKeywordMappings(),
+      {},
+      { true: "sim", false: "nao" },
+    );
+
+    expect(error).toBe('"true" conflicts with an existing keyword customization.');
+  });
+
+  it("rejects terminators that collide with block delimiters", () => {
+    const error = validateStatementTerminatorLexeme(
+      "uai",
+      getDefaultKeywordMappings(),
+      {},
+      getDefaultBooleanLiteralMap(),
+      { open: "uai", close: "fim" },
+    );
+
+    expect(error).toBe('"uai" conflicts with the configured block delimiters.');
+  });
 });

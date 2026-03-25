@@ -107,7 +107,13 @@ type KeywordContextType = {
   /** Atualiza o terminador de instrução customizado */
   setStatementTerminatorLexeme: (value: string) => void;
   /** Valida o terminador de instrução customizado */
-  validateStatementTerminatorLexeme: (value: string) => string | null;
+  validateStatementTerminatorLexeme: (
+    value: string,
+    mappingsToValidate?: KeywordMapping[],
+    operatorWordMapToValidate?: IDEOperatorWordMap,
+    booleanLiteralMapToValidate?: IDEBooleanLiteralMap,
+    delimitersToValidate?: BlockDelimiters,
+  ) => string | null;
   /** Valida literais booleanos customizados */
   validateBooleanLiteralMap: (
     value: IDEBooleanLiteralMap,
@@ -251,7 +257,13 @@ export function getDefaultBooleanLiteralMap(): IDEBooleanLiteralMap {
   return { ...DEFAULT_BOOLEAN_LITERAL_MAP };
 }
 
-export function validateStatementTerminatorLexeme(value: string): string | null {
+export function validateStatementTerminatorLexeme(
+  value: string,
+  mappingsToValidate: KeywordMapping[] = getDefaultKeywordMappings(),
+  operatorWordMapToValidate: IDEOperatorWordMap = {},
+  booleanLiteralMapToValidate: IDEBooleanLiteralMap = DEFAULT_BOOLEAN_LITERAL_MAP,
+  delimitersToValidate: BlockDelimiters = { open: "", close: "" },
+): string | null {
   const normalized = value.trim();
 
   if (!normalized) {
@@ -268,6 +280,45 @@ export function validateStatementTerminatorLexeme(value: string): string | null 
 
   if ([...normalized].some((char) => RESERVED_STATEMENT_TERMINATOR_CHARS.has(char))) {
     return "O terminador não pode reutilizar símbolos ou operadores fixos da linguagem.";
+  }
+
+  const keywordSet = new Set(
+    [
+      ...ORIGINAL_KEYWORDS,
+      ...Object.values(DEFAULT_BOOLEAN_LITERAL_MAP),
+      ...mappingsToValidate.map((mapping) => mapping.custom.trim()),
+    ].filter(Boolean),
+  );
+  const operatorAliases = new Set(
+    Object.values(operatorWordMapToValidate)
+      .map((alias) => alias?.trim())
+      .filter((alias): alias is string => Boolean(alias)),
+  );
+  const booleanAliases = new Set(
+    Object.values({
+      ...DEFAULT_BOOLEAN_LITERAL_MAP,
+      ...booleanLiteralMapToValidate,
+    })
+      .map((alias) => alias?.trim())
+      .filter((alias): alias is string => Boolean(alias)),
+  );
+  const openDelimiter = delimitersToValidate.open.trim();
+  const closeDelimiter = delimitersToValidate.close.trim();
+
+  if (keywordSet.has(normalized)) {
+    return `"${normalized}" conflicts with an existing keyword customization.`;
+  }
+
+  if (operatorAliases.has(normalized)) {
+    return `"${normalized}" conflicts with an existing operator alias.`;
+  }
+
+  if (booleanAliases.has(normalized)) {
+    return `"${normalized}" conflicts with an existing boolean literal alias.`;
+  }
+
+  if (normalized === openDelimiter || normalized === closeDelimiter) {
+    return `"${normalized}" conflicts with the configured block delimiters.`;
   }
 
   return null;

@@ -353,6 +353,10 @@ export function KeywordCustomizer() {
     if (normalizedStatementTerminator) {
       const nextStatementTerminatorError = validateStatementTerminatorLexeme(
         normalizedStatementTerminator,
+        draftMappings,
+        draftOperatorWordMap,
+        draftBooleanLiteralMap,
+        getOperatorValidationDelimiters(),
       );
       if (nextStatementTerminatorError) {
         setStatementTerminatorError(nextStatementTerminatorError);
@@ -451,7 +455,15 @@ export function KeywordCustomizer() {
     setDraftStatementTerminatorLexeme(value);
     const normalizedValue = value.trim();
     setStatementTerminatorError(
-      normalizedValue ? validateStatementTerminatorLexeme(normalizedValue) : null,
+      normalizedValue
+        ? validateStatementTerminatorLexeme(
+            normalizedValue,
+            draftMappings,
+            draftOperatorWordMap,
+            draftBooleanLiteralMap,
+            getOperatorValidationDelimiters(),
+          )
+        : null,
     );
   };
 
