@@ -211,6 +211,15 @@ describe("Grammar For Semicolons", () => {
     ).not.toThrow();
   });
 
+  it("keeps literal semicolons inside for headers when a word terminator is active", () => {
+    expect(() =>
+      compileToIr("int main() { for (int i = 0; i < 3; i++) { print(i) uai } }", {
+        lexer: { statementTerminatorLexeme: "uai" },
+        grammar: { semicolonMode: "required" },
+      }),
+    ).not.toThrow();
+  });
+
   it("rejects custom terminator inside for headers", () => {
     expect(() =>
       compileToIr("int main() { for (int i = 0 @@ i < 3 @@ i++) { print(i)@@ } }", {
@@ -275,5 +284,23 @@ describe("Grammar Required Semicolons", () => {
         grammar: { semicolonMode: "required" },
       }),
     ).not.toThrow();
+  });
+
+  it("accepts a word-like configured terminator in required mode", () => {
+    expect(() =>
+      compileToIr("int main() { print(1) uai }", {
+        lexer: { statementTerminatorLexeme: "uai" },
+        grammar: { semicolonMode: "required" },
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects literal semicolon in normal statements when a word terminator is active", () => {
+    expect(() =>
+      compileToIr("int main() { print(1); }", {
+        lexer: { statementTerminatorLexeme: "uai" },
+        grammar: { semicolonMode: "required" },
+      }),
+    ).toThrow(/Unexpected token/);
   });
 });
