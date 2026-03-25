@@ -113,7 +113,14 @@ export class Lexer {
       if (!statementTerminatorLexeme) {
         throw new Error("statement terminator cannot be empty");
       }
-      validateStatementTerminatorLexeme(statementTerminatorLexeme);
+      validateStatementTerminatorLexeme(
+        statementTerminatorLexeme,
+        TOKENS.RESERVEDS as KeywordMap,
+        config.customKeywords,
+        config.operatorWordMap,
+        config.booleanLiteralMap,
+        delimiters,
+      );
     }
   }
 

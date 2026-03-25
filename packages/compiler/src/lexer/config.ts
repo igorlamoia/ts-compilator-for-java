@@ -87,7 +87,14 @@ export function normalizeStatementTerminatorLexeme(
   return normalizedValue.length > 0 ? normalizedValue : undefined;
 }
 
-export function validateStatementTerminatorLexeme(lexeme: string): void {
+export function validateStatementTerminatorLexeme(
+  lexeme: string,
+  reserved: KeywordMap = {},
+  customKeywords: KeywordMap = {},
+  operatorWordMap: OperatorWordMap = {},
+  booleanLiteralMap: BooleanLiteralMap = {},
+  blockDelimiters?: LexerBlockDelimiters,
+): void {
   if (lexeme.trim().length === 0) {
     throw new Error("statement terminator cannot be empty");
   }
@@ -103,6 +110,32 @@ export function validateStatementTerminatorLexeme(lexeme: string): void {
   if ([...lexeme].some((char) => FIXED_TOKEN_CHARS.has(char))) {
     throw new Error(
       "statement terminator cannot reuse fixed operator or symbol characters",
+    );
+  }
+
+  const operatorAliases = new Set(
+    Object.values(operatorWordMap)
+      .filter((alias): alias is string => typeof alias === "string")
+      .map((alias) => alias.trim())
+      .filter((alias) => alias.length > 0),
+  );
+  const booleanAliases = new Set(
+    Object.values(booleanLiteralMap)
+      .filter((alias): alias is string => typeof alias === "string")
+      .map((alias) => alias.trim())
+      .filter((alias) => alias.length > 0),
+  );
+
+  if (
+    reserved[lexeme] !== undefined ||
+    customKeywords[lexeme] !== undefined ||
+    operatorAliases.has(lexeme) ||
+    booleanAliases.has(lexeme) ||
+    (blockDelimiters &&
+      (lexeme === blockDelimiters.open || lexeme === blockDelimiters.close))
+  ) {
+    throw new Error(
+      "statement terminator cannot conflict with existing language words",
     );
   }
 }

@@ -98,4 +98,58 @@ describe("statement terminator config", () => {
 
     expect(identifierLexemes).toContain("uai123");
   });
+
+  it("rejects terminators that collide with reserved keywords", () => {
+    expect(
+      () =>
+        new Lexer("int main() {}", {
+          statementTerminatorLexeme: "if",
+          locale: "en",
+        }),
+    ).toThrow(/statement terminator/i);
+  });
+
+  it("rejects terminators that collide with custom keywords", () => {
+    expect(
+      () =>
+        new Lexer("int main() {}", {
+          customKeywords: { uai: 999 },
+          statementTerminatorLexeme: "uai",
+          locale: "en",
+        }),
+    ).toThrow(/statement terminator/i);
+  });
+
+  it("rejects terminators that collide with operator aliases", () => {
+    expect(
+      () =>
+        new Lexer("int main() {}", {
+          statementTerminatorLexeme: "uai",
+          operatorWordMap: { logical_and: "uai" },
+          locale: "en",
+        }),
+    ).toThrow(/statement terminator/i);
+  });
+
+  it("rejects terminators that collide with boolean literal aliases", () => {
+    expect(
+      () =>
+        new Lexer("int main() {}", {
+          statementTerminatorLexeme: "uai",
+          booleanLiteralMap: { true: "uai", false: "nao" },
+          locale: "en",
+        }),
+    ).toThrow(/statement terminator/i);
+  });
+
+  it("rejects terminators that collide with block delimiters", () => {
+    expect(
+      () =>
+        new Lexer("int main() {}", {
+          statementTerminatorLexeme: "uai",
+          blockDelimiters: { open: "uai", close: "fim" },
+          locale: "en",
+        }),
+    ).toThrow(/statement terminator/i);
+  });
 });
