@@ -259,6 +259,15 @@ describe("Grammar Required Semicolons", () => {
     ).toThrow(/Unexpected token/);
   });
 
+  it("mentions the configured terminator in required-mode errors", () => {
+    expect(() =>
+      compileToIr("int main() { print(1) }", {
+        lexer: { statementTerminatorLexeme: "@@" },
+        grammar: { semicolonMode: "required" },
+      }),
+    ).toThrow(/@@/);
+  });
+
   it("accepts configured terminator in required mode", () => {
     expect(() =>
       compileToIr("int main() { print(1)@@ }", {

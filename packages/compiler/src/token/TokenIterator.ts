@@ -128,12 +128,15 @@ export class TokenIterator {
       const code = "iterator.unexpected_token";
       const expectedKey = TOKENS.BY_ID[expectedType];
       const actualKey = TOKENS.BY_ID[token.type];
+      const expectedTypeLabel = expectedKey
+        ? translate(this.locale, `token.${expectedKey}`)
+        : String(expectedType);
       const params = {
         line: token.line,
         column: token.column,
-        expectedType: expectedKey
-          ? translate(this.locale, `token.${expectedKey}`)
-          : String(expectedType),
+        expectedType: expectedLexeme
+          ? `${expectedTypeLabel} (${expectedLexeme})`
+          : expectedTypeLabel,
         actualType: actualKey
           ? translate(this.locale, `token.${actualKey}`)
           : String(token.type),
