@@ -72,13 +72,16 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
     blockDelimiters: { open: "", close: "" },
     operatorWordMap: {},
     booleanLiteralMap: { true: "true", false: "false" },
+    statementTerminatorLexeme: "",
     replaceKeywords: vi.fn(),
     setOperatorWordMap: vi.fn(),
     setBooleanLiteralMap: vi.fn(),
+    setStatementTerminatorLexeme: vi.fn(),
     setBlockDelimiters: vi.fn(),
     validateKeyword: vi.fn(() => null),
     validateBooleanLiteralMap: vi.fn(() => null),
     validateOperatorWordMap: vi.fn(() => null),
+    validateStatementTerminatorLexeme: vi.fn(() => null),
     validateBlockDelimiters: vi.fn(() => null),
     semicolonMode: "optional-eol",
     setSemicolonMode: vi.fn(),
@@ -155,6 +158,19 @@ describe("KeywordCustomizer", () => {
     expect(container.textContent).toContain("Literais Booleanos");
     expect(container.textContent).toContain("true");
     expect(container.textContent).toContain("false");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows a dedicated statement terminator section", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    expect(container.textContent).toContain("Terminador de Instrução");
+    expect(container.textContent).toContain("Substitui o ;");
 
     act(() => {
       root.unmount();

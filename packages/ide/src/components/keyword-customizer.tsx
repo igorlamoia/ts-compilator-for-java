@@ -58,13 +58,16 @@ export function KeywordCustomizer() {
     blockDelimiters,
     operatorWordMap,
     booleanLiteralMap,
+    statementTerminatorLexeme,
     replaceKeywords,
     setOperatorWordMap,
     setBooleanLiteralMap,
+    setStatementTerminatorLexeme,
     setBlockDelimiters,
     validateKeyword,
     validateBooleanLiteralMap,
     validateOperatorWordMap,
+    validateStatementTerminatorLexeme,
     validateBlockDelimiters,
     semicolonMode,
     setSemicolonMode,
@@ -85,6 +88,8 @@ export function KeywordCustomizer() {
     useState<IDEOperatorWordMap>(operatorWordMap);
   const [draftBooleanLiteralMap, setDraftBooleanLiteralMap] =
     useState<IDEBooleanLiteralMap>(booleanLiteralMap);
+  const [draftStatementTerminatorLexeme, setDraftStatementTerminatorLexeme] =
+    useState<string>(statementTerminatorLexeme);
   const [draftSemicolonMode, setDraftSemicolonMode] =
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
@@ -96,6 +101,8 @@ export function KeywordCustomizer() {
   const [booleanLiteralError, setBooleanLiteralError] = useState<string | null>(
     null,
   );
+  const [statementTerminatorError, setStatementTerminatorError] =
+    useState<string | null>(null);
   const [operatorError, setOperatorError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -105,6 +112,7 @@ export function KeywordCustomizer() {
       setDraftBlockDelimiters(blockDelimiters);
       setDraftOperatorWordMap(operatorWordMap);
       setDraftBooleanLiteralMap(booleanLiteralMap);
+      setDraftStatementTerminatorLexeme(statementTerminatorLexeme);
       setDraftSemicolonMode(semicolonMode);
       setDraftBlockMode(blockMode);
       setDraftTypingMode(typingMode);
@@ -113,6 +121,7 @@ export function KeywordCustomizer() {
       setCurrentError(null);
       setDelimiterError(null);
       setBooleanLiteralError(null);
+      setStatementTerminatorError(null);
       setOperatorError(null);
     }
   }, [
@@ -121,6 +130,7 @@ export function KeywordCustomizer() {
     blockDelimiters,
     operatorWordMap,
     booleanLiteralMap,
+    statementTerminatorLexeme,
     semicolonMode,
     blockMode,
     typingMode,
@@ -192,6 +202,7 @@ export function KeywordCustomizer() {
       ) ||
       draftBooleanLiteralMap.true !== booleanLiteralMap.true ||
       draftBooleanLiteralMap.false !== booleanLiteralMap.false ||
+      draftStatementTerminatorLexeme !== statementTerminatorLexeme ||
       draftBlockDelimiters.open !== blockDelimiters.open ||
       draftBlockDelimiters.close !== blockDelimiters.close ||
       draftSemicolonMode !== semicolonMode ||
@@ -204,6 +215,8 @@ export function KeywordCustomizer() {
       operatorWordMap,
       draftBooleanLiteralMap,
       booleanLiteralMap,
+      draftStatementTerminatorLexeme,
+      statementTerminatorLexeme,
       draftBlockDelimiters,
       blockDelimiters,
       draftSemicolonMode,
@@ -257,6 +270,7 @@ export function KeywordCustomizer() {
     setDraftBlockDelimiters(resetBlockDelimiters);
     setDraftOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
     setDraftBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
+    setDraftStatementTerminatorLexeme("");
     setDraftSemicolonMode(resetSemicolonMode);
     setDraftBlockMode(resetBlockMode);
     setDraftTypingMode(resetTypingMode);
@@ -264,6 +278,7 @@ export function KeywordCustomizer() {
     replaceKeywords(resetMappings);
     setOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
     setBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
+    setStatementTerminatorLexeme("");
     setBlockDelimiters(resetBlockDelimiters);
     setSemicolonMode(resetSemicolonMode);
     setBlockMode(resetBlockMode);
@@ -272,6 +287,7 @@ export function KeywordCustomizer() {
     setCurrentError(null);
     setDelimiterError(null);
     setBooleanLiteralError(null);
+    setStatementTerminatorError(null);
     setOperatorError(null);
   };
 
@@ -333,12 +349,23 @@ export function KeywordCustomizer() {
       setBooleanLiteralError(nextBooleanLiteralError);
       return;
     }
+    const normalizedStatementTerminator = draftStatementTerminatorLexeme.trim();
+    if (normalizedStatementTerminator) {
+      const nextStatementTerminatorError = validateStatementTerminatorLexeme(
+        normalizedStatementTerminator,
+      );
+      if (nextStatementTerminatorError) {
+        setStatementTerminatorError(nextStatementTerminatorError);
+        return;
+      }
+    }
     replaceKeywords(draftMappings);
     setOperatorWordMap(draftOperatorWordMap);
     setBooleanLiteralMap({
       true: draftBooleanLiteralMap.true?.trim() ?? "",
       false: draftBooleanLiteralMap.false?.trim() ?? "",
     });
+    setStatementTerminatorLexeme(normalizedStatementTerminator);
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
     setTypingMode(draftTypingMode);
@@ -352,6 +379,7 @@ export function KeywordCustomizer() {
     setCurrentError(null);
     setDelimiterError(null);
     setBooleanLiteralError(null);
+    setStatementTerminatorError(null);
     setOperatorError(null);
     setIsOpen(false);
   };
@@ -416,6 +444,14 @@ export function KeywordCustomizer() {
         draftOperatorWordMap,
         getOperatorValidationDelimiters(),
       ),
+    );
+  };
+
+  const handleStatementTerminatorChange = (value: string) => {
+    setDraftStatementTerminatorLexeme(value);
+    const normalizedValue = value.trim();
+    setStatementTerminatorError(
+      normalizedValue ? validateStatementTerminatorLexeme(normalizedValue) : null,
     );
   };
 
@@ -580,6 +616,39 @@ export function KeywordCustomizer() {
             </div>
 
             <div className="mt-8 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
+                Terminador de Instrução
+              </p>
+              <p className="text-sm dark:text-gray-400 text-gray-500">
+                Substitui o ; no fim das instruções comuns. O cabeçalho do{" "}
+                <code>for</code> continua usando <code>;</code>.
+              </p>
+              <input
+                type="text"
+                value={draftStatementTerminatorLexeme}
+                onChange={(e) =>
+                  handleStatementTerminatorChange(e.target.value)
+                }
+                placeholder="Opcional (ex.: @@)"
+                spellCheck={false}
+                className={`
+                  w-full px-3 py-2 rounded-md text-sm font-mono
+                  dark:bg-slate-800 bg-gray-50
+                  dark:text-gray-200 text-gray-800
+                  border transition-colors outline-none
+                  focus:ring-2 focus:ring-cyan-500/50
+                  ${statementTerminatorError ? "border-red-500 dark:border-red-500" : "dark:border-slate-600 border-gray-300"}
+                `}
+              />
+
+              {statementTerminatorError && (
+                <span className="text-xs text-red-500">
+                  {statementTerminatorError}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
               <p className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
                 Modo de Ponto e Vírgula
               </p>

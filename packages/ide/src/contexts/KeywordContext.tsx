@@ -67,6 +67,7 @@ type StoredKeywordCustomization = {
   mappings: KeywordMapping[];
   operatorWordMap: IDEOperatorWordMap;
   booleanLiteralMap: IDEBooleanLiteralMap;
+  statementTerminatorLexeme: string;
   blockDelimiters: BlockDelimiters;
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
@@ -101,6 +102,12 @@ type KeywordContextType = {
   booleanLiteralMap: IDEBooleanLiteralMap;
   /** Atualiza os literais booleanos customizados */
   setBooleanLiteralMap: (value: IDEBooleanLiteralMap) => void;
+  /** Terminador de instrução customizado */
+  statementTerminatorLexeme: string;
+  /** Atualiza o terminador de instrução customizado */
+  setStatementTerminatorLexeme: (value: string) => void;
+  /** Valida o terminador de instrução customizado */
+  validateStatementTerminatorLexeme: (value: string) => string | null;
   /** Valida literais booleanos customizados */
   validateBooleanLiteralMap: (
     value: IDEBooleanLiteralMap,
@@ -153,6 +160,29 @@ export function useKeywords() {
 const LEGACY_STORAGE_KEY = "keyword-mappings";
 const STORAGE_KEY = "keyword-customization";
 const WORD_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const RESERVED_STATEMENT_TERMINATOR_CHARS = new Set([
+  ";",
+  ",",
+  "{",
+  "}",
+  "(",
+  ")",
+  "[",
+  "]",
+  ".",
+  ":",
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "=",
+  ">",
+  "<",
+  "!",
+  "|",
+  "&",
+]);
 
 function createKeywordSchema(
   mappingsToValidate: KeywordMapping[],
@@ -219,6 +249,28 @@ export function validateCustomKeyword(
 
 export function getDefaultBooleanLiteralMap(): IDEBooleanLiteralMap {
   return { ...DEFAULT_BOOLEAN_LITERAL_MAP };
+}
+
+export function validateStatementTerminatorLexeme(value: string): string | null {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return "Informe um terminador.";
+  }
+
+  if (/\s/.test(normalized)) {
+    return "O terminador não pode conter espaços.";
+  }
+
+  if (normalized === ";") {
+    return "Escolha um terminador diferente de ;.";
+  }
+
+  if ([...normalized].some((char) => RESERVED_STATEMENT_TERMINATOR_CHARS.has(char))) {
+    return "O terminador não pode reutilizar símbolos ou operadores fixos da linguagem.";
+  }
+
+  return null;
 }
 
 export function validateBooleanLiteralAliases(
@@ -328,6 +380,10 @@ function getDefaultOperatorWordMap(): IDEOperatorWordMap {
   return { ...DEFAULT_OPERATOR_WORD_MAP };
 }
 
+function getDefaultStatementTerminatorLexeme(): string {
+  return "";
+}
+
 function getDefaultSemicolonMode(): IDESemicolonMode {
   return "optional-eol";
 }
@@ -356,6 +412,7 @@ function loadCustomization(): StoredKeywordCustomization {
     mappings: getDefaultKeywordMappings(),
     operatorWordMap: getDefaultOperatorWordMap(),
     booleanLiteralMap: getDefaultBooleanLiteralMap(),
+    statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
     blockDelimiters: getDefaultBlockDelimiters(),
     semicolonMode: getDefaultSemicolonMode(),
     blockMode: getDefaultBlockMode(),
@@ -396,6 +453,10 @@ function loadCustomization(): StoredKeywordCustomization {
         mappings: migratedMappings,
         operatorWordMap: sanitizeOperatorWordMap(parsed.operatorWordMap),
         booleanLiteralMap: sanitizeBooleanLiteralMap(parsed.booleanLiteralMap),
+        statementTerminatorLexeme:
+          typeof parsed.statementTerminatorLexeme === "string"
+            ? parsed.statementTerminatorLexeme.trim()
+            : getDefaultStatementTerminatorLexeme(),
         blockDelimiters:
           delimiters &&
           typeof delimiters.open === "string" &&
@@ -420,6 +481,7 @@ function loadCustomization(): StoredKeywordCustomization {
       mappings: migratedLegacyMappings,
       operatorWordMap: getDefaultOperatorWordMap(),
       booleanLiteralMap: getDefaultBooleanLiteralMap(),
+      statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
       blockDelimiters: getDefaultBlockDelimiters(),
       semicolonMode: getDefaultSemicolonMode(),
       blockMode: getDefaultBlockMode(),
@@ -448,6 +510,8 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   );
   const [booleanLiteralMap, setBooleanLiteralMap] =
     useState<IDEBooleanLiteralMap>(getDefaultBooleanLiteralMap());
+  const [statementTerminatorLexeme, setStatementTerminatorLexeme] =
+    useState<string>(getDefaultStatementTerminatorLexeme());
   const [semicolonMode, setSemicolonMode] = useState<IDESemicolonMode>(
     getDefaultSemicolonMode(),
   );
@@ -467,6 +531,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setMappings(loadedCustomization.mappings);
     setOperatorWordMap(loadedCustomization.operatorWordMap);
     setBooleanLiteralMap(loadedCustomization.booleanLiteralMap);
+    setStatementTerminatorLexeme(loadedCustomization.statementTerminatorLexeme);
     setBlockDelimiters(loadedCustomization.blockDelimiters);
     setSemicolonMode(loadedCustomization.semicolonMode);
     setBlockMode(loadedCustomization.blockMode);
@@ -483,6 +548,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       mappings,
       operatorWordMap,
       booleanLiteralMap,
+      statementTerminatorLexeme,
       blockDelimiters,
       semicolonMode,
       blockMode,
@@ -493,6 +559,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     mappings,
     operatorWordMap,
     booleanLiteralMap,
+    statementTerminatorLexeme,
     blockDelimiters,
     semicolonMode,
     blockMode,
@@ -564,6 +631,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setMappings(getDefaultKeywordMappings());
     setOperatorWordMap(getDefaultOperatorWordMap());
     setBooleanLiteralMap(getDefaultBooleanLiteralMap());
+    setStatementTerminatorLexeme(getDefaultStatementTerminatorLexeme());
     setBlockDelimiters(getDefaultBlockDelimiters());
     setSemicolonMode(getDefaultSemicolonMode());
     setBlockMode(getDefaultBlockMode());
@@ -656,6 +724,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       keywordMap,
       operatorWordMap,
       booleanLiteralMap,
+      ...(statementTerminatorLexeme.trim()
+        ? { statementTerminatorLexeme: statementTerminatorLexeme.trim() }
+        : {}),
       grammar,
       indentationBlock: blockMode === "indentation",
       ...(blockMode === "delimited" && open && close && isBlockDelimiterValid
@@ -671,6 +742,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     buildKeywordMap,
     operatorWordMap,
     booleanLiteralMap,
+    statementTerminatorLexeme,
     blockDelimiters,
     validateBlockDelimiters,
     semicolonMode,
@@ -690,6 +762,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         blockDelimiters,
         operatorWordMap,
         booleanLiteralMap,
+        statementTerminatorLexeme,
+        setStatementTerminatorLexeme,
+        validateStatementTerminatorLexeme,
         setBooleanLiteralMap,
         validateBooleanLiteralMap,
         setOperatorWordMap,

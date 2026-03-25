@@ -3,6 +3,7 @@ import {
   getDefaultBooleanLiteralMap,
   getDefaultKeywordMappings,
   migrateStoredMappings,
+  validateStatementTerminatorLexeme,
   validateBooleanLiteralAliases,
   validateCustomKeyword,
 } from "@/contexts/KeywordContext";
@@ -94,5 +95,33 @@ describe("boolean literal customization", () => {
     );
 
     expect(error).toBe('"inteiro" conflicts with an existing keyword customization.');
+  });
+});
+
+describe("statement terminator customization", () => {
+  it("accepts non-conflicting symbolic terminators", () => {
+    const error = validateStatementTerminatorLexeme("@@");
+
+    expect(error).toBeNull();
+  });
+
+  it("rejects whitespace in statement terminators", () => {
+    const error = validateStatementTerminatorLexeme("two words");
+
+    expect(error).toBe("O terminador não pode conter espaços.");
+  });
+
+  it("rejects semicolon as a custom statement terminator", () => {
+    const error = validateStatementTerminatorLexeme(";");
+
+    expect(error).toBe("Escolha um terminador diferente de ;.");
+  });
+
+  it("rejects reserved operator characters in statement terminators", () => {
+    const error = validateStatementTerminatorLexeme("!!");
+
+    expect(error).toBe(
+      "O terminador não pode reutilizar símbolos ou operadores fixos da linguagem.",
+    );
   });
 });
