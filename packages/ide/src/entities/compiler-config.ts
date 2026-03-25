@@ -31,6 +31,7 @@ export type IDECompilerConfigPayload = {
   keywordMap: Record<string, number>;
   operatorWordMap: IDEOperatorWordMap;
   booleanLiteralMap: IDEBooleanLiteralMap;
+  statementTerminatorLexeme?: string;
   blockDelimiters?: { open: string; close: string };
   indentationBlock: boolean;
   grammar: IDEGrammarConfig;
@@ -40,6 +41,7 @@ export type IDEPartialCompilerConfigPayload = {
   keywordMap?: Record<string, number>;
   operatorWordMap?: IDEOperatorWordMap;
   booleanLiteralMap?: IDEBooleanLiteralMap;
+  statementTerminatorLexeme?: string;
   blockDelimiters?: { open: string; close: string };
   indentationBlock?: boolean;
   grammar?: Partial<IDEGrammarConfig>;

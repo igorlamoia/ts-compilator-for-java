@@ -26,6 +26,7 @@ export type LexerConfig = {
   customKeywords?: KeywordMap;
   operatorWordMap?: OperatorWordMap;
   booleanLiteralMap?: BooleanLiteralMap;
+  statementTerminatorLexeme?: string;
   blockDelimiters?: LexerBlockDelimiters;
   locale?: string;
   indentationBlock?: boolean;

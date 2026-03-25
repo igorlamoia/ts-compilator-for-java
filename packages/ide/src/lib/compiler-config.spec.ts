@@ -104,4 +104,14 @@ describe("normalizeCompilerConfig", () => {
       true: "sim",
     });
   });
+
+  it("normalizes statement terminator lexeme", () => {
+    const normalized = normalizeCompilerConfig({
+      statementTerminatorLexeme: " !! ",
+      grammar: { semicolonMode: "required" },
+    });
+
+    expect(normalized.statementTerminatorLexeme).toBe("!!");
+    expect(normalized.grammar.semicolonMode).toBe("required");
+  });
 });

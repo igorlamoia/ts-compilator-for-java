@@ -79,11 +79,16 @@ export function normalizeCompilerConfig(
     typeof input.blockDelimiters?.close === "string" &&
     input.blockDelimiters.open.trim().length > 0 &&
     input.blockDelimiters.close.trim().length > 0;
+  const statementTerminatorLexeme =
+    typeof input.statementTerminatorLexeme === "string"
+      ? input.statementTerminatorLexeme.trim()
+      : "";
 
   return {
     keywordMap: input.keywordMap ?? {},
     operatorWordMap: normalizeOperatorWordMap(input.operatorWordMap),
     booleanLiteralMap: normalizeBooleanLiteralMap(input.booleanLiteralMap),
+    ...(statementTerminatorLexeme ? { statementTerminatorLexeme } : {}),
     grammar,
     indentationBlock,
     ...(grammar.blockMode === "delimited" && hasDelimiters
