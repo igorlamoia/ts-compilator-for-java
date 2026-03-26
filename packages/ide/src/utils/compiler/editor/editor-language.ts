@@ -158,6 +158,7 @@ export function buildJavaMMMonarchLanguage(
         { include: "@whitespace" },
         [/[{}()\[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
+        [/!+/, "operator"],
         [
           /@symbols/,
           {
