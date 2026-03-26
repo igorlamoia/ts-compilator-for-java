@@ -126,6 +126,21 @@ export function buildJavaMMMonarchLanguage(
       root: [
         ...buildStatementTerminatorRules(statementTerminators),
         [
+          /[a-zA-Z_]\w*(?=\s*\()/,
+          {
+            cases: {
+              "@types": "keyword.type",
+              "@conditionals": "keyword.conditional",
+              "@loops": "keyword.loop",
+              "@flow": "keyword.flow",
+              "@io": "keyword.io",
+              "@operatorWords": "operator.word",
+              "@keywords": "keyword",
+              "@default": "entity.name.function",
+            },
+          },
+        ],
+        [
           /[a-zA-Z_]\w*/,
           {
             cases: {
@@ -221,7 +236,15 @@ export function buildJavaMMLanguageConfiguration(
 }
 
 const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
-  types: new Set(["int", "float", "bool", "string", "void", "variavel", "funcao"]),
+  types: new Set([
+    "int",
+    "float",
+    "bool",
+    "string",
+    "void",
+    "variavel",
+    "funcao",
+  ]),
   conditionals: new Set(["if", "else", "switch", "case", "default"]),
   loops: new Set(["for", "while"]),
   flow: new Set(["break", "continue", "return"]),

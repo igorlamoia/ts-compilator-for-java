@@ -27,7 +27,13 @@ describe("buildJavaMMLanguageMetadata", () => {
     ]);
 
     expect(metadata.allKeywords).toEqual(
-      expect.arrayContaining(["se", "enquanto", "inteiro", "logico", "escreva"]),
+      expect.arrayContaining([
+        "se",
+        "enquanto",
+        "inteiro",
+        "logico",
+        "escreva",
+      ]),
     );
     expect(metadata.semanticGroups.conditionals).toContain("se");
     expect(metadata.semanticGroups.loops).toContain("enquanto");
@@ -97,6 +103,39 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(rootTokenizer[1].cases["@types"]).toBe("keyword.type");
   });
 
+  it("classifies non-keyword identifiers followed by parenthesis as functions", () => {
+    const language = buildJavaMMMonarchLanguage({
+      allKeywords: ["if", "print"],
+      operatorWords: [],
+      statementTerminators: [";"],
+      semanticGroups: {
+        types: ["int", "void"],
+        conditionals: ["if"],
+        loops: [],
+        flow: [],
+        io: ["print"],
+      },
+    });
+
+    const functionRule = language.tokenizer.root.find(
+      (rule): rule is [RegExp, { cases: Record<string, string> }] =>
+        Array.isArray(rule) &&
+        rule[0] instanceof RegExp &&
+        String(rule[0]) === "/[a-zA-Z_]\\w*(?=\\s*\\()/" &&
+        typeof rule[1] === "object" &&
+        rule[1] !== null &&
+        "cases" in rule[1],
+    );
+
+    if (!functionRule || !("cases" in functionRule[1])) {
+      throw new Error("Function-aware tokenizer rule not found");
+    }
+
+    expect(functionRule[1].cases["@default"]).toBe("entity.name.function");
+    expect(functionRule[1].cases["@conditionals"]).toBe("keyword.conditional");
+    expect(functionRule[1].cases["@io"]).toBe("keyword.io");
+  });
+
   it("highlights only semicolon and configured word-like terminators", () => {
     const language = buildJavaMMMonarchLanguage({
       allKeywords: [],
@@ -131,13 +170,17 @@ describe("buildJavaMMLanguageMetadata", () => {
       },
     };
 
-    registerJavaMMLanguage(monaco as never, [
-      { original: "return", custom: "retorne", tokenId: 30 },
-      { original: "scan", custom: "leia", tokenId: 35 },
-      { original: "switch", custom: "escolha", tokenId: 50 },
-    ] as never);
+    registerJavaMMLanguage(
+      monaco as never,
+      [
+        { original: "return", custom: "retorne", tokenId: 30 },
+        { original: "scan", custom: "leia", tokenId: 35 },
+        { original: "switch", custom: "escolha", tokenId: 50 },
+      ] as never,
+    );
 
-    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
 
     expect(language.flow).toContain("retorne");
     expect(language.io).toContain("leia");
@@ -162,7 +205,8 @@ describe("buildJavaMMLanguageMetadata", () => {
       } as never,
     );
 
-    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
     const delimiterRules = getDelimiterRules(language);
 
     expect(delimiterRules.some((rule) => rule.test("uai"))).toBe(true);
@@ -198,7 +242,8 @@ describe("buildJavaMMLanguageMetadata", () => {
       } as never,
     );
 
-    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
 
     expect(language.operators).toContain("and");
   });
