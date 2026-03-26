@@ -191,6 +191,34 @@ describe("Grammar Typing Mode", () => {
     ).not.toThrow();
   });
 
+  it("rejects typed scan targets when the identifier is undeclared", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            scan(int, x);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("rejects postfix increment expressions when the identifier is undeclared in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int y = x++;
+            return y;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
   it("rejects chained assignment when a later identifier is undeclared in typed mode", () => {
     expect(() =>
       compileToIr(

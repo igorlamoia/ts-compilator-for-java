@@ -2,7 +2,7 @@ import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { exprStmt } from "./exprStmt";
 import { functionCallExpr } from "./functionCallExpr";
-import { assertTypedAssignableIdentifier } from "./attributeStmt";
+import { assertTypedAssignableIdentifier } from "./typedIdentifier";
 
 /**
  * Parses a factor: literals, identifiers, function calls, or parenthesized expressions.

@@ -2,7 +2,7 @@ import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { factorStmt } from "./factorStmt";
 import { TUnaryArithmetics } from "../../interpreter/constants";
-import { assertTypedAssignableIdentifier } from "./attributeStmt";
+import { assertTypedAssignableIdentifier } from "./typedIdentifier";
 
 /**
  * Parses a unary expression or factor.

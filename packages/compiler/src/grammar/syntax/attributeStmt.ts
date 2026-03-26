@@ -2,6 +2,7 @@ import { TOKENS } from "../../token/constants";
 import { Token } from "../../token";
 import { TokenIterator, ValueType } from "../../token/TokenIterator";
 import { exprStmt } from "./exprStmt";
+import { assertTypedAssignableIdentifier } from "./typedIdentifier";
 
 export type AssignmentTarget =
   | {
@@ -248,23 +249,4 @@ function assertAssignable(
     line: token.line,
     column: token.column,
   });
-}
-
-export function assertTypedAssignableIdentifier(
-  iterator: TokenIterator,
-  token: Token,
-): void {
-  if (iterator.getTypingMode() !== "typed") {
-    return;
-  }
-
-  const descriptor = iterator.resolveSymbolDescriptor(token.lexeme);
-  if (descriptor.kind === "scalar" && descriptor.type === "unknown") {
-    iterator.throwError(
-      "grammar.unexpected_statement",
-      token.line,
-      token.column,
-      { lexeme: token.lexeme },
-    );
-  }
 }
