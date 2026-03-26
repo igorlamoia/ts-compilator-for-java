@@ -21,6 +21,7 @@ import { breakStmt } from "./breakStmt";
 import { continueStmt } from "./continueStmt";
 import { switchStmt } from "./switchStmt";
 import { consumeStmtTerminator } from "./statementTerminator";
+import { assertTypedAssignableIdentifier } from "./typedIdentifier";
 
 /**
  * Parses a statement by calling the appropriate function
@@ -142,6 +143,7 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
   } else if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
     // É um incremento pós-fixado
     iterator.consume(plus, "++");
+    assertTypedAssignableIdentifier(iterator, identifier);
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
     iterator.registerTemp(incremented, iterator.resolveSymbol(identifier.lexeme));

@@ -219,6 +219,35 @@ describe("Grammar Typing Mode", () => {
     ).toThrow();
   });
 
+  it("rejects postfix increment statements when the identifier is undeclared in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            x++;
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("accepts postfix increment statements after declaration in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int x = 0;
+            x++;
+            return x;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
   it("rejects chained assignment when a later identifier is undeclared in typed mode", () => {
     expect(() =>
       compileToIr(
