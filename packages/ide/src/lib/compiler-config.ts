@@ -59,11 +59,9 @@ export function normalizeCompilerConfig(
   const typingMode = input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode;
   const requestedArrayMode = input.grammar?.arrayMode;
   const arrayMode =
-    typingMode === "untyped"
-      ? "dynamic"
-      : requestedArrayMode === "fixed" || requestedArrayMode === "dynamic"
-        ? requestedArrayMode
-        : DEFAULT_GRAMMAR.arrayMode;
+    requestedArrayMode === "fixed" || requestedArrayMode === "dynamic"
+      ? requestedArrayMode
+      : DEFAULT_GRAMMAR.arrayMode;
 
   const grammar: IDEGrammarConfig = {
     semicolonMode:
