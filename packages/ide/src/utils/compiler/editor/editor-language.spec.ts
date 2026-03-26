@@ -393,7 +393,61 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(suggestionTexts).not.toContain("int ${1:vetor}[${2:10}];");
   });
 
-  it("shows only dynamic array snippets in untyped mode", () => {
+  it("shows untyped fixed array snippets in fixed mode", () => {
+    const registerCompletionItemProvider = vi.fn(() => ({
+      dispose: vi.fn(),
+    }));
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+        registerCompletionItemProvider,
+        CompletionItemKind: {
+          Keyword: 1,
+          Snippet: 2,
+          Operator: 3,
+        },
+        CompletionItemInsertTextRule: {
+          InsertAsSnippet: 4,
+        },
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [
+        { original: "int", custom: "int", tokenId: 21 },
+        { original: "variavel", custom: "variavel", tokenId: 53 },
+      ] as never,
+      {
+        typingMode: "untyped",
+        blockMode: "delimited",
+        arrayMode: "fixed",
+      } as never,
+    );
+
+    const provider = registerCompletionItemProvider.mock.calls[0]?.[1];
+    const result = provider.provideCompletionItems(
+      {
+        getWordUntilPosition: () => ({
+          startColumn: 1,
+          endColumn: 1,
+        }),
+      },
+      { lineNumber: 1, column: 1 },
+    );
+
+    const suggestionTexts = result.suggestions.map(
+      (suggestion: { insertText: string }) => suggestion.insertText,
+    );
+
+    expect(suggestionTexts).toContain("variavel ${1:lista}[${2:10}] = [];");
+    expect(suggestionTexts).not.toContain("variavel ${1:lista}[] = [];");
+  });
+
+  it("shows only dynamic array snippets in untyped dynamic mode", () => {
     const registerCompletionItemProvider = vi.fn(() => ({
       dispose: vi.fn(),
     }));
@@ -444,7 +498,7 @@ describe("buildJavaMMLanguageMetadata", () => {
     );
 
     expect(suggestionTexts).toContain("variavel ${1:lista}[] = [];");
+    expect(suggestionTexts).not.toContain("variavel ${1:lista}[${2:10}] = [];");
     expect(suggestionTexts).not.toContain("int ${1:vetor}[${2:10}];");
-    expect(suggestionTexts).not.toContain("int ${1:vetor}[];");
   });
 });
