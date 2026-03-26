@@ -135,13 +135,13 @@ export function declareUntypedArray(
   consumeStmtTerminator(iterator);
 }
 
-type ParsedArrayDeclaration = {
+export type ParsedArrayDeclaration = {
   mode: "fixed" | "dynamic";
   dimensions: number;
   sizes: number[];
 };
 
-function readArrayDeclaration(
+export function readArrayDeclaration(
   iterator: TokenIterator,
   arrayMode: "fixed" | "dynamic" | null,
 ): ParsedArrayDeclaration {

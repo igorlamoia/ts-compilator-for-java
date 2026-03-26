@@ -1,4 +1,8 @@
-import { TokenIterator, ValueType } from "../../token/TokenIterator";
+import {
+  FunctionParameterDescriptor,
+  TokenIterator,
+  ValueType,
+} from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
 import { blockStmt } from "./blockStmt";
@@ -36,21 +40,14 @@ export function functionCall(iterator: TokenIterator): void {
     typingMode === "untyped"
       ? returnType
       : (iterator.getCurrentFunctionReturnType() ?? "void");
-  iterator.declareFunction(
-    identifier.lexeme,
-    declaredReturnType,
-    params.map((param) => param.type),
-  );
+  iterator.declareFunction(identifier.lexeme, declaredReturnType, params);
   iterator.enterScope();
-  params.forEach((param) => iterator.declareSymbol(param.name, param.type));
 
   // Gerar um label para o corpo da função
   iterator.emitter.emit("LABEL", identifier.lexeme, null, null);
 
   // Emitir declarações de parâmetros
-  for (const param of params) {
-    iterator.emitter.emit("DECLARE", param.name, param.type, null);
-  }
+  params.forEach((param) => declareParameter(iterator, param));
 
   // Processar o corpo da função
   blockStmt(iterator);
@@ -59,4 +56,33 @@ export function functionCall(iterator: TokenIterator): void {
   // Se não houver return explícito, retornar null
   iterator.emitter.emit("RETURN", "null", declaredReturnType, null);
   iterator.setCurrentFunctionReturnType(null);
+}
+
+function declareParameter(
+  iterator: TokenIterator,
+  param: { name: string } & FunctionParameterDescriptor,
+): void {
+  if (param.kind === "array") {
+    iterator.declareSymbolDescriptor(param.name, {
+      kind: "array",
+      baseType: param.baseType,
+      dimensions: param.dimensions,
+      arrayMode: param.arrayMode,
+      sizes: param.sizes,
+    });
+    iterator.emitter.emit(
+      "DECLARE_ARRAY" as never,
+      param.name,
+      param.baseType,
+      JSON.stringify({
+        mode: param.arrayMode,
+        dimensions: param.dimensions,
+        sizes: param.sizes,
+      }),
+    );
+    return;
+  }
+
+  iterator.declareSymbol(param.name, param.type);
+  iterator.emitter.emit("DECLARE", param.name, param.type, null);
 }
