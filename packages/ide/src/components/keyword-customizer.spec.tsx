@@ -72,13 +72,16 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
     blockDelimiters: { open: "", close: "" },
     operatorWordMap: {},
     booleanLiteralMap: { true: "true", false: "false" },
+    statementTerminatorLexeme: "",
     replaceKeywords: vi.fn(),
     setOperatorWordMap: vi.fn(),
     setBooleanLiteralMap: vi.fn(),
+    setStatementTerminatorLexeme: vi.fn(),
     setBlockDelimiters: vi.fn(),
     validateKeyword: vi.fn(() => null),
     validateBooleanLiteralMap: vi.fn(() => null),
     validateOperatorWordMap: vi.fn(() => null),
+    validateStatementTerminatorLexeme: vi.fn(() => null),
     validateBlockDelimiters: vi.fn(() => null),
     semicolonMode: "optional-eol",
     setSemicolonMode: vi.fn(),
@@ -127,7 +130,7 @@ describe("KeywordCustomizer", () => {
     });
   });
 
-  it("disables fixed array mode when typing mode is untyped", () => {
+  it("allows fixed array mode while typing mode is untyped", () => {
     useKeywordsMock.mockReturnValue(createKeywordsContext());
 
     const { container, root } = render();
@@ -137,10 +140,18 @@ describe("KeywordCustomizer", () => {
     );
 
     expect(fixedButton).toBeDefined();
-    expect(fixedButton?.disabled).toBe(true);
-    expect(container.textContent).toContain(
+    expect(fixedButton?.disabled).toBe(false);
+    expect(container.textContent).not.toContain(
       "Vetores/matrizes com tamanho fixo só estão disponíveis no modo tipado.",
     );
+
+    act(() => {
+      fixedButton?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(fixedButton?.className).toContain("border-cyan-500");
 
     act(() => {
       root.unmount();
@@ -155,6 +166,19 @@ describe("KeywordCustomizer", () => {
     expect(container.textContent).toContain("Literais Booleanos");
     expect(container.textContent).toContain("true");
     expect(container.textContent).toContain("false");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows a dedicated statement terminator section", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    expect(container.textContent).toContain("Terminador de Instrução");
+    expect(container.textContent).toContain("Substitui o ;");
 
     act(() => {
       root.unmount();

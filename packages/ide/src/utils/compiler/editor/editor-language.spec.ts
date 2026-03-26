@@ -5,6 +5,17 @@ import {
   registerJavaMMLanguage,
 } from "@/utils/compiler/editor/editor-language";
 
+function getDelimiterRules(
+  language: ReturnType<typeof buildJavaMMMonarchLanguage>,
+) {
+  return language.tokenizer.root
+    .filter(
+      (rule): rule is [RegExp, string] =>
+        Array.isArray(rule) && rule[1] === "delimiter",
+    )
+    .map(([pattern]) => pattern);
+}
+
 describe("buildJavaMMLanguageMetadata", () => {
   it("maps customized words into semantic keyword groups", () => {
     const metadata = buildJavaMMLanguageMetadata([
@@ -16,7 +27,13 @@ describe("buildJavaMMLanguageMetadata", () => {
     ]);
 
     expect(metadata.allKeywords).toEqual(
-      expect.arrayContaining(["se", "enquanto", "inteiro", "logico", "escreva"]),
+      expect.arrayContaining([
+        "se",
+        "enquanto",
+        "inteiro",
+        "logico",
+        "escreva",
+      ]),
     );
     expect(metadata.semanticGroups.conditionals).toContain("se");
     expect(metadata.semanticGroups.loops).toContain("enquanto");
@@ -50,6 +67,17 @@ describe("buildJavaMMLanguageMetadata", () => {
     );
   });
 
+  it("includes a configured statement terminator in metadata", () => {
+    const metadata = buildJavaMMLanguageMetadata(
+      [{ original: "if", custom: "if", tokenId: 28 }],
+      {},
+      undefined,
+      "uai",
+    );
+
+    expect(metadata.statementTerminators).toEqual([";", "uai"]);
+  });
+
   it("assigns semantic Monaco token classes", () => {
     const metadata = buildJavaMMLanguageMetadata([
       { original: "if", custom: "se", tokenId: 28 },
@@ -58,15 +86,78 @@ describe("buildJavaMMLanguageMetadata", () => {
     ]);
 
     const language = buildJavaMMMonarchLanguage(metadata);
-    const rootTokenizer = language.tokenizer.root[0];
+    const rootTokenizer = language.tokenizer.root.find(
+      (rule): rule is [RegExp, { cases: Record<string, string> }] =>
+        Array.isArray(rule) &&
+        typeof rule[1] === "object" &&
+        rule[1] !== null &&
+        "cases" in rule[1],
+    );
 
-    if (!Array.isArray(rootTokenizer) || !("cases" in rootTokenizer[1])) {
+    if (!rootTokenizer || !("cases" in rootTokenizer[1])) {
       throw new Error("Unexpected Monarch tokenizer shape");
     }
 
     expect(rootTokenizer[1].cases["@conditionals"]).toBe("keyword.conditional");
     expect(rootTokenizer[1].cases["@loops"]).toBe("keyword.loop");
     expect(rootTokenizer[1].cases["@types"]).toBe("keyword.type");
+  });
+
+  it("classifies non-keyword identifiers followed by parenthesis as functions", () => {
+    const language = buildJavaMMMonarchLanguage({
+      allKeywords: ["if", "print"],
+      operatorWords: [],
+      statementTerminators: [";"],
+      semanticGroups: {
+        types: ["int", "void"],
+        conditionals: ["if"],
+        loops: [],
+        flow: [],
+        io: ["print"],
+      },
+    });
+
+    const functionRule = language.tokenizer.root.find(
+      (rule): rule is [RegExp, { cases: Record<string, string> }] =>
+        Array.isArray(rule) &&
+        rule[0] instanceof RegExp &&
+        String(rule[0]) === "/[a-zA-Z_]\\w*(?=\\s*\\()/" &&
+        typeof rule[1] === "object" &&
+        rule[1] !== null &&
+        "cases" in rule[1],
+    );
+
+    if (!functionRule || !("cases" in functionRule[1])) {
+      throw new Error("Function-aware tokenizer rule not found");
+    }
+
+    expect(functionRule[1].cases["@default"]).toBe("entity.name.function");
+    expect(functionRule[1].cases["@conditionals"]).toBe("keyword.conditional");
+    expect(functionRule[1].cases["@io"]).toBe("keyword.io");
+  });
+
+  it("highlights only semicolon and configured word-like terminators", () => {
+    const language = buildJavaMMMonarchLanguage({
+      allKeywords: [],
+      operatorWords: [],
+      statementTerminators: [";", "uai", "_uai"],
+      semanticGroups: {
+        types: [],
+        conditionals: [],
+        loops: [],
+        flow: [],
+        io: [],
+      },
+    });
+
+    const delimiterRules = getDelimiterRules(language);
+
+    expect(delimiterRules.some((rule) => rule.test(";"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("uai"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("_uai"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("uai123"))).toBe(false);
+    expect(delimiterRules.some((rule) => rule.test(","))).toBe(false);
+    expect(delimiterRules.some((rule) => rule.test("."))).toBe(false);
   });
 
   it("preserves semantic meaning after keyword customization", () => {
@@ -79,17 +170,47 @@ describe("buildJavaMMLanguageMetadata", () => {
       },
     };
 
-    registerJavaMMLanguage(monaco as never, [
-      { original: "return", custom: "retorne", tokenId: 30 },
-      { original: "scan", custom: "leia", tokenId: 35 },
-      { original: "switch", custom: "escolha", tokenId: 50 },
-    ] as never);
+    registerJavaMMLanguage(
+      monaco as never,
+      [
+        { original: "return", custom: "retorne", tokenId: 30 },
+        { original: "scan", custom: "leia", tokenId: 35 },
+        { original: "switch", custom: "escolha", tokenId: 50 },
+      ] as never,
+    );
 
-    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
 
     expect(language.flow).toContain("retorne");
     expect(language.io).toContain("leia");
     expect(language.conditionals).toContain("escolha");
+  });
+
+  it("forwards a configured statement terminator into Monaco registration", () => {
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [{ original: "if", custom: "if", tokenId: 28 }] as never,
+      {
+        statementTerminatorLexeme: "uai",
+      } as never,
+    );
+
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const delimiterRules = getDelimiterRules(language);
+
+    expect(delimiterRules.some((rule) => rule.test("uai"))).toBe(true);
+    expect(delimiterRules.some((rule) => rule.test("uai123"))).toBe(false);
   });
 
   it("includes configured operator aliases in Monarch operators", () => {
@@ -121,7 +242,8 @@ describe("buildJavaMMLanguageMetadata", () => {
       } as never,
     );
 
-    const language = monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
 
     expect(language.operators).toContain("and");
   });
@@ -316,7 +438,61 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(suggestionTexts).not.toContain("int ${1:vetor}[${2:10}];");
   });
 
-  it("shows only dynamic array snippets in untyped mode", () => {
+  it("shows untyped fixed array snippets in fixed mode", () => {
+    const registerCompletionItemProvider = vi.fn(() => ({
+      dispose: vi.fn(),
+    }));
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+        registerCompletionItemProvider,
+        CompletionItemKind: {
+          Keyword: 1,
+          Snippet: 2,
+          Operator: 3,
+        },
+        CompletionItemInsertTextRule: {
+          InsertAsSnippet: 4,
+        },
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [
+        { original: "int", custom: "int", tokenId: 21 },
+        { original: "variavel", custom: "variavel", tokenId: 53 },
+      ] as never,
+      {
+        typingMode: "untyped",
+        blockMode: "delimited",
+        arrayMode: "fixed",
+      } as never,
+    );
+
+    const provider = registerCompletionItemProvider.mock.calls[0]?.[1];
+    const result = provider.provideCompletionItems(
+      {
+        getWordUntilPosition: () => ({
+          startColumn: 1,
+          endColumn: 1,
+        }),
+      },
+      { lineNumber: 1, column: 1 },
+    );
+
+    const suggestionTexts = result.suggestions.map(
+      (suggestion: { insertText: string }) => suggestion.insertText,
+    );
+
+    expect(suggestionTexts).toContain("${1:lista}[${2:10}] = [];");
+    expect(suggestionTexts).not.toContain("${1:lista}[] = [];");
+  });
+
+  it("shows only dynamic array snippets in untyped dynamic mode", () => {
     const registerCompletionItemProvider = vi.fn(() => ({
       dispose: vi.fn(),
     }));
@@ -366,8 +542,8 @@ describe("buildJavaMMLanguageMetadata", () => {
       (suggestion: { insertText: string }) => suggestion.insertText,
     );
 
-    expect(suggestionTexts).toContain("variavel ${1:lista}[] = [];");
+    expect(suggestionTexts).toContain("${1:lista}[] = [];");
+    expect(suggestionTexts).not.toContain("${1:lista}[${2:10}] = [];");
     expect(suggestionTexts).not.toContain("int ${1:vetor}[${2:10}];");
-    expect(suggestionTexts).not.toContain("int ${1:vetor}[];");
   });
 });

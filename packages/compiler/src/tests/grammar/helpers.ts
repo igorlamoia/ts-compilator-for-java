@@ -21,6 +21,7 @@ export function compileToIr(
   const iterator = new TokenIterator(tokens, {
     locale,
     grammar: options?.grammar,
+    statementTerminatorLexeme: options?.lexer?.statementTerminatorLexeme,
   });
 
   while (iterator.hasNext()) {
@@ -37,6 +38,7 @@ export function compileProgram(source: string, options?: CompileToIrOptions) {
   const iterator = new TokenIterator(tokens, {
     locale,
     grammar: options?.grammar,
+    statementTerminatorLexeme: options?.lexer?.statementTerminatorLexeme,
   });
   const instructions = iterator.generateIntermediateCode();
 

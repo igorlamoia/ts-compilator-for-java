@@ -9,9 +9,11 @@ import {
   buildBooleanLiteralTokenMap,
   buildOperatorWordTokenMap,
   LexerConfig,
+  normalizeStatementTerminatorLexeme,
   validateBlockDelimiters,
   validateBooleanLiteralMap,
   validateOperatorWordMap,
+  validateStatementTerminatorLexeme,
   type KeywordMap,
 } from "./config";
 
@@ -23,6 +25,7 @@ function isLexerConfig(value: unknown): value is LexerConfig {
     "customKeywords" in value ||
     "operatorWordMap" in value ||
     "booleanLiteralMap" in value ||
+    "statementTerminatorLexeme" in value ||
     "blockDelimiters" in value ||
     "locale" in value ||
     "indentationBlock" in value ||
@@ -41,6 +44,7 @@ export class Lexer {
   infos: IssueInfo[] = [];
   keywordMap: KeywordMap;
   locale: string | undefined;
+  statementTerminatorLexeme: string | undefined;
   private indentationBlock: boolean;
   private tabWidth: number;
   private indentStack: number[] = [0];
@@ -99,6 +103,24 @@ export class Lexer {
       validateBlockDelimiters(delimiters, TOKENS.RESERVEDS as KeywordMap);
       this.keywordMap[delimiters.open] = TOKENS.SYMBOLS.left_brace;
       this.keywordMap[delimiters.close] = TOKENS.SYMBOLS.right_brace;
+    }
+
+    const statementTerminatorLexeme = normalizeStatementTerminatorLexeme(
+      config.statementTerminatorLexeme,
+    );
+    this.statementTerminatorLexeme = statementTerminatorLexeme;
+    if (config.statementTerminatorLexeme !== undefined) {
+      if (!statementTerminatorLexeme) {
+        throw new Error("statement terminator cannot be empty");
+      }
+      validateStatementTerminatorLexeme(
+        statementTerminatorLexeme,
+        TOKENS.RESERVEDS as KeywordMap,
+        config.customKeywords,
+        config.operatorWordMap,
+        config.booleanLiteralMap,
+        delimiters,
+      );
     }
   }
 

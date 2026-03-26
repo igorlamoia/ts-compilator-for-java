@@ -52,7 +52,7 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.grammar.arrayMode).toBe("dynamic");
   });
 
-  it("coerces arrayMode to dynamic in untyped mode", () => {
+  it("preserves fixed arrayMode in untyped mode", () => {
     const normalized = normalizeCompilerConfig({
       grammar: {
         typingMode: "untyped",
@@ -61,7 +61,7 @@ describe("normalizeCompilerConfig", () => {
     });
 
     expect(normalized.grammar.typingMode).toBe("untyped");
-    expect(normalized.grammar.arrayMode).toBe("dynamic");
+    expect(normalized.grammar.arrayMode).toBe("fixed");
   });
 
   it("preserves operator word aliases in the normalized payload", () => {
@@ -103,5 +103,15 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.booleanLiteralMap).toEqual({
       true: "sim",
     });
+  });
+
+  it("normalizes statement terminator lexeme", () => {
+    const normalized = normalizeCompilerConfig({
+      statementTerminatorLexeme: " !! ",
+      grammar: { semicolonMode: "required" },
+    });
+
+    expect(normalized.statementTerminatorLexeme).toBe("!!");
+    expect(normalized.grammar.semicolonMode).toBe("required");
   });
 });

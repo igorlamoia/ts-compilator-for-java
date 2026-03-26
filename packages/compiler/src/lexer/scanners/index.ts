@@ -4,6 +4,7 @@ import IdentifierScanner from "./identifier";
 import LexerScannerFactory from "./factory";
 import CommentScanner from "./comment";
 import SymbolAndOperatorScanner from "./symbol-and-operator";
+import StatementTerminatorScanner from "./statement-terminator";
 
 export {
   StringScanner,
@@ -12,4 +13,5 @@ export {
   CommentScanner,
   LexerScannerFactory,
   SymbolAndOperatorScanner,
+  StatementTerminatorScanner,
 };

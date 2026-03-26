@@ -89,28 +89,29 @@ function declarationStmtCore(
   }
 }
 
-export function declareUntypedDynamicArray(
+export function declareUntypedArray(
   iterator: TokenIterator,
   identToken: Token,
 ): void {
-  const dimensions = readUntypedDynamicDimensions(iterator);
+  const arrayMode = iterator.getArrayMode();
+  const arrayDeclaration = readArrayDeclaration(iterator, arrayMode);
   iterator.consume(TOKENS.ASSIGNMENTS.equal);
 
   iterator.declareSymbolDescriptor(identToken.lexeme, {
     kind: "array",
     baseType: "dynamic",
-    dimensions,
-    arrayMode: "dynamic",
-    sizes: [],
+    dimensions: arrayDeclaration.dimensions,
+    arrayMode: arrayDeclaration.mode,
+    sizes: arrayDeclaration.sizes,
   });
   iterator.emitter.emit(
     "DECLARE_ARRAY" as never,
     identToken.lexeme,
     "dynamic",
     JSON.stringify({
-      mode: "dynamic",
-      dimensions,
-      sizes: [],
+      mode: arrayDeclaration.mode,
+      dimensions: arrayDeclaration.dimensions,
+      sizes: arrayDeclaration.sizes,
     }),
   );
 
@@ -118,9 +119,9 @@ export function declareUntypedDynamicArray(
     emitArrayLiteralInitialization(iterator, {
       name: identToken.lexeme,
       type: "dynamic",
-      dimensions,
-      sizes: [],
-      arrayMode: "dynamic",
+      dimensions: arrayDeclaration.dimensions,
+      sizes: arrayDeclaration.sizes,
+      arrayMode: arrayDeclaration.mode,
       token: identToken,
     });
   } else {
@@ -134,28 +135,13 @@ export function declareUntypedDynamicArray(
   consumeStmtTerminator(iterator);
 }
 
-function readUntypedDynamicDimensions(iterator: TokenIterator): number {
-  let dimensions = 0;
-
-  while (
-    iterator.match(TOKENS.SYMBOLS.left_bracket) &&
-    iterator.peekAt(1)?.type === TOKENS.SYMBOLS.right_bracket
-  ) {
-    iterator.consume(TOKENS.SYMBOLS.left_bracket);
-    iterator.consume(TOKENS.SYMBOLS.right_bracket);
-    dimensions++;
-  }
-
-  return dimensions;
-}
-
-type ParsedArrayDeclaration = {
+export type ParsedArrayDeclaration = {
   mode: "fixed" | "dynamic";
   dimensions: number;
   sizes: number[];
 };
 
-function readArrayDeclaration(
+export function readArrayDeclaration(
   iterator: TokenIterator,
   arrayMode: "fixed" | "dynamic" | null,
 ): ParsedArrayDeclaration {
@@ -299,6 +285,10 @@ function validateArrayLiteral(
       node.token.column,
       { lexeme: node.token.lexeme },
     );
+  }
+
+  if (currentDepth === 1 && node.items.length === 0) {
+    return;
   }
 
   if (

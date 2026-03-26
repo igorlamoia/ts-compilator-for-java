@@ -22,7 +22,7 @@ export function forStmt(iterator: TokenIterator): void {
   } else {
     optAttributeStmt(iterator);
   }
-  iterator.consume(semicolon);
+  iterator.consume(semicolon, ";");
 
   const labelStart = iterator.emitter.newLabel();
   const labelBody = iterator.emitter.newLabel();
@@ -33,7 +33,7 @@ export function forStmt(iterator: TokenIterator): void {
 
   // (2) Cond
   const conditionResult = optExprStmt(iterator);
-  iterator.consume(semicolon);
+  iterator.consume(semicolon, ";");
 
   if (conditionResult !== null) {
     iterator.emitter.emit("IF", conditionResult.place, labelBody, labelEnd);

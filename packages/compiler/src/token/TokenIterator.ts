@@ -37,9 +37,19 @@ export type SymbolDescriptor =
       sizes: number[];
     };
 
-type FunctionSignature = {
+export type FunctionParameterDescriptor =
+  | { kind: "scalar"; type: ValueType }
+  | {
+      kind: "array";
+      baseType: ScalarType;
+      dimensions: number;
+      arrayMode: "fixed" | "dynamic";
+      sizes: number[];
+    };
+
+export type FunctionSignature = {
   returnType: ValueType;
-  params: ValueType[];
+  params: FunctionParameterDescriptor[];
 };
 
 type Scope = Map<string, SymbolDescriptor>;
@@ -61,6 +71,7 @@ type TokenIteratorConfig = {
   locale?: string;
   grammar?: GrammarConfig;
   operatorWordMap?: OperatorWordMap;
+  statementTerminatorLexeme?: string;
 };
 
 export class TokenIterator {
@@ -72,6 +83,7 @@ export class TokenIterator {
   private breakStack: string[];
   private locale: string | undefined;
   private grammar: GrammarConfig | undefined;
+  private statementTerminatorLexeme: string | undefined;
   private warnings: IssueWarning[];
   private infos: IssueInfo[];
   private scopes: Scope[];
@@ -92,6 +104,7 @@ export class TokenIterator {
     this.breakStack = [];
     this.locale = config.locale;
     this.grammar = config.grammar;
+    this.statementTerminatorLexeme = config.statementTerminatorLexeme;
     this.warnings = [];
     this.infos = [];
     this.scopes = [new Map<string, SymbolDescriptor>()];
@@ -125,12 +138,15 @@ export class TokenIterator {
       const code = "iterator.unexpected_token";
       const expectedKey = TOKENS.BY_ID[expectedType];
       const actualKey = TOKENS.BY_ID[token.type];
+      const expectedTypeLabel = expectedKey
+        ? translate(this.locale, `token.${expectedKey}`)
+        : String(expectedType);
       const params = {
         line: token.line,
         column: token.column,
-        expectedType: expectedKey
-          ? translate(this.locale, `token.${expectedKey}`)
-          : String(expectedType),
+        expectedType: expectedLexeme
+          ? `${expectedTypeLabel} (${expectedLexeme})`
+          : expectedTypeLabel,
         actualType: actualKey
           ? translate(this.locale, `token.${actualKey}`)
           : String(token.type),
@@ -265,9 +281,17 @@ export class TokenIterator {
   declareFunction(
     name: string,
     returnType: ValueType,
-    params: ValueType[],
+    params: Array<ValueType | FunctionParameterDescriptor>,
   ): void {
-    this.functions.set(name, { returnType, params });
+    const normalizedParams: FunctionParameterDescriptor[] = params.map(
+      (param): FunctionParameterDescriptor =>
+        typeof param === "string" ? { kind: "scalar", type: param } : param,
+    );
+
+    this.functions.set(name, {
+      returnType,
+      params: normalizedParams,
+    });
   }
 
   resolveFunction(name: string): FunctionSignature | null {
@@ -359,6 +383,10 @@ export class TokenIterator {
 
   getSemicolonMode(): "optional-eol" | "required" {
     return this.grammar?.semicolonMode ?? "optional-eol";
+  }
+
+  getStatementTerminatorLexeme(): string | undefined {
+    return this.statementTerminatorLexeme;
   }
 
   getBlockMode(): "delimited" | "indentation" {

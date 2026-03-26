@@ -5,6 +5,7 @@ import {
   CommentScanner,
   IdentifierScanner,
   NumberScanner,
+  StatementTerminatorScanner,
   StringScanner,
   SymbolAndOperatorScanner,
 } from ".";
@@ -15,6 +16,8 @@ export default class LexerScannerFactory {
     if (char === '"') return new StringScanner(lexer);
     if (isDigit(char) || (char === "." && isDigit(lexer.peek())))
       return new NumberScanner(lexer);
+    if (lexer.statementTerminatorLexeme?.startsWith(char))
+      return new StatementTerminatorScanner(lexer);
     if (isIdentifierStart(char)) return new IdentifierScanner(lexer);
     if (char === "/" && ["*", "/"].includes(lexer.peek()))
       return new CommentScanner(lexer);

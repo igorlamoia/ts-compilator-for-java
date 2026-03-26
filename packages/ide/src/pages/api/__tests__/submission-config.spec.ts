@@ -103,6 +103,7 @@ describe("/api/submissions/validate config propagation", () => {
         keywordMap: { exibir: 33 },
         operatorWordMap: { logical_and: "and" },
         booleanLiteralMap: { true: "yes", false: "no" },
+        statementTerminatorLexeme: "@@",
         indentationBlock: false,
         blockDelimiters: { open: "begin", close: "end" },
         grammar: {
@@ -124,6 +125,7 @@ describe("/api/submissions/validate config propagation", () => {
       customKeywords: { exibir: 33 },
       operatorWordMap: { logical_and: "and" },
       booleanLiteralMap: { true: "yes", false: "no" },
+      statementTerminatorLexeme: "@@",
       blockDelimiters: undefined,
       indentationBlock: true,
     });
@@ -136,6 +138,7 @@ describe("/api/submissions/validate config propagation", () => {
         typingMode: "untyped",
         arrayMode: "dynamic",
       },
+      statementTerminatorLexeme: "@@",
     });
   });
 });

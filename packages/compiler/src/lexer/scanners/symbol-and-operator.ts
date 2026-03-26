@@ -5,6 +5,11 @@ export default class SymbolAndOperatorScanner extends LexerScanner {
   run(): void {
     const char = this.lexer.peekPrevious();
     const tokenFunction = TOKENS_MAP[char];
-    if (tokenFunction) tokenFunction(this.lexer);
+    if (tokenFunction) {
+      tokenFunction(this.lexer);
+      return;
+    }
+
+    this.lexer.error("lexer.unexpected_character", { char });
   }
 }

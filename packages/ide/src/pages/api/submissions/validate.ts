@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const jwtToken = req.headers['x-authorization'] as string | undefined
     if (!userId) return res.status(401).json({ valid: false, errors: ['Não autorizado'], warnings: [] })
 
-    const { exerciseId, exerciseListId, classId, sourceCode, keywordMap, operatorWordMap, booleanLiteralMap, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
+    const { exerciseId, exerciseListId, classId, sourceCode, keywordMap, operatorWordMap, booleanLiteralMap, statementTerminatorLexeme, blockDelimiters, indentationBlock, grammar, locale } = req.body as {
         exerciseId: string
         exerciseListId: string
         classId: string
@@ -78,6 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         keywordMap?: KeywordMap
         operatorWordMap?: OperatorWordMap
         booleanLiteralMap?: BooleanLiteralMap
+        statementTerminatorLexeme?: string
         blockDelimiters?: LexerBlockDelimiters
         indentationBlock?: boolean
         grammar?: Partial<IDEGrammarConfig>
@@ -103,6 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             keywordMap,
             operatorWordMap,
             booleanLiteralMap,
+            statementTerminatorLexeme,
             blockDelimiters,
             indentationBlock,
             grammar,
@@ -112,6 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             customKeywords: effectiveKeywordMap,
             operatorWordMap: normalized.operatorWordMap,
             booleanLiteralMap: normalized.booleanLiteralMap,
+            statementTerminatorLexeme: normalized.statementTerminatorLexeme,
             blockDelimiters: normalized.blockDelimiters,
             indentationBlock: normalized.indentationBlock,
         })
@@ -126,6 +129,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             const iterator = new TokenIterator(tokens, {
                 locale,
                 grammar: normalized.grammar,
+                statementTerminatorLexeme: normalized.statementTerminatorLexeme,
             })
             instructions = iterator.generateIntermediateCode()
         } catch (error) {

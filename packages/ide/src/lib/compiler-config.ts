@@ -59,11 +59,9 @@ export function normalizeCompilerConfig(
   const typingMode = input.grammar?.typingMode ?? DEFAULT_GRAMMAR.typingMode;
   const requestedArrayMode = input.grammar?.arrayMode;
   const arrayMode =
-    typingMode === "untyped"
-      ? "dynamic"
-      : requestedArrayMode === "fixed" || requestedArrayMode === "dynamic"
-        ? requestedArrayMode
-        : DEFAULT_GRAMMAR.arrayMode;
+    requestedArrayMode === "fixed" || requestedArrayMode === "dynamic"
+      ? requestedArrayMode
+      : DEFAULT_GRAMMAR.arrayMode;
 
   const grammar: IDEGrammarConfig = {
     semicolonMode:
@@ -79,11 +77,16 @@ export function normalizeCompilerConfig(
     typeof input.blockDelimiters?.close === "string" &&
     input.blockDelimiters.open.trim().length > 0 &&
     input.blockDelimiters.close.trim().length > 0;
+  const statementTerminatorLexeme =
+    typeof input.statementTerminatorLexeme === "string"
+      ? input.statementTerminatorLexeme.trim()
+      : "";
 
   return {
     keywordMap: input.keywordMap ?? {},
     operatorWordMap: normalizeOperatorWordMap(input.operatorWordMap),
     booleanLiteralMap: normalizeBooleanLiteralMap(input.booleanLiteralMap),
+    ...(statementTerminatorLexeme ? { statementTerminatorLexeme } : {}),
     grammar,
     indentationBlock,
     ...(grammar.blockMode === "delimited" && hasDelimiters

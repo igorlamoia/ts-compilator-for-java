@@ -30,6 +30,7 @@ type JavaMMSemanticGroupName =
 export type JavaMMLanguageMetadata = {
   allKeywords: string[];
   operatorWords: string[];
+  statementTerminators?: string[];
   semanticGroups: Record<JavaMMSemanticGroupName, string[]>;
 };
 
@@ -43,6 +44,7 @@ export type JavaMMLanguageOptions = {
   blockDelimiters?: JavaMMBlockDelimiters;
   operatorWordMap?: IDEOperatorWordMap;
   booleanLiteralMap?: IDEBooleanLiteralMap;
+  statementTerminatorLexeme?: string;
   typingMode?: "typed" | "untyped";
   arrayMode?: "fixed" | "dynamic";
 };
@@ -75,9 +77,41 @@ const DEFAULT_OPERATORS = [
   "**",
 ];
 
+const WORD_LIKE_TERMINATOR = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeStatementTerminators(
+  statementTerminatorLexeme?: string,
+): string[] {
+  const terminators = [";"];
+  const normalizedTerminator = statementTerminatorLexeme?.trim();
+
+  if (normalizedTerminator) {
+    terminators.push(normalizedTerminator);
+  }
+
+  return Array.from(new Set(terminators));
+}
+
+function buildStatementTerminatorRules(
+  statementTerminators: string[] = [";"],
+): [RegExp, string][] {
+  return statementTerminators.map((terminator) => [
+    WORD_LIKE_TERMINATOR.test(terminator)
+      ? new RegExp(`\\b${escapeRegExp(terminator)}\\b`)
+      : new RegExp(escapeRegExp(terminator)),
+    "delimiter",
+  ]);
+}
+
 export function buildJavaMMMonarchLanguage(
   metadata: JavaMMLanguageMetadata,
 ): monacoEditor.languages.IMonarchLanguage {
+  const statementTerminators = metadata.statementTerminators ?? [";"];
+
   return {
     keywords: metadata.allKeywords,
     types: metadata.semanticGroups.types,
@@ -90,6 +124,22 @@ export function buildJavaMMMonarchLanguage(
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
     tokenizer: {
       root: [
+        ...buildStatementTerminatorRules(statementTerminators),
+        [
+          /[a-zA-Z_]\w*(?=\s*\()/,
+          {
+            cases: {
+              "@types": "keyword.type",
+              "@conditionals": "keyword.conditional",
+              "@loops": "keyword.loop",
+              "@flow": "keyword.flow",
+              "@io": "keyword.io",
+              "@operatorWords": "operator.word",
+              "@keywords": "keyword",
+              "@default": "entity.name.function",
+            },
+          },
+        ],
         [
           /[a-zA-Z_]\w*/,
           {
@@ -120,7 +170,6 @@ export function buildJavaMMMonarchLanguage(
         [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F]+/, "number.hex"],
         [/\d+/, "number"],
-        [/[;,.]/, "delimiter"],
         [/"([^"\\]|\\.)*$/, "string.invalid"],
         [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
       ],
@@ -187,7 +236,15 @@ export function buildJavaMMLanguageConfiguration(
 }
 
 const SEMANTIC_KEYWORD_GROUPS: Record<JavaMMSemanticGroupName, Set<string>> = {
-  types: new Set(["int", "float", "bool", "string", "void", "variavel", "funcao"]),
+  types: new Set([
+    "int",
+    "float",
+    "bool",
+    "string",
+    "void",
+    "variavel",
+    "funcao",
+  ]),
   conditionals: new Set(["if", "else", "switch", "case", "default"]),
   loops: new Set(["for", "while"]),
   flow: new Set(["break", "continue", "return"]),
@@ -198,6 +255,7 @@ export function buildJavaMMLanguageMetadata(
   keywordMappings: JavaMMKeywordMapping[],
   operatorWordMap: IDEOperatorWordMap = {},
   booleanLiteralMap: IDEBooleanLiteralMap = DEFAULT_BOOLEAN_LITERAL_MAP,
+  statementTerminatorLexeme?: string,
 ): JavaMMLanguageMetadata {
   const semanticGroups: JavaMMLanguageMetadata["semanticGroups"] = {
     types: [],
@@ -248,6 +306,9 @@ export function buildJavaMMLanguageMetadata(
       ]),
     ),
     operatorWords,
+    statementTerminators: normalizeStatementTerminators(
+      statementTerminatorLexeme,
+    ),
     semanticGroups,
   };
 }
@@ -310,6 +371,7 @@ export function registerJavaMMLanguage(
     keywordMappings,
     options.operatorWordMap,
     options.booleanLiteralMap,
+    options.statementTerminatorLexeme,
   );
 
   // (Re)definir o tokenizer Monarch
@@ -411,6 +473,7 @@ export function registerJavaMMLanguage(
           keywordMappings,
           options.operatorWordMap,
           options.booleanLiteralMap,
+          options.statementTerminatorLexeme,
         );
         for (const operatorWord of metadata.operatorWords) {
           suggestions.push({

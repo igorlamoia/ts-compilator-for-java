@@ -27,6 +27,7 @@ const {
   buildLexerConfigMock: vi.fn(() => ({
     keywordMap: { inteiro: 21 },
     booleanLiteralMap: { true: "yes", false: "no" },
+    statementTerminatorLexeme: "@@",
     blockDelimiters: { open: "begin", close: "end" },
     indentationBlock: false,
     grammar: {
@@ -157,6 +158,7 @@ describe("useLexerAnalyse", () => {
       expect.objectContaining({
         customKeywords: expect.objectContaining({ inteiro: 21 }),
         booleanLiteralMap: { true: "yes", false: "no" },
+        statementTerminatorLexeme: "@@",
         blockDelimiters: { open: "begin", close: "end" },
         indentationBlock: false,
         operatorWordMap: { logical_and: "and" },

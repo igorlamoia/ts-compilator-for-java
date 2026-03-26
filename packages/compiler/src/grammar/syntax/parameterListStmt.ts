@@ -1,11 +1,13 @@
-import { TokenIterator, ValueType } from "../../token/TokenIterator";
+import {
+  FunctionParameterDescriptor,
+  ScalarType,
+  TokenIterator,
+} from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { typeStmt } from "./typeStmt";
+import { readArrayDeclaration } from "./declarationStmt";
 
-export interface Parameter {
-  type: ValueType;
-  name: string;  // nome do parâmetro
-}
+export type Parameter = { name: string } & FunctionParameterDescriptor;
 
 /**
  * Parses a parameter list in function declaration.
@@ -26,28 +28,49 @@ export function parameterListStmt(iterator: TokenIterator): Parameter[] {
 
   if (typingMode === "untyped") {
     const paramName = iterator.consume(TOKENS.LITERALS.identifier);
-    params.push({ type: "dynamic", name: paramName.lexeme });
+    params.push({ kind: "scalar", type: "dynamic", name: paramName.lexeme });
 
     while (iterator.peek().type === TOKENS.SYMBOLS.comma) {
       iterator.consume(TOKENS.SYMBOLS.comma);
       const nextName = iterator.consume(TOKENS.LITERALS.identifier);
-      params.push({ type: "dynamic", name: nextName.lexeme });
+      params.push({ kind: "scalar", type: "dynamic", name: nextName.lexeme });
     }
     return params;
   }
 
-  // Parsear primeiro parâmetro: type identifier
-  const paramType = typeStmt(iterator);
-  const paramName = iterator.consume(TOKENS.LITERALS.identifier);
-  params.push({ type: paramType, name: paramName.lexeme });
+  params.push(parseTypedParameter(iterator));
 
-  // Parsear parâmetros subsequentes: , type identifier
   while (iterator.peek().type === TOKENS.SYMBOLS.comma) {
     iterator.consume(TOKENS.SYMBOLS.comma);
-    const nextType = typeStmt(iterator);
-    const nextName = iterator.consume(TOKENS.LITERALS.identifier);
-    params.push({ type: nextType, name: nextName.lexeme });
+    params.push(parseTypedParameter(iterator));
   }
 
   return params;
+}
+
+function parseTypedParameter(iterator: TokenIterator): Parameter {
+  const baseType = typeStmt(iterator);
+  const paramName = iterator.consume(TOKENS.LITERALS.identifier);
+
+  if (!iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    return {
+      kind: "scalar",
+      type: baseType,
+      name: paramName.lexeme,
+    };
+  }
+
+  const arrayDeclaration = readArrayDeclaration(
+    iterator,
+    iterator.getArrayMode(),
+  );
+
+  return {
+    kind: "array",
+    baseType,
+    dimensions: arrayDeclaration.dimensions,
+    arrayMode: arrayDeclaration.mode,
+    sizes: arrayDeclaration.sizes,
+    name: paramName.lexeme,
+  };
 }

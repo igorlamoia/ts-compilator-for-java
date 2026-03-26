@@ -26,6 +26,7 @@ export type LexerConfig = {
   customKeywords?: KeywordMap;
   operatorWordMap?: OperatorWordMap;
   booleanLiteralMap?: BooleanLiteralMap;
+  statementTerminatorLexeme?: string;
   blockDelimiters?: LexerBlockDelimiters;
   locale?: string;
   indentationBlock?: boolean;
@@ -50,6 +51,94 @@ const BOOLEAN_LITERAL_TOKEN_IDS = {
   true: 56,
   false: 57,
 } as const;
+
+const FIXED_TOKEN_CHARS = new Set([
+  ";",
+  ",",
+  "{",
+  "}",
+  "(",
+  ")",
+  "[",
+  "]",
+  ".",
+  ":",
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "=",
+  ">",
+  "<",
+  "!",
+  "|",
+  "&",
+]);
+
+export function normalizeStatementTerminatorLexeme(
+  value: string | undefined,
+): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalizedValue = value.trim();
+  return normalizedValue.length > 0 ? normalizedValue : undefined;
+}
+
+export function validateStatementTerminatorLexeme(
+  lexeme: string,
+  reserved: KeywordMap = {},
+  customKeywords: KeywordMap = {},
+  operatorWordMap: OperatorWordMap = {},
+  booleanLiteralMap: BooleanLiteralMap = {},
+  blockDelimiters?: LexerBlockDelimiters,
+): void {
+  if (lexeme.trim().length === 0) {
+    throw new Error("statement terminator cannot be empty");
+  }
+
+  if (/\s/.test(lexeme)) {
+    throw new Error("statement terminator cannot contain whitespace");
+  }
+
+  if (lexeme === ";") {
+    throw new Error("statement terminator cannot reuse semicolon");
+  }
+
+  if ([...lexeme].some((char) => FIXED_TOKEN_CHARS.has(char))) {
+    throw new Error(
+      "statement terminator cannot reuse fixed operator or symbol characters",
+    );
+  }
+
+  const operatorAliases = new Set(
+    Object.values(operatorWordMap)
+      .filter((alias): alias is string => typeof alias === "string")
+      .map((alias) => alias.trim())
+      .filter((alias) => alias.length > 0),
+  );
+  const booleanAliases = new Set(
+    Object.values(booleanLiteralMap)
+      .filter((alias): alias is string => typeof alias === "string")
+      .map((alias) => alias.trim())
+      .filter((alias) => alias.length > 0),
+  );
+
+  if (
+    reserved[lexeme] !== undefined ||
+    customKeywords[lexeme] !== undefined ||
+    operatorAliases.has(lexeme) ||
+    booleanAliases.has(lexeme) ||
+    (blockDelimiters &&
+      (lexeme === blockDelimiters.open || lexeme === blockDelimiters.close))
+  ) {
+    throw new Error(
+      "statement terminator cannot conflict with existing language words",
+    );
+  }
+}
 
 export function buildOperatorWordTokenMap(
   operatorWordMap: OperatorWordMap | undefined,

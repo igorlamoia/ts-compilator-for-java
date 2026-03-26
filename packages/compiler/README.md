@@ -16,6 +16,28 @@ npm install
 npm run start
 ```
 
+## Array Parameters
+
+Typed function signatures can receive arrays and matrices by reference.
+
+Fixed array mode requires exact sizes in the signature:
+
+```java
+void printa(int vec[2][4]) {
+  vec[0][0] = 99;
+}
+```
+
+Dynamic array mode requires only the number of dimensions:
+
+```java
+void printa(int vec[][]) {
+  print(vec[0][0]);
+}
+```
+
+When an array is passed to a function, writes inside the callee are visible to the caller.
+
 Test the compiler with the following code:
 
 ```bash

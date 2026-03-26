@@ -30,8 +30,11 @@ export type TEditorContextType = {
   sourceCode: string;
   config: TEditorConfig;
   currentFilePath: string;
+  selectedDebugLines: number[];
   fileSystem: ReturnType<typeof useFileSystem>;
   updateSourceCode: (newCode: string) => void;
+  toggleDebugLine: (lineNumber: number) => void;
+  clearDebugLines: () => void;
   setConfig: (newConfig: Partial<TEditorConfig>) => void;
   showLineIssues: (errors: TLineAlert[], showDetails?: boolean) => void;
   initializeEditor: (container: HTMLDivElement) => void;

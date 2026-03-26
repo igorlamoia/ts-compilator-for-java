@@ -9,7 +9,10 @@ export function consumeStmtTerminator(
   iterator: TokenIterator,
   options?: ConsumeStmtTerminatorOptions,
 ): void {
-  if (iterator.match(TOKENS.SYMBOLS.semicolon)) {
+  const configuredTerminator = iterator.getStatementTerminatorLexeme();
+  const expectedLexeme = configuredTerminator || undefined;
+
+  if (iterator.match(TOKENS.SYMBOLS.semicolon, expectedLexeme)) {
     iterator.consume(TOKENS.SYMBOLS.semicolon);
     return;
   }
@@ -17,7 +20,7 @@ export function consumeStmtTerminator(
   const isRequired =
     options?.forceRequired || iterator.getSemicolonMode() === "required";
   if (isRequired) {
-    iterator.consume(TOKENS.SYMBOLS.semicolon);
+    iterator.consume(TOKENS.SYMBOLS.semicolon, expectedLexeme);
     return;
   }
 
@@ -42,5 +45,5 @@ export function consumeStmtTerminator(
     return;
   }
 
-  iterator.consume(TOKENS.SYMBOLS.semicolon);
+  iterator.consume(TOKENS.SYMBOLS.semicolon, expectedLexeme);
 }

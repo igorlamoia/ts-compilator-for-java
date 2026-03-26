@@ -20,6 +20,7 @@ type RunIntermediatorInput = {
   locale?: string;
   grammar?: IDEGrammarConfig;
   operatorWordMap?: OperatorWordMap;
+  statementTerminatorLexeme?: string;
 };
 
 async function runIntermediator(
@@ -30,6 +31,7 @@ async function runIntermediator(
       locale: input.locale,
       grammar: input.grammar,
       operatorWordMap: input.operatorWordMap,
+      statementTerminatorLexeme: input.statementTerminatorLexeme,
     });
     const instructions = iterator.generateIntermediateCode();
     const warnings =
@@ -71,6 +73,7 @@ export function useIntermediatorCode() {
         locale: locale,
         grammar: lexerConfig.grammar,
         operatorWordMap: lexerConfig.operatorWordMap,
+        statementTerminatorLexeme: lexerConfig.statementTerminatorLexeme,
       });
       const issues = [...data.warnings, ...data.infos];
       setIntermediateCode(data);
