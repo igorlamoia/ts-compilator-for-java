@@ -290,6 +290,22 @@
   .monaco-editor .scroll-decoration {
     background-color: transparent !important;
   }
+
+  .monaco-editor .monaco-breakpoint-glyph {
+    position: relative;
+  }
+
+  .monaco-editor .monaco-breakpoint-glyph::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 9999px;
+    background-color: hsl(var(--destructive));
+  }
 }
 
 ::view-transition-old(root),

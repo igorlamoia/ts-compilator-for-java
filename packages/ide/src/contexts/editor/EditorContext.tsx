@@ -30,6 +30,7 @@ export const EditorContext = createContext<TEditorContextType>(
 
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [currentFilePath, setCurrentFilePath] = useState(DEFAULT_FILE_NAME);
+  const [selectedDebugLines, setSelectedDebugLines] = useState<number[]>([]);
   const [sourceCode, setSourceCode] = useState(() => {
     if (typeof window === "undefined") return INITIAL_CODE;
     return (
@@ -43,6 +44,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const monacoRef = useRef<typeof monacoEditor | null>(null);
   const editorInstanceRef =
     useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
+  const debugLineDecorationIdsRef = useRef<string[]>([]);
 
   const fileSystem = useFileSystem();
 
@@ -57,6 +59,46 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const applyDebugLineDecorations = useCallback((lines: number[]) => {
+    const editor = editorInstanceRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) return;
+
+    const validLines = [...new Set(lines)].sort((a, b) => a - b);
+    debugLineDecorationIdsRef.current = editor.deltaDecorations(
+      debugLineDecorationIdsRef.current,
+      validLines.map((lineNumber) => ({
+        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+        options: {
+          isWholeLine: true,
+          glyphMarginClassName: "monaco-breakpoint-glyph",
+          stickiness:
+            monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      })),
+    );
+  }, []);
+
+  const clearDebugLines = useCallback(() => {
+    setSelectedDebugLines([]);
+  }, []);
+
+  const toggleDebugLine = useCallback((lineNumber: number) => {
+    if (lineNumber < 1) return;
+
+    setSelectedDebugLines((prevLines) => {
+      if (prevLines.includes(lineNumber)) {
+        return prevLines.filter((line) => line !== lineNumber);
+      }
+
+      return [...prevLines, lineNumber].sort((a, b) => a - b);
+    });
+  }, []);
+
+  useEffect(() => {
+    applyDebugLineDecorations(selectedDebugLines);
+  }, [selectedDebugLines, applyDebugLineDecorations]);
+
   const initializeEditor = (container: HTMLDivElement) => {
     if (!monacoRef.current || !container) return;
 
@@ -65,6 +107,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       editorInstanceRef.current = monacoRef.current.editor.create(container, {
         value: sourceCode,
         automaticLayout: true,
+        glyphMargin: true,
         minimap: { enabled: true },
         scrollbar: {
           vertical: "auto",
@@ -78,6 +121,26 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         wordBasedSuggestions: "off",
         quickSuggestions: true,
         suggestOnTriggerCharacters: false,
+      });
+
+      editorInstanceRef.current.onMouseDown((event) => {
+        const monaco = monacoRef.current;
+        if (!monaco) return;
+
+        const isGutterClick =
+          event.target.type ===
+            monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN ||
+          event.target.type ===
+            monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS;
+
+        if (!isGutterClick) return;
+
+        const lineNumber =
+          event.target.position?.lineNumber ??
+          event.target.range?.startLineNumber;
+
+        if (!lineNumber) return;
+        toggleDebugLine(lineNumber);
       });
     }
   };
@@ -185,6 +248,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       const content =
         fileData?.content ?? storedCode ?? initialCode ?? INITIAL_CODE;
 
+      clearDebugLines();
+
       setCurrentFilePath(filePath);
       setSourceCode(content);
       editorInstanceRef.current?.setValue(content);
@@ -197,7 +262,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       // Update localStorage for this file
       localStorage.setItem(storageKey, content);
     },
-    [fileSystem],
+    [clearDebugLines, fileSystem],
   );
 
   const saveCurrentFile = useCallback(
@@ -216,8 +281,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         sourceCode,
         config,
         currentFilePath,
+        selectedDebugLines,
         fileSystem,
         updateSourceCode,
+        toggleDebugLine,
+        clearDebugLines,
         setConfig,
         showLineIssues,
         initializeEditor,
