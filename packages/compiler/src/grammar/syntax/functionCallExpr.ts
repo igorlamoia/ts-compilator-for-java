@@ -28,7 +28,9 @@ export function functionCallExpr(
 
   if (signature) {
     args.forEach((arg, index) => {
-      const expectedType = signature.params[index] ?? "unknown";
+      const parameter = signature.params[index];
+      const expectedType =
+        parameter?.kind === "array" ? parameter.baseType : parameter?.type ?? "unknown";
       iterator.warnIfLossyIntConversion(expectedType, arg.type, arg.token);
     });
   }

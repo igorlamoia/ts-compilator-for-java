@@ -37,9 +37,19 @@ export type SymbolDescriptor =
       sizes: number[];
     };
 
-type FunctionSignature = {
+export type FunctionParameterDescriptor =
+  | { kind: "scalar"; type: ValueType }
+  | {
+      kind: "array";
+      baseType: ScalarType;
+      dimensions: number;
+      arrayMode: "fixed" | "dynamic";
+      sizes: number[];
+    };
+
+export type FunctionSignature = {
   returnType: ValueType;
-  params: ValueType[];
+  params: FunctionParameterDescriptor[];
 };
 
 type Scope = Map<string, SymbolDescriptor>;
@@ -271,9 +281,18 @@ export class TokenIterator {
   declareFunction(
     name: string,
     returnType: ValueType,
-    params: ValueType[],
+    params: Array<ValueType | FunctionParameterDescriptor>,
   ): void {
-    this.functions.set(name, { returnType, params });
+    const normalizedParams = params.map((param) =>
+      typeof param === "string"
+        ? { kind: "scalar", type: param }
+        : param,
+    );
+
+    this.functions.set(name, {
+      returnType,
+      params: normalizedParams,
+    });
   }
 
   resolveFunction(name: string): FunctionSignature | null {
