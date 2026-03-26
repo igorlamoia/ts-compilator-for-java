@@ -283,10 +283,9 @@ export class TokenIterator {
     returnType: ValueType,
     params: Array<ValueType | FunctionParameterDescriptor>,
   ): void {
-    const normalizedParams = params.map((param) =>
-      typeof param === "string"
-        ? { kind: "scalar", type: param }
-        : param,
+    const normalizedParams: FunctionParameterDescriptor[] = params.map(
+      (param): FunctionParameterDescriptor =>
+        typeof param === "string" ? { kind: "scalar", type: param } : param,
     );
 
     this.functions.set(name, {

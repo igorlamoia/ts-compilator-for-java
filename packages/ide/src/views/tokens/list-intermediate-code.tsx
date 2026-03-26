@@ -115,6 +115,20 @@ function IntermediateCard({
   instruction: TIntermediateCodeData["instructions"][number];
   index: number;
 }) {
+  const formatOperand = (value: unknown): string => {
+    if (value === null || value === undefined) return "N/A";
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-[auto_repeat(3,minmax(0,1fr))] sm:items-center">
       <h3 className="text-xl font-bold text-cyan-700 dark:text-cyan-300 sm:pr-2">
@@ -126,11 +140,11 @@ function IntermediateCard({
       </p>
       <p>
         <span className="text-green-600 dark:text-green-400">Op1:</span>{" "}
-        {instruction.operand1 ?? "N/A"}
+        {formatOperand(instruction.operand1)}
       </p>
       <p>
         <span className="text-yellow-600 dark:text-yellow-400">Op2:</span>{" "}
-        {instruction.operand2 ?? "N/A"}
+        {formatOperand(instruction.operand2)}
       </p>
       {/* 🔍 Mostrar detalhes ao passar o mouse */}
       {/* <div className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer group">

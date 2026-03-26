@@ -1,7 +1,6 @@
-import type { Config } from "tailwindcss";
 import animatePlugin from "tailwindcss-animate";
 
-const config: Config = {
+const config = {
   darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -46,11 +45,11 @@ const config: Config = {
         input: "var(--color-input)",
         ring: "var(--color-ring)",
         chart: {
-          "1": "var(--color-chart-1)",
-          "2": "var(--color-chart-2)",
-          "3": "var(--color-chart-3)",
-          "4": "var(--color-chart-4)",
-          "5": "var(--color-chart-5)",
+          1: "var(--color-chart-1)",
+          2: "var(--color-chart-2)",
+          3: "var(--color-chart-3)",
+          4: "var(--color-chart-4)",
+          5: "var(--color-chart-5)",
         },
       },
       borderRadius: {
@@ -85,4 +84,5 @@ const config: Config = {
   },
   plugins: [animatePlugin],
 };
+
 export default config;

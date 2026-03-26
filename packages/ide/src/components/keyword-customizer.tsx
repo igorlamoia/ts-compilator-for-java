@@ -93,7 +93,8 @@ export function KeywordCustomizer() {
   const [draftSemicolonMode, setDraftSemicolonMode] =
     useState<IDESemicolonMode>(semicolonMode);
   const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
-  const [draftTypingMode, setDraftTypingMode] = useState<IDETypingMode>(typingMode);
+  const [draftTypingMode, setDraftTypingMode] =
+    useState<IDETypingMode>(typingMode);
   const [draftArrayMode, setDraftArrayMode] = useState<IDEArrayMode>(arrayMode);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
@@ -101,8 +102,9 @@ export function KeywordCustomizer() {
   const [booleanLiteralError, setBooleanLiteralError] = useState<string | null>(
     null,
   );
-  const [statementTerminatorError, setStatementTerminatorError] =
-    useState<string | null>(null);
+  const [statementTerminatorError, setStatementTerminatorError] = useState<
+    string | null
+  >(null);
   const [operatorError, setOperatorError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -176,7 +178,6 @@ export function KeywordCustomizer() {
         draftOperatorWordMap,
         draftMappings,
         getOperatorValidationDelimiters(),
-        draftBooleanLiteralMap,
       ),
     );
   }, [
@@ -327,7 +328,6 @@ export function KeywordCustomizer() {
       draftOperatorWordMap,
       draftMappings,
       getOperatorValidationDelimiters(),
-      draftBooleanLiteralMap,
     );
     if (nextOperatorError) {
       setOperatorError(nextOperatorError);
@@ -419,7 +419,6 @@ export function KeywordCustomizer() {
         next,
         draftMappings,
         getOperatorValidationDelimiters(),
-        draftBooleanLiteralMap,
       ),
     );
   };
@@ -878,7 +877,9 @@ export function KeywordCustomizer() {
                 <input
                   type="text"
                   value={draftBlockDelimiters.open}
-                  onChange={(e) => handleDelimiterChange("open", e.target.value)}
+                  onChange={(e) =>
+                    handleDelimiterChange("open", e.target.value)
+                  }
                   disabled={draftBlockMode === "indentation"}
                   placeholder="Abertura (ex.: begin)"
                   spellCheck={false}
