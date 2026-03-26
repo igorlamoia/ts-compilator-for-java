@@ -12,7 +12,7 @@ import { whileStmt } from "./whileStmt";
 import { ifStmt } from "./ifStmt";
 import {
   declarationStmt,
-  declareUntypedDynamicArray,
+  declareUntypedArray,
 } from "./declarationStmt";
 import { printStmt, scanStmt } from "./ioStmt";
 import { returnStmt } from "./returnStmt";
@@ -128,26 +128,10 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
 
   if (
     typingMode === "untyped" &&
-    arrayMode === "dynamic" &&
-    iterator.match(TOKENS.SYMBOLS.left_bracket) &&
-    iterator.peekAt(1)?.type === TOKENS.SYMBOLS.right_bracket
+    isUntypedArrayDeclaration(iterator, arrayMode)
   ) {
-    let offset = 0;
-    while (
-      iterator.peekAt(offset)?.type === TOKENS.SYMBOLS.left_bracket &&
-      iterator.peekAt(offset + 1)?.type === TOKENS.SYMBOLS.right_bracket
-    ) {
-      offset += 2;
-    }
-
-    if (
-      offset > 0 &&
-      iterator.peekAt(offset)?.type === TOKENS.ASSIGNMENTS.equal &&
-      iterator.peekAt(offset + 1)?.type === TOKENS.SYMBOLS.left_bracket
-    ) {
-      declareUntypedDynamicArray(iterator, identifier);
-      return;
-    }
+    declareUntypedArray(iterator, identifier);
+    return;
   }
 
   // Verificar se é chamada de função (seguido por '(') ou atribuição (seguido por '=')
@@ -168,5 +152,59 @@ function attrbuteStmtVariant(iterator: TokenIterator): void {
     iterator.consume(TOKENS.ASSIGNMENTS.equal, "=");
     emitAssignment(iterator, target);
     consumeStmtTerminator(iterator);
+  }
+}
+
+function isUntypedArrayDeclaration(
+  iterator: TokenIterator,
+  arrayMode: "fixed" | "dynamic" | null,
+): boolean {
+  if (!iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    return false;
+  }
+
+  const isDynamicArray = arrayMode === "dynamic";
+  let offset = 0;
+
+  while (true) {
+    const leftBracket = iterator.peekAt(offset);
+    const bracketValue = iterator.peekAt(offset + 1);
+    const rightBracket = iterator.peekAt(offset + (isDynamicArray ? 1 : 2));
+
+    if (leftBracket?.type !== TOKENS.SYMBOLS.left_bracket) {
+      return false;
+    }
+
+    if (isDynamicArray) {
+      if (bracketValue?.type !== TOKENS.SYMBOLS.right_bracket) {
+        return false;
+      }
+      if (
+        iterator.peekAt(offset + 2)?.type === TOKENS.SYMBOLS.left_bracket
+      ) {
+        offset += 2;
+        continue;
+      }
+    } else {
+      if (bracketValue?.type !== TOKENS.LITERALS.integer_literal) {
+        return false;
+      }
+      if (rightBracket?.type !== TOKENS.SYMBOLS.right_bracket) {
+        return false;
+      }
+      if (
+        iterator.peekAt(offset + 3)?.type === TOKENS.SYMBOLS.left_bracket
+      ) {
+        offset += 3;
+        continue;
+      }
+    }
+
+    const assignmentToken = iterator.peekAt(offset + (isDynamicArray ? 2 : 3));
+    const literalToken = iterator.peekAt(offset + (isDynamicArray ? 3 : 4));
+    return (
+      assignmentToken?.type === TOKENS.ASSIGNMENTS.equal &&
+      literalToken?.type === TOKENS.SYMBOLS.left_bracket
+    );
   }
 }

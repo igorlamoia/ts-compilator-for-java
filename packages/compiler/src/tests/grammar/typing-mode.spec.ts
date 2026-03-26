@@ -161,4 +161,61 @@ describe("Grammar Typing Mode", () => {
       ),
     ).toThrow();
   });
+
+  it("rejects implicit declaration in typed mode for undeclared identifiers", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            x = 1;
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("accepts assignment in typed mode after prior declaration", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int x;
+            x = 1;
+            return x;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("accepts fixed array initialization with an empty literal in untyped mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            lista[10] = [];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "untyped", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects dynamic array syntax in untyped fixed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          funcao main() {
+            lista[] = [];
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "untyped", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
 });
