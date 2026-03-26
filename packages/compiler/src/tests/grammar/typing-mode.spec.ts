@@ -191,6 +191,21 @@ describe("Grammar Typing Mode", () => {
     ).not.toThrow();
   });
 
+  it("rejects chained assignment when a later identifier is undeclared in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          int main() {
+            int a;
+            a = b = 1;
+            return a;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
   it("accepts fixed array initialization with an empty literal in untyped mode", () => {
     expect(() =>
       compileToIr(

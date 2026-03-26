@@ -2,6 +2,7 @@ import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { exprStmt } from "./exprStmt";
 import { functionCallExpr } from "./functionCallExpr";
+import { assertTypedAssignableIdentifier } from "./attributeStmt";
 
 /**
  * Parses a factor: literals, identifiers, function calls, or parenthesized expressions.
@@ -32,6 +33,7 @@ export function factorStmt(iterator: TokenIterator): ExprResult {
       iterator.peek().lexeme === "++"
     ) {
       iterator.consume(TOKENS.ARITHMETICS.plus, "++");
+      assertTypedAssignableIdentifier(iterator, identifier);
       const previous = iterator.emitter.newTemp();
       const incremented = iterator.emitter.newTemp();
       iterator.emitter.emit("=", previous, identifier.lexeme, null);

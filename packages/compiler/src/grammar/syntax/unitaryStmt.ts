@@ -2,6 +2,7 @@ import { ExprResult, TokenIterator } from "../../token/TokenIterator";
 import { TOKENS } from "../../token/constants";
 import { factorStmt } from "./factorStmt";
 import { TUnaryArithmetics } from "../../interpreter/constants";
+import { assertTypedAssignableIdentifier } from "./attributeStmt";
 
 /**
  * Parses a unary expression or factor.
@@ -17,6 +18,7 @@ export function unitaryStmt(iterator: TokenIterator): ExprResult {
   if (token.type === plus && token.lexeme === "++") {
     iterator.consume(plus, "++");
     const identifier = iterator.consume(TOKENS.LITERALS.identifier);
+    assertTypedAssignableIdentifier(iterator, identifier);
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
     iterator.emitter.emit("=", identifier.lexeme, incremented, null);

@@ -30,6 +30,7 @@ export function attributeStmt(iterator: TokenIterator): void {
   if (iterator.peek().type === plus && iterator.peek().lexeme === "++") {
     iterator.consume(plus, "++");
     const identifier = iterator.consume(TOKENS.LITERALS.identifier);
+    assertTypedAssignableIdentifier(iterator, identifier);
     const incremented = iterator.emitter.newTemp();
     iterator.emitter.emit("+", incremented, identifier.lexeme, "1");
     iterator.registerTemp(incremented, iterator.resolveSymbol(identifier.lexeme));
@@ -72,10 +73,13 @@ export function attributeStmt(iterator: TokenIterator): void {
 export function emitAssignmentChain(
   iterator: TokenIterator,
   firstTarget: string,
+  firstTargetToken?: Token,
   firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal,
 ): void {
   const { equal } = TOKENS.ASSIGNMENTS;
-  const targets: string[] = [firstTarget];
+  const targets: Array<{ name: string; token?: Token }> = [
+    { name: firstTarget, token: firstTargetToken },
+  ];
 
   // Right-associative chain: a = b = c = expr
   // After the first '=', keep consuming IDENT '=' pairs.
@@ -85,7 +89,7 @@ export function emitAssignmentChain(
       if (!nextToken || nextToken.type !== equal) break;
       const nextTarget = iterator.consume(TOKENS.LITERALS.identifier);
       iterator.consume(equal);
-      targets.push(nextTarget.lexeme);
+      targets.push({ name: nextTarget.lexeme, token: nextTarget });
     }
   }
 
@@ -93,15 +97,26 @@ export function emitAssignmentChain(
   let currentValue = value;
 
   for (let i = targets.length - 1; i >= 0; i--) {
-    const targetType = iterator.resolveSymbol(targets[i]);
+    const targetDescriptor = iterator.resolveSymbolDescriptor(targets[i].name);
+    if (iterator.getTypingMode() === "typed" && targetDescriptor.kind === "scalar" && targetDescriptor.type === "unknown") {
+      const targetToken = targets[i].token ?? value.token;
+      iterator.throwError(
+        "grammar.unexpected_statement",
+        targetToken.line,
+        targetToken.column,
+        { lexeme: targets[i].name },
+      );
+    }
+
+    const targetType = iterator.resolveSymbol(targets[i].name);
     iterator.warnIfLossyIntConversion(
       targetType,
       currentValue.type,
       currentValue.token,
     );
-    iterator.emitter.emit("=", targets[i], currentValue.place, null);
+    iterator.emitter.emit("=", targets[i].name, currentValue.place, null);
     currentValue = iterator.createExprResult(
-      targets[i],
+      targets[i].name,
       targetType,
       currentValue.token,
     );
@@ -116,6 +131,7 @@ export function parseAssignmentTarget(
   const descriptor = iterator.resolveSymbolDescriptor(token.lexeme);
 
   if (!iterator.match(TOKENS.SYMBOLS.left_bracket)) {
+    assertTypedAssignableIdentifier(iterator, token);
     return {
       kind: "scalar",
       name: token.lexeme,
@@ -182,7 +198,7 @@ export function emitAssignment(
   firstAssignmentType: number = TOKENS.ASSIGNMENTS.equal,
 ): void {
   if (target.kind === "scalar") {
-    emitAssignmentChain(iterator, target.name, firstAssignmentType);
+    emitAssignmentChain(iterator, target.name, target.token, firstAssignmentType);
     return;
   }
 
@@ -232,4 +248,23 @@ function assertAssignable(
     line: token.line,
     column: token.column,
   });
+}
+
+export function assertTypedAssignableIdentifier(
+  iterator: TokenIterator,
+  token: Token,
+): void {
+  if (iterator.getTypingMode() !== "typed") {
+    return;
+  }
+
+  const descriptor = iterator.resolveSymbolDescriptor(token.lexeme);
+  if (descriptor.kind === "scalar" && descriptor.type === "unknown") {
+    iterator.throwError(
+      "grammar.unexpected_statement",
+      token.line,
+      token.column,
+      { lexeme: token.lexeme },
+    );
+  }
 }
