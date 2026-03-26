@@ -248,6 +248,25 @@ describe("Grammar Typing Mode", () => {
     ).not.toThrow();
   });
 
+  it("accepts fixed matrix parameters with exact sizes in typed mode", () => {
+    expect(() =>
+      compileToIr(
+        `
+          void printaProPai(int vec[2][4]) {
+            return;
+          }
+
+          int main() {
+            int vec[2][4];
+            printaProPai(vec);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).not.toThrow();
+  });
+
   it("rejects chained assignment when a later identifier is undeclared in typed mode", () => {
     expect(() =>
       compileToIr(

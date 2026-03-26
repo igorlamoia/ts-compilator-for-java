@@ -257,6 +257,44 @@ describe("Type semantics warnings", () => {
     ).not.toThrow();
   });
 
+  it("rejects fixed matrix parameters with mismatched sizes", () => {
+    expect(() =>
+      compileToIr(
+        `
+          void printaProPai(int vec[3][4]) {
+            return;
+          }
+
+          int main() {
+            int vec[2][4];
+            printaProPai(vec);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+      ),
+    ).toThrow();
+  });
+
+  it("accepts dynamic matrix parameters when dimensions match", () => {
+    expect(() =>
+      compileToIr(
+        `
+          void printaProPai(int vec[][]) {
+            return;
+          }
+
+          int main() {
+            int vec[][] = [[1, 2], [3, 4]];
+            printaProPai(vec);
+            return 0;
+          }
+        `,
+        { grammar: { typingMode: "typed", arrayMode: "dynamic" } },
+      ),
+    ).not.toThrow();
+  });
+
   it("accepts declaration-time array initialization literals in untyped mode", () => {
     expect(() =>
       compileToIr(
@@ -572,6 +610,26 @@ describe("Type semantics runtime", () => {
     `);
 
     expect(result.output).toBe("true");
+  });
+
+  it("propagates array writes through parameter references", async () => {
+    const result = await executeProgram(
+      `
+        void altera(int vec[2][2]) {
+          vec[0][0] = 99;
+        }
+
+        int main() {
+          int vec[2][2] = [[1, 2], [3, 4]];
+          altera(vec);
+          print(vec[0][0]);
+          return 0;
+        }
+      `,
+      { grammar: { typingMode: "typed", arrayMode: "fixed" } },
+    );
+
+    expect(result.output).toBe("99");
   });
 
   it("preserves boolean returns through function calls", async () => {
