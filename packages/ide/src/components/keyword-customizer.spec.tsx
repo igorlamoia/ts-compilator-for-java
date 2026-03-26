@@ -130,7 +130,7 @@ describe("KeywordCustomizer", () => {
     });
   });
 
-  it("disables fixed array mode when typing mode is untyped", () => {
+  it("allows fixed array mode while typing mode is untyped", () => {
     useKeywordsMock.mockReturnValue(createKeywordsContext());
 
     const { container, root } = render();
@@ -140,10 +140,18 @@ describe("KeywordCustomizer", () => {
     );
 
     expect(fixedButton).toBeDefined();
-    expect(fixedButton?.disabled).toBe(true);
-    expect(container.textContent).toContain(
+    expect(fixedButton?.disabled).toBe(false);
+    expect(container.textContent).not.toContain(
       "Vetores/matrizes com tamanho fixo só estão disponíveis no modo tipado.",
     );
+
+    act(() => {
+      fixedButton?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(fixedButton?.className).toContain("border-cyan-500");
 
     act(() => {
       root.unmount();

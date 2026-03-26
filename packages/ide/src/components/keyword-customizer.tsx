@@ -138,12 +138,6 @@ export function KeywordCustomizer() {
   ]);
 
   useEffect(() => {
-    if (draftTypingMode === "untyped" && draftArrayMode !== "dynamic") {
-      setDraftArrayMode("dynamic");
-    }
-  }, [draftTypingMode, draftArrayMode]);
-
-  useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
       inputRef.current?.select();
@@ -373,9 +367,7 @@ export function KeywordCustomizer() {
     setSemicolonMode(draftSemicolonMode);
     setBlockMode(draftBlockMode);
     setTypingMode(draftTypingMode);
-    setArrayMode(
-      draftTypingMode === "untyped" ? "dynamic" : draftArrayMode,
-    );
+    setArrayMode(draftArrayMode);
     setBlockDelimiters({
       open: draftBlockDelimiters.open.trim(),
       close: draftBlockDelimiters.close.trim(),
@@ -469,9 +461,6 @@ export function KeywordCustomizer() {
 
   const handleTypingModeChange = (nextTypingMode: IDETypingMode) => {
     setDraftTypingMode(nextTypingMode);
-    if (nextTypingMode === "untyped") {
-      setDraftArrayMode("dynamic");
-    }
   };
 
   if (!currentMapping) return null;
@@ -758,8 +747,7 @@ export function KeywordCustomizer() {
                 <button
                   type="button"
                   onClick={() => setDraftArrayMode("fixed")}
-                  disabled={draftTypingMode === "untyped"}
-                  className={`px-3 py-2 text-sm rounded-md border text-left disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`px-3 py-2 text-sm rounded-md border text-left ${
                     draftArrayMode === "fixed"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
@@ -779,12 +767,6 @@ export function KeywordCustomizer() {
                   Tamanho dinâmico
                 </button>
               </div>
-              {draftTypingMode === "untyped" && (
-                <p className="text-sm dark:text-gray-400 text-gray-500">
-                  Vetores/matrizes com tamanho fixo só estão disponíveis no
-                  modo tipado.
-                </p>
-              )}
             </div>
 
             <div className="mt-6 flex flex-col gap-3">

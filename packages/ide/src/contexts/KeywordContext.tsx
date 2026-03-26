@@ -451,13 +451,6 @@ function getDefaultArrayMode(): IDEArrayMode {
   return "fixed";
 }
 
-function normalizeArrayMode(
-  typingMode: IDETypingMode,
-  arrayMode: IDEArrayMode,
-): IDEArrayMode {
-  return typingMode === "untyped" ? "dynamic" : arrayMode;
-}
-
 function loadCustomization(): StoredKeywordCustomization {
   const defaults: StoredKeywordCustomization = {
     mappings: getDefaultKeywordMappings(),
@@ -517,7 +510,7 @@ function loadCustomization(): StoredKeywordCustomization {
         semicolonMode,
         blockMode,
         typingMode,
-        arrayMode: normalizeArrayMode(typingMode, rawArrayMode),
+        arrayMode: rawArrayMode,
       };
     }
 
@@ -618,12 +611,6 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     arrayMode,
     isHydrated,
   ]);
-
-  useEffect(() => {
-    if (typingMode === "untyped" && arrayMode !== "dynamic") {
-      setArrayMode("dynamic");
-    }
-  }, [typingMode, arrayMode]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
@@ -770,7 +757,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       semicolonMode,
       blockMode,
       typingMode,
-      arrayMode: normalizeArrayMode(typingMode, arrayMode),
+      arrayMode,
     };
 
     return {

@@ -1,12 +1,75 @@
+// @vitest-environment jsdom
+
+import React from "react";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import { describe, expect, it } from "vitest";
 import {
+  KeywordProvider,
   getDefaultBooleanLiteralMap,
   getDefaultKeywordMappings,
   migrateStoredMappings,
   validateStatementTerminatorLexeme,
   validateBooleanLiteralAliases,
   validateCustomKeyword,
+  useKeywords,
 } from "@/contexts/KeywordContext";
+import { vi, beforeEach, afterEach } from "vitest";
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+vi.mock("@/hooks/useEditor", () => ({
+  useEditor: () => ({
+    monacoRef: { current: null },
+    retokenize: vi.fn(),
+  }),
+}));
+
+let capturedKeywords: ReturnType<typeof useKeywords> | null = null;
+
+function CaptureKeywords() {
+  capturedKeywords = useKeywords();
+  return null;
+}
+
+describe("keyword context lexer config", () => {
+  beforeEach(() => {
+    capturedKeywords = null;
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("preserves array mode in buildLexerConfig even when typing mode is untyped", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    act(() => {
+      capturedKeywords?.setTypingMode("untyped");
+      capturedKeywords?.setArrayMode("fixed");
+    });
+
+    expect(capturedKeywords?.buildLexerConfig().grammar.arrayMode).toBe(
+      "fixed",
+    );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+});
 
 describe("migrateStoredMappings", () => {
   it("preserves older saved mappings and appends bool with its default value", () => {
