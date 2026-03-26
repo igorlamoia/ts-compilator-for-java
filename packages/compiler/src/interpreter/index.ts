@@ -350,15 +350,31 @@ export class Interpreter {
             operand2,
             currentInstruction,
           );
+          let initialValue: unknown = null;
+          if (this.callStack.length > 0) {
+            const frame = this.callStack[this.callStack.length - 1];
+            const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
+
+            if (
+              evaluatedArgs &&
+              frame.parameters.length < evaluatedArgs.length
+            ) {
+              initialValue = evaluatedArgs[frame.parameters.length];
+              frame.parameters.push(result);
+            }
+          }
+
           this.declareVariable(
             result,
             declaredType,
-            arrayDeclaration.mode === "fixed"
-              ? createFixedArrayValue(declaredType, arrayDeclaration.sizes)
-              : createDynamicArrayValue(
-                  declaredType,
-                  arrayDeclaration.dimensions,
-                ),
+            isRuntimeArrayValue(initialValue)
+              ? initialValue
+              : arrayDeclaration.mode === "fixed"
+                ? createFixedArrayValue(declaredType, arrayDeclaration.sizes)
+                : createDynamicArrayValue(
+                    declaredType,
+                    arrayDeclaration.dimensions,
+                  ),
           );
           this.instructionPointer++;
           continue;
