@@ -4,6 +4,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { TOKENS } from "@ts-compilator-for-java/compiler/src/token/constants";
 import { TokenCard } from "./token-card";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -50,7 +51,7 @@ describe("TokenCard", () => {
   }
 
   it("renders translated label for <INDENT>", () => {
-    const { container, root } = renderCard(55, "<INDENT>");
+    const { container, root } = renderCard(TOKENS.SYMBOLS.indent, "<INDENT>");
 
     expect(container.textContent).toContain("indentação");
     expect(container.textContent).toContain("<INDENT>");
@@ -61,7 +62,7 @@ describe("TokenCard", () => {
   });
 
   it("renders translated label for <DEDENT>", () => {
-    const { container, root } = renderCard(56, "<DEDENT>");
+    const { container, root } = renderCard(TOKENS.SYMBOLS.dedent, "<DEDENT>");
 
     expect(container.textContent).toContain("desindentação");
     expect(container.textContent).toContain("<DEDENT>");

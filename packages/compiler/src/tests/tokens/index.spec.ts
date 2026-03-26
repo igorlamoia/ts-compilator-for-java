@@ -19,6 +19,13 @@ it("should include boolean reserved tokens", () => {
   expect(TOKENS.BY_DESCRIPTION["false"]).toBeDefined();
 });
 
+it("should keep indent and dedent ids distinct from bool and true", () => {
+  expect(TOKENS.SYMBOLS.indent).not.toBe(TOKENS.RESERVEDS.bool);
+  expect(TOKENS.SYMBOLS.dedent).not.toBe(TOKENS.RESERVEDS.true);
+  expect(TOKENS.BY_ID[TOKENS.SYMBOLS.indent]).toBe("indent");
+  expect(TOKENS.BY_ID[TOKENS.SYMBOLS.dedent]).toBe("dedent");
+});
+
 it("should include bracket symbol tokens", () => {
   expect(TOKENS.BY_DESCRIPTION["left_bracket"]).toBeDefined();
   expect(TOKENS.BY_DESCRIPTION["right_bracket"]).toBeDefined();

@@ -10,8 +10,8 @@ export const SYMBOLS = {
   right_bracket: 44, // ]
   colon: 53, // :
   newline: 54,
-  indent: 55,
-  dedent: 56,
+  indent: 58,
+  dedent: 59,
 };
 
 export const SYMBOLS_STYLE = {

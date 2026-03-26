@@ -24,11 +24,11 @@ export class Classification {
     };
   }
 
-  classifyToken(tokenType: number, tokenLexeme?: string): {
+  classifyToken(tokenType: number): {
     type: string | undefined;
     styles: TTokenStyle;
   } {
-    const TYPE = this.findTokenClassification(tokenType, tokenLexeme);
+    const TYPE = this.findTokenClassification(tokenType);
     return {
       type: TYPE ?? "NOT_FOUND",
       styles: this.findTokenStyle(TYPE),
@@ -43,11 +43,7 @@ export class Classification {
     );
   }
 
-  findTokenClassification(tokenType: number, tokenLexeme?: string) {
-    if (tokenLexeme === "<INDENT>" || tokenLexeme === "<DEDENT>") {
-      return "SYMBOLS";
-    }
-
+  findTokenClassification(tokenType: number) {
     const key = Object.entries(this.tokensClassification).find(([, value]) => {
       return value.includes(tokenType);
     });
