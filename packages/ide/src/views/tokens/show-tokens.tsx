@@ -45,7 +45,7 @@ export function ShowTokens({ analyseData }: IShowTokensProps) {
   const formattedTokens = classifyTokens(tokens, TokenClassification);
   const allFormattedTokens = tokens.map((token) => ({
     token,
-    info: TokenClassification.classifyToken(token.type),
+    info: TokenClassification.classifyToken(token.type, token.lexeme),
   }));
 
   return (

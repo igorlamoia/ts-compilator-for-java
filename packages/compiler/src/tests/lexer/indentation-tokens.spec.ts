@@ -10,13 +10,62 @@ describe("Lexer indentation tokens", () => {
       tabWidth: 4,
     }).scanTokens();
 
-    expect(tokens.map((t) => t.type)).toEqual(
-      expect.arrayContaining([
-        TOKENS.SYMBOLS.newline,
-        TOKENS.SYMBOLS.indent,
-        TOKENS.SYMBOLS.dedent,
-      ]),
-    );
+    expect(
+      tokens
+        .map((t) => t.type)
+        .filter(
+          (type) =>
+            type === TOKENS.SYMBOLS.newline ||
+            type === TOKENS.SYMBOLS.indent ||
+            type === TOKENS.SYMBOLS.dedent,
+        ),
+    ).toEqual([
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.indent,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.indent,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.dedent,
+      TOKENS.SYMBOLS.dedent,
+    ]);
+  });
+
+  it("accepts aligned sibling blocks and nested blocks reusing the inferred unit", () => {
+    const src = `int main():
+    if (ready):
+        print(1);
+        print(2);
+    if (other):
+        print(3);`;
+
+    const tokens = new Lexer(src, {
+      indentationBlock: true,
+      tabWidth: 4,
+    }).scanTokens();
+
+    expect(
+      tokens
+        .map((t) => t.type)
+        .filter(
+          (type) =>
+            type === TOKENS.SYMBOLS.newline ||
+            type === TOKENS.SYMBOLS.indent ||
+            type === TOKENS.SYMBOLS.dedent,
+        ),
+    ).toEqual([
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.indent,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.indent,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.dedent,
+      TOKENS.SYMBOLS.newline,
+      TOKENS.SYMBOLS.indent,
+      TOKENS.SYMBOLS.dedent,
+      TOKENS.SYMBOLS.dedent,
+    ]);
   });
 
   it("tokenizes bracket symbols", () => {

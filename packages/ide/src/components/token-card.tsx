@@ -8,10 +8,17 @@ export type TokenCardProps = {
   token: TToken;
   styles: TTokenStyle;
 };
+
+function resolveTokenName(token: TToken): string | null {
+  if (token.lexeme === "<INDENT>") return "indent";
+  if (token.lexeme === "<DEDENT>") return "dedent";
+  return TOKENS.BY_ID[token.type] ?? null;
+}
+
 export function TokenCard({ token, styles }: TokenCardProps) {
   const { showLineIssues } = useEditor();
   const { locale } = useRouter();
-  const tokenName = TOKENS.BY_ID[token.type];
+  const tokenName = resolveTokenName(token);
   const tokenLabel =
     token.custom?.trim() ||
     (tokenName ? translateTokenDescription(locale, tokenName) : token.lexeme);

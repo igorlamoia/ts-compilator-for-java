@@ -13,7 +13,7 @@ export const classifyTokens = (
     //   info: TokenClassification.classifyToken(type) ?? {},
     // });
     const { type = "NOT_FOUND", styles } =
-      TokenClassification.classifyToken(token.type) ?? {};
+      TokenClassification.classifyToken(token.type, token.lexeme) ?? {};
     if (!acc[type]) acc[type] = [] as TFormattedToken[];
     acc[type].push({
       token,

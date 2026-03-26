@@ -39,6 +39,8 @@ const token = {
   left_paren: "abre parênteses",
   right_paren: "fecha parênteses",
   dot: "ponto",
+  indent: "indentação",
+  dedent: "desindentação",
   identifier: "identificador",
   string_literal: "literal string",
   integer_literal: "literal inteiro",
