@@ -111,6 +111,23 @@ export class Interpreter {
     );
   }
 
+  private consumePendingParameterValue(parameterName: string): unknown {
+    if (this.callStack.length === 0) {
+      return null;
+    }
+
+    const frame = this.callStack[this.callStack.length - 1];
+    const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
+
+    if (!evaluatedArgs || frame.parameters.length >= evaluatedArgs.length) {
+      return null;
+    }
+
+    const initialValue = evaluatedArgs[frame.parameters.length];
+    frame.parameters.push(parameterName);
+    return initialValue;
+  }
+
   public async execute(commandRef = { current: "" }): Promise<void> {
     this.labels.clear();
     this.variables.clear();
@@ -314,23 +331,9 @@ export class Interpreter {
               currentInstruction,
             );
 
-          // Se estivermos em uma função e houver argumentos avaliados, atribuir aos parâmetros
-          let initialValue: unknown = null;
           const declaredType =
             typeof operand1 === "string" ? operand1 : "dynamic";
-          if (this.callStack.length > 0) {
-            const frame = this.callStack[this.callStack.length - 1];
-            const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
-
-            if (
-              evaluatedArgs &&
-              frame.parameters.length < evaluatedArgs.length
-            ) {
-              // Usar o valor do argumento como valor inicial
-              initialValue = evaluatedArgs[frame.parameters.length];
-              frame.parameters.push(result);
-            }
-          }
+          const initialValue = this.consumePendingParameterValue(result);
 
           this.declareVariable(result, declaredType, initialValue);
 
@@ -350,19 +353,7 @@ export class Interpreter {
             operand2,
             currentInstruction,
           );
-          let initialValue: unknown = null;
-          if (this.callStack.length > 0) {
-            const frame = this.callStack[this.callStack.length - 1];
-            const evaluatedArgs = (frame as any).evaluatedArgs as unknown[];
-
-            if (
-              evaluatedArgs &&
-              frame.parameters.length < evaluatedArgs.length
-            ) {
-              initialValue = evaluatedArgs[frame.parameters.length];
-              frame.parameters.push(result);
-            }
-          }
+          const initialValue = this.consumePendingParameterValue(result);
 
           this.declareVariable(
             result,
