@@ -72,7 +72,7 @@ export const KEYWORD_SNIPPETS: Record<string, JavaMMSnippetVariant[]> = {
       labelSuffix: "vetor fixo",
     },
     {
-      body: "variavel ${1:lista}[] = [];",
+      body: "${1:lista}[] = [];",
       description: "Declaração de vetor dinâmico não tipado",
       typingMode: "untyped",
       arrayMode: "dynamic",

@@ -444,7 +444,7 @@ describe("buildJavaMMLanguageMetadata", () => {
     );
 
     expect(suggestionTexts).toContain("${1:lista}[${2:10}] = [];");
-    expect(suggestionTexts).not.toContain("variavel ${1:lista}[] = [];");
+    expect(suggestionTexts).not.toContain("${1:lista}[] = [];");
   });
 
   it("shows only dynamic array snippets in untyped dynamic mode", () => {
@@ -497,7 +497,7 @@ describe("buildJavaMMLanguageMetadata", () => {
       (suggestion: { insertText: string }) => suggestion.insertText,
     );
 
-    expect(suggestionTexts).toContain("variavel ${1:lista}[] = [];");
+    expect(suggestionTexts).toContain("${1:lista}[] = [];");
     expect(suggestionTexts).not.toContain("${1:lista}[${2:10}] = [];");
     expect(suggestionTexts).not.toContain("int ${1:vetor}[${2:10}];");
   });
