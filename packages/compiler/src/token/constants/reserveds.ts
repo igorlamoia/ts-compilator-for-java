@@ -16,8 +16,8 @@ export const RESERVEDS = {
   switch: 50,
   case: 51,
   default: 52,
-  variavel: 53,
-  funcao: 54,
+  variavel: 62,
+  funcao: 63,
   true: 56,
   false: 57,
 };

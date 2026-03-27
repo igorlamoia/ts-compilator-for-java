@@ -235,17 +235,8 @@ export function validateBooleanLiteralMap(
     }
     seenAliases.add(normalizedAlias);
 
-    if (
-      reserved[normalizedAlias] !== undefined &&
-      normalizedAlias !== slot
-    ) {
+    if (reserved[normalizedAlias] !== undefined && normalizedAlias !== slot) {
       throw new Error("boolean literal aliases cannot reuse reserved keywords");
-    }
-
-    if (customKeywords[normalizedAlias] !== undefined) {
-      throw new Error(
-        "boolean literal aliases cannot conflict with keyword overrides",
-      );
     }
 
     if (operatorAliases.has(normalizedAlias)) {

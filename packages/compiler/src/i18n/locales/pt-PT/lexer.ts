@@ -21,6 +21,8 @@ const lexer = {
     "A indentação não pode misturar tabs e espaços no mesmo prefixo de linha",
   invalid_dedent: "Destino de dedent inválido",
   unexpected_indent: "Aumento inesperado de indentação",
+  invalid_indent_unit:
+    "Blocos aninhados devem aumentar a indentação em exatamente uma unidade inferida",
   invalid_tab_width: "tabWidth deve ser maior que 0",
 };
 

@@ -6,12 +6,12 @@ export const SYMBOLS = {
   left_paren: 40, // (
   right_paren: 41, // )
   dot: 42, // .
-  left_bracket: 43, // [
-  right_bracket: 44, // ]
+  left_bracket: 60, // [
+  right_bracket: 61, // ]
   colon: 53, // :
   newline: 54,
-  indent: 55,
-  dedent: 56,
+  indent: 58,
+  dedent: 59,
 };
 
 export const SYMBOLS_STYLE = {

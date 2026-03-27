@@ -8,6 +8,7 @@ export type TokenCardProps = {
   token: TToken;
   styles: TTokenStyle;
 };
+
 export function TokenCard({ token, styles }: TokenCardProps) {
   const { showLineIssues } = useEditor();
   const { locale } = useRouter();

@@ -213,6 +213,31 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(delimiterRules.some((rule) => rule.test("uai123"))).toBe(false);
   });
 
+  it("highlights repeated logical negation operators", () => {
+    const language = buildJavaMMMonarchLanguage({
+      allKeywords: [],
+      operatorWords: [],
+      statementTerminators: [";"],
+      semanticGroups: {
+        types: [],
+        conditionals: [],
+        loops: [],
+        flow: [],
+        io: [],
+      },
+    });
+
+    const hasRepeatedNotRule = language.tokenizer.root.some(
+      (rule) =>
+        Array.isArray(rule) &&
+        rule[0] instanceof RegExp &&
+        String(rule[0]) === "/!+/" &&
+        rule[1] === "operator",
+    );
+
+    expect(hasRepeatedNotRule).toBe(true);
+  });
+
   it("includes configured operator aliases in Monarch operators", () => {
     const metadata = buildJavaMMLanguageMetadata(
       [{ original: "if", custom: "if", tokenId: 28 }],
@@ -464,7 +489,7 @@ describe("buildJavaMMLanguageMetadata", () => {
       monaco as never,
       [
         { original: "int", custom: "int", tokenId: 21 },
-        { original: "variavel", custom: "variavel", tokenId: 53 },
+        { original: "variavel", custom: "variavel", tokenId: 62 },
       ] as never,
       {
         typingMode: "untyped",
@@ -518,7 +543,7 @@ describe("buildJavaMMLanguageMetadata", () => {
       monaco as never,
       [
         { original: "int", custom: "int", tokenId: 21 },
-        { original: "variavel", custom: "variavel", tokenId: 53 },
+        { original: "variavel", custom: "variavel", tokenId: 62 },
       ] as never,
       {
         typingMode: "untyped",

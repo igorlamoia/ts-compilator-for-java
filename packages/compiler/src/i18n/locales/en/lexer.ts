@@ -21,6 +21,8 @@ const lexer = {
     "Indentation cannot mix tabs and spaces in the same line prefix",
   invalid_dedent: "Invalid dedent target",
   unexpected_indent: "Unexpected indentation increase",
+  invalid_indent_unit:
+    "Nested blocks must increase indentation by exactly one inferred indent unit",
   invalid_tab_width: "tabWidth must be greater than 0",
 };
 

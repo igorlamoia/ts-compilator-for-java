@@ -48,6 +48,7 @@ export class Lexer {
   private indentationBlock: boolean;
   private tabWidth: number;
   private indentStack: number[] = [0];
+  private indentUnit: number | null = null;
   private groupDepth = 0;
   private explicitLineContinuation = false;
 
@@ -257,6 +258,12 @@ export class Lexer {
         const previous = this.getLastSignificantTokenType();
         if (previous !== TOKENS.SYMBOLS.colon) {
           this.error("lexer.unexpected_indent");
+        }
+        const indentDelta = depth - currentDepth;
+        if (this.indentUnit === null) {
+          this.indentUnit = indentDelta;
+        } else if (indentDelta !== this.indentUnit) {
+          this.error("lexer.invalid_indent_unit");
         }
         this.indentStack.push(depth);
         this.addToken(TOKENS.SYMBOLS.indent, "<INDENT>");

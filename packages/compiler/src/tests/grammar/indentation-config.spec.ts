@@ -49,4 +49,26 @@ int main():
 
     expect(() => iterator.generateIntermediateCode()).not.toThrow();
   });
+
+  it("parses valid strict-indentation code after inferring the indent unit", () => {
+    const code = [
+      "int main():",
+      "  print(\"start\")",
+      "  if(1 < 2):",
+      "    print(\"nested\")",
+      "  print(\"done\")",
+    ].join("\n");
+
+    const lexer = new Lexer(code, {
+      locale: "en",
+      indentationBlock: true,
+    });
+
+    const iterator = new TokenIterator(lexer.scanTokens(), {
+      locale: "en",
+      grammar: { blockMode: "indentation", semicolonMode: "optional-eol" },
+    });
+
+    expect(() => iterator.generateIntermediateCode()).not.toThrow();
+  });
 });

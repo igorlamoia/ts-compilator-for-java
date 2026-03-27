@@ -22,6 +22,8 @@ const lexer = {
     "La indentación no puede mezclar tabulaciones y espacios en el mismo prefijo de línea",
   invalid_dedent: "Destino de dedent inválido",
   unexpected_indent: "Aumento inesperado de indentación",
+  invalid_indent_unit:
+    "Los bloques anidados deben aumentar la indentación en exactamente una unidad inferida",
   invalid_tab_width: "tabWidth debe ser mayor que 0",
 };
 
