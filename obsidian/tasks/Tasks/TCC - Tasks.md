@@ -1,8 +1,8 @@
-
+- [x] Cores diferentes para tipos, variaveis, funcoes e afins
 - [x] code completition/snippet/scaffolder like vscode for() FEITO
 - [ ] Base languages, create languages from them too (portugol like, C like, Python Like)
 - [x] Adicionar Boolean e array (matriz)
-- [ ] Fix: Trocando int por inteiro o warning the aviso não funcionou
+- [x] Fix: Trocando int por inteiro o warning the aviso não funcionou
 - [ ] create languages local and community (with logo and description)
 - [ ] Exercícios obrigatoriamente feitos em uma linguagem escolhida pelo professor
 - [x] Instrituição, turma, professor, aluno
@@ -18,6 +18,9 @@
 - [ ] Run terminal comands to compile (atalho para play)
 - [ ] Explicações avançadas de Lexer, código intermediário e Interpretação (pra ser didático)
 - [ ] Adicionar ternário
+- [x] Remover lógicas de se for identado vai ser não tipado e  não tipado já ser array dinamico (deixar esse pré-set rápido de configurar, mas não tão engessado assim)
+- [x] identação tem que ser PERFEITA
+- [x] verificar tokens de bool conflitando com original (true e false)
 
 
 
@@ -30,4 +33,3 @@
 - [ ] Criar comunidade (linguagem, temas)
 - [ ] Ao criar linguagem, poder definir a descrição de cada palavra reservada. Exemplo ao passar o mouse por cima de float (Isso aqui não é inteiro), trechos de código
 - [ ] Mostrar como código seria escrito em outras linguagens (Java, C, ou outros)
-
