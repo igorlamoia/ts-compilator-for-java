@@ -106,7 +106,10 @@ export function TokenCard({ token, styles }: TokenCardProps) {
       >
         <strong>{t(locale, "ui.lexeme")}: </strong>
         <span className={styles.text} style={{ whiteSpace: "pre-wrap" }}>
-          {token.lexeme}
+          {token.lexeme
+            .replace(/\n/g, "\\n")
+            .replace(/\t/g, "\\t")
+            .replace(/\r/g, "\\r")}
         </span>
       </div>
     </div>
