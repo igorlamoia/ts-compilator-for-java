@@ -202,8 +202,8 @@ function createKeywordSchema(
         .trim()
         .min(1, "A palavra não pode ser vazia.")
         .regex(
-          /^[a-zA-Z]+$/,
-          "Use apenas letras (sem números, espaços ou símbolos).",
+          /^[a-zA-Z_][a-zA-Z0-9_]*$/,
+          "Use apenas letras, números e underscore (começando com letra ou underscore).",
         ),
     })
     .superRefine((value, ctx) => {
