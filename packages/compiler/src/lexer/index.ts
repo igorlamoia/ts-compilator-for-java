@@ -315,7 +315,12 @@ export class Lexer {
   private isBlankOrCommentLine(index: number): boolean {
     const char = this.source[index];
     if (!char || char === "\n") return true;
-    return char === "/" && this.source[index + 1] === "/";
+    // Check for single-line comment (//)
+    if (char === "/" && this.source[index + 1] === "/") return true;
+    // Check for multi-line comment start (/*) or end (*/)
+    if (char === "/" && this.source[index + 1] === "*") return true;
+    if (char === "*" && this.source[index + 1] === "/") return true;
+    return false;
   }
 
   private shouldEmitStructuralNewline(): boolean {
