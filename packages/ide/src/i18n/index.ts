@@ -1,19 +1,19 @@
 import enFooter from "./locales/en/footer";
 import enToast from "./locales/en/toast";
-import enToken from "./locales/en/token";
 import enUi from "./locales/en/ui";
 import esFooter from "./locales/es/footer";
 import esToast from "./locales/es/toast";
-import esToken from "./locales/es/token";
 import esUi from "./locales/es/ui";
 import ptBrFooter from "./locales/pt-BR/footer";
 import ptBrToast from "./locales/pt-BR/toast";
-import ptBrToken from "./locales/pt-BR/token";
 import ptBrUi from "./locales/pt-BR/ui";
 import ptPtFooter from "./locales/pt-PT/footer";
 import ptPtToast from "./locales/pt-PT/toast";
-import ptPtToken from "./locales/pt-PT/token";
 import ptPtUi from "./locales/pt-PT/ui";
+import enToken from "@ts-compilator-for-java/compiler/src/i18n/locales/en/token";
+import esToken from "@ts-compilator-for-java/compiler/src/i18n/locales/es/token";
+import ptBrToken from "@ts-compilator-for-java/compiler/src/i18n/locales/pt-BR/token";
+import ptPtToken from "@ts-compilator-for-java/compiler/src/i18n/locales/pt-PT/token";
 
 export const SUPPORTED_LOCALES = [
   { code: "pt-BR", flag: "🇧🇷" },
