@@ -15,7 +15,7 @@ import {
   registerJavaMMLanguage,
   JAVAMM_LANGUAGE_ID,
 } from "@/utils/compiler/editor/editor-language";
-import { getDefaultKeywordMappings } from "@/contexts/KeywordContext";
+import { getDefaultKeywordMappings } from "@/contexts/keyword/KeywordContext";
 import { useFileSystem } from "@/hooks/useFileSystem";
 import { EditorSkeleton } from "./EditorSkeleton";
 import { DarkTheme, LightTheme } from "./EditorThemes";

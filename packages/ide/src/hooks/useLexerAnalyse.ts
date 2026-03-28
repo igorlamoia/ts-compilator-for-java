@@ -11,9 +11,12 @@ import type {
   LexerBlockDelimiters,
   OperatorWordMap,
 } from "@ts-compilator-for-java/compiler/src/lexer/config";
-import { IssueDetails, IssueError } from "@ts-compilator-for-java/compiler/issue";
+import {
+  IssueDetails,
+  IssueError,
+} from "@ts-compilator-for-java/compiler/issue";
 import { useToast } from "@/contexts/ToastContext";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { useKeywords } from "@/contexts/keyword/KeywordContext";
 import { EditorContext } from "@/contexts/editor/EditorContext";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
@@ -50,7 +53,8 @@ async function runLexerAnalyse(
 
     return {
       message:
-        "Lexical Analysis completed" + (warnings.length ? " with warnings" : ""),
+        "Lexical Analysis completed" +
+        (warnings.length ? " with warnings" : ""),
       tokens,
       warnings,
       infos,

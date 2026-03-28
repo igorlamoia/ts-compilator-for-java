@@ -1,7 +1,7 @@
 import IconButton from "@/components/buttons/icon-button";
 import { FileCode2, GitBranch, Search, Settings } from "lucide-react";
 import type { SidebarView } from "./side-explorer/sidebar-panel";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { useKeywords } from "@/contexts/keyword/KeywordContext";
 
 interface SideMenuProps {
   isSidebarOpen: boolean;

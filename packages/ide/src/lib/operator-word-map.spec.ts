@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getDefaultKeywordMappings,
   type BlockDelimiters,
-} from "@/contexts/KeywordContext";
+} from "@/contexts/keyword/KeywordContext";
 import { validateOperatorWordMap } from "./operator-word-map";
 
 describe("operator word alias validation", () => {

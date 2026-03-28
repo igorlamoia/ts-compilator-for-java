@@ -5,7 +5,7 @@ import type {
 import type {
   BlockDelimiters,
   KeywordMapping,
-} from "@/contexts/KeywordContext";
+} from "@/contexts/keyword/KeywordContext";
 
 export const OPERATOR_ALIAS_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
 

@@ -5,7 +5,10 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EditorContext } from "@/contexts/editor/EditorContext";
-import { IssueDetails, IssueError } from "@ts-compilator-for-java/compiler/issue";
+import {
+  IssueDetails,
+  IssueError,
+} from "@ts-compilator-for-java/compiler/issue";
 import type { TToken } from "@/@types/token";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -59,7 +62,7 @@ vi.mock("@/contexts/ToastContext", () => ({
   }),
 }));
 
-vi.mock("@/contexts/KeywordContext", () => ({
+vi.mock("@/contexts/keyword/KeywordContext", () => ({
   useKeywords: () => ({
     buildLexerConfig: buildLexerConfigMock,
   }),
@@ -110,9 +113,11 @@ describe("useLexerAnalyse", () => {
     LexerMock.mockReset();
     LexerMock.mockImplementation(function Lexer() {
       return {
-      scanTokens: vi.fn(() => [{ lexeme: "int", line: 1, column: 1 } as TToken]),
-      warnings: [new IssueDetails("warn", "careful", 1, 1, "warning")],
-      infos: [new IssueDetails("info", "info", 1, 2, "info")],
+        scanTokens: vi.fn(() => [
+          { lexeme: "int", line: 1, column: 1 } as TToken,
+        ]),
+        warnings: [new IssueDetails("warn", "careful", 1, 1, "warning")],
+        infos: [new IssueDetails("info", "info", 1, 2, "info")],
       };
     });
   });

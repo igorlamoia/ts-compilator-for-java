@@ -4,7 +4,7 @@ import {
   getDefaultCustomizationState,
   KeywordMapping,
   BlockDelimiters,
-} from "@/contexts/KeywordContext";
+} from "@/contexts/keyword/KeywordContext";
 import type {
   IDEBooleanLiteralMap,
   IDEKeywordCustomizationState,
@@ -155,7 +155,8 @@ export function KeywordCustomizer() {
     return (
       draft.mappings.some((m: KeywordMapping) => m.original !== m.custom) ||
       OPERATOR_WORD_FIELDS.some(
-        ({ key }) => draft.operatorWordMap[key] !== current.operatorWordMap[key],
+        ({ key }) =>
+          draft.operatorWordMap[key] !== current.operatorWordMap[key],
       ) ||
       draft.booleanLiteralMap.true !== current.booleanLiteralMap.true ||
       draft.booleanLiteralMap.false !== current.booleanLiteralMap.false ||
@@ -521,11 +522,13 @@ export function KeywordCustomizer() {
 
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
-                Pergunta {currentStep + 1} de {draftCustomization.mappings.length}
+                Pergunta {currentStep + 1} de{" "}
+                {draftCustomization.mappings.length}
               </span>
               <span className="text-xs dark:text-gray-500 text-gray-400">
                 {Math.round(
-                  ((currentStep + 1) / draftCustomization.mappings.length) * 100,
+                  ((currentStep + 1) / draftCustomization.mappings.length) *
+                    100,
                 )}
                 %
               </span>
@@ -858,7 +861,9 @@ export function KeywordCustomizer() {
                     </span>
                     <input
                       type="text"
-                      value={draftCustomization.operatorWordMap[field.key] ?? ""}
+                      value={
+                        draftCustomization.operatorWordMap[field.key] ?? ""
+                      }
                       onChange={(e) =>
                         handleOperatorAliasChange(field.key, e.target.value)
                       }

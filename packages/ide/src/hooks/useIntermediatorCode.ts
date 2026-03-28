@@ -3,13 +3,16 @@ import { ESeverity, TLineAlert } from "@/@types/editor";
 import { useEditor } from "@/hooks/useEditor";
 import { TIntermediateCodeData } from "@/types/compiler";
 import { useState, useContext } from "react";
-import { IssueDetails, IssueError } from "@ts-compilator-for-java/compiler/issue";
+import {
+  IssueDetails,
+  IssueError,
+} from "@ts-compilator-for-java/compiler/issue";
 import { useToast } from "@/contexts/ToastContext";
 import { EditorContext } from "@/contexts/editor/EditorContext";
 import { TToken } from "@/@types/token";
 import { t } from "@/i18n";
 import { useRouter } from "next/router";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { useKeywords } from "@/contexts/keyword/KeywordContext";
 import { TokenIterator } from "@ts-compilator-for-java/compiler/token/TokenIterator";
 import type { Token } from "@ts-compilator-for-java/compiler/token";
 import type { IDEGrammarConfig } from "@/entities/compiler-config";

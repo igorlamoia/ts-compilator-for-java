@@ -7,7 +7,7 @@ import { classifyTokens } from "@/utils/compiler/editor/tokens";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CardsPreview } from "./cards-preview";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { useKeywords } from "@/contexts/keyword/KeywordContext";
 import { useRouter } from "next/router";
 import { t } from "@/i18n";
 

@@ -52,3 +52,49 @@ npm run test
 
 Feel free to contribute to the project, we are open to suggestions and improvements.
 Even more so if it is for new test cases
+
+Fluxo resumido em uma linha
+
+Código-fonte → caracteres → lexemas → tokens → parser → árvore sintática/AST → tabela de símbolos + análise semântica → representação intermediária → máquina virtual/JIT → execução
+
+Exemplo completo e curto
+
+Código:
+
+mostrar(2 + 3)
+
+1. Lexemas
+   mostrar
+   (
+   2
+
+- 3
+  )
+
+2. Tokens
+   IDENTIFIER("mostrar")
+   LPAREN
+   NUMBER("2")
+   PLUS
+   NUMBER("3")
+   RPAREN
+3. AST
+   Call
+   ├── Callee: Identifier("mostrar")
+   └── Argument:
+   BinaryExpression(+)
+   ├── Number(2)
+   └── Number(3)
+4. Semântica
+   mostrar existe?
+   aceita 1 argumento?
+   2 + 3 é operação válida?
+5. IR
+   t1 = 2
+   t2 = 3
+   t3 = add t1, t2
+   call mostrar, t3
+6. Execução
+   calcula t3 = 5
+   chama mostrar(5)
+   saída: 5

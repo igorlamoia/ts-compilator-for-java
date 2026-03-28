@@ -10,11 +10,13 @@ import {
   getDefaultBooleanLiteralMap,
   getDefaultKeywordMappings,
   migrateStoredMappings,
-  validateStatementTerminatorLexeme,
+  useKeywords,
+} from "@/contexts/keyword/KeywordContext";
+import {
+  validateStatementTerminatorLexemeImpl,
   validateBooleanLiteralAliases,
   validateCustomKeyword,
-  useKeywords,
-} from "@/contexts/KeywordContext";
+} from "@/contexts/keyword/keyword-validator";
 import { vi, beforeEach, afterEach } from "vitest";
 
 (
@@ -23,11 +25,13 @@ import { vi, beforeEach, afterEach } from "vitest";
   }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { monacoRefMock, retokenizeMock, updateJavaMMKeywordsMock } = vi.hoisted(() => ({
-  monacoRefMock: { current: {} },
-  retokenizeMock: vi.fn(),
-  updateJavaMMKeywordsMock: vi.fn(),
-}));
+const { monacoRefMock, retokenizeMock, updateJavaMMKeywordsMock } = vi.hoisted(
+  () => ({
+    monacoRefMock: { current: {} },
+    retokenizeMock: vi.fn(),
+    updateJavaMMKeywordsMock: vi.fn(),
+  }),
+);
 
 vi.mock("@/hooks/useEditor", () => ({
   useEditor: () => ({
@@ -70,8 +74,8 @@ describe("keyword context lexer config", () => {
           KeywordProvider,
           null,
           React.createElement(CaptureKeywords),
-      ),
-    );
+        ),
+      );
     });
 
     act(() => {
@@ -279,11 +283,10 @@ describe("migrateStoredMappings", () => {
     expect(normalizedMigrated).toHaveLength(getDefaultKeywordMappings().length);
     expect(
       normalizedMigrated.find((mapping) => mapping.original === "int")?.custom,
-    ).toBe(
-      "inteiro",
-    );
+    ).toBe("inteiro");
     expect(
-      normalizedMigrated.find((mapping) => mapping.original === "print")?.custom,
+      normalizedMigrated.find((mapping) => mapping.original === "print")
+        ?.custom,
     ).toBe("escreva");
     expect(
       normalizedMigrated.find((mapping) => mapping.original === "bool"),
@@ -350,31 +353,54 @@ describe("boolean literal customization", () => {
       { open: "", close: "" },
     );
 
-    expect(error).toBe('"inteiro" conflicts with an existing keyword customization.');
+    expect(error).toBe(
+      '"inteiro" conflicts with an existing keyword customization.',
+    );
   });
 });
 
 describe("statement terminator customization", () => {
+  function createCustomization(
+    overrides: Partial<ReturnType<typeof getDefaultCustomizationState>> = {},
+  ) {
+    return {
+      ...getDefaultCustomizationState(),
+      ...overrides,
+    };
+  }
+
   it("accepts non-conflicting symbolic terminators", () => {
-    const error = validateStatementTerminatorLexeme("@@");
+    const error = validateStatementTerminatorLexemeImpl(
+      "@@",
+      createCustomization(),
+    );
 
     expect(error).toBeNull();
   });
 
   it("rejects whitespace in statement terminators", () => {
-    const error = validateStatementTerminatorLexeme("two words");
+    const error = validateStatementTerminatorLexemeImpl(
+      "two words",
+      createCustomization(),
+    );
 
     expect(error).toBe("O terminador não pode conter espaços.");
   });
 
   it("rejects semicolon as a custom statement terminator", () => {
-    const error = validateStatementTerminatorLexeme(";");
+    const error = validateStatementTerminatorLexemeImpl(
+      ";",
+      createCustomization(),
+    );
 
     expect(error).toBe("Escolha um terminador diferente de ;.");
   });
 
   it("rejects reserved operator characters in statement terminators", () => {
-    const error = validateStatementTerminatorLexeme("!!");
+    const error = validateStatementTerminatorLexemeImpl(
+      "!!",
+      createCustomization(),
+    );
 
     expect(error).toBe(
       "O terminador não pode reutilizar símbolos ou operadores fixos da linguagem.",
@@ -382,65 +408,77 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects terminators that collide with keyword customizations", () => {
-    const error = validateStatementTerminatorLexeme(
+    const error = validateStatementTerminatorLexemeImpl(
       "uai",
-      [
-        { original: "if", custom: "uai", tokenId: 28 },
-        { original: "while", custom: "enquanto", tokenId: 25 },
-      ],
+      createCustomization({
+        mappings: [
+          { original: "if", custom: "uai", tokenId: 28 },
+          { original: "while", custom: "enquanto", tokenId: 25 },
+        ],
+      }),
     );
 
-    expect(error).toBe('"uai" conflicts with an existing keyword customization.');
+    expect(error).toBe(
+      '"uai" conflicts with an existing keyword customization.',
+    );
   });
 
   it("rejects original reserved keywords even after customization remaps them", () => {
-    const error = validateStatementTerminatorLexeme(
+    const error = validateStatementTerminatorLexemeImpl(
       "if",
-      [{ original: "if", custom: "se", tokenId: 28 }],
+      createCustomization({
+        mappings: [{ original: "if", custom: "se", tokenId: 28 }],
+      }),
     );
 
-    expect(error).toBe('"if" conflicts with an existing keyword customization.');
+    expect(error).toBe(
+      '"if" conflicts with an existing keyword customization.',
+    );
   });
 
   it("rejects terminators that collide with operator aliases", () => {
-    const error = validateStatementTerminatorLexeme(
+    const error = validateStatementTerminatorLexemeImpl(
       "uai",
-      getDefaultKeywordMappings(),
-      { logical_and: "uai" },
+      createCustomization({
+        operatorWordMap: { logical_and: "uai" },
+      }),
     );
 
     expect(error).toBe('"uai" conflicts with an existing operator alias.');
   });
 
   it("rejects terminators that collide with boolean aliases", () => {
-    const error = validateStatementTerminatorLexeme(
+    const error = validateStatementTerminatorLexemeImpl(
       "uai",
-      getDefaultKeywordMappings(),
-      {},
-      { true: "uai", false: "nao" },
+      createCustomization({
+        booleanLiteralMap: { true: "uai", false: "nao" },
+      }),
     );
 
-    expect(error).toBe('"uai" conflicts with an existing boolean literal alias.');
+    expect(error).toBe(
+      '"uai" conflicts with an existing boolean literal alias.',
+    );
   });
 
   it("rejects default boolean literals even after customization remaps them", () => {
-    const error = validateStatementTerminatorLexeme(
+    const error = validateStatementTerminatorLexemeImpl(
       "true",
-      getDefaultKeywordMappings(),
-      {},
-      { true: "sim", false: "nao" },
+      createCustomization({
+        booleanLiteralMap: { true: "sim", false: "nao" },
+      }),
     );
 
-    expect(error).toBe('"true" conflicts with an existing keyword customization.');
+    expect(error).toBe(
+      '"true" conflicts with an existing keyword customization.',
+    );
   });
 
   it("rejects terminators that collide with block delimiters", () => {
-    const error = validateStatementTerminatorLexeme(
+    const error = validateStatementTerminatorLexemeImpl(
       "uai",
-      getDefaultKeywordMappings(),
-      {},
-      getDefaultBooleanLiteralMap(),
-      { open: "uai", close: "fim" },
+      createCustomization({
+        blockDelimiters: { open: "uai", close: "fim" },
+      }),
     );
 
     expect(error).toBe('"uai" conflicts with the configured block delimiters.');

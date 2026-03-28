@@ -1,3 +1,5 @@
+import { KeywordMapping } from "@/contexts/keyword/types";
+
 export type IDESemicolonMode = "optional-eol" | "required";
 export type IDEBlockMode = "delimited" | "indentation";
 export type IDETypingMode = "typed" | "untyped";
@@ -39,7 +41,7 @@ export type IDEKeywordCustomizationUI = {
 };
 
 export type IDEKeywordCustomizationState = {
-  mappings: import("@/contexts/KeywordContext").KeywordMapping[];
+  mappings: KeywordMapping[];
   operatorWordMap: IDEOperatorWordMap;
   booleanLiteralMap: IDEBooleanLiteralMap;
   statementTerminatorLexeme: string;
