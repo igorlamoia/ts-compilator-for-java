@@ -18,7 +18,9 @@ interface IShowTokensProps {
 const TokenClassification = new Classification();
 
 export function ShowTokens({ analyseData }: IShowTokensProps) {
-  const { mappings } = useKeywords();
+  const {
+    customization: { mappings },
+  } = useKeywords();
   const { locale } = useRouter();
 
   const keyTypeIndexs = mappings.reduce(

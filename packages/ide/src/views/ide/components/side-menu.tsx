@@ -54,11 +54,19 @@ export function SideMenu({
 }
 
 function ConfigButton() {
-  const { setIsOpenKeywordCustomizer } = useKeywords();
+  const { setCustomization } = useKeywords();
   return (
     <IconButton
       tooltip="Configurações"
-      onClick={() => setIsOpenKeywordCustomizer(true)}
+      onClick={() =>
+        setCustomization((prev) => ({
+          ...prev,
+          ui: {
+            ...prev.ui,
+            isKeywordCustomizerOpen: true,
+          },
+        }))
+      }
     >
       <Settings className="h-4 w-4" />
     </IconButton>
