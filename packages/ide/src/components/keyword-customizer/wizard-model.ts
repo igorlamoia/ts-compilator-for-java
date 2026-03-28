@@ -16,6 +16,14 @@ export type WizardPresetId =
   | "creative"
   | "free";
 
+export const WIZARD_PRESET_LABELS: Record<WizardPresetId, string> = {
+  traditional: "Tradicional",
+  "didactic-pt": "Didatica em Portugues",
+  minimal: "Minimalista",
+  creative: "Criativa",
+  free: "Livre",
+};
+
 export const WIZARD_STEPS = [
   {
     id: "identity",
