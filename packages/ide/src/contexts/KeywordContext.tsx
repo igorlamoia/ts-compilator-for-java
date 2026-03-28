@@ -14,6 +14,9 @@ import type {
   IDEBooleanLiteralMap,
   IDEBlockMode,
   IDECompilerConfigPayload,
+  IDEKeywordCustomizationModes,
+  IDEKeywordCustomizationState,
+  IDEKeywordCustomizationUI,
   IDEOperatorWordMap,
   IDESemicolonMode,
   IDETypingMode,
@@ -63,49 +66,51 @@ export type BlockDelimiters = {
   close: string;
 };
 
-type StoredKeywordCustomization = {
-  mappings: KeywordMapping[];
-  operatorWordMap: IDEOperatorWordMap;
-  booleanLiteralMap: IDEBooleanLiteralMap;
-  statementTerminatorLexeme: string;
-  blockDelimiters: BlockDelimiters;
-  semicolonMode: IDESemicolonMode;
-  blockMode: IDEBlockMode;
-  typingMode: IDETypingMode;
-  arrayMode: IDEArrayMode;
+type StoredKeywordCustomization = IDEKeywordCustomizationState;
+
+type LegacyStoredKeywordCustomization = Partial<StoredKeywordCustomization> & {
+  semicolonMode?: IDESemicolonMode;
+  blockMode?: IDEBlockMode;
+  typingMode?: IDETypingMode;
+  arrayMode?: IDEArrayMode;
+  ui?: Partial<IDEKeywordCustomizationUI>;
+  modes?: Partial<IDEKeywordCustomizationModes>;
 };
 
 type KeywordContextType = {
-  /** Mapeamentos atuais (original → custom) */
-  mappings: KeywordMapping[];
-  /** Atualiza a palavra customizada de uma keyword original */
+  customization: StoredKeywordCustomization;
+  setCustomization: (
+    value:
+      | StoredKeywordCustomization
+      | ((current: StoredKeywordCustomization) => StoredKeywordCustomization),
+  ) => void;
+  setModes: (
+    value:
+      | IDEKeywordCustomizationModes
+      | ((
+          current: IDEKeywordCustomizationModes,
+        ) => IDEKeywordCustomizationModes),
+  ) => void;
+  setUi: (
+    value:
+      | IDEKeywordCustomizationUI
+      | ((current: IDEKeywordCustomizationUI) => IDEKeywordCustomizationUI),
+  ) => void;
+  setMappings: (
+    value:
+      | KeywordMapping[]
+      | ((current: KeywordMapping[]) => KeywordMapping[]),
+  ) => void;
   updateKeyword: (original: string, custom: string) => void;
-  /** Substitui todos os mapeamentos de uma vez */
-  replaceKeywords: (nextMappings: KeywordMapping[]) => void;
-  /** Restaura todos os mapeamentos para os valores padrão */
-  resetKeywords: () => void;
+  resetCustomization: () => void;
   /** Retorna o keywordMap final (custom word → token ID) para enviar ao Lexer */
   buildKeywordMap: () => Record<string, number>;
-  /** Delimitadores de bloco customizados (open/close) */
-  blockDelimiters: BlockDelimiters;
-  /** Aliases textuais de operadores */
-  operatorWordMap: IDEOperatorWordMap;
-  /** Atualiza os aliases textuais de operadores */
-  setOperatorWordMap: (value: IDEOperatorWordMap) => void;
   /** Valida aliases textuais de operadores */
   validateOperatorWordMap: (
     value: IDEOperatorWordMap,
     mappingsToValidate?: KeywordMapping[],
     delimitersToValidate?: BlockDelimiters,
   ) => string | null;
-  /** Literais booleanos customizados */
-  booleanLiteralMap: IDEBooleanLiteralMap;
-  /** Atualiza os literais booleanos customizados */
-  setBooleanLiteralMap: (value: IDEBooleanLiteralMap) => void;
-  /** Terminador de instrução customizado */
-  statementTerminatorLexeme: string;
-  /** Atualiza o terminador de instrução customizado */
-  setStatementTerminatorLexeme: (value: string) => void;
   /** Valida o terminador de instrução customizado */
   validateStatementTerminatorLexeme: (
     value: string,
@@ -121,38 +126,16 @@ type KeywordContextType = {
     operatorWordMapToValidate?: IDEOperatorWordMap,
     delimitersToValidate?: BlockDelimiters,
   ) => string | null;
-  /** Atualiza delimitadores customizados de bloco */
-  setBlockDelimiters: (value: BlockDelimiters) => void;
   /** Valida delimitadores customizados de bloco */
   validateBlockDelimiters: (value: BlockDelimiters) => string | null;
   /** Retorna payload completo de customização para APIs do lexer */
   buildLexerConfig: () => IDECompilerConfigPayload;
-  /** Modo de ponto e vírgula da gramática */
-  semicolonMode: IDESemicolonMode;
-  /** Define modo de ponto e vírgula da gramática */
-  setSemicolonMode: (value: IDESemicolonMode) => void;
-  /** Modo de bloco da gramática */
-  blockMode: IDEBlockMode;
-  /** Define modo de bloco da gramática */
-  setBlockMode: (value: IDEBlockMode) => void;
-  /** Modo de tipagem da gramática */
-  typingMode: IDETypingMode;
-  /** Define modo de tipagem da gramática */
-  setTypingMode: (value: IDETypingMode) => void;
-  /** Modo de vetores e matrizes da gramática */
-  arrayMode: IDEArrayMode;
-  /** Define modo de vetores e matrizes da gramática */
-  setArrayMode: (value: IDEArrayMode) => void;
   /** Valida se uma palavra customizada é válida */
   validateKeyword: (
     original: string,
     custom: string,
     mappingsToValidate?: KeywordMapping[],
   ) => string | null;
-  /** Controla se o modal de customização de keywords está aberto */
-  isOpenKeywordCustomizer: boolean;
-  /** Define se o modal de customização de keywords está aberto */
-  setIsOpenKeywordCustomizer: (value: boolean) => void;
 };
 
 const KeywordContext = createContext<KeywordContextType>(
@@ -435,6 +418,33 @@ function getDefaultStatementTerminatorLexeme(): string {
   return "";
 }
 
+function getDefaultModes(): IDEKeywordCustomizationModes {
+  return {
+    semicolon: "optional-eol",
+    block: "delimited",
+    typing: "typed",
+    array: "fixed",
+  };
+}
+
+function getDefaultUi(): IDEKeywordCustomizationUI {
+  return {
+    isKeywordCustomizerOpen: false,
+  };
+}
+
+export function getDefaultCustomizationState(): StoredKeywordCustomization {
+  return {
+    mappings: getDefaultKeywordMappings(),
+    operatorWordMap: getDefaultOperatorWordMap(),
+    booleanLiteralMap: getDefaultBooleanLiteralMap(),
+    statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
+    blockDelimiters: getDefaultBlockDelimiters(),
+    modes: getDefaultModes(),
+    ui: getDefaultUi(),
+  };
+}
+
 function getDefaultSemicolonMode(): IDESemicolonMode {
   return "optional-eol";
 }
@@ -451,67 +461,87 @@ function getDefaultArrayMode(): IDEArrayMode {
   return "fixed";
 }
 
-function loadCustomization(): StoredKeywordCustomization {
-  const defaults: StoredKeywordCustomization = {
-    mappings: getDefaultKeywordMappings(),
-    operatorWordMap: getDefaultOperatorWordMap(),
-    booleanLiteralMap: getDefaultBooleanLiteralMap(),
-    statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
-    blockDelimiters: getDefaultBlockDelimiters(),
-    semicolonMode: getDefaultSemicolonMode(),
-    blockMode: getDefaultBlockMode(),
-    typingMode: getDefaultTypingMode(),
-    arrayMode: getDefaultArrayMode(),
-  };
+function normalizeCustomization(
+  parsed: LegacyStoredKeywordCustomization,
+  defaults: StoredKeywordCustomization,
+): StoredKeywordCustomization | null {
+  const mappings = Array.isArray(parsed.mappings) ? parsed.mappings : [];
+  const migratedMappings = migrateStoredMappings(mappings);
 
+  if (!migratedMappings) return null;
+
+  const legacyModes: Partial<IDEKeywordCustomizationModes> = parsed.modes ?? {};
+  const semicolonMode =
+    legacyModes.semicolon === "required" ||
+    legacyModes.semicolon === "optional-eol"
+      ? legacyModes.semicolon
+      : parsed.semicolonMode === "required" ||
+          parsed.semicolonMode === "optional-eol"
+        ? parsed.semicolonMode
+        : defaults.modes.semicolon;
+  const blockMode =
+    legacyModes.block === "delimited" || legacyModes.block === "indentation"
+      ? legacyModes.block
+      : parsed.blockMode === "delimited" ||
+          parsed.blockMode === "indentation"
+        ? parsed.blockMode
+        : defaults.modes.block;
+  const typingMode =
+    legacyModes.typing === "typed" || legacyModes.typing === "untyped"
+      ? legacyModes.typing
+      : parsed.typingMode === "typed" || parsed.typingMode === "untyped"
+        ? parsed.typingMode
+        : defaults.modes.typing;
+  const arrayMode =
+    legacyModes.array === "fixed" || legacyModes.array === "dynamic"
+      ? legacyModes.array
+      : parsed.arrayMode === "fixed" || parsed.arrayMode === "dynamic"
+        ? parsed.arrayMode
+        : defaults.modes.array;
+  const ui = {
+    ...defaults.ui,
+    ...(parsed.ui ?? {}),
+    isKeywordCustomizerOpen:
+      typeof parsed.ui?.isKeywordCustomizerOpen === "boolean"
+        ? parsed.ui.isKeywordCustomizerOpen
+        : defaults.ui.isKeywordCustomizerOpen,
+  };
+  const delimiters = parsed.blockDelimiters;
+
+  return {
+    mappings: migratedMappings,
+    operatorWordMap: sanitizeOperatorWordMap(parsed.operatorWordMap),
+    booleanLiteralMap: sanitizeBooleanLiteralMap(parsed.booleanLiteralMap),
+    statementTerminatorLexeme:
+      typeof parsed.statementTerminatorLexeme === "string"
+        ? parsed.statementTerminatorLexeme.trim()
+        : defaults.statementTerminatorLexeme,
+    blockDelimiters:
+      delimiters &&
+      typeof delimiters.open === "string" &&
+      typeof delimiters.close === "string"
+        ? delimiters
+        : defaults.blockDelimiters,
+    modes: {
+      semicolon: semicolonMode,
+      block: blockMode,
+      typing: typingMode,
+      array: arrayMode,
+    },
+    ui,
+  };
+}
+
+function loadCustomization(): StoredKeywordCustomization {
+  const defaults = getDefaultCustomizationState();
   if (typeof window === "undefined") return defaults;
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored) as Partial<StoredKeywordCustomization>;
-      const mappings = Array.isArray(parsed.mappings) ? parsed.mappings : [];
-      const delimiters = parsed.blockDelimiters;
-      const semicolonMode =
-        parsed.semicolonMode === "required" ||
-        parsed.semicolonMode === "optional-eol"
-          ? parsed.semicolonMode
-          : getDefaultSemicolonMode();
-      const blockMode =
-        parsed.blockMode === "delimited" || parsed.blockMode === "indentation"
-          ? parsed.blockMode
-          : getDefaultBlockMode();
-      const typingMode =
-        parsed.typingMode === "typed" || parsed.typingMode === "untyped"
-          ? parsed.typingMode
-          : getDefaultTypingMode();
-      const rawArrayMode =
-        parsed.arrayMode === "fixed" || parsed.arrayMode === "dynamic"
-          ? parsed.arrayMode
-          : getDefaultArrayMode();
-      const migratedMappings = migrateStoredMappings(mappings);
-
-      if (!migratedMappings) return defaults;
-
-      return {
-        mappings: migratedMappings,
-        operatorWordMap: sanitizeOperatorWordMap(parsed.operatorWordMap),
-        booleanLiteralMap: sanitizeBooleanLiteralMap(parsed.booleanLiteralMap),
-        statementTerminatorLexeme:
-          typeof parsed.statementTerminatorLexeme === "string"
-            ? parsed.statementTerminatorLexeme.trim()
-            : getDefaultStatementTerminatorLexeme(),
-        blockDelimiters:
-          delimiters &&
-          typeof delimiters.open === "string" &&
-          typeof delimiters.close === "string"
-            ? delimiters
-            : getDefaultBlockDelimiters(),
-        semicolonMode,
-        blockMode,
-        typingMode,
-        arrayMode: rawArrayMode,
-      };
+      const parsed = JSON.parse(stored) as LegacyStoredKeywordCustomization;
+      const normalized = normalizeCustomization(parsed, defaults);
+      if (normalized) return normalized;
     }
 
     const legacyStored = localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -527,10 +557,8 @@ function loadCustomization(): StoredKeywordCustomization {
       booleanLiteralMap: getDefaultBooleanLiteralMap(),
       statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
       blockDelimiters: getDefaultBlockDelimiters(),
-      semicolonMode: getDefaultSemicolonMode(),
-      blockMode: getDefaultBlockMode(),
-      typingMode: getDefaultTypingMode(),
-      arrayMode: getDefaultArrayMode(),
+      modes: getDefaultModes(),
+      ui: getDefaultUi(),
     };
   } catch {
     return defaults;
@@ -542,45 +570,25 @@ function persistCustomization(customization: StoredKeywordCustomization) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(customization));
 }
 
+function resolveNextValue<T>(
+  value: T | ((current: T) => T),
+  current: T,
+): T {
+  return typeof value === "function"
+    ? (value as (current: T) => T)(current)
+    : value;
+}
+
 export function KeywordProvider({ children }: { children: ReactNode }) {
-  const [mappings, setMappings] = useState<KeywordMapping[]>(
-    getDefaultKeywordMappings,
-  );
-  const [blockDelimiters, setBlockDelimiters] = useState<BlockDelimiters>(
-    getDefaultBlockDelimiters(),
-  );
-  const [operatorWordMap, setOperatorWordMap] = useState<IDEOperatorWordMap>(
-    getDefaultOperatorWordMap(),
-  );
-  const [booleanLiteralMap, setBooleanLiteralMap] =
-    useState<IDEBooleanLiteralMap>(getDefaultBooleanLiteralMap());
-  const [statementTerminatorLexeme, setStatementTerminatorLexeme] =
-    useState<string>(getDefaultStatementTerminatorLexeme());
-  const [semicolonMode, setSemicolonMode] = useState<IDESemicolonMode>(
-    getDefaultSemicolonMode(),
-  );
-  const [blockMode, setBlockMode] = useState<IDEBlockMode>(getDefaultBlockMode);
-  const [typingMode, setTypingMode] = useState<IDETypingMode>(
-    getDefaultTypingMode(),
-  );
-  const [arrayMode, setArrayMode] = useState<IDEArrayMode>(getDefaultArrayMode);
+  const [customization, setCustomizationState] =
+    useState<StoredKeywordCustomization>(getDefaultCustomizationState);
   const [isHydrated, setIsHydrated] = useState(false);
   const { monacoRef, retokenize } = useEditor();
-
-  const [isOpenKeywordCustomizer, setIsOpenKeywordCustomizer] = useState(false);
 
   // Carregar do localStorage após montar no client
   useEffect(() => {
     const loadedCustomization = loadCustomization();
-    setMappings(loadedCustomization.mappings);
-    setOperatorWordMap(loadedCustomization.operatorWordMap);
-    setBooleanLiteralMap(loadedCustomization.booleanLiteralMap);
-    setStatementTerminatorLexeme(loadedCustomization.statementTerminatorLexeme);
-    setBlockDelimiters(loadedCustomization.blockDelimiters);
-    setSemicolonMode(loadedCustomization.semicolonMode);
-    setBlockMode(loadedCustomization.blockMode);
-    setTypingMode(loadedCustomization.typingMode);
-    setArrayMode(loadedCustomization.arrayMode);
+    setCustomizationState(loadedCustomization);
     persistCustomization(loadedCustomization);
     setIsHydrated(true);
   }, []);
@@ -588,53 +596,25 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   // Persistir no localStorage quando mudar
   useEffect(() => {
     if (!isHydrated) return;
-    persistCustomization({
-      mappings,
-      operatorWordMap,
-      booleanLiteralMap,
-      statementTerminatorLexeme,
-      blockDelimiters,
-      semicolonMode,
-      blockMode,
-      typingMode,
-      arrayMode,
-    });
-  }, [
-    mappings,
-    operatorWordMap,
-    booleanLiteralMap,
-    statementTerminatorLexeme,
-    blockDelimiters,
-    semicolonMode,
-    blockMode,
-    typingMode,
-    arrayMode,
-    isHydrated,
-  ]);
+    persistCustomization(customization);
+  }, [customization, isHydrated]);
 
   // Atualizar syntax highlighting do Monaco quando as keywords mudarem
   useEffect(() => {
     if (monacoRef.current) {
-      updateJavaMMKeywords(monacoRef.current, mappings, {
-        blockMode,
-        blockDelimiters,
-        operatorWordMap,
-        booleanLiteralMap,
-        statementTerminatorLexeme,
-        typingMode,
-        arrayMode,
+      updateJavaMMKeywords(monacoRef.current, customization.mappings, {
+        blockMode: customization.modes.block,
+        blockDelimiters: customization.blockDelimiters,
+        operatorWordMap: customization.operatorWordMap,
+        booleanLiteralMap: customization.booleanLiteralMap,
+        statementTerminatorLexeme: customization.statementTerminatorLexeme,
+        typingMode: customization.modes.typing,
+        arrayMode: customization.modes.array,
       });
       retokenize();
     }
   }, [
-    mappings,
-    blockMode,
-    blockDelimiters,
-    operatorWordMap,
-    booleanLiteralMap,
-    statementTerminatorLexeme,
-    typingMode,
-    arrayMode,
+    customization,
     monacoRef,
     retokenize,
   ]);
@@ -643,16 +623,66 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     (
       original: string,
       custom: string,
-      mappingsToValidate: KeywordMapping[] = mappings,
+      mappingsToValidate: KeywordMapping[] = customization.mappings,
     ): string | null => {
-      return validateCustomKeyword(
-        original,
-        custom,
-        mappingsToValidate,
-        booleanLiteralMap,
-      );
+      return validateCustomKeyword(original, custom, mappingsToValidate, customization.booleanLiteralMap);
     },
-    [mappings, booleanLiteralMap],
+    [customization.booleanLiteralMap, customization.mappings],
+  );
+
+  const setCustomization = useCallback(
+    (
+      value:
+        | StoredKeywordCustomization
+        | ((current: StoredKeywordCustomization) => StoredKeywordCustomization),
+    ) => {
+      setCustomizationState((current) => resolveNextValue(value, current));
+    },
+    [],
+  );
+
+  const setModes = useCallback(
+    (
+      value:
+        | IDEKeywordCustomizationModes
+        | ((
+            current: IDEKeywordCustomizationModes,
+          ) => IDEKeywordCustomizationModes),
+    ) => {
+      setCustomizationState((current) => ({
+        ...current,
+        modes: resolveNextValue(value, current.modes),
+      }));
+    },
+    [],
+  );
+
+  const setUi = useCallback(
+    (
+      value:
+        | IDEKeywordCustomizationUI
+        | ((current: IDEKeywordCustomizationUI) => IDEKeywordCustomizationUI),
+    ) => {
+      setCustomizationState((current) => ({
+        ...current,
+        ui: resolveNextValue(value, current.ui),
+      }));
+    },
+    [],
+  );
+
+  const setMappings = useCallback(
+    (
+      value:
+        | KeywordMapping[]
+        | ((current: KeywordMapping[]) => KeywordMapping[]),
+    ) => {
+      setCustomizationState((current) => ({
+        ...current,
+        mappings: resolveNextValue(value, current.mappings),
+      }));
+    },
+    [],
   );
 
   const updateKeyword = useCallback((original: string, custom: string) => {
@@ -661,31 +691,19 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         m.original === original ? { ...m, custom } : m,
       ),
     );
-  }, []);
+  }, [setMappings]);
 
-  const replaceKeywords = useCallback((nextMappings: KeywordMapping[]) => {
-    setMappings(nextMappings);
-  }, []);
-
-  const resetKeywords = useCallback(() => {
-    setMappings(getDefaultKeywordMappings());
-    setOperatorWordMap(getDefaultOperatorWordMap());
-    setBooleanLiteralMap(getDefaultBooleanLiteralMap());
-    setStatementTerminatorLexeme(getDefaultStatementTerminatorLexeme());
-    setBlockDelimiters(getDefaultBlockDelimiters());
-    setSemicolonMode(getDefaultSemicolonMode());
-    setBlockMode(getDefaultBlockMode());
-    setTypingMode(getDefaultTypingMode());
-    setArrayMode(getDefaultArrayMode());
+  const resetCustomization = useCallback(() => {
+    setCustomizationState(getDefaultCustomizationState());
   }, []);
 
   const buildKeywordMap = useCallback((): Record<string, number> => {
     const map: Record<string, number> = {};
-    for (const m of mappings) {
+    for (const m of customization.mappings) {
       map[m.custom] = m.tokenId;
     }
     return map;
-  }, [mappings]);
+  }, [customization.mappings]);
 
   const validateBlockDelimiters = useCallback(
     (value: BlockDelimiters): string | null => {
@@ -720,9 +738,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const validateBooleanLiteralMap = useCallback(
     (
       value: IDEBooleanLiteralMap,
-      mappingsToValidate: KeywordMapping[] = mappings,
-      operatorWordMapToValidate: IDEOperatorWordMap = operatorWordMap,
-      delimitersToValidate: BlockDelimiters = blockDelimiters,
+      mappingsToValidate: KeywordMapping[] = customization.mappings,
+      operatorWordMapToValidate: IDEOperatorWordMap = customization.operatorWordMap,
+      delimitersToValidate: BlockDelimiters = customization.blockDelimiters,
     ): string | null =>
       validateBooleanLiteralAliases(
         value,
@@ -730,46 +748,46 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
         operatorWordMapToValidate,
         delimitersToValidate,
       ),
-    [mappings, operatorWordMap, blockDelimiters],
+    [customization.mappings, customization.operatorWordMap, customization.blockDelimiters],
   );
 
   const validateOperatorWordMap = useCallback(
     (
       value: IDEOperatorWordMap,
-      mappingsToValidate: KeywordMapping[] = mappings,
-      delimitersToValidate: BlockDelimiters = blockDelimiters,
+      mappingsToValidate: KeywordMapping[] = customization.mappings,
+      delimitersToValidate: BlockDelimiters = customization.blockDelimiters,
     ): string | null =>
       validateOperatorWordMapValue(
         value,
         mappingsToValidate,
         delimitersToValidate,
-        booleanLiteralMap,
+        customization.booleanLiteralMap,
       ),
-    [mappings, blockDelimiters, booleanLiteralMap],
+    [customization.mappings, customization.blockDelimiters, customization.booleanLiteralMap],
   );
 
   const buildLexerConfig = useCallback((): IDECompilerConfigPayload => {
     const keywordMap = buildKeywordMap();
-    const open = blockDelimiters.open.trim();
-    const close = blockDelimiters.close.trim();
+    const open = customization.blockDelimiters.open.trim();
+    const close = customization.blockDelimiters.close.trim();
     const isBlockDelimiterValid = !validateBlockDelimiters({ open, close });
     const grammar = {
-      semicolonMode,
-      blockMode,
-      typingMode,
-      arrayMode,
+      semicolonMode: customization.modes.semicolon,
+      blockMode: customization.modes.block,
+      typingMode: customization.modes.typing,
+      arrayMode: customization.modes.array,
     };
 
     return {
       keywordMap,
-      operatorWordMap,
-      booleanLiteralMap,
-      ...(statementTerminatorLexeme.trim()
-        ? { statementTerminatorLexeme: statementTerminatorLexeme.trim() }
+      operatorWordMap: customization.operatorWordMap,
+      booleanLiteralMap: customization.booleanLiteralMap,
+      ...(customization.statementTerminatorLexeme.trim()
+        ? { statementTerminatorLexeme: customization.statementTerminatorLexeme.trim() }
         : {}),
       grammar,
-      indentationBlock: blockMode === "indentation",
-      ...(blockMode === "delimited" && open && close && isBlockDelimiterValid
+      indentationBlock: customization.modes.block === "indentation",
+      ...(customization.modes.block === "delimited" && open && close && isBlockDelimiterValid
         ? {
             blockDelimiters: {
               open,
@@ -780,49 +798,27 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     };
   }, [
     buildKeywordMap,
-    operatorWordMap,
-    booleanLiteralMap,
-    statementTerminatorLexeme,
-    blockDelimiters,
+    customization,
     validateBlockDelimiters,
-    semicolonMode,
-    blockMode,
-    typingMode,
-    arrayMode,
   ]);
 
   return (
     <KeywordContext.Provider
       value={{
-        mappings,
+        customization,
+        setCustomization,
+        setModes,
+        setUi,
+        setMappings,
         updateKeyword,
-        replaceKeywords,
-        resetKeywords,
+        resetCustomization,
         buildKeywordMap,
-        blockDelimiters,
-        operatorWordMap,
-        booleanLiteralMap,
-        statementTerminatorLexeme,
-        setStatementTerminatorLexeme,
+        validateKeyword,
         validateStatementTerminatorLexeme,
-        setBooleanLiteralMap,
         validateBooleanLiteralMap,
-        setOperatorWordMap,
         validateOperatorWordMap,
-        setBlockDelimiters,
         validateBlockDelimiters,
         buildLexerConfig,
-        semicolonMode,
-        setSemicolonMode,
-        blockMode,
-        setBlockMode,
-        typingMode,
-        setTypingMode,
-        arrayMode,
-        setArrayMode,
-        validateKeyword,
-        isOpenKeywordCustomizer,
-        setIsOpenKeywordCustomizer,
       }}
     >
       {children}

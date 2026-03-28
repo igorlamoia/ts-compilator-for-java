@@ -41,7 +41,7 @@ describe("keyword context lexer config", () => {
     document.body.innerHTML = "";
   });
 
-  it("preserves array mode in buildLexerConfig even when typing mode is untyped", () => {
+  it("exposes a nested customization object with grouped setters", () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
@@ -52,18 +52,37 @@ describe("keyword context lexer config", () => {
           KeywordProvider,
           null,
           React.createElement(CaptureKeywords),
-        ),
-      );
+      ),
+    );
     });
 
     act(() => {
-      capturedKeywords?.setTypingMode("untyped");
-      capturedKeywords?.setArrayMode("fixed");
+      capturedKeywords?.setModes((prev) => ({
+        ...prev,
+        typing: "untyped",
+        array: "fixed",
+      }));
+      capturedKeywords?.setUi((prev) => ({
+        ...prev,
+        isKeywordCustomizerOpen: true,
+      }));
     });
 
-    expect(capturedKeywords?.buildLexerConfig().grammar.arrayMode).toBe(
-      "fixed",
+    expect(capturedKeywords?.customization.modes.typing).toBe("untyped");
+    expect(capturedKeywords?.customization.modes.array).toBe("fixed");
+    expect(capturedKeywords?.customization.ui.isKeywordCustomizerOpen).toBe(
+      true,
     );
+    expect(capturedKeywords?.buildLexerConfig().grammar).toEqual({
+      semicolonMode: "optional-eol",
+      blockMode: "delimited",
+      typingMode: "untyped",
+      arrayMode: "fixed",
+    });
+
+    expect(capturedKeywords?.setCustomization).toBeTypeOf("function");
+    expect(capturedKeywords?.setModes).toBeTypeOf("function");
+    expect(capturedKeywords?.setUi).toBeTypeOf("function");
 
     act(() => {
       root.unmount();
@@ -85,6 +104,7 @@ describe("migrateStoredMappings", () => {
 
     const migrated = migrateStoredMappings(legacyMappings);
 
+    expect(migrated).not.toBeNull();
     expect(migrated).toHaveLength(getDefaultKeywordMappings().length);
     expect(migrated.find((mapping) => mapping.original === "int")?.custom).toBe(
       "inteiro",

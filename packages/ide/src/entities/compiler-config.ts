@@ -27,6 +27,27 @@ export type IDEGrammarConfig = {
   arrayMode: IDEArrayMode;
 };
 
+export type IDEKeywordCustomizationModes = {
+  semicolon: IDESemicolonMode;
+  block: IDEBlockMode;
+  typing: IDETypingMode;
+  array: IDEArrayMode;
+};
+
+export type IDEKeywordCustomizationUI = {
+  isKeywordCustomizerOpen: boolean;
+};
+
+export type IDEKeywordCustomizationState = {
+  mappings: import("@/contexts/KeywordContext").KeywordMapping[];
+  operatorWordMap: IDEOperatorWordMap;
+  booleanLiteralMap: IDEBooleanLiteralMap;
+  statementTerminatorLexeme: string;
+  blockDelimiters: { open: string; close: string };
+  modes: IDEKeywordCustomizationModes;
+  ui: IDEKeywordCustomizationUI;
+};
+
 export type IDECompilerConfigPayload = {
   keywordMap: Record<string, number>;
   operatorWordMap: IDEOperatorWordMap;
