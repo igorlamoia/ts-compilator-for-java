@@ -17,7 +17,11 @@ import {
 } from "@/contexts/KeywordContext";
 import { vi, beforeEach, afterEach } from "vitest";
 
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(
+  globalThis as typeof globalThis & {
+    IS_REACT_ACT_ENVIRONMENT: boolean;
+  }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 const { monacoRefMock, retokenizeMock, updateJavaMMKeywordsMock } = vi.hoisted(() => ({
   monacoRefMock: { current: {} },
@@ -270,15 +274,19 @@ describe("migrateStoredMappings", () => {
     const migrated = migrateStoredMappings(legacyMappings);
 
     expect(migrated).not.toBeNull();
-    expect(migrated).toHaveLength(getDefaultKeywordMappings().length);
-    expect(migrated.find((mapping) => mapping.original === "int")?.custom).toBe(
+    const normalizedMigrated = migrated ?? [];
+
+    expect(normalizedMigrated).toHaveLength(getDefaultKeywordMappings().length);
+    expect(
+      normalizedMigrated.find((mapping) => mapping.original === "int")?.custom,
+    ).toBe(
       "inteiro",
     );
     expect(
-      migrated.find((mapping) => mapping.original === "print")?.custom,
+      normalizedMigrated.find((mapping) => mapping.original === "print")?.custom,
     ).toBe("escreva");
     expect(
-      migrated.find((mapping) => mapping.original === "bool"),
+      normalizedMigrated.find((mapping) => mapping.original === "bool"),
     ).toEqual({
       original: "bool",
       custom: "bool",
