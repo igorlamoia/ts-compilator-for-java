@@ -66,33 +66,38 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
     { original: "int", custom: "int", tokenId: 21 },
     { original: "bool", custom: "bool", tokenId: 55 },
   ];
-
-  return {
+  const customization = {
     mappings,
-    blockDelimiters: { open: "", close: "" },
     operatorWordMap: {},
     booleanLiteralMap: { true: "true", false: "false" },
     statementTerminatorLexeme: "",
-    replaceKeywords: vi.fn(),
-    setOperatorWordMap: vi.fn(),
-    setBooleanLiteralMap: vi.fn(),
-    setStatementTerminatorLexeme: vi.fn(),
-    setBlockDelimiters: vi.fn(),
+    blockDelimiters: { open: "", close: "" },
+    modes: {
+      semicolon: "optional-eol",
+      block: "delimited",
+      typing: "untyped",
+      array: "dynamic",
+    },
+    ui: {
+      isKeywordCustomizerOpen: true,
+    },
+  } as const;
+
+  return {
+    customization,
+    setCustomization: vi.fn(),
+    setModes: vi.fn(),
+    setUi: vi.fn(),
+    setMappings: vi.fn(),
+    updateKeyword: vi.fn(),
+    resetCustomization: vi.fn(),
+    buildKeywordMap: vi.fn(),
+    buildLexerConfig: vi.fn(),
     validateKeyword: vi.fn(() => null),
     validateBooleanLiteralMap: vi.fn(() => null),
     validateOperatorWordMap: vi.fn(() => null),
     validateStatementTerminatorLexeme: vi.fn(() => null),
     validateBlockDelimiters: vi.fn(() => null),
-    semicolonMode: "optional-eol",
-    setSemicolonMode: vi.fn(),
-    blockMode: "delimited",
-    setBlockMode: vi.fn(),
-    typingMode: "untyped",
-    setTypingMode: vi.fn(),
-    arrayMode: "dynamic",
-    setArrayMode: vi.fn(),
-    isOpenKeywordCustomizer: true,
-    setIsOpenKeywordCustomizer: vi.fn(),
     ...overrides,
   };
 }
@@ -152,6 +157,80 @@ describe("KeywordCustomizer", () => {
     });
 
     expect(fixedButton?.className).toContain("border-cyan-500");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("saves the consolidated draft through the grouped context API", () => {
+    const context = createKeywordsContext({
+      customization: {
+        mappings: [{ original: "int", custom: "int", tokenId: 21 }],
+        operatorWordMap: {},
+        booleanLiteralMap: { true: "true", false: "false" },
+        statementTerminatorLexeme: "",
+        blockDelimiters: { open: "", close: "" },
+        modes: {
+          semicolon: "optional-eol",
+          block: "delimited",
+          typing: "untyped",
+          array: "dynamic",
+        },
+        ui: {
+          isKeywordCustomizerOpen: true,
+        },
+      },
+    });
+    useKeywordsMock.mockReturnValue(context);
+
+    const { container, root } = render();
+
+    const keywordInput = container.querySelector("#keyword-custom-input");
+    expect(keywordInput).toBeInstanceOf(HTMLInputElement);
+
+    act(() => {
+      const input = keywordInput as HTMLInputElement;
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      valueSetter?.call(input, "inteiro");
+      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+    });
+
+    const buttons = Array.from(container.querySelectorAll("button"));
+    const saveButton = buttons.find((button) =>
+      button.textContent?.includes("Salvar e Aplicar"),
+    );
+    expect(saveButton).toBeDefined();
+
+    act(() => {
+      saveButton?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(context.setCustomization).toHaveBeenCalledTimes(1);
+    expect(context.setCustomization).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mappings: [{ original: "int", custom: "inteiro", tokenId: 21 }],
+        statementTerminatorLexeme: "",
+        blockDelimiters: { open: "", close: "" },
+        modes: {
+          semicolon: "optional-eol",
+          block: "delimited",
+          typing: "untyped",
+          array: "dynamic",
+        },
+        ui: {
+          isKeywordCustomizerOpen: false,
+        },
+      }),
+    );
+    expect(context.setModes).not.toHaveBeenCalled();
+    expect(context.setUi).not.toHaveBeenCalled();
+    expect(context.setMappings).not.toHaveBeenCalled();
 
     act(() => {
       root.unmount();

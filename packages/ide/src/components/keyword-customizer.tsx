@@ -1,16 +1,14 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   useKeywords,
+  getDefaultCustomizationState,
   KeywordMapping,
   BlockDelimiters,
 } from "@/contexts/KeywordContext";
 import type {
-  IDEArrayMode,
   IDEBooleanLiteralMap,
-  IDEBlockMode,
+  IDEKeywordCustomizationState,
   IDEOperatorWordMap,
-  IDESemicolonMode,
-  IDETypingMode,
 } from "@/entities/compiler-config";
 import {
   Dialog,
@@ -54,48 +52,16 @@ const KEYWORD_EXPLANATIONS: Record<string, string> = {
 
 export function KeywordCustomizer() {
   const {
-    mappings,
-    blockDelimiters,
-    operatorWordMap,
-    booleanLiteralMap,
-    statementTerminatorLexeme,
-    replaceKeywords,
-    setOperatorWordMap,
-    setBooleanLiteralMap,
-    setStatementTerminatorLexeme,
-    setBlockDelimiters,
+    customization,
+    setCustomization,
     validateKeyword,
     validateBooleanLiteralMap,
     validateOperatorWordMap,
     validateStatementTerminatorLexeme,
     validateBlockDelimiters,
-    semicolonMode,
-    setSemicolonMode,
-    blockMode,
-    setBlockMode,
-    typingMode,
-    setTypingMode,
-    arrayMode,
-    setArrayMode,
-    isOpenKeywordCustomizer: isOpen,
-    setIsOpenKeywordCustomizer: setIsOpen,
   } = useKeywords();
-  const [draftMappings, setDraftMappings] =
-    useState<KeywordMapping[]>(mappings);
-  const [draftBlockDelimiters, setDraftBlockDelimiters] =
-    useState<BlockDelimiters>(blockDelimiters);
-  const [draftOperatorWordMap, setDraftOperatorWordMap] =
-    useState<IDEOperatorWordMap>(operatorWordMap);
-  const [draftBooleanLiteralMap, setDraftBooleanLiteralMap] =
-    useState<IDEBooleanLiteralMap>(booleanLiteralMap);
-  const [draftStatementTerminatorLexeme, setDraftStatementTerminatorLexeme] =
-    useState<string>(statementTerminatorLexeme);
-  const [draftSemicolonMode, setDraftSemicolonMode] =
-    useState<IDESemicolonMode>(semicolonMode);
-  const [draftBlockMode, setDraftBlockMode] = useState<IDEBlockMode>(blockMode);
-  const [draftTypingMode, setDraftTypingMode] =
-    useState<IDETypingMode>(typingMode);
-  const [draftArrayMode, setDraftArrayMode] = useState<IDEArrayMode>(arrayMode);
+  const [draftCustomization, setDraftCustomization] =
+    useState<IDEKeywordCustomizationState>(customization);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [delimiterError, setDelimiterError] = useState<string | null>(null);
@@ -107,37 +73,19 @@ export function KeywordCustomizer() {
   >(null);
   const [operatorError, setOperatorError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const isOpen = customization.ui.isKeywordCustomizerOpen;
 
   useEffect(() => {
-    if (isOpen) {
-      setDraftMappings(mappings);
-      setDraftBlockDelimiters(blockDelimiters);
-      setDraftOperatorWordMap(operatorWordMap);
-      setDraftBooleanLiteralMap(booleanLiteralMap);
-      setDraftStatementTerminatorLexeme(statementTerminatorLexeme);
-      setDraftSemicolonMode(semicolonMode);
-      setDraftBlockMode(blockMode);
-      setDraftTypingMode(typingMode);
-      setDraftArrayMode(arrayMode);
-      setCurrentStep(0);
-      setCurrentError(null);
-      setDelimiterError(null);
-      setBooleanLiteralError(null);
-      setStatementTerminatorError(null);
-      setOperatorError(null);
-    }
-  }, [
-    isOpen,
-    mappings,
-    blockDelimiters,
-    operatorWordMap,
-    booleanLiteralMap,
-    statementTerminatorLexeme,
-    semicolonMode,
-    blockMode,
-    typingMode,
-    arrayMode,
-  ]);
+    if (!isOpen) return;
+
+    setDraftCustomization(customization);
+    setCurrentStep(0);
+    setCurrentError(null);
+    setDelimiterError(null);
+    setBooleanLiteralError(null);
+    setStatementTerminatorError(null);
+    setOperatorError(null);
+  }, [isOpen, customization]);
 
   useEffect(() => {
     if (isOpen) {
@@ -146,139 +94,122 @@ export function KeywordCustomizer() {
     }
   }, [isOpen, currentStep]);
 
+  const getOperatorValidationDelimiters = (): BlockDelimiters =>
+    draftCustomization.modes.block === "delimited"
+      ? draftCustomization.blockDelimiters
+      : { open: "", close: "" };
+
   useEffect(() => {
-    if (draftBlockMode === "indentation") {
+    if (draftCustomization.modes.block === "indentation") {
       setDelimiterError(null);
       return;
     }
-    setDelimiterError(validateBlockDelimiters(draftBlockDelimiters));
-  }, [draftBlockMode, draftBlockDelimiters, validateBlockDelimiters]);
+
+    setDelimiterError(
+      validateBlockDelimiters(draftCustomization.blockDelimiters),
+    );
+  }, [
+    draftCustomization.blockDelimiters,
+    draftCustomization.modes.block,
+    validateBlockDelimiters,
+  ]);
 
   useEffect(() => {
     setBooleanLiteralError(
       validateBooleanLiteralMap(
-        draftBooleanLiteralMap,
-        draftMappings,
-        draftOperatorWordMap,
+        draftCustomization.booleanLiteralMap,
+        draftCustomization.mappings,
+        draftCustomization.operatorWordMap,
         getOperatorValidationDelimiters(),
       ),
     );
   }, [
-    draftBooleanLiteralMap,
-    draftMappings,
-    draftOperatorWordMap,
-    draftBlockDelimiters,
-    draftBlockMode,
+    draftCustomization.booleanLiteralMap,
+    draftCustomization.mappings,
+    draftCustomization.operatorWordMap,
+    draftCustomization.blockDelimiters,
+    draftCustomization.modes.block,
     validateBooleanLiteralMap,
   ]);
 
   useEffect(() => {
     setOperatorError(
       validateOperatorWordMap(
-        draftOperatorWordMap,
-        draftMappings,
+        draftCustomization.operatorWordMap,
+        draftCustomization.mappings,
         getOperatorValidationDelimiters(),
       ),
     );
   }, [
-    draftOperatorWordMap,
-    draftBooleanLiteralMap,
-    draftMappings,
-    draftBlockDelimiters,
-    draftBlockMode,
+    draftCustomization.operatorWordMap,
+    draftCustomization.mappings,
+    draftCustomization.blockDelimiters,
+    draftCustomization.modes.block,
     validateOperatorWordMap,
   ]);
 
-  const hasChanges = useMemo(
-    () =>
-      draftMappings.some((m: KeywordMapping) => m.original !== m.custom) ||
-      OPERATOR_WORD_FIELDS.some(
-        ({ key }) => draftOperatorWordMap[key] !== operatorWordMap[key],
-      ) ||
-      draftBooleanLiteralMap.true !== booleanLiteralMap.true ||
-      draftBooleanLiteralMap.false !== booleanLiteralMap.false ||
-      draftStatementTerminatorLexeme !== statementTerminatorLexeme ||
-      draftBlockDelimiters.open !== blockDelimiters.open ||
-      draftBlockDelimiters.close !== blockDelimiters.close ||
-      draftSemicolonMode !== semicolonMode ||
-      draftBlockMode !== blockMode ||
-      draftTypingMode !== typingMode ||
-      draftArrayMode !== arrayMode,
-    [
-      draftMappings,
-      draftOperatorWordMap,
-      operatorWordMap,
-      draftBooleanLiteralMap,
-      booleanLiteralMap,
-      draftStatementTerminatorLexeme,
-      statementTerminatorLexeme,
-      draftBlockDelimiters,
-      blockDelimiters,
-      draftSemicolonMode,
-      semicolonMode,
-      draftBlockMode,
-      blockMode,
-      draftTypingMode,
-      typingMode,
-      draftArrayMode,
-      arrayMode,
-    ],
-  );
+  const hasChanges = useMemo(() => {
+    const current = customization;
+    const draft = draftCustomization;
 
-  const currentMapping = draftMappings[currentStep];
+    return (
+      draft.mappings.some((m: KeywordMapping) => m.original !== m.custom) ||
+      OPERATOR_WORD_FIELDS.some(
+        ({ key }) => draft.operatorWordMap[key] !== current.operatorWordMap[key],
+      ) ||
+      draft.booleanLiteralMap.true !== current.booleanLiteralMap.true ||
+      draft.booleanLiteralMap.false !== current.booleanLiteralMap.false ||
+      draft.statementTerminatorLexeme !== current.statementTerminatorLexeme ||
+      draft.blockDelimiters.open !== current.blockDelimiters.open ||
+      draft.blockDelimiters.close !== current.blockDelimiters.close ||
+      draft.modes.semicolon !== current.modes.semicolon ||
+      draft.modes.block !== current.modes.block ||
+      draft.modes.typing !== current.modes.typing ||
+      draft.modes.array !== current.modes.array ||
+      draft.ui.isKeywordCustomizerOpen !== current.ui.isKeywordCustomizerOpen
+    );
+  }, [customization, draftCustomization]);
+
+  const currentMapping = draftCustomization.mappings[currentStep];
 
   const validateDraftKeyword = (
     original: string,
     custom: string,
-    mappingsToValidate: KeywordMapping[] = draftMappings,
-  ) => {
-    return validateKeyword(original, custom, mappingsToValidate);
-  };
-
-  const getOperatorValidationDelimiters = (): BlockDelimiters =>
-    draftBlockMode === "delimited"
-      ? draftBlockDelimiters
-      : { open: "", close: "" };
+    mappingsToValidate: KeywordMapping[] = draftCustomization.mappings,
+  ) => validateKeyword(original, custom, mappingsToValidate);
 
   const handleChange = (value: string) => {
     if (!currentMapping) return;
-    const nextMappings = draftMappings.map((mapping, index) =>
+
+    const nextMappings = draftCustomization.mappings.map((mapping, index) =>
       index === currentStep ? { ...mapping, custom: value } : mapping,
     );
-    setDraftMappings(nextMappings);
+    setDraftCustomization((prev) => ({
+      ...prev,
+      mappings: nextMappings,
+    }));
     setCurrentError(
       validateDraftKeyword(currentMapping.original, value, nextMappings),
     );
   };
 
   const handleResetDraft = () => {
-    const resetMappings = draftMappings.map((mapping) => ({
+    const resetState = {
+      ...getDefaultCustomizationState(),
+      ui: customization.ui,
+    };
+    const resetMappings = resetState.mappings.map((mapping) => ({
       ...mapping,
       custom: mapping.original,
     }));
-    const resetBlockDelimiters = { open: "", close: "" };
-    const resetSemicolonMode: IDESemicolonMode = "optional-eol";
-    const resetBlockMode: IDEBlockMode = "delimited";
-    const resetTypingMode: IDETypingMode = "typed";
-    const resetArrayMode: IDEArrayMode = "fixed";
-    setDraftMappings(resetMappings);
-    setDraftBlockDelimiters(resetBlockDelimiters);
-    setDraftOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
-    setDraftBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
-    setDraftStatementTerminatorLexeme("");
-    setDraftSemicolonMode(resetSemicolonMode);
-    setDraftBlockMode(resetBlockMode);
-    setDraftTypingMode(resetTypingMode);
-    setDraftArrayMode(resetArrayMode);
-    replaceKeywords(resetMappings);
-    setOperatorWordMap({ ...DEFAULT_OPERATOR_WORD_MAP });
-    setBooleanLiteralMap({ ...DEFAULT_BOOLEAN_LITERAL_MAP });
-    setStatementTerminatorLexeme("");
-    setBlockDelimiters(resetBlockDelimiters);
-    setSemicolonMode(resetSemicolonMode);
-    setBlockMode(resetBlockMode);
-    setTypingMode(resetTypingMode);
-    setArrayMode(resetArrayMode);
+    const nextCustomization = {
+      ...resetState,
+      mappings: resetMappings,
+    };
+
+    setDraftCustomization(nextCustomization);
+    setCustomization(nextCustomization);
+    setCurrentStep(0);
     setCurrentError(null);
     setDelimiterError(null);
     setBooleanLiteralError(null);
@@ -293,6 +224,7 @@ export function KeywordCustomizer() {
 
   const goToNext = () => {
     if (!currentMapping) return;
+
     const error = validateDraftKeyword(
       currentMapping.original,
       currentMapping.custom,
@@ -301,13 +233,16 @@ export function KeywordCustomizer() {
       setCurrentError(error);
       return;
     }
+
     setCurrentError(null);
-    setCurrentStep((prev) => Math.min(draftMappings.length - 1, prev + 1));
+    setCurrentStep((prev) =>
+      Math.min(draftCustomization.mappings.length - 1, prev + 1),
+    );
   };
 
   const handleSave = () => {
-    for (let index = 0; index < draftMappings.length; index++) {
-      const mapping = draftMappings[index];
+    for (let index = 0; index < draftCustomization.mappings.length; index++) {
+      const mapping = draftCustomization.mappings[index];
       const error = validateDraftKeyword(mapping.original, mapping.custom);
       if (error) {
         setCurrentStep(index);
@@ -315,8 +250,11 @@ export function KeywordCustomizer() {
         return;
       }
     }
-    if (draftBlockMode === "delimited") {
-      const blockError = validateBlockDelimiters(draftBlockDelimiters);
+
+    if (draftCustomization.modes.block === "delimited") {
+      const blockError = validateBlockDelimiters(
+        draftCustomization.blockDelimiters,
+      );
       if (blockError) {
         setDelimiterError(blockError);
         return;
@@ -324,32 +262,36 @@ export function KeywordCustomizer() {
     } else {
       setDelimiterError(null);
     }
+
     const nextOperatorError = validateOperatorWordMap(
-      draftOperatorWordMap,
-      draftMappings,
+      draftCustomization.operatorWordMap,
+      draftCustomization.mappings,
       getOperatorValidationDelimiters(),
     );
     if (nextOperatorError) {
       setOperatorError(nextOperatorError);
       return;
     }
+
     const nextBooleanLiteralError = validateBooleanLiteralMap(
-      draftBooleanLiteralMap,
-      draftMappings,
-      draftOperatorWordMap,
+      draftCustomization.booleanLiteralMap,
+      draftCustomization.mappings,
+      draftCustomization.operatorWordMap,
       getOperatorValidationDelimiters(),
     );
     if (nextBooleanLiteralError) {
       setBooleanLiteralError(nextBooleanLiteralError);
       return;
     }
-    const normalizedStatementTerminator = draftStatementTerminatorLexeme.trim();
+
+    const normalizedStatementTerminator =
+      draftCustomization.statementTerminatorLexeme.trim();
     if (normalizedStatementTerminator) {
       const nextStatementTerminatorError = validateStatementTerminatorLexeme(
         normalizedStatementTerminator,
-        draftMappings,
-        draftOperatorWordMap,
-        draftBooleanLiteralMap,
+        draftCustomization.mappings,
+        draftCustomization.operatorWordMap,
+        draftCustomization.booleanLiteralMap,
         getOperatorValidationDelimiters(),
       );
       if (nextStatementTerminatorError) {
@@ -357,27 +299,37 @@ export function KeywordCustomizer() {
         return;
       }
     }
-    replaceKeywords(draftMappings);
-    setOperatorWordMap(draftOperatorWordMap);
-    setBooleanLiteralMap({
-      true: draftBooleanLiteralMap.true?.trim() ?? "",
-      false: draftBooleanLiteralMap.false?.trim() ?? "",
-    });
-    setStatementTerminatorLexeme(normalizedStatementTerminator);
-    setSemicolonMode(draftSemicolonMode);
-    setBlockMode(draftBlockMode);
-    setTypingMode(draftTypingMode);
-    setArrayMode(draftArrayMode);
-    setBlockDelimiters({
-      open: draftBlockDelimiters.open.trim(),
-      close: draftBlockDelimiters.close.trim(),
-    });
+
+    const nextCustomization: IDEKeywordCustomizationState = {
+      ...draftCustomization,
+      booleanLiteralMap: {
+        true: draftCustomization.booleanLiteralMap.true?.trim() ?? "",
+        false: draftCustomization.booleanLiteralMap.false?.trim() ?? "",
+      },
+      statementTerminatorLexeme: normalizedStatementTerminator,
+      blockDelimiters: {
+        open: draftCustomization.blockDelimiters.open.trim(),
+        close: draftCustomization.blockDelimiters.close.trim(),
+      },
+      modes: {
+        semicolon: draftCustomization.modes.semicolon,
+        block: draftCustomization.modes.block,
+        typing: draftCustomization.modes.typing,
+        array: draftCustomization.modes.array,
+      },
+      ui: {
+        ...draftCustomization.ui,
+        isKeywordCustomizerOpen: false,
+      },
+    };
+
+    setDraftCustomization(nextCustomization);
+    setCustomization(nextCustomization);
     setCurrentError(null);
     setDelimiterError(null);
     setBooleanLiteralError(null);
     setStatementTerminatorError(null);
     setOperatorError(null);
-    setIsOpen(false);
   };
 
   const handleDelimiterChange = (
@@ -385,20 +337,25 @@ export function KeywordCustomizer() {
     value: string,
   ) => {
     const next = {
-      ...draftBlockDelimiters,
+      ...draftCustomization.blockDelimiters,
       [field]: value,
     };
-    setDraftBlockDelimiters(next);
-    if (draftBlockMode === "delimited") {
+    setDraftCustomization((prev) => ({
+      ...prev,
+      blockDelimiters: next,
+    }));
+
+    if (draftCustomization.modes.block === "delimited") {
       setDelimiterError(validateBlockDelimiters(next));
       return;
     }
+
     setDelimiterError(null);
   };
 
   const handleSubmitCurrentStep = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (currentStep < draftMappings.length - 1) {
+    if (currentStep < draftCustomization.mappings.length - 1) {
       goToNext();
       return;
     }
@@ -410,14 +367,17 @@ export function KeywordCustomizer() {
     value: string,
   ) => {
     const next = {
-      ...draftOperatorWordMap,
+      ...draftCustomization.operatorWordMap,
       [field]: value,
     };
-    setDraftOperatorWordMap(next);
+    setDraftCustomization((prev) => ({
+      ...prev,
+      operatorWordMap: next,
+    }));
     setOperatorError(
       validateOperatorWordMap(
         next,
-        draftMappings,
+        draftCustomization.mappings,
         getOperatorValidationDelimiters(),
       ),
     );
@@ -428,44 +388,67 @@ export function KeywordCustomizer() {
     value: string,
   ) => {
     const next = {
-      ...draftBooleanLiteralMap,
+      ...draftCustomization.booleanLiteralMap,
       [field]: value,
     };
-    setDraftBooleanLiteralMap(next);
+    setDraftCustomization((prev) => ({
+      ...prev,
+      booleanLiteralMap: next,
+    }));
     setBooleanLiteralError(
       validateBooleanLiteralMap(
         next,
-        draftMappings,
-        draftOperatorWordMap,
+        draftCustomization.mappings,
+        draftCustomization.operatorWordMap,
         getOperatorValidationDelimiters(),
       ),
     );
   };
 
   const handleStatementTerminatorChange = (value: string) => {
-    setDraftStatementTerminatorLexeme(value);
+    setDraftCustomization((prev) => ({
+      ...prev,
+      statementTerminatorLexeme: value,
+    }));
     const normalizedValue = value.trim();
     setStatementTerminatorError(
       normalizedValue
         ? validateStatementTerminatorLexeme(
             normalizedValue,
-            draftMappings,
-            draftOperatorWordMap,
-            draftBooleanLiteralMap,
+            draftCustomization.mappings,
+            draftCustomization.operatorWordMap,
+            draftCustomization.booleanLiteralMap,
             getOperatorValidationDelimiters(),
           )
         : null,
     );
   };
 
-  const handleTypingModeChange = (nextTypingMode: IDETypingMode) => {
-    setDraftTypingMode(nextTypingMode);
+  const handleTypingModeChange = (nextTypingMode: "typed" | "untyped") => {
+    setDraftCustomization((prev) => ({
+      ...prev,
+      modes: {
+        ...prev.modes,
+        typing: nextTypingMode,
+      },
+    }));
   };
 
   if (!currentMapping) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) =>
+        setCustomization((prev) => ({
+          ...prev,
+          ui: {
+            ...prev.ui,
+            isKeywordCustomizerOpen: open,
+          },
+        }))
+      }
+    >
       <DialogContent className="mx-4 overflow-hidden">
         <form
           onSubmit={handleSubmitCurrentStep}
@@ -499,7 +482,7 @@ export function KeywordCustomizer() {
                 Comandos Atuais
               </p>
               <div className="flex flex-wrap gap-2">
-                {draftMappings.map((mapping, index) => (
+                {draftCustomization.mappings.map((mapping, index) => (
                   <button
                     key={`current-${mapping.original}`}
                     type="button"
@@ -538,10 +521,13 @@ export function KeywordCustomizer() {
 
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs uppercase tracking-wider font-semibold dark:text-gray-400 text-gray-500">
-                Pergunta {currentStep + 1} de {draftMappings.length}
+                Pergunta {currentStep + 1} de {draftCustomization.mappings.length}
               </span>
               <span className="text-xs dark:text-gray-500 text-gray-400">
-                {Math.round(((currentStep + 1) / draftMappings.length) * 100)}%
+                {Math.round(
+                  ((currentStep + 1) / draftCustomization.mappings.length) * 100,
+                )}
+                %
               </span>
             </div>
 
@@ -549,7 +535,7 @@ export function KeywordCustomizer() {
               <div
                 className="h-2 bg-cyan-600 transition-all"
                 style={{
-                  width: `${((currentStep + 1) / draftMappings.length) * 100}%`,
+                  width: `${((currentStep + 1) / draftCustomization.mappings.length) * 100}%`,
                 }}
               />
             </div>
@@ -625,7 +611,7 @@ export function KeywordCustomizer() {
               </p>
               <input
                 type="text"
-                value={draftStatementTerminatorLexeme}
+                value={draftCustomization.statementTerminatorLexeme}
                 onChange={(e) =>
                   handleStatementTerminatorChange(e.target.value)
                 }
@@ -655,9 +641,14 @@ export function KeywordCustomizer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setDraftSemicolonMode("optional-eol")}
+                  onClick={() =>
+                    setDraftCustomization((prev) => ({
+                      ...prev,
+                      modes: { ...prev.modes, semicolon: "optional-eol" },
+                    }))
+                  }
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftSemicolonMode === "optional-eol"
+                    draftCustomization.modes.semicolon === "optional-eol"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -666,9 +657,14 @@ export function KeywordCustomizer() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDraftSemicolonMode("required")}
+                  onClick={() =>
+                    setDraftCustomization((prev) => ({
+                      ...prev,
+                      modes: { ...prev.modes, semicolon: "required" },
+                    }))
+                  }
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftSemicolonMode === "required"
+                    draftCustomization.modes.semicolon === "required"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -685,9 +681,14 @@ export function KeywordCustomizer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setDraftBlockMode("delimited")}
+                  onClick={() =>
+                    setDraftCustomization((prev) => ({
+                      ...prev,
+                      modes: { ...prev.modes, block: "delimited" },
+                    }))
+                  }
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftBlockMode === "delimited"
+                    draftCustomization.modes.block === "delimited"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -696,9 +697,14 @@ export function KeywordCustomizer() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDraftBlockMode("indentation")}
+                  onClick={() =>
+                    setDraftCustomization((prev) => ({
+                      ...prev,
+                      modes: { ...prev.modes, block: "indentation" },
+                    }))
+                  }
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftBlockMode === "indentation"
+                    draftCustomization.modes.block === "indentation"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -717,7 +723,7 @@ export function KeywordCustomizer() {
                   type="button"
                   onClick={() => handleTypingModeChange("typed")}
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftTypingMode === "typed"
+                    draftCustomization.modes.typing === "typed"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -728,7 +734,7 @@ export function KeywordCustomizer() {
                   type="button"
                   onClick={() => handleTypingModeChange("untyped")}
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftTypingMode === "untyped"
+                    draftCustomization.modes.typing === "untyped"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -745,9 +751,14 @@ export function KeywordCustomizer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setDraftArrayMode("fixed")}
+                  onClick={() =>
+                    setDraftCustomization((prev) => ({
+                      ...prev,
+                      modes: { ...prev.modes, array: "fixed" },
+                    }))
+                  }
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftArrayMode === "fixed"
+                    draftCustomization.modes.array === "fixed"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -756,9 +767,14 @@ export function KeywordCustomizer() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDraftArrayMode("dynamic")}
+                  onClick={() =>
+                    setDraftCustomization((prev) => ({
+                      ...prev,
+                      modes: { ...prev.modes, array: "dynamic" },
+                    }))
+                  }
                   className={`px-3 py-2 text-sm rounded-md border text-left ${
-                    draftArrayMode === "dynamic"
+                    draftCustomization.modes.array === "dynamic"
                       ? "border-cyan-500 dark:border-cyan-500 dark:bg-slate-800 bg-cyan-50"
                       : "dark:border-slate-600 border-gray-300"
                   }`}
@@ -788,12 +804,12 @@ export function KeywordCustomizer() {
                         {field}
                       </span>
                       <span className="font-mono text-cyan-600 dark:text-(--color-primary)">
-                        {draftBooleanLiteralMap[field] ?? field}
+                        {draftCustomization.booleanLiteralMap[field] ?? field}
                       </span>
                     </span>
                     <input
                       type="text"
-                      value={draftBooleanLiteralMap[field] ?? ""}
+                      value={draftCustomization.booleanLiteralMap[field] ?? ""}
                       onChange={(e) =>
                         handleBooleanLiteralChange(field, e.target.value)
                       }
@@ -842,7 +858,7 @@ export function KeywordCustomizer() {
                     </span>
                     <input
                       type="text"
-                      value={draftOperatorWordMap[field.key] ?? ""}
+                      value={draftCustomization.operatorWordMap[field.key] ?? ""}
                       onChange={(e) =>
                         handleOperatorAliasChange(field.key, e.target.value)
                       }
@@ -876,11 +892,11 @@ export function KeywordCustomizer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   type="text"
-                  value={draftBlockDelimiters.open}
+                  value={draftCustomization.blockDelimiters.open}
                   onChange={(e) =>
                     handleDelimiterChange("open", e.target.value)
                   }
-                  disabled={draftBlockMode === "indentation"}
+                  disabled={draftCustomization.modes.block === "indentation"}
                   placeholder="Abertura (ex.: begin)"
                   spellCheck={false}
                   className={`
@@ -895,11 +911,11 @@ export function KeywordCustomizer() {
                 />
                 <input
                   type="text"
-                  value={draftBlockDelimiters.close}
+                  value={draftCustomization.blockDelimiters.close}
                   onChange={(e) =>
                     handleDelimiterChange("close", e.target.value)
                   }
-                  disabled={draftBlockMode === "indentation"}
+                  disabled={draftCustomization.modes.block === "indentation"}
                   placeholder="Fechamento (ex.: end)"
                   spellCheck={false}
                   className={`
@@ -914,9 +930,10 @@ export function KeywordCustomizer() {
                 />
               </div>
 
-              {draftBlockMode === "delimited" && delimiterError && (
-                <span className="text-xs text-red-500">{delimiterError}</span>
-              )}
+              {draftCustomization.modes.block === "delimited" &&
+                delimiterError && (
+                  <span className="text-xs text-red-500">{delimiterError}</span>
+                )}
             </div>
           </div>
 
@@ -940,7 +957,7 @@ export function KeywordCustomizer() {
                 Anterior
               </HeroButton>
 
-              {currentStep < draftMappings.length - 1 ? (
+              {currentStep < draftCustomization.mappings.length - 1 ? (
                 <HeroButton type="submit" variant="ghost">
                   Próxima
                 </HeroButton>
