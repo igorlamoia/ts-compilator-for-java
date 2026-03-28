@@ -15,7 +15,6 @@ import type {
   IDEBlockMode,
   IDECompilerConfigPayload,
   IDEKeywordCustomizationModes,
-  IDEKeywordCustomizationState,
   IDEKeywordCustomizationUI,
   IDEOperatorWordMap,
   IDESemicolonMode,
@@ -66,7 +65,15 @@ export type BlockDelimiters = {
   close: string;
 };
 
-type StoredKeywordCustomization = IDEKeywordCustomizationState;
+type StoredKeywordCustomization = {
+  mappings: KeywordMapping[];
+  operatorWordMap: IDEOperatorWordMap;
+  booleanLiteralMap: IDEBooleanLiteralMap;
+  statementTerminatorLexeme: string;
+  blockDelimiters: BlockDelimiters;
+  modes: IDEKeywordCustomizationModes;
+  ui: IDEKeywordCustomizationUI;
+};
 
 type LegacyStoredKeywordCustomization = Partial<StoredKeywordCustomization> & {
   semicolonMode?: IDESemicolonMode;
@@ -498,14 +505,6 @@ function normalizeCustomization(
       : parsed.arrayMode === "fixed" || parsed.arrayMode === "dynamic"
         ? parsed.arrayMode
         : defaults.modes.array;
-  const ui = {
-    ...defaults.ui,
-    ...(parsed.ui ?? {}),
-    isKeywordCustomizerOpen:
-      typeof parsed.ui?.isKeywordCustomizerOpen === "boolean"
-        ? parsed.ui.isKeywordCustomizerOpen
-        : defaults.ui.isKeywordCustomizerOpen,
-  };
   const delimiters = parsed.blockDelimiters;
 
   return {
@@ -528,7 +527,7 @@ function normalizeCustomization(
       typing: typingMode,
       array: arrayMode,
     },
-    ui,
+    ui: getDefaultUi(),
   };
 }
 
@@ -614,7 +613,14 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
       retokenize();
     }
   }, [
-    customization,
+    customization.mappings,
+    customization.modes.block,
+    customization.blockDelimiters,
+    customization.operatorWordMap,
+    customization.booleanLiteralMap,
+    customization.statementTerminatorLexeme,
+    customization.modes.typing,
+    customization.modes.array,
     monacoRef,
     retokenize,
   ]);
@@ -798,7 +804,14 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     };
   }, [
     buildKeywordMap,
-    customization,
+    customization.blockDelimiters,
+    customization.operatorWordMap,
+    customization.booleanLiteralMap,
+    customization.statementTerminatorLexeme,
+    customization.modes.semicolon,
+    customization.modes.block,
+    customization.modes.typing,
+    customization.modes.array,
     validateBlockDelimiters,
   ]);
 

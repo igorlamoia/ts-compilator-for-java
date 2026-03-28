@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it } from "vitest";
 import {
   KeywordProvider,
+  getDefaultCustomizationState,
   getDefaultBooleanLiteralMap,
   getDefaultKeywordMappings,
   migrateStoredMappings,
@@ -18,11 +19,21 @@ import { vi, beforeEach, afterEach } from "vitest";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
+const { monacoRefMock, retokenizeMock, updateJavaMMKeywordsMock } = vi.hoisted(() => ({
+  monacoRefMock: { current: {} },
+  retokenizeMock: vi.fn(),
+  updateJavaMMKeywordsMock: vi.fn(),
+}));
+
 vi.mock("@/hooks/useEditor", () => ({
   useEditor: () => ({
-    monacoRef: { current: null },
-    retokenize: vi.fn(),
+    monacoRef: monacoRefMock,
+    retokenize: retokenizeMock,
   }),
+}));
+
+vi.mock("@/utils/compiler/editor/editor-language", () => ({
+  updateJavaMMKeywords: updateJavaMMKeywordsMock,
 }));
 
 let capturedKeywords: ReturnType<typeof useKeywords> | null = null;
@@ -35,6 +46,9 @@ function CaptureKeywords() {
 describe("keyword context lexer config", () => {
   beforeEach(() => {
     capturedKeywords = null;
+    retokenizeMock.mockReset();
+    updateJavaMMKeywordsMock.mockReset();
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -83,6 +97,157 @@ describe("keyword context lexer config", () => {
     expect(capturedKeywords?.setCustomization).toBeTypeOf("function");
     expect(capturedKeywords?.setModes).toBeTypeOf("function");
     expect(capturedKeywords?.setUi).toBeTypeOf("function");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("normalizes stored flat grammar fields into nested customization modes", () => {
+    localStorage.setItem(
+      "keyword-customization",
+      JSON.stringify({
+        mappings: getDefaultKeywordMappings(),
+        operatorWordMap: { logical_and: "et" },
+        booleanLiteralMap: { true: "verdadeiro", false: "falso" },
+        statementTerminatorLexeme: "@@",
+        blockDelimiters: { open: "inicio", close: "fim" },
+        semicolonMode: "required",
+        blockMode: "indentation",
+        typingMode: "untyped",
+        arrayMode: "dynamic",
+        ui: { isKeywordCustomizerOpen: true },
+      }),
+    );
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    expect(capturedKeywords?.customization).toMatchObject({
+      operatorWordMap: { logical_and: "et" },
+      booleanLiteralMap: { true: "verdadeiro", false: "falso" },
+      statementTerminatorLexeme: "@@",
+      blockDelimiters: { open: "inicio", close: "fim" },
+      modes: {
+        semicolon: "required",
+        block: "indentation",
+        typing: "untyped",
+        array: "dynamic",
+      },
+      ui: {
+        isKeywordCustomizerOpen: false,
+      },
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("writes normalized nested customization back to localStorage after hydration", () => {
+    localStorage.setItem(
+      "keyword-customization",
+      JSON.stringify({
+        mappings: getDefaultKeywordMappings(),
+        operatorWordMap: { logical_and: "et" },
+        booleanLiteralMap: { true: "verdadeiro", false: "falso" },
+        statementTerminatorLexeme: "@@",
+        blockDelimiters: { open: "inicio", close: "fim" },
+        semicolonMode: "required",
+        blockMode: "indentation",
+        typingMode: "untyped",
+        arrayMode: "dynamic",
+        ui: { isKeywordCustomizerOpen: true },
+      }),
+    );
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    const persisted = JSON.parse(
+      localStorage.getItem("keyword-customization") ?? "{}",
+    ) as Record<string, unknown>;
+
+    expect(persisted).toMatchObject({
+      operatorWordMap: { logical_and: "et" },
+      booleanLiteralMap: { true: "verdadeiro", false: "falso" },
+      statementTerminatorLexeme: "@@",
+      blockDelimiters: { open: "inicio", close: "fim" },
+      modes: {
+        semicolon: "required",
+        block: "indentation",
+        typing: "untyped",
+        array: "dynamic",
+      },
+      ui: {
+        isKeywordCustomizerOpen: false,
+      },
+    });
+
+    expect(persisted).not.toHaveProperty("semicolonMode");
+    expect(persisted).not.toHaveProperty("blockMode");
+    expect(persisted).not.toHaveProperty("typingMode");
+    expect(persisted).not.toHaveProperty("arrayMode");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("migrates legacy keyword mappings into the full nested customization state", () => {
+    const legacyMappings = getDefaultKeywordMappings().map((mapping) =>
+      mapping.original === "print"
+        ? { ...mapping, custom: "escreva" }
+        : mapping,
+    );
+    localStorage.setItem("keyword-mappings", JSON.stringify(legacyMappings));
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    expect(capturedKeywords?.customization).toMatchObject({
+      mappings: expect.arrayContaining([
+        expect.objectContaining({
+          original: "print",
+          custom: "escreva",
+        }),
+      ]),
+      modes: getDefaultCustomizationState().modes,
+      ui: getDefaultCustomizationState().ui,
+    });
 
     act(() => {
       root.unmount();
