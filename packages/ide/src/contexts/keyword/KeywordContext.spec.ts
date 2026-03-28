@@ -17,6 +17,7 @@ import {
   validateBooleanLiteralAliases,
   validateCustomKeyword,
 } from "@/contexts/keyword/keyword-validator";
+import { buildLexerConfigFromCustomization } from "@/lib/keyword-customization";
 import { vi, beforeEach, afterEach } from "vitest";
 
 (
@@ -109,6 +110,28 @@ describe("keyword context lexer config", () => {
     act(() => {
       root.unmount();
     });
+  });
+
+  it("builds the same lexer config shape as the shared helper", () => {
+    const customization = getDefaultCustomizationState();
+    customization.modes.typing = "untyped";
+    customization.modes.array = "dynamic";
+    customization.statementTerminatorLexeme = " @@ ";
+    customization.blockDelimiters = { open: " inicio ", close: " fim " };
+
+    const helperConfig = buildLexerConfigFromCustomization(customization);
+
+    expect(helperConfig).toMatchObject({
+      grammar: {
+        semicolonMode: "optional-eol",
+        blockMode: "delimited",
+        typingMode: "untyped",
+        arrayMode: "dynamic",
+      },
+      statementTerminatorLexeme: "@@",
+      blockDelimiters: { open: "inicio", close: "fim" },
+    });
+    expect(capturedKeywords).toBeNull();
   });
 
   it("normalizes stored flat grammar fields into nested customization modes", () => {

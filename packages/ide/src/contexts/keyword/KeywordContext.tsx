@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
+import { buildLexerConfigFromCustomization } from "@/lib/keyword-customization";
 import type {
   IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
@@ -343,41 +344,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     );
 
   const buildLexerConfig = (): IDECompilerConfigPayload => {
-    const keywordMap = buildKeywordMap();
-    const open = customization.blockDelimiters.open.trim();
-    const close = customization.blockDelimiters.close.trim();
-    const isBlockDelimiterValid = !validateBlockDelimiters({ open, close });
-    const grammar = {
-      semicolonMode: customization.modes.semicolon,
-      blockMode: customization.modes.block,
-      typingMode: customization.modes.typing,
-      arrayMode: customization.modes.array,
-    };
-
-    return {
-      keywordMap,
-      operatorWordMap: customization.operatorWordMap,
-      booleanLiteralMap: customization.booleanLiteralMap,
-      ...(customization.statementTerminatorLexeme.trim()
-        ? {
-            statementTerminatorLexeme:
-              customization.statementTerminatorLexeme.trim(),
-          }
-        : {}),
-      grammar,
-      indentationBlock: customization.modes.block === "indentation",
-      ...(customization.modes.block === "delimited" &&
-      open &&
-      close &&
-      isBlockDelimiterValid
-        ? {
-            blockDelimiters: {
-              open,
-              close,
-            },
-          }
-        : {}),
-    };
+    return buildLexerConfigFromCustomization(customization);
   };
 
   const validateStatementTerminatorLexeme = (
