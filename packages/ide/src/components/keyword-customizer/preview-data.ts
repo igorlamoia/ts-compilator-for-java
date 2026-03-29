@@ -8,7 +8,7 @@ import {
   type WizardStepId,
 } from "./wizard-model";
 
-type BuildPreviewOptions = {
+export type BuildPreviewOptions = {
   activeStepId: WizardStepId;
   presetId: WizardPresetId;
 };
@@ -18,7 +18,7 @@ type PreviewToken = {
   type: number;
 };
 
-type WizardPreview = {
+export type WizardPreview = {
   languageLabel: string;
   dna: string[];
   snippet: string;
@@ -43,21 +43,17 @@ function buildLineEnding(draft: StoredKeywordCustomization): string {
   return draft.statementTerminatorLexeme.trim() || ";";
 }
 
-function buildOutputSnippet(draft: StoredKeywordCustomization): string {
-  const print = getKeyword(draft, "print");
-  return `${print}("Ola mundo")${buildLineEnding(draft)}`;
-}
-
 function buildVariableSnippet(draft: StoredKeywordCustomization): string {
   const lineEnding = buildLineEnding(draft);
+  const print = getKeyword(draft, "print");
 
   if (draft.modes.typing === "untyped") {
     const variable = getKeyword(draft, "variavel");
-    return `${variable} nome = "Ana"${lineEnding}`;
+    return `${variable} nome = "Ana"${lineEnding}\n${print}(nome)${lineEnding}`;
   }
 
   const stringType = getKeyword(draft, "string");
-  return `${stringType} nome = "Ana"${lineEnding}`;
+  return `${stringType} nome = "Ana"${lineEnding}\n${print}(nome)${lineEnding}`;
 }
 
 function buildBlockSnippet(draft: StoredKeywordCustomization): string {
@@ -98,10 +94,6 @@ function buildPreviewSource(
   draft: StoredKeywordCustomization,
   activeStepId: WizardStepId,
 ): string {
-  if (activeStepId === "output") {
-    return buildOutputSnippet(draft);
-  }
-
   if (activeStepId === "variables") {
     return buildVariableSnippet(draft);
   }

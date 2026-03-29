@@ -26,19 +26,23 @@ import { vi, beforeEach, afterEach } from "vitest";
   }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { monacoRefMock, retokenizeMock, updateJavaMMKeywordsMock } = vi.hoisted(
-  () => ({
-    monacoRefMock: { current: {} },
-    retokenizeMock: vi.fn(),
-    updateJavaMMKeywordsMock: vi.fn(),
-  }),
-);
+const {
+  monacoRefMock,
+  retokenizeMock,
+  updateJavaMMKeywordsMock,
+  useEditorMock,
+} = vi.hoisted(() => ({
+  monacoRefMock: { current: {} },
+  retokenizeMock: vi.fn(),
+  updateJavaMMKeywordsMock: vi.fn(),
+  useEditorMock: vi.fn(() => ({
+    monacoRef: { current: {} },
+    retokenize: vi.fn(),
+  })),
+}));
 
 vi.mock("@/hooks/useEditor", () => ({
-  useEditor: () => ({
-    monacoRef: monacoRefMock,
-    retokenize: retokenizeMock,
-  }),
+  useEditor: () => useEditorMock(),
 }));
 
 vi.mock("@/utils/compiler/editor/editor-language", () => ({
@@ -57,6 +61,11 @@ describe("keyword context lexer config", () => {
     capturedKeywords = null;
     retokenizeMock.mockReset();
     updateJavaMMKeywordsMock.mockReset();
+    useEditorMock.mockReset();
+    useEditorMock.mockReturnValue({
+      monacoRef: monacoRefMock,
+      retokenize: retokenizeMock,
+    });
     localStorage.clear();
   });
 
@@ -85,17 +94,10 @@ describe("keyword context lexer config", () => {
         typing: "untyped",
         array: "fixed",
       }));
-      capturedKeywords?.setUi((prev) => ({
-        ...prev,
-        isKeywordCustomizerOpen: true,
-      }));
     });
 
     expect(capturedKeywords?.customization.modes.typing).toBe("untyped");
     expect(capturedKeywords?.customization.modes.array).toBe("fixed");
-    expect(capturedKeywords?.customization.ui.isKeywordCustomizerOpen).toBe(
-      true,
-    );
     expect(capturedKeywords?.buildLexerConfig().grammar).toEqual({
       semicolonMode: "optional-eol",
       blockMode: "delimited",
@@ -105,7 +107,6 @@ describe("keyword context lexer config", () => {
 
     expect(capturedKeywords?.setCustomization).toBeTypeOf("function");
     expect(capturedKeywords?.setModes).toBeTypeOf("function");
-    expect(capturedKeywords?.setUi).toBeTypeOf("function");
 
     act(() => {
       root.unmount();
@@ -132,6 +133,34 @@ describe("keyword context lexer config", () => {
       blockDelimiters: { open: "inicio", close: "fim" },
     });
     expect(capturedKeywords).toBeNull();
+  });
+
+  it("mounts without crashing when no editor context is available", () => {
+    useEditorMock.mockReturnValue({} as ReturnType<typeof useEditorMock>);
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    expect(() => {
+      act(() => {
+        root.render(
+          React.createElement(
+            KeywordProvider,
+            null,
+            React.createElement(CaptureKeywords),
+          ),
+        );
+      });
+    }).not.toThrow();
+
+    expect(capturedKeywords).not.toBeNull();
+    expect(updateJavaMMKeywordsMock).not.toHaveBeenCalled();
+    expect(retokenizeMock).not.toHaveBeenCalled();
+
+    act(() => {
+      root.unmount();
+    });
   });
 
   it("normalizes stored flat grammar fields into nested customization modes", () => {
@@ -176,10 +205,8 @@ describe("keyword context lexer config", () => {
         typing: "untyped",
         array: "dynamic",
       },
-      ui: {
-        isKeywordCustomizerOpen: false,
-      },
     });
+    expect(capturedKeywords?.customization).not.toHaveProperty("ui");
 
     act(() => {
       root.unmount();
@@ -232,10 +259,8 @@ describe("keyword context lexer config", () => {
         typing: "untyped",
         array: "dynamic",
       },
-      ui: {
-        isKeywordCustomizerOpen: false,
-      },
     });
+    expect(persisted).not.toHaveProperty("ui");
 
     expect(persisted).not.toHaveProperty("semicolonMode");
     expect(persisted).not.toHaveProperty("blockMode");
@@ -277,8 +302,8 @@ describe("keyword context lexer config", () => {
         }),
       ]),
       modes: getDefaultCustomizationState().modes,
-      ui: getDefaultCustomizationState().ui,
     });
+    expect(capturedKeywords?.customization).not.toHaveProperty("ui");
 
     act(() => {
       root.unmount();

@@ -36,10 +36,6 @@ export type IDEKeywordCustomizationModes = {
   array: IDEArrayMode;
 };
 
-export type IDEKeywordCustomizationUI = {
-  isKeywordCustomizerOpen: boolean;
-};
-
 export type IDEKeywordCustomizationState = {
   mappings: KeywordMapping[];
   operatorWordMap: IDEOperatorWordMap;
@@ -47,7 +43,6 @@ export type IDEKeywordCustomizationState = {
   statementTerminatorLexeme: string;
   blockDelimiters: { open: string; close: string };
   modes: IDEKeywordCustomizationModes;
-  ui: IDEKeywordCustomizationUI;
 };
 
 export type IDECompilerConfigPayload = {

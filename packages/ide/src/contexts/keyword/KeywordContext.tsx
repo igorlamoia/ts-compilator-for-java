@@ -13,7 +13,6 @@ import type {
   IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
   IDEKeywordCustomizationModes,
-  IDEKeywordCustomizationUI,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
 import {
@@ -122,12 +121,6 @@ function getDefaultModes(): IDEKeywordCustomizationModes {
   };
 }
 
-function getDefaultUi(): IDEKeywordCustomizationUI {
-  return {
-    isKeywordCustomizerOpen: false,
-  };
-}
-
 export function getDefaultCustomizationState(): StoredKeywordCustomization {
   return {
     mappings: getDefaultKeywordMappings(),
@@ -136,7 +129,6 @@ export function getDefaultCustomizationState(): StoredKeywordCustomization {
     statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
     blockDelimiters: getDefaultBlockDelimiters(),
     modes: getDefaultModes(),
-    ui: getDefaultUi(),
   };
 }
 
@@ -166,7 +158,6 @@ function normalizeCustomization(
         ? delimiters
         : defaults.blockDelimiters,
     modes: parsed.modes ?? defaults.modes,
-    ui: getDefaultUi(),
   };
 }
 
@@ -203,7 +194,9 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const [customization, setCustomizationState] =
     useState<StoredKeywordCustomization>(getDefaultCustomizationState);
   const [isHydrated, setIsHydrated] = useState(false);
-  const { monacoRef, retokenize } = useEditor();
+  const editor = useEditor();
+  const monacoRef = editor?.monacoRef;
+  const retokenize = editor?.retokenize;
 
   // Carregar do localStorage após montar no client
   useEffect(() => {
@@ -223,7 +216,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   const updateMonacoHighlighting = useCallback(
     (config?: StoredKeywordCustomization) => {
       const configToUse = config ?? customization;
-      if (monacoRef.current) {
+      if (monacoRef?.current) {
         updateJavaMMKeywords(monacoRef.current, configToUse.mappings, {
           blockMode: configToUse.modes.block,
           blockDelimiters: configToUse.blockDelimiters,
@@ -233,7 +226,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
           typingMode: configToUse.modes.typing,
           arrayMode: configToUse.modes.array,
         });
-        retokenize();
+        retokenize?.();
       }
     },
     [monacoRef, retokenize, customization],
@@ -275,17 +268,6 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     setCustomizationState((current) => ({
       ...current,
       modes: resolveNextValue(value, current.modes),
-    }));
-  };
-
-  const setUi = (
-    value:
-      | IDEKeywordCustomizationUI
-      | ((current: IDEKeywordCustomizationUI) => IDEKeywordCustomizationUI),
-  ) => {
-    setCustomizationState((current) => ({
-      ...current,
-      ui: resolveNextValue(value, current.ui),
     }));
   };
 
@@ -365,12 +347,11 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
   return (
     <KeywordContext.Provider
       value={{
-        customization,
-        setCustomization,
-        setModes,
-        setUi,
-        setMappings,
-        updateKeyword,
+      customization,
+      setCustomization,
+      setModes,
+      setMappings,
+      updateKeyword,
         resetCustomization,
         buildKeywordMap,
         validateKeyword,

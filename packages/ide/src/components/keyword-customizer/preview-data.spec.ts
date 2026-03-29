@@ -14,13 +14,14 @@ describe("buildWizardPreview", () => {
     draft.booleanLiteralMap = { true: "sim", false: "nao" };
 
     const preview = buildWizardPreview(draft, {
-      activeStepId: "output",
+      activeStepId: "variables",
       presetId: "didactic-pt",
     });
 
     expect(preview.languageLabel).toBe("Didatica em Portugues");
     expect(preview.dna).toContain("blocos com delimitadores");
-    expect(preview.snippet).toContain('escreva("Ola mundo")');
+    expect(preview.snippet).toContain('string nome = "Ana"');
+    expect(preview.snippet).toContain("escreva(nome)");
     expect(preview.tokenPreview.map((token) => token.lexeme)).toContain(
       "escreva",
     );

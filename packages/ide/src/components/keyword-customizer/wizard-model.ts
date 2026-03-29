@@ -2,12 +2,19 @@ import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 
 export type WizardStepId =
   | "identity"
-  | "output"
   | "variables"
   | "structure"
   | "rules"
   | "flow"
   | "review";
+
+export type WizardStepIcon =
+  | "fingerprint"
+  | "book-open-text"
+  | "blocks"
+  | "sigma"
+  | "route"
+  | "clipboard-check";
 
 export type WizardPresetId =
   | "traditional"
@@ -29,43 +36,45 @@ export const WIZARD_STEPS = [
     id: "identity",
     title: "Identidade",
     description: "Escolha o ponto de partida da linguagem.",
-  },
-  {
-    id: "output",
-    title: "Saida",
-    description: "Defina como a linguagem escreve mensagens.",
+    icon: "fingerprint",
   },
   {
     id: "variables",
-    title: "Variaveis",
-    description: "Modele declaracao, tipagem e atribuicao.",
+    title: "Vocabulário",
+    description: "Defina saída, leitura e a linguagem das variáveis.",
+    icon: "book-open-text",
   },
   {
     id: "structure",
     title: "Estrutura",
-    description: "Configure blocos e delimitadores.",
+    description: "Configure blocos, delimitadores e o fim das instruções.",
+    icon: "blocks",
   },
   {
     id: "rules",
     title: "Regras",
     description: "Ajuste regras sintaticas suportadas hoje.",
+    icon: "sigma",
   },
   {
     id: "flow",
     title: "Fluxo",
     description: "Customize o vocabulario de controle.",
+    icon: "route",
   },
   {
     id: "review",
-    title: "Revisao",
+    title: "Revisão",
     description: "Confira o resumo final antes de salvar.",
+    icon: "clipboard-check",
   },
 ] as const;
 
 const STEP_FIELDS: Record<WizardStepId, string[]> = {
   identity: [],
-  output: ["print", "scan", "statementTerminatorLexeme", "modes.semicolon"],
   variables: [
+    "print",
+    "scan",
     "int",
     "float",
     "bool",
@@ -74,12 +83,17 @@ const STEP_FIELDS: Record<WizardStepId, string[]> = {
     "modes.typing",
     "modes.array",
   ],
-  structure: ["void", "funcao", "modes.block", "blockDelimiters"],
+  structure: [
+    "statementTerminatorLexeme",
+    "modes.semicolon",
+    "void",
+    "funcao",
+    "modes.block",
+    "blockDelimiters",
+  ],
   rules: [
     "booleanLiteralMap",
     "operatorWordMap",
-    "statementTerminatorLexeme",
-    "modes.semicolon",
   ],
   flow: [
     "if",
@@ -117,8 +131,20 @@ export function applyWizardPreset(
   state: StoredKeywordCustomization,
   presetId: WizardPresetId,
 ): StoredKeywordCustomization {
+  const baseState: StoredKeywordCustomization = {
+    ...state,
+    mappings: state.mappings.map((item) => ({
+      ...item,
+      custom: item.original,
+    })),
+    operatorWordMap: {},
+    booleanLiteralMap: { true: "true", false: "false" },
+    statementTerminatorLexeme: "",
+    blockDelimiters: { open: "", close: "" },
+  }
+
   if (presetId === "traditional" || presetId === "free") {
-    return state;
+    return baseState;
   }
 
   if (presetId === "didactic-pt") {
@@ -131,13 +157,17 @@ export function applyWizardPreset(
       ["return", "retorne"],
     ].reduce(
       (current, [original, custom]) => replaceMapping(current, original, custom),
-      state,
+      baseState,
     );
   }
 
   if (presetId === "minimal") {
-    return replaceMapping(replaceMapping(state, "print", "out"), "scan", "in");
+    return replaceMapping(replaceMapping(baseState, "print", "out"), "scan", "in");
   }
 
-  return replaceMapping(replaceMapping(state, "print", "fale"), "return", "entregue");
+  return replaceMapping(
+    replaceMapping(baseState, "print", "fale"),
+    "return",
+    "entregue",
+  );
 }

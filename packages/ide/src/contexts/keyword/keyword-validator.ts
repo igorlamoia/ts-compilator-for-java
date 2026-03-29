@@ -2,11 +2,10 @@ import { z } from "zod";
 import type {
   IDEBooleanLiteralMap,
   IDEKeywordCustomizationModes,
-  IDEKeywordCustomizationUI,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
 import { DEFAULT_BOOLEAN_LITERAL_MAP } from "@/lib/keyword-map";
-import type { KeywordMapping, BlockDelimiters } from "./KeywordContext";
+import type { KeywordMapping, BlockDelimiters } from "./types";
 import { ORIGINAL_KEYWORDS } from ".";
 export { validateOperatorWordMap as validateOperatorWordMapImpl } from "@/lib/operator-word-map";
 
@@ -17,7 +16,6 @@ type StatementTerminatorValidationCustomization = {
   statementTerminatorLexeme: string;
   blockDelimiters: BlockDelimiters;
   modes: IDEKeywordCustomizationModes;
-  ui: IDEKeywordCustomizationUI;
 };
 
 export const WORD_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;

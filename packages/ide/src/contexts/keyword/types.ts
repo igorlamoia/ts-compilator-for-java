@@ -2,7 +2,6 @@ import {
   IDEOperatorWordMap,
   IDEBooleanLiteralMap,
   IDEKeywordCustomizationModes,
-  IDEKeywordCustomizationUI,
   IDECompilerConfigPayload,
 } from "@/entities/compiler-config";
 
@@ -24,7 +23,6 @@ export type StoredKeywordCustomization = {
   statementTerminatorLexeme: string;
   blockDelimiters: BlockDelimiters;
   modes: IDEKeywordCustomizationModes;
-  ui: IDEKeywordCustomizationUI;
 };
 
 export type KeywordContextType = {
@@ -40,11 +38,6 @@ export type KeywordContextType = {
       | ((
           current: IDEKeywordCustomizationModes,
         ) => IDEKeywordCustomizationModes),
-  ) => void;
-  setUi: (
-    value:
-      | IDEKeywordCustomizationUI
-      | ((current: IDEKeywordCustomizationUI) => IDEKeywordCustomizationUI),
   ) => void;
   setMappings: (
     value: KeywordMapping[] | ((current: KeywordMapping[]) => KeywordMapping[]),

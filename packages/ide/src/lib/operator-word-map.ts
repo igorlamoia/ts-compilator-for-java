@@ -2,10 +2,7 @@ import type {
   IDEBooleanLiteralMap,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
-import type {
-  BlockDelimiters,
-  KeywordMapping,
-} from "@/contexts/keyword/KeywordContext";
+import type { BlockDelimiters, KeywordMapping } from "@/contexts/keyword/types";
 
 export const OPERATOR_ALIAS_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
 

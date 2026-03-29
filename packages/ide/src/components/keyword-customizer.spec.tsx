@@ -4,6 +4,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CUSTOMIZABLE_KEYWORDS, ORIGINAL_KEYWORDS } from "@/contexts/keyword";
 
 (
   globalThis as typeof globalThis & {
@@ -12,9 +13,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 const useKeywordsMock = vi.fn();
+const useRouterMock = vi.fn();
 
-vi.mock("@/contexts/KeywordContext", () => ({
+vi.mock("@/contexts/keyword/KeywordContext", () => ({
   useKeywords: () => useKeywordsMock(),
+}));
+
+vi.mock("next/router", () => ({
+  useRouter: () => useRouterMock(),
 }));
 
 vi.mock("@/components/ui/dialog", () => ({
@@ -60,18 +66,27 @@ vi.mock("./buttons/hero", () => ({
 }));
 
 vi.mock("lucide-react", () => ({
-  X: () => <span>x</span>,
+  FingerprintPattern: () => <span>fingerprint</span>,
+  BookOpenText: () => <span>book</span>,
+  Blocks: () => <span>blocks</span>,
+  Sigma: () => <span>sigma</span>,
+  Route: () => <span>route</span>,
+  ClipboardCheck: () => <span>review</span>,
 }));
 
 import { KeywordCustomizer } from "./keyword-customizer";
 
+function createMappings() {
+  return ORIGINAL_KEYWORDS.map((original) => ({
+    original,
+    custom: original,
+    tokenId: CUSTOMIZABLE_KEYWORDS[original],
+  }));
+}
+
 function createKeywordsContext(overrides: Record<string, unknown> = {}) {
-  const mappings = [
-    { original: "int", custom: "int", tokenId: 21 },
-    { original: "bool", custom: "bool", tokenId: 55 },
-  ];
   const customization = {
-    mappings,
+    mappings: createMappings(),
     operatorWordMap: {},
     booleanLiteralMap: { true: "true", false: "false" },
     statementTerminatorLexeme: "",
@@ -82,16 +97,12 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
       typing: "untyped",
       array: "dynamic",
     },
-    ui: {
-      isKeywordCustomizerOpen: true,
-    },
   } as const;
 
   return {
     customization,
     setCustomization: vi.fn(),
     setModes: vi.fn(),
-    setUi: vi.fn(),
     setMappings: vi.fn(),
     updateKeyword: vi.fn(),
     resetCustomization: vi.fn(),
@@ -109,6 +120,12 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
 describe("KeywordCustomizer", () => {
   beforeEach(() => {
     useKeywordsMock.mockReset();
+    useRouterMock.mockReset();
+    useRouterMock.mockReturnValue({
+      push: vi.fn(),
+      back: vi.fn(),
+    });
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -127,10 +144,40 @@ describe("KeywordCustomizer", () => {
     return { container, root };
   }
 
-  it("shows bool as a customizable type keyword", () => {
+  function clickButtonByText(container: HTMLElement, text: string) {
+    const button = Array.from(container.querySelectorAll("button")).find(
+      (candidate) => candidate.textContent?.includes(text),
+    );
+    expect(button).toBeDefined();
+
+    act(() => {
+      button?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+  }
+
+  function clickContinueTimes(container: HTMLElement, times: number) {
+    for (let index = 0; index < times; index++) {
+      clickButtonByText(container, "Continuar");
+    }
+  }
+
+  function getSectionByTitle(container: HTMLElement, title: string) {
+    return Array.from(container.querySelectorAll("section"))
+      .reverse()
+      .find(
+      (section) => section.textContent?.includes(title),
+      );
+  }
+
+  it("shows bool as a customizable type keyword after switching to typed mode", () => {
     useKeywordsMock.mockReturnValue(createKeywordsContext());
 
     const { container, root } = render();
+
+    clickButtonByText(container, "Continuar");
+    clickButtonByText(container, "Tipado");
 
     expect(container.textContent).toContain("bool");
 
@@ -139,58 +186,218 @@ describe("KeywordCustomizer", () => {
     });
   });
 
-  it("allows fixed array mode while typing mode is untyped", () => {
+  it("renders the wizard shell with the full step navigation and live preview panel", () => {
     useKeywordsMock.mockReturnValue(createKeywordsContext());
 
     const { container, root } = render();
 
-    const fixedButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent?.includes("Tamanho fixo"),
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(container.textContent).toContain("Criador de Linguagem");
+    expect(container.textContent).toContain(
+      "Defina o vocabulário, as regras e o fluxo da sua linguagem.",
     );
-
-    expect(fixedButton).toBeDefined();
-    expect(fixedButton?.disabled).toBe(false);
+    expect(container.textContent).not.toContain("Criador de linguagem");
     expect(container.textContent).not.toContain(
-      "Vetores/matrizes com tamanho fixo só estão disponíveis no modo tipado.",
+      "Personalização Interativa de Comandos",
     );
-
-    act(() => {
-      fixedButton?.dispatchEvent(
-        new MouseEvent("click", { bubbles: true, cancelable: true }),
-      );
-    });
-
-    expect(fixedButton?.className).toContain("border-cyan-500");
+    expect(container.textContent).toContain("Identidade");
+    expect(container.textContent).toContain("Vocabulário");
+    expect(container.textContent).toContain("Estrutura");
+    expect(container.textContent).toContain("Regras");
+    expect(container.textContent).toContain("Fluxo");
+    expect(container.textContent).toContain("Revisão");
+    expect(container.textContent).toContain("fingerprint");
+    expect(container.textContent).toContain("book");
+    expect(container.textContent).not.toContain("Case sensitive");
+    expect(container.textContent).not.toContain("Ainda não suportado");
+    expect(container.textContent).toContain("DNA da linguagem");
+    expect(container.textContent).toContain("Preview do código");
+    expect(container.textContent).toContain("Resumo parcial");
 
     act(() => {
       root.unmount();
     });
   });
 
-  it("saves the consolidated draft through the grouped context API", () => {
+  it("allows jumping directly between sections using the side navigation", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    clickButtonByText(container, "Fluxo");
+    expect(container.textContent).toContain("Ajuste o vocabulário usado para controle de fluxo");
+
+    clickButtonByText(container, "Vocabulário");
+    expect(container.textContent).toContain(
+      "Escolha primeiro se a linguagem será tipada ou não tipada.",
+    );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("applies presets from a clean session base instead of accumulating aliases", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    const clickPreset = (label: string) => {
+      const button = Array.from(container.querySelectorAll("button")).find(
+        (candidate) => candidate.textContent?.includes(label),
+      );
+      expect(button).toBeDefined();
+
+      act(() => {
+        button?.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true }),
+        );
+      });
+    };
+
+    clickPreset("Criativa");
+    expect(getSectionByTitle(container, "Resumo parcial")?.textContent).toContain(
+      "entregue",
+    );
+
+    clickPreset("Livre");
+    const previewAfterFree = getSectionByTitle(container, "Resumo parcial");
+    expect(previewAfterFree?.textContent).toContain(
+      "As escolhas personalizadas vao aparecer aqui",
+    );
+    expect(previewAfterFree?.textContent).not.toContain("entregue");
+    expect(previewAfterFree?.textContent).not.toContain("fale");
+
+    clickPreset("Tradicional");
+    expect(getSectionByTitle(container, "Resumo parcial")?.textContent).toContain(
+      "As escolhas personalizadas vao aparecer aqui",
+    );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows only variavel in untyped mode and reveals typed keywords after selecting typed", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    clickButtonByText(container, "Continuar");
+    const getInputValues = () =>
+      Array.from(container.querySelectorAll("input")).map(
+        (input) => (input as HTMLInputElement).value,
+      );
+
+    expect(getInputValues()).toContain("variavel");
+    expect(getInputValues()).not.toContain("int");
+    expect(getInputValues()).not.toContain("float");
+    expect(getInputValues()).not.toContain("bool");
+    expect(getInputValues()).not.toContain("string");
+
+    clickButtonByText(container, "Tipado");
+
+    expect(getInputValues()).toContain("int");
+    expect(getInputValues()).toContain("float");
+    expect(getInputValues()).toContain("bool");
+    expect(getInputValues()).toContain("string");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows structure validation where the delimiters and terminator are edited", () => {
     const context = createKeywordsContext({
-      customization: {
-        mappings: [{ original: "int", custom: "int", tokenId: 21 }],
-        operatorWordMap: {},
-        booleanLiteralMap: { true: "true", false: "false" },
-        statementTerminatorLexeme: "",
-        blockDelimiters: { open: "", close: "" },
-        modes: {
-          semicolon: "optional-eol",
-          block: "delimited",
-          typing: "untyped",
-          array: "dynamic",
-        },
-        ui: {
-          isKeywordCustomizerOpen: true,
-        },
-      },
+      validateBlockDelimiters: vi.fn(() => "Delimitadores invalidos"),
+      validateStatementTerminatorLexeme: vi.fn(() => "Terminador invalido"),
     });
     useKeywordsMock.mockReturnValue(context);
 
     const { container, root } = render();
 
-    const keywordInput = container.querySelector("#keyword-custom-input");
+    clickContinueTimes(container, 2);
+    expect(container.textContent).toContain("Estrutura");
+
+    const terminatorInput = Array.from(container.querySelectorAll("input")).find(
+      (input) => (input as HTMLInputElement).placeholder === "Opcional",
+    );
+    expect(terminatorInput).toBeInstanceOf(HTMLInputElement);
+
+    act(() => {
+      const input = terminatorInput as HTMLInputElement;
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      valueSetter?.call(input, "fim");
+      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+    });
+
+    const delimiterInput = Array.from(container.querySelectorAll("input")).find(
+      (input) => (input as HTMLInputElement).placeholder === "begin",
+    );
+    expect(delimiterInput).toBeInstanceOf(HTMLInputElement);
+
+    act(() => {
+      const input = delimiterInput as HTMLInputElement;
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      valueSetter?.call(input, "inicio");
+      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+    });
+
+    clickButtonByText(container, "Continuar");
+    expect(container.textContent).toContain("Delimitadores invalidos");
+    expect(container.textContent).toContain("Terminador invalido");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows rules validation where operator, boolean and terminator edits live", () => {
+    const context = createKeywordsContext({
+      validateBlockDelimiters: vi.fn(() => null),
+      validateOperatorWordMap: vi.fn(() => "Operador invalido"),
+      validateBooleanLiteralMap: vi.fn(() => "Booleano invalido"),
+    });
+    useKeywordsMock.mockReturnValue(context);
+
+    const { container, root } = render();
+
+    clickContinueTimes(container, 3);
+    expect(container.textContent).toContain("Regras");
+
+    expect(container.textContent).toContain("Booleano invalido");
+    expect(container.textContent).toContain("Operador invalido");
+
+    clickButtonByText(container, "Continuar");
+    expect(container.textContent).toContain("Regras");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("walks the full wizard flow through review and saves through the grouped context API", () => {
+    const context = createKeywordsContext();
+    useKeywordsMock.mockReturnValue(context);
+    const router = {
+      push: vi.fn(),
+      back: vi.fn(),
+    };
+    useRouterMock.mockReturnValue(router);
+    sessionStorage.setItem("language-creator:return", "1");
+
+    const { container, root } = render();
+
+    clickButtonByText(container, "Continuar");
+    const keywordInput = Array.from(container.querySelectorAll("input")).find(
+      (input) => (input as HTMLInputElement).value === "print",
+    );
     expect(keywordInput).toBeInstanceOf(HTMLInputElement);
 
     act(() => {
@@ -199,69 +406,63 @@ describe("KeywordCustomizer", () => {
         HTMLInputElement.prototype,
         "value",
       )?.set;
-      valueSetter?.call(input, "inteiro");
+      valueSetter?.call(input, "escreva");
       input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
     });
 
-    const buttons = Array.from(container.querySelectorAll("button"));
-    const saveButton = buttons.find((button) =>
-      button.textContent?.includes("Salvar e Aplicar"),
-    );
-    expect(saveButton).toBeDefined();
+    clickContinueTimes(container, 4);
+    expect(container.textContent).toContain("Revisão");
+
+    clickButtonByText(container, "Salvar e Aplicar");
+
+    expect(context.setCustomization).toHaveBeenCalledTimes(1);
+    expect(router.back).toHaveBeenCalledTimes(1);
+    expect(router.push).not.toHaveBeenCalled();
 
     act(() => {
-      saveButton?.dispatchEvent(
+      root.unmount();
+    });
+  });
+
+  it("falls back to / when canceling without useful navigation history", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+    const router = {
+      push: vi.fn(),
+      back: vi.fn(),
+    };
+    useRouterMock.mockReturnValue(router);
+
+    const { container, root } = render();
+
+    clickButtonByText(container, "Cancelar");
+
+    expect(router.back).not.toHaveBeenCalled();
+    expect(router.push).toHaveBeenCalledWith("/");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("restores defaults and returns the wizard to identity", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    clickContinueTimes(container, 2);
+
+    const resetButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("Restaurar Padrão"),
+    );
+    expect(resetButton).toBeDefined();
+
+    act(() => {
+      resetButton?.dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
     });
 
-    expect(context.setCustomization).toHaveBeenCalledTimes(1);
-    expect(context.setCustomization).toHaveBeenCalledWith(
-      expect.objectContaining({
-        mappings: [{ original: "int", custom: "inteiro", tokenId: 21 }],
-        statementTerminatorLexeme: "",
-        blockDelimiters: { open: "", close: "" },
-        modes: {
-          semicolon: "optional-eol",
-          block: "delimited",
-          typing: "untyped",
-          array: "dynamic",
-        },
-        ui: {
-          isKeywordCustomizerOpen: false,
-        },
-      }),
-    );
-    expect(context.setModes).not.toHaveBeenCalled();
-    expect(context.setUi).not.toHaveBeenCalled();
-    expect(context.setMappings).not.toHaveBeenCalled();
-
-    act(() => {
-      root.unmount();
-    });
-  });
-
-  it("shows a dedicated boolean literals section", () => {
-    useKeywordsMock.mockReturnValue(createKeywordsContext());
-
-    const { container, root } = render();
-
-    expect(container.textContent).toContain("Literais Booleanos");
-    expect(container.textContent).toContain("true");
-    expect(container.textContent).toContain("false");
-
-    act(() => {
-      root.unmount();
-    });
-  });
-
-  it("shows a dedicated statement terminator section", () => {
-    useKeywordsMock.mockReturnValue(createKeywordsContext());
-
-    const { container, root } = render();
-
-    expect(container.textContent).toContain("Terminador de Instrução");
-    expect(container.textContent).toContain("Substitui o ;");
+    expect(container.textContent).toContain("Identidade");
 
     act(() => {
       root.unmount();

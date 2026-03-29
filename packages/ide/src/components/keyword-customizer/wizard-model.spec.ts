@@ -11,7 +11,6 @@ describe("wizard-model", () => {
   it("keeps the step order from the spec", () => {
     expect(WIZARD_STEPS.map((step) => step.id)).toEqual([
       "identity",
-      "output",
       "variables",
       "structure",
       "rules",
@@ -20,12 +19,28 @@ describe("wizard-model", () => {
     ]);
   });
 
-  it("maps current persisted fields into the output step", () => {
-    expect(getWizardStepFields("output")).toEqual([
+  it("maps current persisted fields into the merged variables step", () => {
+    expect(getWizardStepFields("variables")).toEqual([
       "print",
       "scan",
+      "int",
+      "float",
+      "bool",
+      "string",
+      "variavel",
+      "modes.typing",
+      "modes.array",
+    ]);
+  });
+
+  it("maps terminator and semicolon controls into the structure step", () => {
+    expect(getWizardStepFields("structure")).toEqual([
       "statementTerminatorLexeme",
       "modes.semicolon",
+      "void",
+      "funcao",
+      "modes.block",
+      "blockDelimiters",
     ]);
   });
 
@@ -40,6 +55,43 @@ describe("wizard-model", () => {
       "senao",
     );
     expect(Object.keys(next).sort()).toEqual(Object.keys(base).sort());
+  });
+
+  it("resets back to a clean base for traditional and free presets", () => {
+    const base = getDefaultCustomizationState();
+    const mutated = {
+      ...base,
+      mappings: base.mappings.map((item) =>
+        item.original === "print"
+          ? { ...item, custom: "escreva" }
+          : item.original === "return"
+            ? { ...item, custom: "entregue" }
+            : item,
+      ),
+      operatorWordMap: { ...base.operatorWordMap, plus: "mais" },
+      statementTerminatorLexeme: ";",
+    };
+
+    const free = applyWizardPreset(mutated, "free");
+    const traditional = applyWizardPreset(mutated, "traditional");
+
+    expect(free.mappings.find((item) => item.original === "print")?.custom).toBe(
+      "print",
+    );
+    expect(free.mappings.find((item) => item.original === "return")?.custom).toBe(
+      "return",
+    );
+    expect(free.operatorWordMap).toEqual({});
+    expect(free.statementTerminatorLexeme).toBe("");
+
+    expect(
+      traditional.mappings.find((item) => item.original === "print")?.custom,
+    ).toBe("print");
+    expect(
+      traditional.mappings.find((item) => item.original === "return")?.custom,
+    ).toBe("return");
+    expect(traditional.operatorWordMap).toEqual({});
+    expect(traditional.statementTerminatorLexeme).toBe("");
   });
 });
 
