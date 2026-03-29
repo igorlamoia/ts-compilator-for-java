@@ -20,7 +20,13 @@ import {
   OPERATOR_WORD_FIELDS,
   validateOperatorWordMap,
 } from "@/lib/operator-word-map";
+import {
+  getBooleanDocumentationId,
+  getKeywordDocumentationId,
+  getOperatorDocumentationId,
+} from "@/lib/language-documentation";
 import { consumeLanguageCreatorReturn } from "@/lib/language-creator-navigation";
+import { normalizeLanguageDocumentationMap } from "@/lib/compiler-config";
 import { buildWizardPreview } from "./keyword-customizer/preview-data";
 import { PreviewPanel } from "./keyword-customizer/preview-panel";
 import {
@@ -175,6 +181,21 @@ export function KeywordCustomizer() {
   const hasChanges = useMemo(() => {
     const current = customization;
     const draft = draftCustomization;
+    const currentDocumentation = normalizeLanguageDocumentationMap(
+      current.languageDocumentation,
+    );
+    const draftDocumentation = normalizeLanguageDocumentationMap(
+      draft.languageDocumentation,
+    );
+    const documentationKeys = new Set([
+      ...Object.keys(currentDocumentation),
+      ...Object.keys(draftDocumentation),
+    ]);
+    const hasDocumentationChanges = Array.from(documentationKeys).some(
+      (key) =>
+        (draftDocumentation[key]?.description ?? "") !==
+        (currentDocumentation[key]?.description ?? ""),
+    );
 
     return (
       draft.mappings.some((m: KeywordMapping) => m.original !== m.custom) ||
@@ -190,7 +211,8 @@ export function KeywordCustomizer() {
       draft.modes.semicolon !== current.modes.semicolon ||
       draft.modes.block !== current.modes.block ||
       draft.modes.typing !== current.modes.typing ||
-      draft.modes.array !== current.modes.array
+      draft.modes.array !== current.modes.array ||
+      hasDocumentationChanges
     );
   }, [customization, draftCustomization]);
 
@@ -236,6 +258,18 @@ export function KeywordCustomizer() {
       mappings: nextMappings,
     }));
     setCurrentError(error);
+  };
+
+  const handleDocumentationChange = (id: string, value: string) => {
+    syncDraftCustomization((prev) => ({
+      ...prev,
+      languageDocumentation: {
+        ...prev.languageDocumentation,
+        [id]: {
+          description: value,
+        },
+      },
+    }));
   };
 
   const validateWizardKeywordGroup = (originals: string[]) => {
@@ -425,6 +459,9 @@ export function KeywordCustomizer() {
         open: draftCustomization.blockDelimiters.open.trim(),
         close: draftCustomization.blockDelimiters.close.trim(),
       },
+      languageDocumentation: normalizeLanguageDocumentationMap(
+        draftCustomization.languageDocumentation,
+      ),
       modes: {
         semicolon: draftCustomization.modes.semicolon,
         block: draftCustomization.modes.block,
@@ -646,6 +683,12 @@ export function KeywordCustomizer() {
                       draftCustomization={draftCustomization}
                       snippet={preview.snippet}
                       onKeywordChange={handleKeywordChange}
+                      onKeywordDescriptionChange={(original, value) =>
+                        handleDocumentationChange(
+                          getKeywordDocumentationId(original),
+                          value,
+                        )
+                      }
                       onTypingModeChange={handleTypingModeChange}
                       onArrayModeChange={(mode) =>
                         syncDraftCustomization((prev) => ({
@@ -675,8 +718,17 @@ export function KeywordCustomizer() {
                         }))
                       }
                       onDelimiterChange={handleDelimiterChange}
+                      onDelimiterDescriptionChange={(field, value) =>
+                        handleDocumentationChange(
+                          field === "open" ? "delimiter.open" : "delimiter.close",
+                          value,
+                        )
+                      }
                       onStatementTerminatorChange={
                         handleStatementTerminatorChange
+                      }
+                      onStatementTerminatorDescriptionChange={(value) =>
+                        handleDocumentationChange("terminator.statement", value)
                       }
                       onSemicolonModeChange={(mode) =>
                         syncDraftCustomization((prev) => ({
@@ -696,7 +748,19 @@ export function KeywordCustomizer() {
                       booleanLiteralError={booleanLiteralError}
                       operatorError={operatorError}
                       onBooleanLiteralChange={handleBooleanLiteralChange}
+                      onBooleanLiteralDescriptionChange={(field, value) =>
+                        handleDocumentationChange(
+                          getBooleanDocumentationId(field),
+                          value,
+                        )
+                      }
                       onOperatorAliasChange={handleOperatorAliasChange}
+                      onOperatorAliasDescriptionChange={(field, value) =>
+                        handleDocumentationChange(
+                          getOperatorDocumentationId(field),
+                          value,
+                        )
+                      }
                     />
                   )}
 
@@ -705,6 +769,12 @@ export function KeywordCustomizer() {
                       draftCustomization={draftCustomization}
                       snippet={preview.snippet}
                       onKeywordChange={handleKeywordChange}
+                      onKeywordDescriptionChange={(original, value) =>
+                        handleDocumentationChange(
+                          getKeywordDocumentationId(original),
+                          value,
+                        )
+                      }
                     />
                   )}
 

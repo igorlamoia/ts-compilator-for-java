@@ -1,10 +1,14 @@
-import { Input } from "@/components/ui/input";
 import type {
   IDEBooleanLiteralMap,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import {
+  getBooleanDocumentationId,
+  getOperatorDocumentationId,
+} from "@/lib/language-documentation";
 import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
+import { DocumentedField } from "../documented-field";
 
 export type RulesStepProps = {
   draftCustomization: StoredKeywordCustomization;
@@ -15,6 +19,14 @@ export type RulesStepProps = {
     value: string,
   ) => void;
   onOperatorAliasChange: (field: keyof IDEOperatorWordMap, value: string) => void;
+  onBooleanLiteralDescriptionChange: (
+    field: keyof IDEBooleanLiteralMap,
+    value: string,
+  ) => void;
+  onOperatorAliasDescriptionChange: (
+    field: keyof IDEOperatorWordMap,
+    value: string,
+  ) => void;
 };
 
 export function RulesStep({
@@ -23,6 +35,8 @@ export function RulesStep({
   operatorError,
   onBooleanLiteralChange,
   onOperatorAliasChange,
+  onBooleanLiteralDescriptionChange,
+  onOperatorAliasDescriptionChange,
 }: RulesStepProps) {
   return (
     <section className="space-y-6">
@@ -40,22 +54,20 @@ export function RulesStep({
 
       <div className="grid gap-3 md:grid-cols-2">
         {(["true", "false"] as const).map((field) => (
-          <label
+          <DocumentedField
             key={field}
-            className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80"
-          >
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Literal {field}
-            </span>
-            <Input
-              value={draftCustomization.booleanLiteralMap[field] ?? ""}
-              onChange={(event) =>
-                onBooleanLiteralChange(field, event.target.value)
-              }
-              className="font-mono"
-              spellCheck={false}
-            />
-          </label>
+            label={`Literal ${field}`}
+            value={draftCustomization.booleanLiteralMap[field] ?? ""}
+            description={
+              draftCustomization.languageDocumentation[
+                getBooleanDocumentationId(field)
+              ]?.description ?? ""
+            }
+            onValueChange={(value) => onBooleanLiteralChange(field, value)}
+            onDescriptionChange={(value) =>
+              onBooleanLiteralDescriptionChange(field, value)
+            }
+          />
         ))}
       </div>
 
@@ -67,23 +79,21 @@ export function RulesStep({
 
       <div className="grid gap-3 md:grid-cols-2">
         {OPERATOR_WORD_FIELDS.map((field) => (
-          <label
+          <DocumentedField
             key={field.key}
-            className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80"
-          >
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              {field.label}
-            </span>
-            <Input
-              value={draftCustomization.operatorWordMap[field.key] ?? ""}
-              onChange={(event) =>
-                onOperatorAliasChange(field.key, event.target.value)
-              }
-              placeholder={field.symbol}
-              className="font-mono"
-              spellCheck={false}
-            />
-          </label>
+            label={field.label}
+            value={draftCustomization.operatorWordMap[field.key] ?? ""}
+            description={
+              draftCustomization.languageDocumentation[
+                getOperatorDocumentationId(field.key)
+              ]?.description ?? ""
+            }
+            onValueChange={(value) => onOperatorAliasChange(field.key, value)}
+            onDescriptionChange={(value) =>
+              onOperatorAliasDescriptionChange(field.key, value)
+            }
+            placeholder={field.symbol}
+          />
         ))}
       </div>
 

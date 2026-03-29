@@ -1,6 +1,7 @@
-import { Input } from "@/components/ui/input";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import { getKeywordDocumentationId } from "@/lib/language-documentation";
 import { ExampleSnippet } from "../example-snippet";
+import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
 
 export type VariablesStepProps = {
@@ -9,6 +10,17 @@ export type VariablesStepProps = {
   onTypingModeChange: (mode: "typed" | "untyped") => void;
   onArrayModeChange: (mode: "fixed" | "dynamic") => void;
   onKeywordChange: (
+    original:
+      | "print"
+      | "scan"
+      | "int"
+      | "float"
+      | "bool"
+      | "string"
+      | "variavel",
+    value: string,
+  ) => void;
+  onKeywordDescriptionChange: (
     original:
       | "print"
       | "scan"
@@ -45,6 +57,7 @@ export function VariablesStep({
   onTypingModeChange,
   onArrayModeChange,
   onKeywordChange,
+  onKeywordDescriptionChange,
 }: VariablesStepProps) {
   const printKeyword = getKeyword(draftCustomization, "print");
   const scanKeyword = getKeyword(draftCustomization, "scan");
@@ -67,29 +80,33 @@ export function VariablesStep({
       </header>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <label className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
-          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Palavra de saída
-          </span>
-          <Input
-            value={printKeyword}
-            onChange={(event) => onKeywordChange("print", event.target.value)}
-            className="font-mono"
-            spellCheck={false}
-          />
-        </label>
+        <DocumentedField
+          label="Palavra de saída"
+          value={printKeyword}
+          description={
+            draftCustomization.languageDocumentation[
+              getKeywordDocumentationId("print")
+            ]?.description ?? ""
+          }
+          onValueChange={(value) => onKeywordChange("print", value)}
+          onDescriptionChange={(value) =>
+            onKeywordDescriptionChange("print", value)
+          }
+        />
 
-        <label className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
-          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Palavra de leitura
-          </span>
-          <Input
-            value={scanKeyword}
-            onChange={(event) => onKeywordChange("scan", event.target.value)}
-            className="font-mono"
-            spellCheck={false}
-          />
-        </label>
+        <DocumentedField
+          label="Palavra de leitura"
+          value={scanKeyword}
+          description={
+            draftCustomization.languageDocumentation[
+              getKeywordDocumentationId("scan")
+            ]?.description ?? ""
+          }
+          onValueChange={(value) => onKeywordChange("scan", value)}
+          onDescriptionChange={(value) =>
+            onKeywordDescriptionChange("scan", value)
+          }
+        />
       </div>
 
       <div className="space-y-3">
@@ -122,24 +139,23 @@ export function VariablesStep({
 
       <div className="grid gap-4 md:grid-cols-2">
         {visibleVariableFields.map((field) => (
-          <label
+          <DocumentedField
             key={field}
-            className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80"
-          >
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              {field}
-            </span>
-            <Input
-              value={
-                draftCustomization.mappings.find(
-                  (item) => item.original === field,
-                )?.custom ?? field
-              }
-              onChange={(event) => onKeywordChange(field, event.target.value)}
-              className="font-mono"
-              spellCheck={false}
-            />
-          </label>
+            label={field}
+            value={
+              draftCustomization.mappings.find((item) => item.original === field)
+                ?.custom ?? field
+            }
+            description={
+              draftCustomization.languageDocumentation[
+                getKeywordDocumentationId(field)
+              ]?.description ?? ""
+            }
+            onValueChange={(value) => onKeywordChange(field, value)}
+            onDescriptionChange={(value) =>
+              onKeywordDescriptionChange(field, value)
+            }
+          />
         ))}
       </div>
 

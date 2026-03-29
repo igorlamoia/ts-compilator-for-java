@@ -1,6 +1,6 @@
-import { Input } from "@/components/ui/input";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
+import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
 
 export type StructureStepProps = {
@@ -10,7 +10,12 @@ export type StructureStepProps = {
   statementTerminatorError: string | null;
   onBlockModeChange: (mode: "delimited" | "indentation") => void;
   onDelimiterChange: (field: "open" | "close", value: string) => void;
+  onDelimiterDescriptionChange: (
+    field: "open" | "close",
+    value: string,
+  ) => void;
   onStatementTerminatorChange: (value: string) => void;
+  onStatementTerminatorDescriptionChange: (value: string) => void;
   onSemicolonModeChange: (mode: "optional-eol" | "required") => void;
 };
 
@@ -21,7 +26,9 @@ export function StructureStep({
   statementTerminatorError,
   onBlockModeChange,
   onDelimiterChange,
+  onDelimiterDescriptionChange,
   onStatementTerminatorChange,
+  onStatementTerminatorDescriptionChange,
   onSemicolonModeChange,
 }: StructureStepProps) {
   const usesCustomDelimiters =
@@ -80,23 +87,24 @@ export function StructureStep({
         </button>
       </div>
 
-      <label className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
-        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          Terminador customizado
-        </span>
-        <Input
+      <div className="space-y-2">
+        <DocumentedField
+          label="Terminador customizado"
           value={draftCustomization.statementTerminatorLexeme}
-          onChange={(event) => onStatementTerminatorChange(event.target.value)}
+          description={
+            draftCustomization.languageDocumentation["terminator.statement"]
+              ?.description ?? ""
+          }
+          onValueChange={onStatementTerminatorChange}
+          onDescriptionChange={onStatementTerminatorDescriptionChange}
           placeholder="Opcional"
-          className="font-mono"
-          spellCheck={false}
         />
         {statementTerminatorError && (
           <span className="text-sm text-red-600 dark:text-red-300">
             {statementTerminatorError}
           </span>
         )}
-      </label>
+      </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <OptionCard
@@ -129,33 +137,35 @@ export function StructureStep({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
-          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Delimitador de abertura
-          </span>
-          <Input
-            value={draftCustomization.blockDelimiters.open}
-            onChange={(event) => onDelimiterChange("open", event.target.value)}
-            disabled={draftCustomization.modes.block === "indentation"}
-            placeholder="begin"
-            className="font-mono"
-            spellCheck={false}
-          />
-        </label>
+        <DocumentedField
+          label="Delimitador de abertura"
+          value={draftCustomization.blockDelimiters.open}
+          description={
+            draftCustomization.languageDocumentation["delimiter.open"]
+              ?.description ?? ""
+          }
+          onValueChange={(value) => onDelimiterChange("open", value)}
+          onDescriptionChange={(value) =>
+            onDelimiterDescriptionChange("open", value)
+          }
+          disabled={draftCustomization.modes.block === "indentation"}
+          placeholder="begin"
+        />
 
-        <label className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
-          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Delimitador de fechamento
-          </span>
-          <Input
-            value={draftCustomization.blockDelimiters.close}
-            onChange={(event) => onDelimiterChange("close", event.target.value)}
-            disabled={draftCustomization.modes.block === "indentation"}
-            placeholder="end"
-            className="font-mono"
-            spellCheck={false}
-          />
-        </label>
+        <DocumentedField
+          label="Delimitador de fechamento"
+          value={draftCustomization.blockDelimiters.close}
+          description={
+            draftCustomization.languageDocumentation["delimiter.close"]
+              ?.description ?? ""
+          }
+          onValueChange={(value) => onDelimiterChange("close", value)}
+          onDescriptionChange={(value) =>
+            onDelimiterDescriptionChange("close", value)
+          }
+          disabled={draftCustomization.modes.block === "indentation"}
+          placeholder="end"
+        />
       </div>
 
       {draftCustomization.modes.block === "delimited" && delimiterError && (

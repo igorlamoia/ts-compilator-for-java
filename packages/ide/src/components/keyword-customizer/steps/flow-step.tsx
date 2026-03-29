@@ -1,6 +1,7 @@
-import { Input } from "@/components/ui/input";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import { getKeywordDocumentationId } from "@/lib/language-documentation";
 import { ExampleSnippet } from "../example-snippet";
+import { DocumentedField } from "../documented-field";
 
 const FLOW_FIELDS = [
   "if",
@@ -22,12 +23,17 @@ export type FlowStepProps = {
     original: (typeof FLOW_FIELDS)[number],
     value: string,
   ) => void;
+  onKeywordDescriptionChange: (
+    original: (typeof FLOW_FIELDS)[number],
+    value: string,
+  ) => void;
 };
 
 export function FlowStep({
   draftCustomization,
   snippet,
   onKeywordChange,
+  onKeywordDescriptionChange,
 }: FlowStepProps) {
   const currentVocabulary = draftCustomization.mappings.filter((mapping) =>
     FLOW_FIELDS.includes(mapping.original as (typeof FLOW_FIELDS)[number]),
@@ -54,20 +60,20 @@ export function FlowStep({
               ?.custom ?? field;
 
           return (
-            <label
+            <DocumentedField
               key={field}
-              className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80"
-            >
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {field}
-              </span>
-              <Input
-                value={value}
-                onChange={(event) => onKeywordChange(field, event.target.value)}
-                className="font-mono"
-                spellCheck={false}
-              />
-            </label>
+              label={field}
+              value={value}
+              description={
+                draftCustomization.languageDocumentation[
+                  getKeywordDocumentationId(field)
+                ]?.description ?? ""
+              }
+              onValueChange={(nextValue) => onKeywordChange(field, nextValue)}
+              onDescriptionChange={(description) =>
+                onKeywordDescriptionChange(field, description)
+              }
+            />
           );
         })}
       </div>

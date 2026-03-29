@@ -106,6 +106,7 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
     booleanLiteralMap: { true: "true", false: "false" },
     statementTerminatorLexeme: "",
     blockDelimiters: { open: "", close: "" },
+    languageDocumentation: {},
     modes: {
       semicolon: "optional-eol",
       block: "delimited",
@@ -178,6 +179,26 @@ describe("KeywordCustomizer", () => {
     for (let index = 0; index < times; index++) {
       clickButtonByText(container, "Continuar");
     }
+  }
+
+  function setControlValue(
+    element: HTMLInputElement | HTMLTextAreaElement,
+    value: string,
+  ) {
+    act(() => {
+      const prototype =
+        element instanceof HTMLTextAreaElement
+          ? HTMLTextAreaElement.prototype
+          : HTMLInputElement.prototype;
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        prototype,
+        "value",
+      )?.set;
+      valueSetter?.call(element, value);
+      element.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true }),
+      );
+    });
   }
 
   function getSectionByTitle(container: HTMLElement, title: string) {
@@ -394,7 +415,7 @@ describe("KeywordCustomizer", () => {
     expect(container.textContent).toContain("Regras");
 
     expect(container.textContent).toContain("Booleano invalido");
-    expect(container.textContent).toContain("Operador invalido");
+    expect(container.textContent).toContain("Logical AND");
 
     clickButtonByText(container, "Continuar");
     expect(container.textContent).toContain("Regras");
@@ -487,6 +508,90 @@ describe("KeywordCustomizer", () => {
     });
 
     expect(container.textContent).toContain("Identidade");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("saves language documentation entries alongside renamed keywords", () => {
+    const context = createKeywordsContext();
+    useKeywordsMock.mockReturnValue(context);
+
+    const { container, root } = render();
+
+    clickButtonByText(container, "Continuar");
+
+    const outputLexemeInput = Array.from(container.querySelectorAll("input")).find(
+      (input) => (input as HTMLInputElement).value === "print",
+    ) as HTMLInputElement | undefined;
+    const outputDescription = Array.from(
+      container.querySelectorAll("textarea"),
+    ).find((textarea) =>
+      textarea.getAttribute("aria-label")?.includes("Palavra de saída descrição"),
+    ) as HTMLTextAreaElement | undefined;
+
+    expect(outputLexemeInput).toBeDefined();
+    expect(outputDescription).toBeDefined();
+
+    setControlValue(outputLexemeInput!, "mostrar");
+    setControlValue(outputDescription!, "Exibe valores na saída.");
+
+    clickContinueTimes(container, 4);
+    clickButtonByText(container, "Salvar e Aplicar");
+
+    expect(context.setCustomization).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mappings: expect.arrayContaining([
+          expect.objectContaining({
+            original: "print",
+            custom: "mostrar",
+          }),
+        ]),
+        languageDocumentation: expect.objectContaining({
+          "keyword.print": {
+            description: "Exibe valores na saída.",
+          },
+        }),
+      }),
+    );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("renders description editors for structure delimiters and rule aliases", () => {
+    useKeywordsMock.mockReturnValue(createKeywordsContext());
+
+    const { container, root } = render();
+
+    clickButtonByText(container, "Estrutura");
+
+    expect(
+      Array.from(container.querySelectorAll("textarea")).some((textarea) =>
+        textarea
+          .getAttribute("aria-label")
+          ?.includes("Terminador customizado descrição"),
+      ),
+    ).toBe(true);
+    expect(
+      Array.from(container.querySelectorAll("textarea")).some((textarea) =>
+        textarea
+          .getAttribute("aria-label")
+          ?.includes("Delimitador de abertura descrição"),
+      ),
+    ).toBe(true);
+
+    clickButtonByText(container, "Regras");
+
+    expect(
+      Array.from(container.querySelectorAll("textarea")).some((textarea) =>
+        textarea
+          .getAttribute("aria-label")
+          ?.includes("Logical AND descrição"),
+      ),
+    ).toBe(true);
 
     act(() => {
       root.unmount();
