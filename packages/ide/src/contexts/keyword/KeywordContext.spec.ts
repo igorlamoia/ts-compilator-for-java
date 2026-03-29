@@ -309,6 +309,47 @@ describe("keyword context lexer config", () => {
       root.unmount();
     });
   });
+
+  it("hydrates stored payloads with an empty language documentation map", () => {
+    localStorage.setItem(
+      "keyword-customization",
+      JSON.stringify({
+        mappings: getDefaultKeywordMappings(),
+        operatorWordMap: {},
+        booleanLiteralMap: {},
+        statementTerminatorLexeme: "",
+        blockDelimiters: { open: "", close: "" },
+        modes: {
+          semicolon: "optional-eol",
+          block: "delimited",
+          typing: "typed",
+          array: "fixed",
+        },
+      }),
+    );
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    expect(
+      (capturedKeywords?.customization as never).languageDocumentation,
+    ).toEqual({});
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });
 
 describe("migrateStoredMappings", () => {

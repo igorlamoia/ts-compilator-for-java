@@ -114,4 +114,16 @@ describe("normalizeCompilerConfig", () => {
     expect(normalized.statementTerminatorLexeme).toBe("!!");
     expect(normalized.grammar.semicolonMode).toBe("required");
   });
+
+  it("preserves language documentation entries in the normalized payload", () => {
+    const normalized = normalizeCompilerConfig({
+      languageDocumentation: {
+        "keyword.print": { description: "Exibe valores" },
+      },
+    } as never);
+
+    expect((normalized as never).languageDocumentation).toEqual({
+      "keyword.print": { description: "Exibe valores" },
+    });
+  });
 });

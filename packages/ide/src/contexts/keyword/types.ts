@@ -3,6 +3,7 @@ import {
   IDEBooleanLiteralMap,
   IDEKeywordCustomizationModes,
   IDECompilerConfigPayload,
+  IDELanguageDocumentationMap,
 } from "@/entities/compiler-config";
 
 export type KeywordMapping = {
@@ -23,6 +24,7 @@ export type StoredKeywordCustomization = {
   statementTerminatorLexeme: string;
   blockDelimiters: BlockDelimiters;
   modes: IDEKeywordCustomizationModes;
+  languageDocumentation: IDELanguageDocumentationMap;
 };
 
 export type KeywordContextType = {

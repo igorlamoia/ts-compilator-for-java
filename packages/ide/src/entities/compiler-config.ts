@@ -22,6 +22,15 @@ export type IDEBooleanLiteralMap = {
   false?: string;
 };
 
+export type IDELanguageDocumentationEntry = {
+  description: string;
+};
+
+export type IDELanguageDocumentationMap = Record<
+  string,
+  IDELanguageDocumentationEntry
+>;
+
 export type IDEGrammarConfig = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
@@ -43,6 +52,7 @@ export type IDEKeywordCustomizationState = {
   statementTerminatorLexeme: string;
   blockDelimiters: { open: string; close: string };
   modes: IDEKeywordCustomizationModes;
+  languageDocumentation: IDELanguageDocumentationMap;
 };
 
 export type IDECompilerConfigPayload = {
@@ -53,6 +63,7 @@ export type IDECompilerConfigPayload = {
   blockDelimiters?: { open: string; close: string };
   indentationBlock: boolean;
   grammar: IDEGrammarConfig;
+  languageDocumentation: IDELanguageDocumentationMap;
 };
 
 export type IDEPartialCompilerConfigPayload = {
@@ -63,4 +74,5 @@ export type IDEPartialCompilerConfigPayload = {
   blockDelimiters?: { open: string; close: string };
   indentationBlock?: boolean;
   grammar?: Partial<IDEGrammarConfig>;
+  languageDocumentation?: IDELanguageDocumentationMap;
 };

@@ -8,11 +8,13 @@ import {
 } from "react";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
+import { normalizeLanguageDocumentationMap } from "@/lib/compiler-config";
 import { buildLexerConfigFromCustomization } from "@/lib/keyword-customization";
 import type {
   IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
   IDEKeywordCustomizationModes,
+  IDELanguageDocumentationMap,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
 import {
@@ -42,6 +44,7 @@ export function useKeywords() {
 }
 
 const STORAGE_KEY = "keyword-customization";
+const LEGACY_MAPPINGS_STORAGE_KEY = "keyword-mappings";
 
 export function getDefaultBooleanLiteralMap(): IDEBooleanLiteralMap {
   return { ...DEFAULT_BOOLEAN_LITERAL_MAP };
@@ -109,6 +112,10 @@ function getDefaultStatementTerminatorLexeme(): string {
   return "";
 }
 
+function getDefaultLanguageDocumentationMap(): IDELanguageDocumentationMap {
+  return {};
+}
+
 function getDefaultModes(): IDEKeywordCustomizationModes {
   return {
     semicolon: "optional-eol",
@@ -126,11 +133,35 @@ export function getDefaultCustomizationState(): StoredKeywordCustomization {
     statementTerminatorLexeme: getDefaultStatementTerminatorLexeme(),
     blockDelimiters: getDefaultBlockDelimiters(),
     modes: getDefaultModes(),
+    languageDocumentation: getDefaultLanguageDocumentationMap(),
+  };
+}
+
+type LegacyCustomizationPayload = Partial<StoredKeywordCustomization> & {
+  semicolonMode?: IDEKeywordCustomizationModes["semicolon"];
+  blockMode?: IDEKeywordCustomizationModes["block"];
+  typingMode?: IDEKeywordCustomizationModes["typing"];
+  arrayMode?: IDEKeywordCustomizationModes["array"];
+  ui?: unknown;
+};
+
+function normalizeModes(
+  parsed: LegacyCustomizationPayload,
+  defaults: StoredKeywordCustomization,
+): IDEKeywordCustomizationModes {
+  return {
+    semicolon:
+      parsed.modes?.semicolon ??
+      parsed.semicolonMode ??
+      defaults.modes.semicolon,
+    block: parsed.modes?.block ?? parsed.blockMode ?? defaults.modes.block,
+    typing: parsed.modes?.typing ?? parsed.typingMode ?? defaults.modes.typing,
+    array: parsed.modes?.array ?? parsed.arrayMode ?? defaults.modes.array,
   };
 }
 
 function normalizeCustomization(
-  parsed: StoredKeywordCustomization,
+  parsed: LegacyCustomizationPayload,
   defaults: StoredKeywordCustomization,
 ): StoredKeywordCustomization | null {
   const mappings = Array.isArray(parsed.mappings) ? parsed.mappings : [];
@@ -154,8 +185,27 @@ function normalizeCustomization(
       typeof delimiters.close === "string"
         ? delimiters
         : defaults.blockDelimiters,
-    modes: parsed.modes ?? defaults.modes,
+    modes: normalizeModes(parsed, defaults),
+    languageDocumentation: normalizeLanguageDocumentationMap(
+      parsed.languageDocumentation,
+    ),
   };
+}
+
+function loadLegacyKeywordMappings(): KeywordMapping[] | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const stored = localStorage.getItem(LEGACY_MAPPINGS_STORAGE_KEY);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as unknown;
+    if (!Array.isArray(parsed)) return null;
+
+    return migrateStoredMappings(parsed as KeywordMapping[]);
+  } catch {
+    return null;
+  }
 }
 
 function loadCustomization(): StoredKeywordCustomization {
@@ -165,9 +215,17 @@ function loadCustomization(): StoredKeywordCustomization {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored) as StoredKeywordCustomization;
+      const parsed = JSON.parse(stored) as LegacyCustomizationPayload;
       const normalized = normalizeCustomization(parsed, defaults);
       if (normalized) return normalized;
+    }
+
+    const legacyMappings = loadLegacyKeywordMappings();
+    if (legacyMappings) {
+      return {
+        ...defaults,
+        mappings: legacyMappings,
+      };
     }
 
     return defaults;

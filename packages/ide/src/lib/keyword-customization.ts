@@ -1,6 +1,7 @@
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import type { IDECompilerConfigPayload } from "@/entities/compiler-config";
 import { validateBlockDelimiters } from "@/contexts/keyword/keyword-validator";
+import { normalizeLanguageDocumentationMap } from "@/lib/compiler-config";
 
 type NormalizableCustomization = Pick<
   StoredKeywordCustomization,
@@ -9,6 +10,7 @@ type NormalizableCustomization = Pick<
   | "booleanLiteralMap"
   | "statementTerminatorLexeme"
   | "blockDelimiters"
+  | "languageDocumentation"
   | "modes"
 >;
 
@@ -26,6 +28,9 @@ export function normalizeCustomizationDraft(
       open: draft.blockDelimiters.open.trim(),
       close: draft.blockDelimiters.close.trim(),
     },
+    languageDocumentation: normalizeLanguageDocumentationMap(
+      draft.languageDocumentation,
+    ),
   };
 }
 
@@ -60,6 +65,7 @@ export function buildLexerConfigFromCustomization(
     keywordMap,
     operatorWordMap: normalized.operatorWordMap,
     booleanLiteralMap: normalized.booleanLiteralMap,
+    languageDocumentation: normalized.languageDocumentation,
     ...(normalized.statementTerminatorLexeme
       ? { statementTerminatorLexeme: normalized.statementTerminatorLexeme }
       : {}),

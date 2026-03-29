@@ -2,6 +2,7 @@ import type {
   IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
   IDEGrammarConfig,
+  IDELanguageDocumentationMap,
   IDEOperatorWordMap,
   IDEPartialCompilerConfigPayload,
 } from "../entities/compiler-config";
@@ -53,6 +54,28 @@ function normalizeBooleanLiteralMap(
   }, {} as IDEBooleanLiteralMap);
 }
 
+export function normalizeLanguageDocumentationMap(
+  input: IDELanguageDocumentationMap | undefined,
+): IDELanguageDocumentationMap {
+  if (!input) return {};
+
+  return Object.entries(input).reduce((acc, [key, value]) => {
+    if (!value || typeof value !== "object") {
+      return acc;
+    }
+
+    const description = (value as { description?: unknown }).description;
+    if (typeof description !== "string") {
+      return acc;
+    }
+
+    acc[key] = {
+      description: description.trim(),
+    };
+    return acc;
+  }, {} as IDELanguageDocumentationMap);
+}
+
 export function normalizeCompilerConfig(
   input: IDEPartialCompilerConfigPayload,
 ): IDECompilerConfigPayload {
@@ -86,6 +109,9 @@ export function normalizeCompilerConfig(
     keywordMap: input.keywordMap ?? {},
     operatorWordMap: normalizeOperatorWordMap(input.operatorWordMap),
     booleanLiteralMap: normalizeBooleanLiteralMap(input.booleanLiteralMap),
+    languageDocumentation: normalizeLanguageDocumentationMap(
+      input.languageDocumentation,
+    ),
     ...(statementTerminatorLexeme ? { statementTerminatorLexeme } : {}),
     grammar,
     indentationBlock,
