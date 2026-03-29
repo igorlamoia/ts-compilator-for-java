@@ -7,7 +7,7 @@ import type {
 import { DEFAULT_BOOLEAN_LITERAL_MAP } from "@/lib/keyword-map";
 import type { KeywordMapping, BlockDelimiters } from "./types";
 import { ORIGINAL_KEYWORDS } from ".";
-export { validateOperatorWordMap as validateOperatorWordMapImpl } from "@/lib/operator-word-map";
+export { validateOperatorWordMap as validateOperatorWordMap } from "@/lib/operator-word-map";
 
 type StatementTerminatorValidationCustomization = {
   mappings: KeywordMapping[];
@@ -182,7 +182,7 @@ export function validateBooleanLiteralAliases(
   return null;
 }
 
-export function validateStatementTerminatorLexemeImpl(
+export function validateStatementTerminatorLexeme(
   value: string,
   customization: StatementTerminatorValidationCustomization,
 ): string | null {

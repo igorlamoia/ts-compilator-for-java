@@ -19,6 +19,7 @@ import { getDefaultKeywordMappings } from "@/contexts/keyword/KeywordContext";
 import { useFileSystem } from "@/hooks/useFileSystem";
 import { EditorSkeleton } from "./EditorSkeleton";
 import { DarkTheme, LightTheme } from "./EditorThemes";
+import { useDebugger } from "./useDebugger";
 
 const getSourceCodeStorageKey = (fileName: string) => `source-code-${fileName}`;
 const DEFAULT_FILE_NAME = "main.?";
@@ -30,7 +31,6 @@ export const EditorContext = createContext<TEditorContextType>(
 
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [currentFilePath, setCurrentFilePath] = useState(DEFAULT_FILE_NAME);
-  const [selectedDebugLines, setSelectedDebugLines] = useState<number[]>([]);
   const [sourceCode, setSourceCode] = useState(() => {
     if (typeof window === "undefined") return INITIAL_CODE;
     return (
@@ -44,7 +44,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const monacoRef = useRef<typeof monacoEditor | null>(null);
   const editorInstanceRef =
     useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
-  const debugLineDecorationIdsRef = useRef<string[]>([]);
+
+  const { selectedDebugLines, clearDebugLines, toggleDebugLine } = useDebugger({
+    editorInstanceRef,
+    monacoRef,
+  });
 
   const fileSystem = useFileSystem();
 
@@ -59,46 +63,6 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const applyDebugLineDecorations = useCallback((lines: number[]) => {
-    const editor = editorInstanceRef.current;
-    const monaco = monacoRef.current;
-    if (!editor || !monaco) return;
-
-    const validLines = [...new Set(lines)].sort((a, b) => a - b);
-    debugLineDecorationIdsRef.current = editor.deltaDecorations(
-      debugLineDecorationIdsRef.current,
-      validLines.map((lineNumber) => ({
-        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: {
-          isWholeLine: true,
-          glyphMarginClassName: "monaco-breakpoint-glyph",
-          stickiness:
-            monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-        },
-      })),
-    );
-  }, []);
-
-  const clearDebugLines = useCallback(() => {
-    setSelectedDebugLines([]);
-  }, []);
-
-  const toggleDebugLine = useCallback((lineNumber: number) => {
-    if (lineNumber < 1) return;
-
-    setSelectedDebugLines((prevLines) => {
-      if (prevLines.includes(lineNumber)) {
-        return prevLines.filter((line) => line !== lineNumber);
-      }
-
-      return [...prevLines, lineNumber].sort((a, b) => a - b);
-    });
-  }, []);
-
-  useEffect(() => {
-    applyDebugLineDecorations(selectedDebugLines);
-  }, [selectedDebugLines, applyDebugLineDecorations]);
-
   const initializeEditor = (container: HTMLDivElement) => {
     if (!monacoRef.current || !container) return;
 
@@ -106,21 +70,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     if (!editorInstanceRef.current) {
       editorInstanceRef.current = monacoRef.current.editor.create(container, {
         value: sourceCode,
-        automaticLayout: true,
-        glyphMargin: true,
-        minimap: { enabled: true },
-        scrollbar: {
-          vertical: "auto",
-          horizontal: "auto",
-          verticalScrollbarSize: 10,
-          horizontalScrollbarSize: 10,
-          alwaysConsumeMouseWheel: false,
-        },
-        scrollBeyondLastLine: false,
-        ...config,
-        wordBasedSuggestions: "off",
-        quickSuggestions: true,
-        suggestOnTriggerCharacters: false,
+        ...config.editorOptions,
+        theme: config.theme,
+        language: config.language,
       });
 
       editorInstanceRef.current.onMouseDown((event) => {
@@ -147,7 +99,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const setConfig = useCallback((newConfig: Partial<TEditorConfig>) => {
     setConfigState((prevConfig) => {
-      const updatedConfig = { ...prevConfig, ...newConfig };
+      const updatedConfig = {
+        ...prevConfig,
+        ...newConfig,
+        editorOptions: {
+          ...prevConfig.editorOptions,
+          ...(newConfig.editorOptions ?? {}),
+        },
+      };
 
       if (newConfig.theme && monacoRef.current) {
         localStorage.setItem("theme", newConfig.theme);
@@ -159,6 +118,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         if (model)
           monacoRef.current?.editor.setModelLanguage(model, newConfig.language);
         localStorage.setItem("language", newConfig.language);
+      }
+
+      if (newConfig.editorOptions && editorInstanceRef.current) {
+        editorInstanceRef.current.updateOptions(newConfig.editorOptions);
       }
 
       return updatedConfig;

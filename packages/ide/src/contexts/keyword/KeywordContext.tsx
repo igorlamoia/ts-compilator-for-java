@@ -23,9 +23,6 @@ import {
 } from "@/lib/keyword-map";
 import {
   validateCustomKeyword,
-  validateStatementTerminatorLexemeImpl,
-  validateBooleanLiteralAliases,
-  validateOperatorWordMapImpl,
   validateBlockDelimiters,
 } from "./keyword-validator";
 import { CUSTOMIZABLE_KEYWORDS, ORIGINAL_KEYWORDS } from ".";
@@ -300,64 +297,21 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     return map;
   };
 
-  const validateBooleanLiteralMap = (
-    value: IDEBooleanLiteralMap,
-    mappingsToValidate: KeywordMapping[] = customization.mappings,
-    operatorWordMapToValidate: IDEOperatorWordMap = customization.operatorWordMap,
-    delimitersToValidate: BlockDelimiters = customization.blockDelimiters,
-  ): string | null =>
-    validateBooleanLiteralAliases(
-      value,
-      mappingsToValidate,
-      operatorWordMapToValidate,
-      delimitersToValidate,
-    );
-
-  const validateOperatorWordMap = (
-    value: IDEOperatorWordMap,
-    mappingsToValidate: KeywordMapping[] = customization.mappings,
-    delimitersToValidate: BlockDelimiters = customization.blockDelimiters,
-  ): string | null =>
-    validateOperatorWordMapImpl(
-      value,
-      mappingsToValidate,
-      delimitersToValidate,
-      customization.booleanLiteralMap,
-    );
-
   const buildLexerConfig = (): IDECompilerConfigPayload => {
     return buildLexerConfigFromCustomization(customization);
   };
 
-  const validateStatementTerminatorLexeme = (
-    value: string,
-    mappingsToValidate = customization.mappings,
-    operatorWordMapToValidate = customization.operatorWordMap,
-    booleanLiteralMapToValidate = customization.booleanLiteralMap,
-    delimitersToValidate = customization.blockDelimiters,
-  ) =>
-    validateStatementTerminatorLexemeImpl(value, {
-      ...customization,
-      mappings: mappingsToValidate,
-      operatorWordMap: operatorWordMapToValidate,
-      booleanLiteralMap: booleanLiteralMapToValidate,
-      blockDelimiters: delimitersToValidate,
-    });
-
   return (
     <KeywordContext.Provider
       value={{
-      customization,
-      setCustomization,
-      setModes,
-      setMappings,
-      updateKeyword,
+        customization,
+        setCustomization,
+        setModes,
+        setMappings,
+        updateKeyword,
         resetCustomization,
         buildKeywordMap,
         validateKeyword,
-        validateStatementTerminatorLexeme,
-        validateBooleanLiteralMap,
-        validateOperatorWordMap,
         validateBlockDelimiters,
         buildLexerConfig,
       }}

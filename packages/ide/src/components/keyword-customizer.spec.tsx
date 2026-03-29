@@ -14,6 +14,8 @@ import { CUSTOMIZABLE_KEYWORDS, ORIGINAL_KEYWORDS } from "@/contexts/keyword";
 
 const useKeywordsMock = vi.fn();
 const useRouterMock = vi.fn();
+const validateBooleanLiteralAliasesMock = vi.fn(() => null);
+const validateStatementTerminatorLexemeMock = vi.fn(() => null);
 
 vi.mock("@/contexts/keyword/KeywordContext", () => ({
   useKeywords: () => useKeywordsMock(),
@@ -23,8 +25,17 @@ vi.mock("next/router", () => ({
   useRouter: () => useRouterMock(),
 }));
 
+vi.mock("@/contexts/keyword/keyword-validator", () => ({
+  validateBooleanLiteralAliases: (...args: unknown[]) =>
+    validateBooleanLiteralAliasesMock(...args),
+  validateStatementTerminatorLexeme: (...args: unknown[]) =>
+    validateStatementTerminatorLexemeMock(...args),
+}));
+
 vi.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Dialog: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   DialogContent: ({
     children,
     className,
@@ -35,7 +46,9 @@ vi.mock("@/components/ui/dialog", () => ({
   DialogDescription: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
-  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   DialogTitle: ({
     children,
     id,
@@ -43,7 +56,9 @@ vi.mock("@/components/ui/dialog", () => ({
     children: React.ReactNode;
     id?: string;
   }) => <h2 id={id}>{children}</h2>,
-  DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogFooter: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   DialogClose: ({
     children,
     ...props
@@ -110,8 +125,6 @@ function createKeywordsContext(overrides: Record<string, unknown> = {}) {
     buildLexerConfig: vi.fn(),
     validateKeyword: vi.fn(() => null),
     validateBooleanLiteralMap: vi.fn(() => null),
-    validateOperatorWordMap: vi.fn(() => null),
-    validateStatementTerminatorLexeme: vi.fn(() => null),
     validateBlockDelimiters: vi.fn(() => null),
     ...overrides,
   };
@@ -121,6 +134,10 @@ describe("KeywordCustomizer", () => {
   beforeEach(() => {
     useKeywordsMock.mockReset();
     useRouterMock.mockReset();
+    validateBooleanLiteralAliasesMock.mockReset();
+    validateBooleanLiteralAliasesMock.mockReturnValue(null);
+    validateStatementTerminatorLexemeMock.mockReset();
+    validateStatementTerminatorLexemeMock.mockReturnValue(null);
     useRouterMock.mockReturnValue({
       push: vi.fn(),
       back: vi.fn(),
@@ -166,9 +183,7 @@ describe("KeywordCustomizer", () => {
   function getSectionByTitle(container: HTMLElement, title: string) {
     return Array.from(container.querySelectorAll("section"))
       .reverse()
-      .find(
-      (section) => section.textContent?.includes(title),
-      );
+      .find((section) => section.textContent?.includes(title));
   }
 
   it("shows bool as a customizable type keyword after switching to typed mode", () => {
@@ -225,7 +240,9 @@ describe("KeywordCustomizer", () => {
     const { container, root } = render();
 
     clickButtonByText(container, "Fluxo");
-    expect(container.textContent).toContain("Ajuste o vocabulário usado para controle de fluxo");
+    expect(container.textContent).toContain(
+      "Ajuste o vocabulário usado para controle de fluxo",
+    );
 
     clickButtonByText(container, "Vocabulário");
     expect(container.textContent).toContain(
@@ -256,9 +273,9 @@ describe("KeywordCustomizer", () => {
     };
 
     clickPreset("Criativa");
-    expect(getSectionByTitle(container, "Resumo parcial")?.textContent).toContain(
-      "entregue",
-    );
+    expect(
+      getSectionByTitle(container, "Resumo parcial")?.textContent,
+    ).toContain("entregue");
 
     clickPreset("Livre");
     const previewAfterFree = getSectionByTitle(container, "Resumo parcial");
@@ -269,9 +286,9 @@ describe("KeywordCustomizer", () => {
     expect(previewAfterFree?.textContent).not.toContain("fale");
 
     clickPreset("Tradicional");
-    expect(getSectionByTitle(container, "Resumo parcial")?.textContent).toContain(
-      "As escolhas personalizadas vao aparecer aqui",
-    );
+    expect(
+      getSectionByTitle(container, "Resumo parcial")?.textContent,
+    ).toContain("As escolhas personalizadas vao aparecer aqui");
 
     act(() => {
       root.unmount();
@@ -308,9 +325,11 @@ describe("KeywordCustomizer", () => {
   });
 
   it("shows structure validation where the delimiters and terminator are edited", () => {
+    validateStatementTerminatorLexemeMock.mockReturnValue(
+      "Terminador invalido",
+    );
     const context = createKeywordsContext({
       validateBlockDelimiters: vi.fn(() => "Delimitadores invalidos"),
-      validateStatementTerminatorLexeme: vi.fn(() => "Terminador invalido"),
     });
     useKeywordsMock.mockReturnValue(context);
 
@@ -319,9 +338,9 @@ describe("KeywordCustomizer", () => {
     clickContinueTimes(container, 2);
     expect(container.textContent).toContain("Estrutura");
 
-    const terminatorInput = Array.from(container.querySelectorAll("input")).find(
-      (input) => (input as HTMLInputElement).placeholder === "Opcional",
-    );
+    const terminatorInput = Array.from(
+      container.querySelectorAll("input"),
+    ).find((input) => (input as HTMLInputElement).placeholder === "Opcional");
     expect(terminatorInput).toBeInstanceOf(HTMLInputElement);
 
     act(() => {
@@ -331,7 +350,9 @@ describe("KeywordCustomizer", () => {
         "value",
       )?.set;
       valueSetter?.call(input, "fim");
-      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+      input.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true }),
+      );
     });
 
     const delimiterInput = Array.from(container.querySelectorAll("input")).find(
@@ -346,7 +367,9 @@ describe("KeywordCustomizer", () => {
         "value",
       )?.set;
       valueSetter?.call(input, "inicio");
-      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+      input.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true }),
+      );
     });
 
     clickButtonByText(container, "Continuar");
@@ -359,10 +382,9 @@ describe("KeywordCustomizer", () => {
   });
 
   it("shows rules validation where operator, boolean and terminator edits live", () => {
+    validateBooleanLiteralAliasesMock.mockReturnValue("Booleano invalido");
     const context = createKeywordsContext({
       validateBlockDelimiters: vi.fn(() => null),
-      validateOperatorWordMap: vi.fn(() => "Operador invalido"),
-      validateBooleanLiteralMap: vi.fn(() => "Booleano invalido"),
     });
     useKeywordsMock.mockReturnValue(context);
 
@@ -407,7 +429,9 @@ describe("KeywordCustomizer", () => {
         "value",
       )?.set;
       valueSetter?.call(input, "escreva");
-      input.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+      input.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true }),
+      );
     });
 
     clickContinueTimes(container, 4);

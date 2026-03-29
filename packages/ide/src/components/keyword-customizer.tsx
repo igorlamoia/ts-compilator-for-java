@@ -16,7 +16,10 @@ import type {
 } from "@/entities/compiler-config";
 import { Form } from "@/components/ui/form";
 import { HeroButton } from "./buttons/hero";
-import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
+import {
+  OPERATOR_WORD_FIELDS,
+  validateOperatorWordMap,
+} from "@/lib/operator-word-map";
 import { consumeLanguageCreatorReturn } from "@/lib/language-creator-navigation";
 import { buildWizardPreview } from "./keyword-customizer/preview-data";
 import { PreviewPanel } from "./keyword-customizer/preview-panel";
@@ -33,6 +36,10 @@ import { RulesStep } from "./keyword-customizer/steps/rules-step";
 import { FlowStep } from "./keyword-customizer/steps/flow-step";
 import { ReviewStep } from "./keyword-customizer/steps/review-step";
 import { VariablesStep } from "./keyword-customizer/steps/variables-step";
+import {
+  validateBooleanLiteralAliases,
+  validateStatementTerminatorLexeme,
+} from "@/contexts/keyword/keyword-validator";
 
 export function KeywordCustomizer() {
   const router = useRouter();
@@ -40,9 +47,6 @@ export function KeywordCustomizer() {
     customization,
     setCustomization,
     validateKeyword,
-    validateBooleanLiteralMap,
-    validateOperatorWordMap,
-    validateStatementTerminatorLexeme,
     validateBlockDelimiters,
   } = useKeywords();
   const [draftCustomization, setDraftCustomization] =
@@ -135,7 +139,7 @@ export function KeywordCustomizer() {
 
   useEffect(() => {
     setBooleanLiteralError(
-      validateBooleanLiteralMap(
+      validateBooleanLiteralAliases(
         draftCustomization.booleanLiteralMap,
         draftCustomization.mappings,
         draftCustomization.operatorWordMap,
@@ -149,7 +153,6 @@ export function KeywordCustomizer() {
     draftCustomization.blockDelimiters,
     draftCustomization.modes.block,
     getOperatorValidationDelimiters,
-    validateBooleanLiteralMap,
   ]);
 
   useEffect(() => {
@@ -382,7 +385,7 @@ export function KeywordCustomizer() {
       return;
     }
 
-    const nextBooleanLiteralError = validateBooleanLiteralMap(
+    const nextBooleanLiteralError = validateBooleanLiteralAliases(
       draftCustomization.booleanLiteralMap,
       draftCustomization.mappings,
       draftCustomization.operatorWordMap,
@@ -399,10 +402,10 @@ export function KeywordCustomizer() {
     if (normalizedStatementTerminator) {
       const nextStatementTerminatorError = validateStatementTerminatorLexeme(
         normalizedStatementTerminator,
-        draftCustomization.mappings,
-        draftCustomization.operatorWordMap,
-        draftCustomization.booleanLiteralMap,
-        getOperatorValidationDelimiters(),
+        {
+          ...draftCustomization,
+          blockDelimiters: getOperatorValidationDelimiters(),
+        },
       );
       if (nextStatementTerminatorError) {
         setStatementTerminatorError(nextStatementTerminatorError);
@@ -495,7 +498,7 @@ export function KeywordCustomizer() {
       booleanLiteralMap: next,
     }));
     setBooleanLiteralError(
-      validateBooleanLiteralMap(
+      validateBooleanLiteralAliases(
         next,
         draftCustomization.mappings,
         draftCustomization.operatorWordMap,
@@ -512,13 +515,10 @@ export function KeywordCustomizer() {
     const normalizedValue = value.trim();
     setStatementTerminatorError(
       normalizedValue
-        ? validateStatementTerminatorLexeme(
-            normalizedValue,
-            draftCustomization.mappings,
-            draftCustomization.operatorWordMap,
-            draftCustomization.booleanLiteralMap,
-            getOperatorValidationDelimiters(),
-          )
+        ? validateStatementTerminatorLexeme(normalizedValue, {
+            ...draftCustomization,
+            blockDelimiters: getOperatorValidationDelimiters(),
+          })
         : null,
     );
   };

@@ -13,7 +13,7 @@ import {
   useKeywords,
 } from "@/contexts/keyword/KeywordContext";
 import {
-  validateStatementTerminatorLexemeImpl,
+  validateStatementTerminatorLexeme,
   validateBooleanLiteralAliases,
   validateCustomKeyword,
 } from "@/contexts/keyword/keyword-validator";
@@ -418,7 +418,7 @@ describe("statement terminator customization", () => {
   }
 
   it("accepts non-conflicting symbolic terminators", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "@@",
       createCustomization(),
     );
@@ -427,7 +427,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects whitespace in statement terminators", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "two words",
       createCustomization(),
     );
@@ -436,16 +436,13 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects semicolon as a custom statement terminator", () => {
-    const error = validateStatementTerminatorLexemeImpl(
-      ";",
-      createCustomization(),
-    );
+    const error = validateStatementTerminatorLexeme(";", createCustomization());
 
     expect(error).toBe("Escolha um terminador diferente de ;.");
   });
 
   it("rejects reserved operator characters in statement terminators", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "!!",
       createCustomization(),
     );
@@ -456,7 +453,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects terminators that collide with keyword customizations", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "uai",
       createCustomization({
         mappings: [
@@ -472,7 +469,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects original reserved keywords even after customization remaps them", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "if",
       createCustomization({
         mappings: [{ original: "if", custom: "se", tokenId: 28 }],
@@ -485,7 +482,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects terminators that collide with operator aliases", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "uai",
       createCustomization({
         operatorWordMap: { logical_and: "uai" },
@@ -496,7 +493,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects terminators that collide with boolean aliases", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "uai",
       createCustomization({
         booleanLiteralMap: { true: "uai", false: "nao" },
@@ -509,7 +506,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects default boolean literals even after customization remaps them", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "true",
       createCustomization({
         booleanLiteralMap: { true: "sim", false: "nao" },
@@ -522,7 +519,7 @@ describe("statement terminator customization", () => {
   });
 
   it("rejects terminators that collide with block delimiters", () => {
-    const error = validateStatementTerminatorLexemeImpl(
+    const error = validateStatementTerminatorLexeme(
       "uai",
       createCustomization({
         blockDelimiters: { open: "uai", close: "fim" },

@@ -47,26 +47,6 @@ export type KeywordContextType = {
   /** Retorna o keywordMap final (custom word → token ID) para enviar ao Lexer */
   buildKeywordMap: () => Record<string, number>;
   /** Valida aliases textuais de operadores */
-  validateOperatorWordMap: (
-    value: IDEOperatorWordMap,
-    mappingsToValidate?: KeywordMapping[],
-    delimitersToValidate?: BlockDelimiters,
-  ) => string | null;
-  /** Valida o terminador de instrução customizado */
-  validateStatementTerminatorLexeme: (
-    value: string,
-    mappingsToValidate?: KeywordMapping[],
-    operatorWordMapToValidate?: IDEOperatorWordMap,
-    booleanLiteralMapToValidate?: IDEBooleanLiteralMap,
-    delimitersToValidate?: BlockDelimiters,
-  ) => string | null;
-  /** Valida literais booleanos customizados */
-  validateBooleanLiteralMap: (
-    value: IDEBooleanLiteralMap,
-    mappingsToValidate?: KeywordMapping[],
-    operatorWordMapToValidate?: IDEOperatorWordMap,
-    delimitersToValidate?: BlockDelimiters,
-  ) => string | null;
   /** Valida delimitadores customizados de bloco */
   validateBlockDelimiters: (value: BlockDelimiters) => string | null;
   /** Retorna payload completo de customização para APIs do lexer */
