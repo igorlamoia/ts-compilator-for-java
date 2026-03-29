@@ -358,6 +358,19 @@ function isSnippetSupported(
 let completionProviderDisposable: monacoEditor.IDisposable | null = null;
 let hoverProviderDisposable: monacoEditor.IDisposable | null = null;
 
+const STANDARD_TOKEN_TYPE_COMMENT = 1;
+const STANDARD_TOKEN_TYPE_STRING = 2;
+const STANDARD_TOKEN_TYPE_REGEX = 4;
+
+type LineTokensLike = {
+  findTokenIndexAtOffset?: (offset: number) => number;
+  getStandardTokenType?: (tokenIndex: number) => number;
+};
+
+type HoverableModelLike = {
+  getLineTokens?: (lineNumber: number) => LineTokensLike | null | undefined;
+};
+
 function buildHoverCustomization(
   keywordMappings: JavaMMKeywordMapping[],
   options: JavaMMLanguageOptions,
@@ -386,6 +399,39 @@ function buildHoverCustomization(
     },
     languageDocumentation: options.languageDocumentation ?? {},
   };
+}
+
+function isNonCodeTokenType(tokenType: number | null | undefined): boolean {
+  return (
+    tokenType === STANDARD_TOKEN_TYPE_COMMENT ||
+    tokenType === STANDARD_TOKEN_TYPE_STRING ||
+    tokenType === STANDARD_TOKEN_TYPE_REGEX
+  );
+}
+
+function shouldSuppressHoverForPosition(
+  model: HoverableModelLike,
+  position: { lineNumber: number; column: number },
+): boolean {
+  const getLineTokens = model.getLineTokens;
+  if (typeof getLineTokens !== "function") return false;
+
+  const lineTokens = getLineTokens(position.lineNumber);
+  if (!lineTokens) return false;
+
+  const findTokenIndexAtOffset = lineTokens.findTokenIndexAtOffset;
+  const getStandardTokenType = lineTokens.getStandardTokenType;
+  if (
+    typeof findTokenIndexAtOffset !== "function" ||
+    typeof getStandardTokenType !== "function"
+  ) {
+    return false;
+  }
+
+  const tokenIndex = findTokenIndexAtOffset(Math.max(position.column - 1, 0));
+  if (typeof tokenIndex !== "number" || tokenIndex < 0) return false;
+
+  return isNonCodeTokenType(getStandardTokenType(tokenIndex));
 }
 
 function isIdentifierCharacter(value: string | undefined): boolean {
@@ -638,6 +684,10 @@ export function registerJavaMMLanguage(
       JAVAMM_LANGUAGE_ID,
       {
         provideHover(model, position) {
+          if (shouldSuppressHoverForPosition(model, position)) {
+            return null;
+          }
+
           const hovered = findHoveredLexeme(
             monaco,
             model,

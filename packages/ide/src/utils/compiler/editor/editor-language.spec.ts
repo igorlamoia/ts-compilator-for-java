@@ -630,6 +630,80 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(result.contents[2].value).toContain("Exibe valores na saída.");
   });
 
+  it("does not return semantic hover for lexemes inside strings or comments", () => {
+    const registerCompletionItemProvider = vi.fn(() => ({
+      dispose: vi.fn(),
+    }));
+    const registerHoverProvider = vi.fn(() => ({
+      dispose: vi.fn(),
+    }));
+    const monaco = {
+      Range: class {
+        constructor(
+          public startLineNumber: number,
+          public startColumn: number,
+          public endLineNumber: number,
+          public endColumn: number,
+        ) {}
+      },
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+        registerCompletionItemProvider,
+        registerHoverProvider,
+        CompletionItemKind: {
+          Keyword: 1,
+          Snippet: 2,
+          Operator: 3,
+          Value: 4,
+        },
+        CompletionItemInsertTextRule: {
+          InsertAsSnippet: 4,
+        },
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [{ original: "print", custom: "mostrar", tokenId: 33 }] as never,
+      {
+        languageDocumentation: {
+          "keyword.print": { description: "Exibe valores na saída." },
+        },
+      } as never,
+    );
+
+    const provider = registerHoverProvider.mock.calls[0]?.[1];
+    const stringHover = provider.provideHover(
+      {
+        getLineContent: () => 'mostrar("mostrar")',
+        getLineTokens: () => ({
+          findTokenIndexAtOffset: (offset: number) =>
+            offset >= 9 && offset <= 16 ? 1 : 0,
+          getStandardTokenType: (tokenIndex: number) =>
+            tokenIndex === 1 ? 2 : 0,
+        }),
+      },
+      { lineNumber: 1, column: 12 },
+    );
+    const commentHover = provider.provideHover(
+      {
+        getLineContent: () => "// mostrar",
+        getLineTokens: () => ({
+          findTokenIndexAtOffset: (offset: number) => (offset >= 3 ? 1 : 0),
+          getStandardTokenType: (tokenIndex: number) =>
+            tokenIndex === 1 ? 1 : 0,
+        }),
+      },
+      { lineNumber: 1, column: 5 },
+    );
+
+    expect(stringHover).toBeNull();
+    expect(commentHover).toBeNull();
+  });
+
   it("disposes the previous hover provider before registering a new one", () => {
     const firstHoverDisposable = { dispose: vi.fn() };
     const secondHoverDisposable = { dispose: vi.fn() };
