@@ -1,48 +1,61 @@
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
-import { getKeywordDocumentationId } from "@/lib/language-documentation";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
 
 export type StructureStepProps = {
-  draftCustomization: StoredKeywordCustomization;
-  snippet?: string;
-  delimiterError: string | null;
-  statementTerminatorError: string | null;
-  onBlockModeChange: (mode: "delimited" | "indentation") => void;
-  onDelimiterChange: (field: "open" | "close", value: string) => void;
-  onDelimiterDescriptionChange: (
-    field: "open" | "close",
-    value: string,
-  ) => void;
-  onStatementTerminatorChange: (value: string) => void;
-  onStatementTerminatorDescriptionChange: (value: string) => void;
-  onSemicolonModeChange: (mode: "optional-eol" | "required") => void;
-  onKeywordChange: (original: "void" | "funcao", value: string) => void;
-  onKeywordDescriptionChange: (
-    original: "void" | "funcao",
-    value: string,
-  ) => void;
+  values: {
+    snippet?: string;
+    semicolonMode: StoredKeywordCustomization["modes"]["semicolon"];
+    blockMode: StoredKeywordCustomization["modes"]["block"];
+    usesCustomDelimiters: boolean;
+    statementTerminator: {
+      value: string;
+      description: string;
+    };
+    keywords: Array<{
+      key: "void" | "funcao";
+      value: string;
+      description: string;
+    }>;
+    delimiters: {
+      open: {
+        value: string;
+        description: string;
+      };
+      close: {
+        value: string;
+        description: string;
+      };
+    };
+  };
+  errors: {
+    delimiter: string | null;
+    statementTerminator: string | null;
+  };
+  actions: {
+    syncBlockMode: (mode: "delimited" | "indentation") => void;
+    syncDelimiter: (field: "open" | "close", value: string) => void;
+    syncDelimiterDescription: (
+      field: "open" | "close",
+      value: string,
+    ) => void;
+    syncStatementTerminator: (value: string) => void;
+    syncStatementTerminatorDescription: (value: string) => void;
+    syncSemicolonMode: (mode: "optional-eol" | "required") => void;
+    syncKeyword: (original: "void" | "funcao", value: string) => void;
+    syncKeywordDescription: (
+      original: "void" | "funcao",
+      value: string,
+    ) => void;
+  };
 };
 
 export function StructureStep({
-  draftCustomization,
-  snippet,
-  delimiterError,
-  statementTerminatorError,
-  onBlockModeChange,
-  onDelimiterChange,
-  onDelimiterDescriptionChange,
-  onStatementTerminatorChange,
-  onStatementTerminatorDescriptionChange,
-  onSemicolonModeChange,
-  onKeywordChange,
-  onKeywordDescriptionChange,
+  values,
+  errors,
+  actions,
 }: StructureStepProps) {
-  const usesCustomDelimiters =
-    draftCustomization.blockDelimiters.open.trim().length > 0 ||
-    draftCustomization.blockDelimiters.close.trim().length > 0;
-
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -60,10 +73,10 @@ export function StructureStep({
       <div className="grid gap-3 sm:grid-cols-2">
         <button
           type="button"
-          onClick={() => onSemicolonModeChange("optional-eol")}
+          onClick={() => actions.syncSemicolonMode("optional-eol")}
           className={[
             "rounded-2xl border px-4 py-3 text-left transition-colors",
-            draftCustomization.modes.semicolon === "optional-eol"
+            values.semicolonMode === "optional-eol"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
           ].join(" ")}
@@ -78,10 +91,10 @@ export function StructureStep({
 
         <button
           type="button"
-          onClick={() => onSemicolonModeChange("required")}
+          onClick={() => actions.syncSemicolonMode("required")}
           className={[
             "rounded-2xl border px-4 py-3 text-left transition-colors",
-            draftCustomization.modes.semicolon === "required"
+            values.semicolonMode === "required"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
           ].join(" ")}
@@ -98,39 +111,29 @@ export function StructureStep({
       <div className="space-y-2">
         <DocumentedField
           label="Terminador customizado"
-          value={draftCustomization.statementTerminatorLexeme}
-          description={
-            draftCustomization.languageDocumentation["terminator.statement"]
-              ?.description ?? ""
-          }
-          onValueChange={onStatementTerminatorChange}
-          onDescriptionChange={onStatementTerminatorDescriptionChange}
+          value={values.statementTerminator.value}
+          description={values.statementTerminator.description}
+          onValueChange={actions.syncStatementTerminator}
+          onDescriptionChange={actions.syncStatementTerminatorDescription}
           placeholder="Opcional"
         />
-        {statementTerminatorError && (
+        {errors.statementTerminator && (
           <span className="text-sm text-red-600 dark:text-red-300">
-            {statementTerminatorError}
+            {errors.statementTerminator}
           </span>
         )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {(["void", "funcao"] as const).map((field) => (
+        {values.keywords.map((field) => (
           <DocumentedField
-            key={field}
-            label={field}
-            value={
-              draftCustomization.mappings.find((item) => item.original === field)
-                ?.custom ?? field
-            }
-            description={
-              draftCustomization.languageDocumentation[
-                getKeywordDocumentationId(field)
-              ]?.description ?? ""
-            }
-            onValueChange={(value) => onKeywordChange(field, value)}
+            key={field.key}
+            label={field.key}
+            value={field.value}
+            description={field.description}
+            onValueChange={(value) => actions.syncKeyword(field.key, value)}
             onDescriptionChange={(value) =>
-              onKeywordDescriptionChange(field, value)
+              actions.syncKeywordDescription(field.key, value)
             }
           />
         ))}
@@ -142,69 +145,63 @@ export function StructureStep({
           description="Mantém a estrutura delimitada por símbolos tradicionais."
           snippet={"if (condicao) {\n  escreva(\"ok\")\n}"}
           selected={
-            draftCustomization.modes.block === "delimited" &&
-            !usesCustomDelimiters
+            values.blockMode === "delimited" &&
+            !values.usesCustomDelimiters
           }
-          onClick={() => onBlockModeChange("delimited")}
+          onClick={() => actions.syncBlockMode("delimited")}
         />
         <OptionCard
           title="Início / fim"
           description="Usa palavras para abrir e fechar blocos delimitados."
           snippet={"se (condicao) inicio\n  escreva(\"ok\")\nfim"}
           selected={
-            draftCustomization.modes.block === "delimited" &&
-            usesCustomDelimiters
+            values.blockMode === "delimited" &&
+            values.usesCustomDelimiters
           }
-          onClick={() => onBlockModeChange("delimited")}
+          onClick={() => actions.syncBlockMode("delimited")}
         />
         <OptionCard
           title="Indentação"
           description="Organiza blocos pela indentação, sem delimitadores."
           snippet={"se (condicao):\n  escreva(\"ok\")"}
-          selected={draftCustomization.modes.block === "indentation"}
-          onClick={() => onBlockModeChange("indentation")}
+          selected={values.blockMode === "indentation"}
+          onClick={() => actions.syncBlockMode("indentation")}
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <DocumentedField
           label="Delimitador de abertura"
-          value={draftCustomization.blockDelimiters.open}
-          description={
-            draftCustomization.languageDocumentation["delimiter.open"]
-              ?.description ?? ""
-          }
-          onValueChange={(value) => onDelimiterChange("open", value)}
+          value={values.delimiters.open.value}
+          description={values.delimiters.open.description}
+          onValueChange={(value) => actions.syncDelimiter("open", value)}
           onDescriptionChange={(value) =>
-            onDelimiterDescriptionChange("open", value)
+            actions.syncDelimiterDescription("open", value)
           }
-          disabled={draftCustomization.modes.block === "indentation"}
+          disabled={values.blockMode === "indentation"}
           placeholder="begin"
         />
 
         <DocumentedField
           label="Delimitador de fechamento"
-          value={draftCustomization.blockDelimiters.close}
-          description={
-            draftCustomization.languageDocumentation["delimiter.close"]
-              ?.description ?? ""
-          }
-          onValueChange={(value) => onDelimiterChange("close", value)}
+          value={values.delimiters.close.value}
+          description={values.delimiters.close.description}
+          onValueChange={(value) => actions.syncDelimiter("close", value)}
           onDescriptionChange={(value) =>
-            onDelimiterDescriptionChange("close", value)
+            actions.syncDelimiterDescription("close", value)
           }
-          disabled={draftCustomization.modes.block === "indentation"}
+          disabled={values.blockMode === "indentation"}
           placeholder="end"
         />
       </div>
 
-      {draftCustomization.modes.block === "delimited" && delimiterError && (
-        <p className="text-sm text-red-600 dark:text-red-300">{delimiterError}</p>
+      {values.blockMode === "delimited" && errors.delimiter && (
+        <p className="text-sm text-red-600 dark:text-red-300">{errors.delimiter}</p>
       )}
 
       <ExampleSnippet
         title="Exemplo estrutural"
-        code={snippet ?? "if (condicao) {\n  print(\"ok\")\n}"}
+        code={values.snippet ?? "if (condicao) {\n  print(\"ok\")\n}"}
       />
     </section>
   );

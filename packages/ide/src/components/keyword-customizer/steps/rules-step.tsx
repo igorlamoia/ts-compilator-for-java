@@ -2,41 +2,52 @@ import type {
   IDEBooleanLiteralMap,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
-import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
-import {
-  getBooleanDocumentationId,
-  getOperatorDocumentationId,
-} from "@/lib/language-documentation";
-import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 import { DocumentedField } from "../documented-field";
 
 export type RulesStepProps = {
-  draftCustomization: StoredKeywordCustomization;
-  booleanLiteralError: string | null;
-  operatorError: string | null;
-  onBooleanLiteralChange: (
-    field: keyof IDEBooleanLiteralMap,
-    value: string,
-  ) => void;
-  onOperatorAliasChange: (field: keyof IDEOperatorWordMap, value: string) => void;
-  onBooleanLiteralDescriptionChange: (
-    field: keyof IDEBooleanLiteralMap,
-    value: string,
-  ) => void;
-  onOperatorAliasDescriptionChange: (
-    field: keyof IDEOperatorWordMap,
-    value: string,
-  ) => void;
+  values: {
+    booleanLiterals: Array<{
+      key: keyof IDEBooleanLiteralMap;
+      label: string;
+      value: string;
+      description: string;
+    }>;
+    operatorAliases: Array<{
+      key: keyof IDEOperatorWordMap;
+      label: string;
+      value: string;
+      description: string;
+      placeholder: string;
+    }>;
+  };
+  errors: {
+    booleanLiteral: string | null;
+    operator: string | null;
+  };
+  actions: {
+    syncBooleanLiteral: (
+      field: keyof IDEBooleanLiteralMap,
+      value: string,
+    ) => void;
+    syncOperatorAlias: (
+      field: keyof IDEOperatorWordMap,
+      value: string,
+    ) => void;
+    syncBooleanLiteralDescription: (
+      field: keyof IDEBooleanLiteralMap,
+      value: string,
+    ) => void;
+    syncOperatorAliasDescription: (
+      field: keyof IDEOperatorWordMap,
+      value: string,
+    ) => void;
+  };
 };
 
 export function RulesStep({
-  draftCustomization,
-  booleanLiteralError,
-  operatorError,
-  onBooleanLiteralChange,
-  onOperatorAliasChange,
-  onBooleanLiteralDescriptionChange,
-  onOperatorAliasDescriptionChange,
+  values,
+  errors,
+  actions,
 }: RulesStepProps) {
   return (
     <section className="space-y-6">
@@ -53,52 +64,44 @@ export function RulesStep({
       </header>
 
       <div className="grid gap-3 md:grid-cols-2">
-        {(["true", "false"] as const).map((field) => (
+        {values.booleanLiterals.map((field) => (
           <DocumentedField
-            key={field}
-            label={`Literal ${field}`}
-            value={draftCustomization.booleanLiteralMap[field] ?? ""}
-            description={
-              draftCustomization.languageDocumentation[
-                getBooleanDocumentationId(field)
-              ]?.description ?? ""
-            }
-            onValueChange={(value) => onBooleanLiteralChange(field, value)}
+            key={field.key}
+            label={field.label}
+            value={field.value}
+            description={field.description}
+            onValueChange={(value) => actions.syncBooleanLiteral(field.key, value)}
             onDescriptionChange={(value) =>
-              onBooleanLiteralDescriptionChange(field, value)
+              actions.syncBooleanLiteralDescription(field.key, value)
             }
           />
         ))}
       </div>
 
-      {booleanLiteralError && (
+      {errors.booleanLiteral && (
         <p className="text-sm text-red-600 dark:text-red-300">
-          {booleanLiteralError}
+          {errors.booleanLiteral}
         </p>
       )}
 
       <div className="grid gap-3 md:grid-cols-2">
-        {OPERATOR_WORD_FIELDS.map((field) => (
+        {values.operatorAliases.map((field) => (
           <DocumentedField
             key={field.key}
             label={field.label}
-            value={draftCustomization.operatorWordMap[field.key] ?? ""}
-            description={
-              draftCustomization.languageDocumentation[
-                getOperatorDocumentationId(field.key)
-              ]?.description ?? ""
-            }
-            onValueChange={(value) => onOperatorAliasChange(field.key, value)}
+            value={field.value}
+            description={field.description}
+            onValueChange={(value) => actions.syncOperatorAlias(field.key, value)}
             onDescriptionChange={(value) =>
-              onOperatorAliasDescriptionChange(field.key, value)
+              actions.syncOperatorAliasDescription(field.key, value)
             }
-            placeholder={field.symbol}
+            placeholder={field.placeholder}
           />
         ))}
       </div>
 
-      {operatorError && (
-        <p className="text-sm text-red-600 dark:text-red-300">{operatorError}</p>
+      {errors.operator && (
+        <p className="text-sm text-red-600 dark:text-red-300">{errors.operator}</p>
       )}
     </section>
   );

@@ -1,25 +1,26 @@
-import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import type { WizardPreview } from "../preview-data";
 import { WIZARD_STEPS, type WizardStepId } from "../wizard-model";
 import { ExampleSnippet } from "../example-snippet";
 import { TokenPreview } from "../token-preview";
 
 export type ReviewStepProps = {
-  draftCustomization: StoredKeywordCustomization;
-  preview: WizardPreview;
-  visitedStepIds: WizardStepId[];
-  onStepSelect: (stepId: WizardStepId) => void;
+  values: {
+    preview: WizardPreview;
+    editedMappings: Array<{
+      original: string;
+      custom: string;
+    }>;
+    visitedStepIds: WizardStepId[];
+  };
+  actions: {
+    selectStep: (stepId: WizardStepId) => void;
+  };
 };
 
 export function ReviewStep({
-  draftCustomization,
-  preview,
-  visitedStepIds,
-  onStepSelect,
+  values,
+  actions,
 }: ReviewStepProps) {
-  const editedMappings = draftCustomization.mappings.filter(
-    (mapping) => mapping.custom !== mapping.original,
-  );
   const stepLabels = new Map(
     WIZARD_STEPS.map((step) => [step.id, step.title] as const),
   );
@@ -44,7 +45,7 @@ export function ReviewStep({
             Nome da linguagem
           </p>
           <p className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {preview.languageLabel}
+            {values.preview.languageLabel}
           </p>
         </div>
 
@@ -53,7 +54,7 @@ export function ReviewStep({
             Resumo das regras
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {preview.dna.map((item) => (
+            {values.preview.dna.map((item) => (
               <span
                 key={item}
                 className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-200"
@@ -75,8 +76,8 @@ export function ReviewStep({
           Vocabulário atual da linguagem
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {editedMappings.length ? (
-            editedMappings.map((mapping) => (
+          {values.editedMappings.length ? (
+            values.editedMappings.map((mapping) => (
               <span
                 key={mapping.original}
                 className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
@@ -92,21 +93,21 @@ export function ReviewStep({
         </div>
       </div>
 
-      <ExampleSnippet title="Preview do código" code={preview.snippet} />
-      <TokenPreview tokens={preview.tokenPreview} />
+      <ExampleSnippet title="Preview do código" code={values.preview.snippet} />
+      <TokenPreview tokens={values.preview.tokenPreview} />
 
       <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
           Voltar para editar
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {visitedStepIds
+          {values.visitedStepIds
             .filter((stepId) => stepId !== "review")
             .map((stepId) => (
               <button
                 key={stepId}
                 type="button"
-                onClick={() => onStepSelect(stepId)}
+                onClick={() => actions.selectStep(stepId)}
                 className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-cyan-300 hover:text-cyan-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"
               >
                 {stepLabels.get(stepId) ?? stepId}

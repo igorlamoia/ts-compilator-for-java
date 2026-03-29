@@ -2,8 +2,12 @@ import { OptionCard } from "../option-card";
 import type { WizardPresetId } from "../wizard-model";
 
 export type IdentityStepProps = {
-  selectedPresetId: WizardPresetId;
-  onPresetSelect: (presetId: WizardPresetId) => void;
+  values: {
+    selectedPresetId: WizardPresetId;
+  };
+  actions: {
+    selectPreset: (presetId: WizardPresetId) => void;
+  };
 };
 
 const PRESET_OPTIONS: Array<{
@@ -45,8 +49,8 @@ const PRESET_OPTIONS: Array<{
 ];
 
 export function IdentityStep({
-  selectedPresetId,
-  onPresetSelect,
+  values,
+  actions,
 }: IdentityStepProps) {
   return (
     <section className="space-y-6">
@@ -70,8 +74,8 @@ export function IdentityStep({
             title={preset.title}
             description={preset.description}
             snippet={preset.snippet}
-            selected={preset.id === selectedPresetId}
-            onClick={() => onPresetSelect(preset.id)}
+            selected={preset.id === values.selectedPresetId}
+            onClick={() => actions.selectPreset(preset.id)}
           />
         ))}
       </div>

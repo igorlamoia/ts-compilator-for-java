@@ -1,70 +1,47 @@
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
-import { getKeywordDocumentationId } from "@/lib/language-documentation";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
 
+export type VariableStepKeyword =
+  | "print"
+  | "scan"
+  | "int"
+  | "float"
+  | "bool"
+  | "string"
+  | "variavel";
+
 export type VariablesStepProps = {
-  draftCustomization: StoredKeywordCustomization;
-  snippet?: string;
-  onTypingModeChange: (mode: "typed" | "untyped") => void;
-  onArrayModeChange: (mode: "fixed" | "dynamic") => void;
-  onKeywordChange: (
-    original:
-      | "print"
-      | "scan"
-      | "int"
-      | "float"
-      | "bool"
-      | "string"
-      | "variavel",
-    value: string,
-  ) => void;
-  onKeywordDescriptionChange: (
-    original:
-      | "print"
-      | "scan"
-      | "int"
-      | "float"
-      | "bool"
-      | "string"
-      | "variavel",
-    value: string,
-  ) => void;
+  values: {
+    snippet?: string;
+    typingMode: StoredKeywordCustomization["modes"]["typing"];
+    arrayMode: StoredKeywordCustomization["modes"]["array"];
+    printKeyword: string;
+    printDescription: string;
+    scanKeyword: string;
+    scanDescription: string;
+    variableKeywords: Array<{
+      key: Exclude<VariableStepKeyword, "print" | "scan">;
+      value: string;
+      description: string;
+    }>;
+  };
+  actions: {
+    syncTypingMode: (mode: "typed" | "untyped") => void;
+    syncArrayMode: (mode: "fixed" | "dynamic") => void;
+    syncKeyword: (original: VariableStepKeyword, value: string) => void;
+    syncKeywordDescription: (
+      original: VariableStepKeyword,
+      value: string,
+    ) => void;
+  };
 };
 
-function getKeyword(
-  draftCustomization: StoredKeywordCustomization,
-  original: string,
-) {
-  return (
-    draftCustomization.mappings.find((item) => item.original === original)
-      ?.custom ?? original
-  );
-}
-
-function getVisibleVariableFields(mode: "typed" | "untyped") {
-  if (mode === "untyped") {
-    return ["variavel"] as const;
-  }
-
-  return ["int", "float", "bool", "string"] as const;
-}
-
 export function VariablesStep({
-  draftCustomization,
-  snippet,
-  onTypingModeChange,
-  onArrayModeChange,
-  onKeywordChange,
-  onKeywordDescriptionChange,
+  values,
+  actions,
 }: VariablesStepProps) {
-  const printKeyword = getKeyword(draftCustomization, "print");
-  const scanKeyword = getKeyword(draftCustomization, "scan");
-  const visibleVariableFields = getVisibleVariableFields(
-    draftCustomization.modes.typing,
-  );
-
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -82,29 +59,21 @@ export function VariablesStep({
       <div className="grid gap-4 lg:grid-cols-2">
         <DocumentedField
           label="Palavra de saída"
-          value={printKeyword}
-          description={
-            draftCustomization.languageDocumentation[
-              getKeywordDocumentationId("print")
-            ]?.description ?? ""
-          }
-          onValueChange={(value) => onKeywordChange("print", value)}
+          value={values.printKeyword}
+          description={values.printDescription}
+          onValueChange={(value) => actions.syncKeyword("print", value)}
           onDescriptionChange={(value) =>
-            onKeywordDescriptionChange("print", value)
+            actions.syncKeywordDescription("print", value)
           }
         />
 
         <DocumentedField
           label="Palavra de leitura"
-          value={scanKeyword}
-          description={
-            draftCustomization.languageDocumentation[
-              getKeywordDocumentationId("scan")
-            ]?.description ?? ""
-          }
-          onValueChange={(value) => onKeywordChange("scan", value)}
+          value={values.scanKeyword}
+          description={values.scanDescription}
+          onValueChange={(value) => actions.syncKeyword("scan", value)}
           onDescriptionChange={(value) =>
-            onKeywordDescriptionChange("scan", value)
+            actions.syncKeywordDescription("scan", value)
           }
         />
       </div>
@@ -124,36 +93,29 @@ export function VariablesStep({
             title="Tipado"
             description="Libera palavras específicas para int, float, bool e string."
             snippet='string nome = "Ana"'
-            selected={draftCustomization.modes.typing === "typed"}
-            onClick={() => onTypingModeChange("typed")}
+            selected={values.typingMode === "typed"}
+            onClick={() => actions.syncTypingMode("typed")}
           />
           <OptionCard
             title="Não tipado"
             description="Mostra só uma palavra genérica para declarar variáveis."
             snippet='variavel nome = "Ana"'
-            selected={draftCustomization.modes.typing === "untyped"}
-            onClick={() => onTypingModeChange("untyped")}
+            selected={values.typingMode === "untyped"}
+            onClick={() => actions.syncTypingMode("untyped")}
           />
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {visibleVariableFields.map((field) => (
+        {values.variableKeywords.map((field) => (
           <DocumentedField
-            key={field}
-            label={field}
-            value={
-              draftCustomization.mappings.find((item) => item.original === field)
-                ?.custom ?? field
-            }
-            description={
-              draftCustomization.languageDocumentation[
-                getKeywordDocumentationId(field)
-              ]?.description ?? ""
-            }
-            onValueChange={(value) => onKeywordChange(field, value)}
+            key={field.key}
+            label={field.key}
+            value={field.value}
+            description={field.description}
+            onValueChange={(value) => actions.syncKeyword(field.key, value)}
             onDescriptionChange={(value) =>
-              onKeywordDescriptionChange(field, value)
+              actions.syncKeywordDescription(field.key, value)
             }
           />
         ))}
@@ -162,10 +124,10 @@ export function VariablesStep({
       <div className="grid gap-3 sm:grid-cols-2">
         <button
           type="button"
-          onClick={() => onArrayModeChange("fixed")}
+          onClick={() => actions.syncArrayMode("fixed")}
           className={[
             "rounded-2xl border px-4 py-3 text-left transition-colors",
-            draftCustomization.modes.array === "fixed"
+            values.arrayMode === "fixed"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
           ].join(" ")}
@@ -180,10 +142,10 @@ export function VariablesStep({
 
         <button
           type="button"
-          onClick={() => onArrayModeChange("dynamic")}
+          onClick={() => actions.syncArrayMode("dynamic")}
           className={[
             "rounded-2xl border px-4 py-3 text-left transition-colors",
-            draftCustomization.modes.array === "dynamic"
+            values.arrayMode === "dynamic"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
           ].join(" ")}
@@ -199,7 +161,7 @@ export function VariablesStep({
 
       <ExampleSnippet
         title="Exemplo ao vivo"
-        code={snippet ?? `${printKeyword}("Ola mundo")`}
+        code={values.snippet ?? `${values.printKeyword}("Ola mundo")`}
       />
     </section>
   );

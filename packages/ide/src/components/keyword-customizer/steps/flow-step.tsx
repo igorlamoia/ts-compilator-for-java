@@ -1,5 +1,3 @@
-import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
-import { getKeywordDocumentationId } from "@/lib/language-documentation";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 
@@ -17,28 +15,28 @@ const FLOW_FIELDS = [
 ] as const;
 
 export type FlowStepProps = {
-  draftCustomization: StoredKeywordCustomization;
-  snippet?: string;
-  onKeywordChange: (
-    original: (typeof FLOW_FIELDS)[number],
-    value: string,
-  ) => void;
-  onKeywordDescriptionChange: (
-    original: (typeof FLOW_FIELDS)[number],
-    value: string,
-  ) => void;
+  values: {
+    snippet?: string;
+    fields: Array<{
+      key: (typeof FLOW_FIELDS)[number];
+      value: string;
+      description: string;
+    }>;
+    currentVocabulary: string[];
+  };
+  actions: {
+    syncKeyword: (original: (typeof FLOW_FIELDS)[number], value: string) => void;
+    syncKeywordDescription: (
+      original: (typeof FLOW_FIELDS)[number],
+      value: string,
+    ) => void;
+  };
 };
 
 export function FlowStep({
-  draftCustomization,
-  snippet,
-  onKeywordChange,
-  onKeywordDescriptionChange,
+  values,
+  actions,
 }: FlowStepProps) {
-  const currentVocabulary = draftCustomization.mappings.filter((mapping) =>
-    FLOW_FIELDS.includes(mapping.original as (typeof FLOW_FIELDS)[number]),
-  );
-
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -54,28 +52,20 @@ export function FlowStep({
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {FLOW_FIELDS.map((field) => {
-          const value =
-            draftCustomization.mappings.find((mapping) => mapping.original === field)
-              ?.custom ?? field;
-
-          return (
-            <DocumentedField
-              key={field}
-              label={field}
-              value={value}
-              description={
-                draftCustomization.languageDocumentation[
-                  getKeywordDocumentationId(field)
-                ]?.description ?? ""
-              }
-              onValueChange={(nextValue) => onKeywordChange(field, nextValue)}
-              onDescriptionChange={(description) =>
-                onKeywordDescriptionChange(field, description)
-              }
-            />
-          );
-        })}
+        {values.fields.map((field) => (
+          <DocumentedField
+            key={field.key}
+            label={field.key}
+            value={field.value}
+            description={field.description}
+            onValueChange={(nextValue) =>
+              actions.syncKeyword(field.key, nextValue)
+            }
+            onDescriptionChange={(description) =>
+              actions.syncKeywordDescription(field.key, description)
+            }
+          />
+        ))}
       </div>
 
       <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
@@ -83,12 +73,12 @@ export function FlowStep({
           Vocabulário atual da linguagem
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {currentVocabulary.map((mapping) => (
+          {values.currentVocabulary.map((token) => (
             <span
-              key={mapping.original}
+              key={token}
               className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
             >
-              {mapping.custom}
+              {token}
             </span>
           ))}
         </div>
@@ -96,7 +86,7 @@ export function FlowStep({
 
       <ExampleSnippet
         title="Exemplo de fluxo"
-        code={snippet ?? "while (condicao) {\n  return valor\n}"}
+        code={values.snippet ?? "while (condicao) {\n  return valor\n}"}
       />
     </section>
   );

@@ -1,0 +1,56 @@
+import { useMemo } from "react";
+import { useKeywordCustomizer } from "./keyword-customizer-context";
+import {
+  buildFlowStepProps,
+  buildIdentityStepProps,
+  buildReviewStepProps,
+  buildRulesStepProps,
+  buildStructureStepProps,
+  buildVariablesStepProps,
+} from "./keyword-customizer-step-props";
+import { IdentityStep } from "./steps/identity-step";
+import { VariablesStep } from "./steps/variables-step";
+import { StructureStep } from "./steps/structure-step";
+import { RulesStep } from "./steps/rules-step";
+import { FlowStep } from "./steps/flow-step";
+import { ReviewStep } from "./steps/review-step";
+import { getActiveWizardStepError } from "./keyword-customizer-validation";
+
+export function KeywordCustomizerStepContent() {
+  const context = useKeywordCustomizer();
+  const activeStepError = getActiveWizardStepError(
+    context.activeStep.id,
+    context.errors,
+  );
+
+  const stepContent = useMemo(() => {
+    switch (context.activeStep.id) {
+      case "identity":
+        return <IdentityStep {...buildIdentityStepProps(context)} />;
+      case "variables":
+        return <VariablesStep {...buildVariablesStepProps(context)} />;
+      case "structure":
+        return <StructureStep {...buildStructureStepProps(context)} />;
+      case "rules":
+        return <RulesStep {...buildRulesStepProps(context)} />;
+      case "flow":
+        return <FlowStep {...buildFlowStepProps(context)} />;
+      case "review":
+        return <ReviewStep {...buildReviewStepProps(context)} />;
+      default:
+        return null;
+    }
+  }, [context]);
+
+  return (
+    <>
+      {activeStepError && (
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+          {activeStepError}
+        </div>
+      )}
+
+      {stepContent}
+    </>
+  );
+}

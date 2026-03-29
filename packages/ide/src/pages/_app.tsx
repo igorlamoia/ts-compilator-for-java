@@ -8,6 +8,7 @@ import type { AppProps } from "next/app";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, type ReactNode } from "react";
+import { Pointer } from "@/components/ui/pointer";
 
 type NextPageWithAuth = NextPage & {
   requireAuth?: boolean;
@@ -20,6 +21,7 @@ type AppPropsWithAuth = AppProps & {
 export default function App({ Component, pageProps }: AppPropsWithAuth) {
   return (
     <ThemeProvider>
+      <Pointer />
       <AuthLayout>
         <AlertProvider>
           <ToastProvider>

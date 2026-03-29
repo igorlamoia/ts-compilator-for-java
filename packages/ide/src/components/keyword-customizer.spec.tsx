@@ -14,8 +14,12 @@ import { CUSTOMIZABLE_KEYWORDS, ORIGINAL_KEYWORDS } from "@/contexts/keyword";
 
 const useKeywordsMock = vi.fn();
 const useRouterMock = vi.fn();
-const validateBooleanLiteralAliasesMock = vi.fn(() => null);
-const validateStatementTerminatorLexemeMock = vi.fn(() => null);
+const validateBooleanLiteralAliasesMock = vi.fn<
+  (...args: unknown[]) => string | null
+>(() => null);
+const validateStatementTerminatorLexemeMock = vi.fn<
+  (...args: unknown[]) => string | null
+>(() => null);
 
 vi.mock("@/contexts/keyword/KeywordContext", () => ({
   useKeywords: () => useKeywordsMock(),
@@ -228,7 +232,7 @@ describe("KeywordCustomizer", () => {
     const { container, root } = render();
 
     expect(container.querySelector('[role="dialog"]')).toBeNull();
-    expect(container.textContent).toContain("Criador de Linguagem");
+    expect(container.textContent).toContain("DNA da Linguagem");
     expect(container.textContent).toContain(
       "Defina o vocabulário, as regras e o fluxo da sua linguagem.",
     );
@@ -522,13 +526,17 @@ describe("KeywordCustomizer", () => {
 
     clickButtonByText(container, "Continuar");
 
-    const outputLexemeInput = Array.from(container.querySelectorAll("input")).find(
-      (input) => (input as HTMLInputElement).value === "print",
-    ) as HTMLInputElement | undefined;
+    const outputLexemeInput = Array.from(
+      container.querySelectorAll("input"),
+    ).find((input) => (input as HTMLInputElement).value === "print") as
+      | HTMLInputElement
+      | undefined;
     const outputDescription = Array.from(
       container.querySelectorAll("textarea"),
     ).find((textarea) =>
-      textarea.getAttribute("aria-label")?.includes("Palavra de saída descrição"),
+      textarea
+        .getAttribute("aria-label")
+        ?.includes("Palavra de saída descrição"),
     ) as HTMLTextAreaElement | undefined;
 
     expect(outputLexemeInput).toBeDefined();
@@ -597,9 +605,7 @@ describe("KeywordCustomizer", () => {
 
     expect(
       Array.from(container.querySelectorAll("textarea")).some((textarea) =>
-        textarea
-          .getAttribute("aria-label")
-          ?.includes("Logical AND descrição"),
+        textarea.getAttribute("aria-label")?.includes("Logical AND descrição"),
       ),
     ).toBe(true);
 

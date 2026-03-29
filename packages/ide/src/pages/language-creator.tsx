@@ -25,7 +25,7 @@ export default function LanguageCreatorPage() {
       <main
         className={`${geistSans.variable} ${geistMono.variable} relative z-10 min-h-screen p-6 font-(family-name:--font-geist-sans) sm:p-8`}
       >
-        <section className="flex w-full flex-col gap-6 pb-20">
+        <section>
           <KeywordProvider>
             <KeywordCustomizer />
           </KeywordProvider>
