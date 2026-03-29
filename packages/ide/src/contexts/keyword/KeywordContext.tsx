@@ -277,6 +277,7 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
           blockDelimiters: configToUse.blockDelimiters,
           operatorWordMap: configToUse.operatorWordMap,
           booleanLiteralMap: configToUse.booleanLiteralMap,
+          languageDocumentation: configToUse.languageDocumentation,
           statementTerminatorLexeme: configToUse.statementTerminatorLexeme,
           typingMode: configToUse.modes.typing,
           arrayMode: configToUse.modes.array,

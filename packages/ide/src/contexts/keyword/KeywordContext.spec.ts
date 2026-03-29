@@ -350,6 +350,61 @@ describe("keyword context lexer config", () => {
       root.unmount();
     });
   });
+
+  it("forwards language documentation metadata to Monaco updates", () => {
+    localStorage.setItem(
+      "keyword-customization",
+      JSON.stringify({
+        mappings: getDefaultKeywordMappings(),
+        operatorWordMap: {},
+        booleanLiteralMap: {},
+        statementTerminatorLexeme: "",
+        blockDelimiters: { open: "", close: "" },
+        modes: {
+          semicolon: "optional-eol",
+          block: "delimited",
+          typing: "typed",
+          array: "fixed",
+        },
+        languageDocumentation: {
+          "keyword.print": {
+            description: "Exibe valores na saída.",
+          },
+        },
+      }),
+    );
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    expect(updateJavaMMKeywordsMock).toHaveBeenCalled();
+    expect(updateJavaMMKeywordsMock).toHaveBeenLastCalledWith(
+      monacoRefMock.current,
+      expect.any(Array),
+      expect.objectContaining({
+        languageDocumentation: {
+          "keyword.print": {
+            description: "Exibe valores na saída.",
+          },
+        },
+      }),
+    );
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });
 
 describe("migrateStoredMappings", () => {

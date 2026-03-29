@@ -1,8 +1,11 @@
 import type * as monacoEditor from "monaco-editor";
 import type {
   IDEBooleanLiteralMap,
+  IDELanguageDocumentationMap,
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
+import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import { resolveDocumentationByLexeme } from "@/lib/language-documentation";
 import { DEFAULT_BOOLEAN_LITERAL_MAP } from "@/lib/keyword-map";
 import {
   JavaMMArrayMode,
@@ -44,6 +47,7 @@ export type JavaMMLanguageOptions = {
   blockDelimiters?: JavaMMBlockDelimiters;
   operatorWordMap?: IDEOperatorWordMap;
   booleanLiteralMap?: IDEBooleanLiteralMap;
+  languageDocumentation?: IDELanguageDocumentationMap;
   statementTerminatorLexeme?: string;
   typingMode?: "typed" | "untyped";
   arrayMode?: "fixed" | "dynamic";
@@ -352,6 +356,121 @@ function isSnippetSupported(
 }
 
 let completionProviderDisposable: monacoEditor.IDisposable | null = null;
+let hoverProviderDisposable: monacoEditor.IDisposable | null = null;
+
+function buildHoverCustomization(
+  keywordMappings: JavaMMKeywordMapping[],
+  options: JavaMMLanguageOptions,
+): StoredKeywordCustomization {
+  return {
+    mappings: keywordMappings.map((mapping) => ({
+      original: mapping.original,
+      custom: mapping.custom,
+      tokenId: mapping.tokenId,
+    })),
+    operatorWordMap: options.operatorWordMap ?? {},
+    booleanLiteralMap: {
+      ...DEFAULT_BOOLEAN_LITERAL_MAP,
+      ...options.booleanLiteralMap,
+    },
+    statementTerminatorLexeme: options.statementTerminatorLexeme ?? "",
+    blockDelimiters: {
+      open: options.blockDelimiters?.open ?? "",
+      close: options.blockDelimiters?.close ?? "",
+    },
+    modes: {
+      semicolon: "optional-eol",
+      block: options.blockMode ?? "delimited",
+      typing: options.typingMode ?? "typed",
+      array: options.arrayMode ?? "fixed",
+    },
+    languageDocumentation: options.languageDocumentation ?? {},
+  };
+}
+
+function isIdentifierCharacter(value: string | undefined): boolean {
+  return Boolean(value && /[A-Za-z0-9_]/.test(value));
+}
+
+function isWordLikeLexeme(value: string): boolean {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(value);
+}
+
+function buildHoverLexemes(
+  keywordMappings: JavaMMKeywordMapping[],
+  options: JavaMMLanguageOptions,
+): string[] {
+  const lexemes = [
+    ...keywordMappings.map((mapping) => mapping.custom.trim()),
+    ...Object.values(options.operatorWordMap ?? {}).map((value) => value?.trim()),
+    ...Object.values({
+      ...DEFAULT_BOOLEAN_LITERAL_MAP,
+      ...options.booleanLiteralMap,
+    }).map((value) => value?.trim()),
+    options.statementTerminatorLexeme?.trim(),
+  ];
+
+  if (options.blockMode !== "indentation") {
+    lexemes.push(
+      options.blockDelimiters?.open?.trim(),
+      options.blockDelimiters?.close?.trim(),
+    );
+  }
+
+  return Array.from(
+    new Set(lexemes.filter((value): value is string => Boolean(value))),
+  ).sort((left, right) => right.length - left.length);
+}
+
+function findHoveredLexeme(
+  monaco: typeof monacoEditor,
+  model: { getLineContent: (lineNumber: number) => string },
+  position: { lineNumber: number; column: number },
+  keywordMappings: JavaMMKeywordMapping[],
+  options: JavaMMLanguageOptions,
+) {
+  const lineContent = model.getLineContent(position.lineNumber);
+  const column = position.column;
+
+  for (const lexeme of buildHoverLexemes(keywordMappings, options)) {
+    let searchIndex = lineContent.indexOf(lexeme);
+
+    while (searchIndex !== -1) {
+      const startColumn = searchIndex + 1;
+      const endColumn = startColumn + lexeme.length;
+      const containsPosition = column >= startColumn && column < endColumn;
+      const before = lineContent[searchIndex - 1];
+      const after = lineContent[searchIndex + lexeme.length];
+      const respectsBoundaries =
+        !isWordLikeLexeme(lexeme) ||
+        (!isIdentifierCharacter(before) && !isIdentifierCharacter(after));
+
+      if (containsPosition && respectsBoundaries) {
+        return {
+          lexeme,
+          range:
+            typeof monaco.Range === "function"
+              ? new monaco.Range(
+                  position.lineNumber,
+                  startColumn,
+                  position.lineNumber,
+                  endColumn,
+                )
+              : {
+                  startLineNumber: position.lineNumber,
+                  startColumn,
+                  endLineNumber: position.lineNumber,
+                  endColumn,
+                },
+        };
+      }
+
+      searchIndex = lineContent.indexOf(lexeme, searchIndex + 1);
+    }
+  }
+
+  return null;
+}
 
 /**
  * Registra a linguagem Java-- no Monaco com um Monarch tokenizer.
@@ -389,129 +508,165 @@ export function registerJavaMMLanguage(
 
   // Dispose previous completion provider before registering a new one
   completionProviderDisposable?.dispose();
-  if (typeof monaco.languages.registerCompletionItemProvider !== "function") {
-    completionProviderDisposable = null;
-    return;
-  }
-  completionProviderDisposable =
-    monaco.languages.registerCompletionItemProvider(JAVAMM_LANGUAGE_ID, {
-      provideCompletionItems(model, position) {
-        const preferredTypingMode: JavaMMTypingMode =
-          options.typingMode ?? "typed";
-        const preferredBlockMode: JavaMMBlockMode =
-          options.blockMode ?? "delimited";
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn,
-        };
+  if (typeof monaco.languages.registerCompletionItemProvider === "function") {
+    completionProviderDisposable =
+      monaco.languages.registerCompletionItemProvider(JAVAMM_LANGUAGE_ID, {
+        provideCompletionItems(model, position) {
+          const preferredTypingMode: JavaMMTypingMode =
+            options.typingMode ?? "typed";
+          const preferredBlockMode: JavaMMBlockMode =
+            options.blockMode ?? "delimited";
+          const word = model.getWordUntilPosition(position);
+          const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: word.startColumn,
+            endColumn: word.endColumn,
+          };
 
-        const suggestions: monacoEditor.languages.CompletionItem[] = [];
-        const preferredArrayMode: JavaMMArrayMode =
-          options.arrayMode ?? "fixed";
+          const suggestions: monacoEditor.languages.CompletionItem[] = [];
+          const preferredArrayMode: JavaMMArrayMode =
+            options.arrayMode ?? "fixed";
 
-        for (const mapping of keywordMappings) {
-          const keyword = mapping.custom.trim();
-          if (!keyword) continue;
+          for (const mapping of keywordMappings) {
+            const keyword = mapping.custom.trim();
+            if (!keyword) continue;
 
-          let groupLabel = "Palavra-chave";
-          for (const [groupName, originals] of Object.entries(
-            SEMANTIC_KEYWORD_GROUPS,
-          ) as [JavaMMSemanticGroupName, Set<string>][]) {
-            if (originals.has(mapping.original)) {
-              groupLabel = SEMANTIC_GROUP_LABELS[groupName];
-              break;
+            let groupLabel = "Palavra-chave";
+            for (const [groupName, originals] of Object.entries(
+              SEMANTIC_KEYWORD_GROUPS,
+            ) as [JavaMMSemanticGroupName, Set<string>][]) {
+              if (originals.has(mapping.original)) {
+                groupLabel = SEMANTIC_GROUP_LABELS[groupName];
+                break;
+              }
+            }
+
+            // Keyword completion
+            suggestions.push({
+              label: keyword,
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              detail: groupLabel,
+              insertText: keyword,
+              range,
+            });
+
+            // Snippet completion (multiple typed/untyped + block-mode variants)
+            const snippets = KEYWORD_SNIPPETS[mapping.original] ?? [];
+            for (const snippet of snippets) {
+              if (
+                !isSnippetSupported(
+                  snippet,
+                  preferredTypingMode,
+                  preferredBlockMode,
+                  preferredArrayMode,
+                )
+              ) {
+                continue;
+              }
+
+              const customBody = mapSnippetKeywords(
+                snippet.body,
+                keywordMappings,
+              );
+              const suffix = snippet.labelSuffix
+                ? ` (${snippet.labelSuffix})`
+                : "";
+              suggestions.push({
+                label: `${keyword}…${suffix}`,
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                detail: snippet.description,
+                documentation: customBody,
+                insertText: customBody,
+                insertTextRules:
+                  monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                range,
+              });
             }
           }
 
-          // Keyword completion
-          suggestions.push({
-            label: keyword,
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            detail: groupLabel,
-            insertText: keyword,
-            range,
-          });
-
-          // Snippet completion (multiple typed/untyped + block-mode variants)
-          const snippets = KEYWORD_SNIPPETS[mapping.original] ?? [];
-          for (const snippet of snippets) {
-            if (
-              !isSnippetSupported(
-                snippet,
-                preferredTypingMode,
-                preferredBlockMode,
-                preferredArrayMode,
-              )
-            ) {
-              continue;
-            }
-
-            const customBody = mapSnippetKeywords(
-              snippet.body,
-              keywordMappings,
-            );
-            const suffix = snippet.labelSuffix
-              ? ` (${snippet.labelSuffix})`
-              : "";
+          // Add operator word completions
+          const metadata = buildJavaMMLanguageMetadata(
+            keywordMappings,
+            options.operatorWordMap,
+            options.booleanLiteralMap,
+            options.statementTerminatorLexeme,
+          );
+          for (const operatorWord of metadata.operatorWords) {
             suggestions.push({
-              label: `${keyword}…${suffix}`,
-              kind: monaco.languages.CompletionItemKind.Snippet,
-              detail: snippet.description,
-              documentation: customBody,
-              insertText: customBody,
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              label: operatorWord,
+              kind: monaco.languages.CompletionItemKind.Operator,
+              detail: "Operador",
+              insertText: operatorWord,
               range,
             });
           }
-        }
 
-        // Add operator word completions
-        const metadata = buildJavaMMLanguageMetadata(
-          keywordMappings,
-          options.operatorWordMap,
-          options.booleanLiteralMap,
-          options.statementTerminatorLexeme,
-        );
-        for (const operatorWord of metadata.operatorWords) {
-          suggestions.push({
-            label: operatorWord,
-            kind: monaco.languages.CompletionItemKind.Operator,
-            detail: "Operador",
-            insertText: operatorWord,
-            range,
-          });
-        }
+          const booleanLiterals = Array.from(
+            new Set(
+              Object.values({
+                ...DEFAULT_BOOLEAN_LITERAL_MAP,
+                ...options.booleanLiteralMap,
+              })
+                .map((value) => value?.trim())
+                .filter((value): value is string => Boolean(value)),
+            ),
+          );
 
-        const booleanLiterals = Array.from(
-          new Set(
-            Object.values({
-              ...DEFAULT_BOOLEAN_LITERAL_MAP,
-              ...options.booleanLiteralMap,
-            })
-              .map((value) => value?.trim())
-              .filter((value): value is string => Boolean(value)),
-          ),
-        );
+          for (const literal of booleanLiterals) {
+            suggestions.push({
+              label: literal,
+              kind:
+                monaco.languages.CompletionItemKind.Value ??
+                monaco.languages.CompletionItemKind.Keyword,
+              detail: BUILT_IN_LITERAL_LABEL,
+              insertText: literal,
+              range,
+            });
+          }
 
-        for (const literal of booleanLiterals) {
-          suggestions.push({
-            label: literal,
-            kind:
-              monaco.languages.CompletionItemKind.Value ??
-              monaco.languages.CompletionItemKind.Keyword,
-            detail: BUILT_IN_LITERAL_LABEL,
-            insertText: literal,
-            range,
-          });
-        }
+          return { suggestions };
+        },
+      });
+  } else {
+    completionProviderDisposable = null;
+  }
 
-        return { suggestions };
+  hoverProviderDisposable?.dispose();
+  if (typeof monaco.languages.registerHoverProvider === "function") {
+    hoverProviderDisposable = monaco.languages.registerHoverProvider(
+      JAVAMM_LANGUAGE_ID,
+      {
+        provideHover(model, position) {
+          const hovered = findHoveredLexeme(
+            monaco,
+            model,
+            position,
+            keywordMappings,
+            options,
+          );
+          if (!hovered) return null;
+
+          const entry = resolveDocumentationByLexeme(
+            hovered.lexeme,
+            buildHoverCustomization(keywordMappings, options),
+          );
+          if (!entry) return null;
+
+          return {
+            range: hovered.range,
+            contents: [
+              { value: `**${entry.lexeme}**` },
+              { value: entry.category },
+              { value: entry.description },
+            ],
+          };
+        },
       },
-    });
+    );
+  } else {
+    hoverProviderDisposable = null;
+  }
 }
 
 /**
