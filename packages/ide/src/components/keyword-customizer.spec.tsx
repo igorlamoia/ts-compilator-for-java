@@ -561,13 +561,23 @@ describe("KeywordCustomizer", () => {
     });
   });
 
-  it("renders description editors for structure delimiters and rule aliases", () => {
+  it("renders description editors for structure keywords, delimiters and rule aliases", () => {
     useKeywordsMock.mockReturnValue(createKeywordsContext());
 
     const { container, root } = render();
 
     clickButtonByText(container, "Estrutura");
 
+    expect(
+      Array.from(container.querySelectorAll("textarea")).some((textarea) =>
+        textarea.getAttribute("aria-label")?.includes("void descrição"),
+      ),
+    ).toBe(true);
+    expect(
+      Array.from(container.querySelectorAll("textarea")).some((textarea) =>
+        textarea.getAttribute("aria-label")?.includes("funcao descrição"),
+      ),
+    ).toBe(true);
     expect(
       Array.from(container.querySelectorAll("textarea")).some((textarea) =>
         textarea

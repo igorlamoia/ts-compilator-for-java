@@ -739,6 +739,13 @@ export function KeywordCustomizer() {
                           },
                         }))
                       }
+                      onKeywordChange={handleKeywordChange}
+                      onKeywordDescriptionChange={(original, value) =>
+                        handleDocumentationChange(
+                          getKeywordDocumentationId(original),
+                          value,
+                        )
+                      }
                     />
                   )}
 

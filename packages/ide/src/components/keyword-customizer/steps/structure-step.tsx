@@ -1,4 +1,5 @@
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import { getKeywordDocumentationId } from "@/lib/language-documentation";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
@@ -17,6 +18,11 @@ export type StructureStepProps = {
   onStatementTerminatorChange: (value: string) => void;
   onStatementTerminatorDescriptionChange: (value: string) => void;
   onSemicolonModeChange: (mode: "optional-eol" | "required") => void;
+  onKeywordChange: (original: "void" | "funcao", value: string) => void;
+  onKeywordDescriptionChange: (
+    original: "void" | "funcao",
+    value: string,
+  ) => void;
 };
 
 export function StructureStep({
@@ -30,6 +36,8 @@ export function StructureStep({
   onStatementTerminatorChange,
   onStatementTerminatorDescriptionChange,
   onSemicolonModeChange,
+  onKeywordChange,
+  onKeywordDescriptionChange,
 }: StructureStepProps) {
   const usesCustomDelimiters =
     draftCustomization.blockDelimiters.open.trim().length > 0 ||
@@ -104,6 +112,28 @@ export function StructureStep({
             {statementTerminatorError}
           </span>
         )}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {(["void", "funcao"] as const).map((field) => (
+          <DocumentedField
+            key={field}
+            label={field}
+            value={
+              draftCustomization.mappings.find((item) => item.original === field)
+                ?.custom ?? field
+            }
+            description={
+              draftCustomization.languageDocumentation[
+                getKeywordDocumentationId(field)
+              ]?.description ?? ""
+            }
+            onValueChange={(value) => onKeywordChange(field, value)}
+            onDescriptionChange={(value) =>
+              onKeywordDescriptionChange(field, value)
+            }
+          />
+        ))}
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
