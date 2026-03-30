@@ -91,10 +91,7 @@ const STEP_FIELDS: Record<WizardStepId, string[]> = {
     "modes.block",
     "blockDelimiters",
   ],
-  rules: [
-    "booleanLiteralMap",
-    "operatorWordMap",
-  ],
+  rules: ["booleanLiteralMap", "operatorWordMap"],
   flow: [
     "if",
     "else",
@@ -141,7 +138,7 @@ export function applyWizardPreset(
     booleanLiteralMap: { true: "true", false: "false" },
     statementTerminatorLexeme: "",
     blockDelimiters: { open: "", close: "" },
-  }
+  };
 
   if (presetId === "traditional" || presetId === "free") {
     return baseState;
@@ -156,13 +153,18 @@ export function applyWizardPreset(
       ["scan", "leia"],
       ["return", "retorne"],
     ].reduce(
-      (current, [original, custom]) => replaceMapping(current, original, custom),
+      (current, [original, custom]) =>
+        replaceMapping(current, original, custom),
       baseState,
     );
   }
 
   if (presetId === "minimal") {
-    return replaceMapping(replaceMapping(baseState, "print", "out"), "scan", "in");
+    return replaceMapping(
+      replaceMapping(baseState, "print", "out"),
+      "scan",
+      "in",
+    );
   }
 
   return replaceMapping(

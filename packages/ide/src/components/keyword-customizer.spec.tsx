@@ -91,6 +91,11 @@ vi.mock("lucide-react", () => ({
   Sigma: () => <span>sigma</span>,
   Route: () => <span>route</span>,
   ClipboardCheck: () => <span>review</span>,
+  SquareTerminal: () => <span>terminal</span>,
+  Languages: () => <span>languages</span>,
+  Code: () => <span>code</span>,
+  Sparkles: () => <span>sparkles</span>,
+  Atom: () => <span>atom</span>,
 }));
 
 import { KeywordCustomizer } from "./keyword-customizer";

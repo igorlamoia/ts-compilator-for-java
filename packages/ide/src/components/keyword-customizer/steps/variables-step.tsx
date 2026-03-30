@@ -1,7 +1,9 @@
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import { TypingRelationshipBeam } from "./components/typing-relationship-beam";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
+import { BicepsFlexed, Sparkles, WandSparkles } from "lucide-react";
 
 export type VariableStepKeyword =
   | "print"
@@ -21,6 +23,13 @@ export type VariablesStepProps = {
     printDescription: string;
     scanKeyword: string;
     scanDescription: string;
+    typingBeamKeywords: {
+      variavel: string;
+      string: string;
+      float: string;
+      int: string;
+      void: string;
+    };
     variableKeywords: Array<{
       key: Exclude<VariableStepKeyword, "print" | "scan">;
       value: string;
@@ -38,10 +47,7 @@ export type VariablesStepProps = {
   };
 };
 
-export function VariablesStep({
-  values,
-  actions,
-}: VariablesStepProps) {
+export function VariablesStep({ values, actions }: VariablesStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -90,20 +96,29 @@ export function VariablesStep({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <OptionCard
-            title="Tipado"
-            description="Libera palavras específicas para int, float, bool e string."
-            snippet='string nome = "Ana"'
-            selected={values.typingMode === "typed"}
-            onClick={() => actions.syncTypingMode("typed")}
-          />
-          <OptionCard
             title="Não tipado"
+            subtitle="Dureza"
             description="Mostra só uma palavra genérica para declarar variáveis."
             snippet='variavel nome = "Ana"'
             selected={values.typingMode === "untyped"}
             onClick={() => actions.syncTypingMode("untyped")}
+            icon={<BicepsFlexed className="h-5 w-5 text-cyan-300" />}
+          />
+          <OptionCard
+            title="Tipado"
+            subtitle="Magico"
+            description="Libera palavras específicas para int, float, bool e string."
+            snippet='string nome = "Ana"'
+            selected={values.typingMode === "typed"}
+            onClick={() => actions.syncTypingMode("typed")}
+            icon={<WandSparkles className="h-5 w-5 text-cyan-300" />}
           />
         </div>
+
+        <TypingRelationshipBeam
+          typingMode={values.typingMode}
+          labels={values.typingBeamKeywords}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

@@ -1,4 +1,5 @@
 import type { WizardPreview } from "./preview-data";
+import { ChangedChip } from "./changed-chip";
 import { ExampleSnippet } from "./example-snippet";
 import { TokenPreview } from "./token-preview";
 
@@ -47,16 +48,11 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
           <div className="flex flex-wrap gap-2">
             {preview.chosenLexemes.length ? (
               preview.chosenLexemes.map((mapping) => (
-                <span
+                <ChangedChip
                   key={mapping.original}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
-                >
-                  <span className="font-mono">{mapping.original}</span>
-                  <span className="text-slate-400">→</span>
-                  <span className="font-semibold text-cyan-600 dark:text-cyan-300">
-                    {mapping.custom}
-                  </span>
-                </span>
+                  original={mapping.original}
+                  changed={mapping.custom}
+                />
               ))
             ) : (
               <p className="text-xs text-slate-500 dark:text-slate-400">

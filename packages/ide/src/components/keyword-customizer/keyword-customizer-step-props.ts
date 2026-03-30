@@ -6,15 +6,11 @@ import {
 import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 import type { KeywordCustomizerContextValue } from "./keyword-customizer-types";
 import type { IdentityStepProps } from "./steps/identity-step";
-import type {
-  FlowStepProps,
-} from "./steps/flow-step";
+import type { FlowStepProps } from "./steps/flow-step";
 import type { ReviewStepProps } from "./steps/review-step";
 import type { RulesStepProps } from "./steps/rules-step";
 import type { StructureStepProps } from "./steps/structure-step";
-import type {
-  VariablesStepProps,
-} from "./steps/variables-step";
+import type { VariablesStepProps } from "./steps/variables-step";
 
 function getKeywordValue(
   context: KeywordCustomizerContextValue,
@@ -68,6 +64,13 @@ export function buildVariablesStepProps(
       printDescription: getKeywordDescription(context, "print"),
       scanKeyword: getKeywordValue(context, "scan"),
       scanDescription: getKeywordDescription(context, "scan"),
+      typingBeamKeywords: {
+        variavel: getKeywordValue(context, "variavel"),
+        string: getKeywordValue(context, "string"),
+        float: getKeywordValue(context, "float"),
+        int: getKeywordValue(context, "int"),
+        void: getKeywordValue(context, "void"),
+      },
       variableKeywords: variableKeywords.map((key) => ({
         key,
         value: getKeywordValue(context, key),
@@ -77,7 +80,8 @@ export function buildVariablesStepProps(
     actions: {
       syncTypingMode: (mode) => context.actions.syncMode("typing", mode),
       syncArrayMode: (mode) => context.actions.syncMode("array", mode),
-      syncKeyword: (original, value) => context.actions.syncKeyword(original, value),
+      syncKeyword: (original, value) =>
+        context.actions.syncKeyword(original, value),
       syncKeywordDescription: (original, value) =>
         context.actions.syncDocumentation(
           getKeywordDocumentationId(original),
@@ -143,7 +147,8 @@ export function buildStructureStepProps(
       syncStatementTerminatorDescription: (value) =>
         context.actions.syncDocumentation("terminator.statement", value),
       syncSemicolonMode: (mode) => context.actions.syncMode("semicolon", mode),
-      syncKeyword: (original, value) => context.actions.syncKeyword(original, value),
+      syncKeyword: (original, value) =>
+        context.actions.syncKeyword(original, value),
       syncKeywordDescription: (original, value) =>
         context.actions.syncDocumentation(
           getKeywordDocumentationId(original),
@@ -186,9 +191,15 @@ export function buildRulesStepProps(
       syncBooleanLiteral: context.actions.syncBooleanLiteral,
       syncOperatorAlias: context.actions.syncOperatorWord,
       syncBooleanLiteralDescription: (field, value) =>
-        context.actions.syncDocumentation(getBooleanDocumentationId(field), value),
+        context.actions.syncDocumentation(
+          getBooleanDocumentationId(field),
+          value,
+        ),
       syncOperatorAliasDescription: (field, value) =>
-        context.actions.syncDocumentation(getOperatorDocumentationId(field), value),
+        context.actions.syncDocumentation(
+          getOperatorDocumentationId(field),
+          value,
+        ),
     },
   };
 }
@@ -217,10 +228,13 @@ export function buildFlowStepProps(
         value: getKeywordValue(context, key),
         description: getKeywordDescription(context, key),
       })),
-      currentVocabulary: FLOW_FIELDS.map((key) => getKeywordValue(context, key)),
+      currentVocabulary: FLOW_FIELDS.map((key) =>
+        getKeywordValue(context, key),
+      ),
     },
     actions: {
-      syncKeyword: (original, value) => context.actions.syncKeyword(original, value),
+      syncKeyword: (original, value) =>
+        context.actions.syncKeyword(original, value),
       syncKeywordDescription: (original, value) =>
         context.actions.syncDocumentation(
           getKeywordDocumentationId(original),
