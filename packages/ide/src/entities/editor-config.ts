@@ -5,6 +5,7 @@ export const EDITOR_THEMES = ["vs", "vs-dark", "hc-black", "hc-light"];
 const DEFAULT_EDITOR_OPTIONS: TEditorConfig["editorOptions"] = {
   automaticLayout: true,
   glyphMargin: true,
+  fixedOverflowWidgets: true,
   minimap: { enabled: true },
   scrollbar: {
     vertical: "auto",
