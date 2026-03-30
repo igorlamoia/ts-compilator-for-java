@@ -25,7 +25,10 @@ export type FlowStepProps = {
     currentVocabulary: string[];
   };
   actions: {
-    syncKeyword: (original: (typeof FLOW_FIELDS)[number], value: string) => void;
+    syncKeyword: (
+      original: (typeof FLOW_FIELDS)[number],
+      value: string,
+    ) => void;
     syncKeywordDescription: (
       original: (typeof FLOW_FIELDS)[number],
       value: string,
@@ -33,10 +36,7 @@ export type FlowStepProps = {
   };
 };
 
-export function FlowStep({
-  values,
-  actions,
-}: FlowStepProps) {
+export function FlowStep({ values, actions }: FlowStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -68,7 +68,7 @@ export function FlowStep({
         ))}
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
+      <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
           Vocabulário atual da linguagem
         </p>

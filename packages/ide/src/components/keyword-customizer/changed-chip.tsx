@@ -32,7 +32,7 @@ export function ChangedChip({
   return (
     <div
       className={cn(
-        "z-10 inline-flex min-w-38 items-center justify-center gap-2 rounded-md border px-3 py-1.5 text-xs transition-colors",
+        "z-10 inline-flex min-w-38 items-center justify-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-colors",
         active
           ? "border-cyan-500/30 bg-cyan-50 dark:border-cyan-400/50 dark:bg-cyan-950/50"
           : "border-slate-200/30 bg-white dark:border-slate-700/50 dark:bg-slate-900",

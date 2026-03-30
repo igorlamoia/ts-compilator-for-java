@@ -36,10 +36,7 @@ export type StructureStepProps = {
   actions: {
     syncBlockMode: (mode: "delimited" | "indentation") => void;
     syncDelimiter: (field: "open" | "close", value: string) => void;
-    syncDelimiterDescription: (
-      field: "open" | "close",
-      value: string,
-    ) => void;
+    syncDelimiterDescription: (field: "open" | "close", value: string) => void;
     syncStatementTerminator: (value: string) => void;
     syncStatementTerminatorDescription: (value: string) => void;
     syncSemicolonMode: (mode: "optional-eol" | "required") => void;
@@ -51,11 +48,7 @@ export type StructureStepProps = {
   };
 };
 
-export function StructureStep({
-  values,
-  errors,
-  actions,
-}: StructureStepProps) {
+export function StructureStep({ values, errors, actions }: StructureStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -75,7 +68,7 @@ export function StructureStep({
           type="button"
           onClick={() => actions.syncSemicolonMode("optional-eol")}
           className={[
-            "rounded-2xl border px-4 py-3 text-left transition-colors",
+            "rounded-lg border px-4 py-3 text-left transition-colors",
             values.semicolonMode === "optional-eol"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
@@ -93,7 +86,7 @@ export function StructureStep({
           type="button"
           onClick={() => actions.syncSemicolonMode("required")}
           className={[
-            "rounded-2xl border px-4 py-3 text-left transition-colors",
+            "rounded-lg border px-4 py-3 text-left transition-colors",
             values.semicolonMode === "required"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
@@ -143,27 +136,25 @@ export function StructureStep({
         <OptionCard
           title="Chaves"
           description="Mantém a estrutura delimitada por símbolos tradicionais."
-          snippet={"if (condicao) {\n  escreva(\"ok\")\n}"}
+          snippet={'if (condicao) {\n  escreva("ok")\n}'}
           selected={
-            values.blockMode === "delimited" &&
-            !values.usesCustomDelimiters
+            values.blockMode === "delimited" && !values.usesCustomDelimiters
           }
           onClick={() => actions.syncBlockMode("delimited")}
         />
         <OptionCard
           title="Início / fim"
           description="Usa palavras para abrir e fechar blocos delimitados."
-          snippet={"se (condicao) inicio\n  escreva(\"ok\")\nfim"}
+          snippet={'se (condicao) inicio\n  escreva("ok")\nfim'}
           selected={
-            values.blockMode === "delimited" &&
-            values.usesCustomDelimiters
+            values.blockMode === "delimited" && values.usesCustomDelimiters
           }
           onClick={() => actions.syncBlockMode("delimited")}
         />
         <OptionCard
           title="Indentação"
           description="Organiza blocos pela indentação, sem delimitadores."
-          snippet={"se (condicao):\n  escreva(\"ok\")"}
+          snippet={'se (condicao):\n  escreva("ok")'}
           selected={values.blockMode === "indentation"}
           onClick={() => actions.syncBlockMode("indentation")}
         />
@@ -196,12 +187,14 @@ export function StructureStep({
       </div>
 
       {values.blockMode === "delimited" && errors.delimiter && (
-        <p className="text-sm text-red-600 dark:text-red-300">{errors.delimiter}</p>
+        <p className="text-sm text-red-600 dark:text-red-300">
+          {errors.delimiter}
+        </p>
       )}
 
       <ExampleSnippet
         title="Exemplo estrutural"
-        code={values.snippet ?? "if (condicao) {\n  print(\"ok\")\n}"}
+        code={values.snippet ?? 'if (condicao) {\n  print("ok")\n}'}
       />
     </section>
   );

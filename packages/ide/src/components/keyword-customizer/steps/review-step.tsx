@@ -17,10 +17,7 @@ export type ReviewStepProps = {
   };
 };
 
-export function ReviewStep({
-  values,
-  actions,
-}: ReviewStepProps) {
+export function ReviewStep({ values, actions }: ReviewStepProps) {
   const stepLabels = new Map(
     WIZARD_STEPS.map((step) => [step.id, step.title] as const),
   );
@@ -40,7 +37,7 @@ export function ReviewStep({
       </header>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
+        <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
             Nome da linguagem
           </p>
@@ -49,7 +46,7 @@ export function ReviewStep({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
+        <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
             Resumo das regras
           </p>
@@ -65,13 +62,14 @@ export function ReviewStep({
           </div>
           <div className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-300">
             <p>
-              As regras visíveis aqui já fazem parte do fluxo atual da linguagem.
+              As regras visíveis aqui já fazem parte do fluxo atual da
+              linguagem.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
+      <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
           Vocabulário atual da linguagem
         </p>
@@ -96,7 +94,7 @@ export function ReviewStep({
       <ExampleSnippet title="Preview do código" code={values.preview.snippet} />
       <TokenPreview tokens={values.preview.tokenPreview} />
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
+      <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
           Voltar para editar
         </p>

@@ -141,7 +141,7 @@ export function VariablesStep({ values, actions }: VariablesStepProps) {
           type="button"
           onClick={() => actions.syncArrayMode("fixed")}
           className={[
-            "rounded-2xl border px-4 py-3 text-left transition-colors",
+            "rounded-lg border px-4 py-3 text-left transition-colors",
             values.arrayMode === "fixed"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
@@ -159,7 +159,7 @@ export function VariablesStep({ values, actions }: VariablesStepProps) {
           type="button"
           onClick={() => actions.syncArrayMode("dynamic")}
           className={[
-            "rounded-2xl border px-4 py-3 text-left transition-colors",
+            "rounded-lg border px-4 py-3 text-left transition-colors",
             values.arrayMode === "dynamic"
               ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
               : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",

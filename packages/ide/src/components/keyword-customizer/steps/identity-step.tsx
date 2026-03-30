@@ -1,5 +1,5 @@
 import { Atom, Code, Languages, Sparkles, SquareTerminal } from "lucide-react";
-import { OptionCard } from "../option-card";
+import { OptionCard, OptionCardIconColor } from "../option-card";
 import type { WizardPresetId } from "../wizard-model";
 
 import type { ReactNode } from "react";
@@ -19,6 +19,7 @@ const PRESET_OPTIONS: Array<{
   description: string;
   snippet: string;
   icon: ReactNode;
+  iconColor?: OptionCardIconColor["iconColor"];
 }> = [
   {
     id: "traditional",
@@ -27,6 +28,7 @@ const PRESET_OPTIONS: Array<{
     description: "Mantém a linguagem próxima do vocabulário atual.",
     snippet: 'print("Olá mundo")',
     icon: <SquareTerminal className="h-5 w-5" />,
+    iconColor: "slate",
   },
   {
     id: "didactic-pt",
@@ -35,6 +37,7 @@ const PRESET_OPTIONS: Array<{
     description: "Prefere verbos em português para ensinar a estrutura.",
     snippet: 'escreva("Olá mundo")',
     icon: <Languages className="h-5 w-5" />,
+    iconColor: "violet",
   },
   {
     id: "minimal",
@@ -43,6 +46,7 @@ const PRESET_OPTIONS: Array<{
     description: "Reduz o vocabulário à menor superfície útil.",
     snippet: 'out("Olá mundo")',
     icon: <Code className="h-5 w-5" />,
+    iconColor: "emerald",
   },
   {
     id: "creative",
@@ -51,6 +55,7 @@ const PRESET_OPTIONS: Array<{
     description: "Explora uma linguagem mais expressiva e livre.",
     snippet: 'fale("Olá mundo")',
     icon: <Sparkles className="h-5 w-5" />,
+    iconColor: "rose",
   },
   {
     id: "free",
@@ -59,6 +64,7 @@ const PRESET_OPTIONS: Array<{
     description: "Deixa a configuração manual começar sem sugestão fixa.",
     snippet: 'diga("Olá mundo")',
     icon: <Atom className="h-5 w-5" />,
+    iconColor: "sky",
   },
 ];
 
@@ -87,6 +93,7 @@ export function IdentityStep({ values, actions }: IdentityStepProps) {
             description={preset.description}
             snippet={preset.snippet}
             icon={preset.icon}
+            iconColor={preset.iconColor}
             selected={preset.id === values.selectedPresetId}
             onClick={() => actions.selectPreset(preset.id)}
           />

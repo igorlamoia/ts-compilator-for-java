@@ -23,7 +23,7 @@ export function DocumentedField({
   disabled = false,
 }: DocumentedFieldProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
+    <div className="flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
       <label className="flex flex-col gap-2">
         <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           {label}

@@ -100,6 +100,25 @@ function resolveVariantFromElement(
   let current: Element | null = element;
 
   while (current) {
+    const classNames = getClassNameValue(current);
+
+    if (
+      classNames.includes("glyph-margin") ||
+      classNames.includes("line-numbers") ||
+      classNames.includes("margin-view-overlays")
+    ) {
+      return "pointer";
+    }
+
+    if (
+      classNames.includes("monaco-mouse-cursor-text") ||
+      classNames.includes("view-line") ||
+      classNames.includes("view-lines") ||
+      classNames.includes("lines-content")
+    ) {
+      return "text";
+    }
+
     if (current instanceof HTMLElement) {
       const variantAttr = current.dataset.pointerVariant;
       if (
