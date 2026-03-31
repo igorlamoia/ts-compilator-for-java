@@ -1,6 +1,10 @@
 import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
+import {
+  DEFAULT_BOOLEAN_LITERAL_MAP,
+  DEFAULT_OPERATOR_WORD_MAP,
+} from "@/lib/keyword-map";
 import { buildLexerConfigFromCustomization } from "@/lib/keyword-customization";
 import {
   WIZARD_PRESET_LABELS,
@@ -18,12 +22,17 @@ type PreviewToken = {
   type: number;
 };
 
+type PreviewLexemeChange = {
+  original: string;
+  custom: string;
+};
+
 export type WizardPreview = {
   languageLabel: string;
   dna: string[];
   snippet: string;
   tokenPreview: PreviewToken[];
-  chosenLexemes: StoredKeywordCustomization["mappings"];
+  chosenLexemes: PreviewLexemeChange[];
 };
 
 function getKeyword(
@@ -31,7 +40,8 @@ function getKeyword(
   original: string,
 ): string {
   return (
-    draft.mappings.find((item) => item.original === original)?.custom ?? original
+    draft.mappings.find((item) => item.original === original)?.custom ??
+    original
   );
 }
 
@@ -131,6 +141,70 @@ function tokenizePreview(
   }
 }
 
+function collectPreviewLexemeChanges(
+  draft: StoredKeywordCustomization,
+): PreviewLexemeChange[] {
+  const keywordChanges = draft.mappings
+    .filter((item) => item.custom !== item.original)
+    .map((item) => ({ original: item.original, custom: item.custom }));
+
+  const operatorWordChanges = (
+    Object.keys(DEFAULT_OPERATOR_WORD_MAP) as Array<
+      keyof typeof DEFAULT_OPERATOR_WORD_MAP
+    >
+  ).flatMap((key) => {
+    const original = DEFAULT_OPERATOR_WORD_MAP[key]?.trim();
+    const custom = draft.operatorWordMap[key]?.trim();
+
+    if (!original || !custom || custom === original) {
+      return [];
+    }
+
+    return [{ original, custom }];
+  });
+
+  const booleanLiteralChanges = (
+    Object.keys(DEFAULT_BOOLEAN_LITERAL_MAP) as Array<
+      keyof typeof DEFAULT_BOOLEAN_LITERAL_MAP
+    >
+  ).flatMap((key) => {
+    const original = DEFAULT_BOOLEAN_LITERAL_MAP[key]?.trim();
+    const custom = draft.booleanLiteralMap[key]?.trim();
+
+    if (!original || !custom || custom === original) {
+      return [];
+    }
+
+    return [{ original, custom }];
+  });
+
+  const statementTerminator = draft.statementTerminatorLexeme.trim();
+  const statementTerminatorChange =
+    statementTerminator && statementTerminator !== ";"
+      ? [{ original: ";", custom: statementTerminator }]
+      : [];
+
+  const blockOpen = draft.blockDelimiters.open.trim();
+  const blockClose = draft.blockDelimiters.close.trim();
+  const blockDelimiterChanges: PreviewLexemeChange[] = [];
+
+  if (blockOpen && blockOpen !== "{") {
+    blockDelimiterChanges.push({ original: "{", custom: blockOpen });
+  }
+
+  if (blockClose && blockClose !== "}") {
+    blockDelimiterChanges.push({ original: "}", custom: blockClose });
+  }
+
+  return [
+    ...keywordChanges,
+    ...operatorWordChanges,
+    ...booleanLiteralChanges,
+    ...statementTerminatorChange,
+    ...blockDelimiterChanges,
+  ];
+}
+
 export function buildWizardPreview(
   draft: StoredKeywordCustomization,
   options: BuildPreviewOptions,
@@ -150,8 +224,6 @@ export function buildWizardPreview(
     ],
     snippet,
     tokenPreview: tokenizePreview(draft, snippet),
-    chosenLexemes: draft.mappings.filter(
-      (item) => item.custom !== item.original,
-    ).slice(0, 6),
+    chosenLexemes: collectPreviewLexemeChanges(draft),
   };
 }

@@ -448,7 +448,9 @@ function buildHoverLexemes(
 ): string[] {
   const lexemes = [
     ...keywordMappings.map((mapping) => mapping.custom.trim()),
-    ...Object.values(options.operatorWordMap ?? {}).map((value) => value?.trim()),
+    ...Object.values(options.operatorWordMap ?? {}).map((value) =>
+      value?.trim(),
+    ),
     ...Object.values({
       ...DEFAULT_BOOLEAN_LITERAL_MAP,
       ...options.booleanLiteralMap,
@@ -707,8 +709,14 @@ export function registerJavaMMLanguage(
             range: hovered.range,
             contents: [
               { value: `**${entry.lexeme}**` },
-              { value: entry.category },
-              { value: entry.description },
+              { value: `*${entry.category}*` },
+              {
+                value: `${entry.description}\n\nExemplo inline: \`${entry.lexeme}\`\n\n\
+\
+\
+\
+\`\`\`java--\n${entry.lexeme}();\n\`\`\`\n\n[Monaco Markdown Guide](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md)`,
+              },
             ],
           };
         },
