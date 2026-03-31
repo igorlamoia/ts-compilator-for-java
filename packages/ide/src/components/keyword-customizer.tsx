@@ -1,5 +1,8 @@
 import { Form } from "@/components/ui/form";
-import { PreviewPanel } from "./keyword-customizer/preview-panel";
+import {
+  PreviewPanel,
+  PreviewPanelProps,
+} from "./keyword-customizer/preview-panel";
 import { WizardStepper } from "./keyword-customizer/wizard-stepper";
 import {
   KeywordCustomizerProvider,
@@ -37,11 +40,14 @@ function KeywordCustomizerShell() {
 
           <div className="backdrop-blur-[2px] ">
             <div className="grid min-h-0 flex-1 lg:grid-cols-[240px_minmax(0,1fr)_320px]">
-              <WizardStepper
-                steps={visibleSteps}
-                activeStepId={activeStep.id}
-                onStepClick={actions.goToWizardStep}
-              />
+              <div>
+                <WizardStepper
+                  steps={visibleSteps}
+                  activeStepId={activeStep.id}
+                  onStepClick={actions.goToWizardStep}
+                />
+                <LanguageBasedCard preview={preview} />
+              </div>
 
               <div className="min-h-0 overflow-y-auto border-t border-slate-200/70  dark:border-slate-800/80  xl:border-x xl:border-t-0">
                 <div className="min-h-0 flex-1 overflow-y-auto p-5">
@@ -71,5 +77,40 @@ export function KeywordCustomizer() {
     <KeywordCustomizerProvider>
       <KeywordCustomizerShell />
     </KeywordCustomizerProvider>
+  );
+}
+
+function LanguageBasedCard({
+  preview,
+}: {
+  preview: PreviewPanelProps["preview"];
+}) {
+  return (
+    <section className="mt-6 mr-2 space-y-3 rounded-lg border border-slate-200/80 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+          Baseado em
+        </p>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          {preview.languageLabel}
+        </h3>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          DNA da linguagem
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {preview.dna.map((item) => (
+            <span
+              key={item}
+              className="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950/60 dark:text-cyan-200"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

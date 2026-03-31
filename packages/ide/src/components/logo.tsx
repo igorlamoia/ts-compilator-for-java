@@ -1,12 +1,12 @@
-import { CodeXml } from "lucide-react";
+// import { CodeXml } from "lucide-react";
 import Link from "next/link";
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-3 group tracking-tight">
-      <div className="w-10 text-slate-800 h-10 rounded-xl bg-linear-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center  shadow-[0_0_15px_rgba(13,204,242,0.4)] group-hover:shadow-[0_0_25px_rgba(13,204,242,0.6)] transition-all duration-300">
+    <Link href="/" className="flex items-center gap-3 group -tracking-tighter">
+      {/* <div className="w-10 text-slate-800 h-10 rounded-xl bg-linear-to-br from-[#0dccf2] to-[#10b981] flex items-center justify-center  shadow-[0_0_15px_rgba(13,204,242,0.4)] group-hover:shadow-[0_0_25px_rgba(13,204,242,0.6)] transition-all duration-300">
         <CodeXml />
-      </div>
+      </div> */}
       <div className="hidden md:flex flex-col">
         <p className="text-xl font-black text-slate-700 dark:text-white">
           <span className="absolute top-1.5 text-4xl text-[#0dccf2] drop-shadow-[0_0_8px_rgba(13,204,242,0.8)]">
