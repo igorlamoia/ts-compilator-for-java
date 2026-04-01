@@ -3,6 +3,7 @@ import type {
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
 import { DocumentedField } from "../documented-field";
+import { TextPressure } from "@/components/TextPressure";
 
 export type RulesStepProps = {
   values: {
@@ -29,10 +30,7 @@ export type RulesStepProps = {
       field: keyof IDEBooleanLiteralMap,
       value: string,
     ) => void;
-    syncOperatorAlias: (
-      field: keyof IDEOperatorWordMap,
-      value: string,
-    ) => void;
+    syncOperatorAlias: (field: keyof IDEOperatorWordMap, value: string) => void;
     syncBooleanLiteralDescription: (
       field: keyof IDEBooleanLiteralMap,
       value: string,
@@ -44,11 +42,7 @@ export type RulesStepProps = {
   };
 };
 
-export function RulesStep({
-  values,
-  errors,
-  actions,
-}: RulesStepProps) {
+export function RulesStep({ values, errors, actions }: RulesStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -62,6 +56,20 @@ export function RulesStep({
           Ajuste apenas as regras já suportadas pelo domínio atual.
         </p>
       </header>
+      <div style={{ position: "relative", height: "100px" }}>
+        <TextPressure
+          text="Hello World!"
+          flex
+          alpha={false}
+          stroke={false}
+          width
+          weight
+          italic
+          textColor="#ffffff"
+          strokeColor="#5227FF"
+          minFontSize={36}
+        />
+      </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         {values.booleanLiterals.map((field) => (
@@ -70,7 +78,9 @@ export function RulesStep({
             label={field.label}
             value={field.value}
             description={field.description}
-            onValueChange={(value) => actions.syncBooleanLiteral(field.key, value)}
+            onValueChange={(value) =>
+              actions.syncBooleanLiteral(field.key, value)
+            }
             onDescriptionChange={(value) =>
               actions.syncBooleanLiteralDescription(field.key, value)
             }
@@ -91,7 +101,9 @@ export function RulesStep({
             label={field.label}
             value={field.value}
             description={field.description}
-            onValueChange={(value) => actions.syncOperatorAlias(field.key, value)}
+            onValueChange={(value) =>
+              actions.syncOperatorAlias(field.key, value)
+            }
             onDescriptionChange={(value) =>
               actions.syncOperatorAliasDescription(field.key, value)
             }
@@ -101,7 +113,9 @@ export function RulesStep({
       </div>
 
       {errors.operator && (
-        <p className="text-sm text-red-600 dark:text-red-300">{errors.operator}</p>
+        <p className="text-sm text-red-600 dark:text-red-300">
+          {errors.operator}
+        </p>
       )}
     </section>
   );

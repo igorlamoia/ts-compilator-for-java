@@ -1,6 +1,6 @@
 import type { WizardPreview } from "../preview-data";
 import { WIZARD_STEPS, type WizardStepId } from "../wizard-model";
-import { ExampleSnippet } from "../example-snippet";
+import { PreviewCodeComparison } from "../preview-code-comparison";
 import { TokenPreview } from "../token-preview";
 
 export type ReviewStepProps = {
@@ -91,7 +91,11 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
         </div>
       </div>
 
-      <ExampleSnippet title="Preview do código" code={values.preview.snippet} />
+      <PreviewCodeComparison
+        title="Comparação do código final"
+        beforeCode={values.preview.baselineSnippet}
+        afterCode={values.preview.snippet}
+      />
       <TokenPreview tokens={values.preview.tokenPreview} />
 
       <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">

@@ -1,5 +1,6 @@
 import { Lexer } from "@ts-compilator-for-java/compiler/src/lexer";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
+import { getDefaultCustomizationState } from "@/contexts/keyword/KeywordContext";
 import { buildEffectiveKeywordMap } from "@/lib/keyword-map";
 import {
   DEFAULT_BOOLEAN_LITERAL_MAP,
@@ -30,6 +31,7 @@ type PreviewLexemeChange = {
 export type WizardPreview = {
   languageLabel: string;
   dna: string[];
+  baselineSnippet: string;
   snippet: string;
   tokenPreview: PreviewToken[];
   chosenLexemes: PreviewLexemeChange[];
@@ -209,6 +211,10 @@ export function buildWizardPreview(
   draft: StoredKeywordCustomization,
   options: BuildPreviewOptions,
 ): WizardPreview {
+  const baselineSnippet = buildPreviewSource(
+    getDefaultCustomizationState(),
+    options.activeStepId,
+  );
   const snippet = buildPreviewSource(draft, options.activeStepId);
 
   return {
@@ -222,6 +228,7 @@ export function buildWizardPreview(
         ? "terminador obrigatorio"
         : "fim de linha opcional",
     ],
+    baselineSnippet,
     snippet,
     tokenPreview: tokenizePreview(draft, snippet),
     chosenLexemes: collectPreviewLexemeChanges(draft),

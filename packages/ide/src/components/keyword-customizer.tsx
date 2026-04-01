@@ -38,7 +38,7 @@ function KeywordCustomizerShell() {
             onReset={actions.resetDraft}
           />
 
-          <div className="backdrop-blur-[2px] ">
+          <div>
             <div className="grid min-h-0 flex-1 lg:grid-cols-[240px_minmax(0,1fr)_320px]">
               <div>
                 <WizardStepper

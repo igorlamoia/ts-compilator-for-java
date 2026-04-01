@@ -23,7 +23,12 @@
 - [x] verificar tokens de bool conflitando com original (true e false)
 - [ ] Permitir caracteres como ç e acentos, tal como __
 
-
+Particles:
+https://particles.js.org/samples/index.html#amongUs
+Tree js:
+https://r3f.docs.pmnd.rs/getting-started/examples
+SENSACIONAL TUDO:
+https://reactbits.dev/backgrounds/letter-glitcht
 
 ##### Plus
 - [ ] git functions
