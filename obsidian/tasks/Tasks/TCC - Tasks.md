@@ -11,22 +11,32 @@
 - [x] Personalizar operadores - Colorir também FEITO
 - [x] Desabilitar spell check (atrapalha blocos)
 - [ ] Fluxograma
-- [ ] Debug 
-	- [ ] Código
-	- [ ] Fluxograma
+- [ ] Debug
+  - [ ] Código
+  - [ ] Fluxograma
 - [ ] Fórum para turma, instituição e para o site como um todo (Victor)
 - [ ] Run terminal comands to compile (atalho para play)
 - [ ] Explicações avançadas de Lexer, código intermediário e Interpretação (pra ser didático)
 - [ ] Adicionar ternário
-- [x] Remover lógicas de se for identado vai ser não tipado e  não tipado já ser array dinamico (deixar esse pré-set rápido de configurar, mas não tão engessado assim)
+- [x] Remover lógicas de se for identado vai ser não tipado e não tipado já ser array dinamico (deixar esse pré-set rápido de configurar, mas não tão engessado assim)
 - [x] identação tem que ser PERFEITA
 - [x] verificar tokens de bool conflitando com original (true e false)
+- [ ] Permitir caracteres como ç e acentos, tal como \_\_
 
+Particles:
+https://particles.js.org/samples/index.html#amongUs
+Tree js:
+https://r3f.docs.pmnd.rs/getting-started/examples
+SENSACIONAL TUDO:
+https://reactbits.dev/backgrounds/letter-glitcht
 
+Perfil?
+https://reactbits.dev/components/profile-card
 
 ##### Plus
+
 - [ ] git functions
-	- [ ] conectar de fato com o git
+  - [ ] conectar de fato com o git
 - [ ] Programar pelo Fluxograma
 - [ ] Exportar os arquivos (que ele controla)
 - [ ] Adicionar Temas (comunidade)

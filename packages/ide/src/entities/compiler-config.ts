@@ -1,3 +1,5 @@
+import { KeywordMapping } from "@/contexts/keyword/types";
+
 export type IDESemicolonMode = "optional-eol" | "required";
 export type IDEBlockMode = "delimited" | "indentation";
 export type IDETypingMode = "typed" | "untyped";
@@ -20,11 +22,37 @@ export type IDEBooleanLiteralMap = {
   false?: string;
 };
 
+export type IDELanguageDocumentationEntry = {
+  description: string;
+};
+
+export type IDELanguageDocumentationMap = Record<
+  string,
+  IDELanguageDocumentationEntry
+>;
+
 export type IDEGrammarConfig = {
   semicolonMode: IDESemicolonMode;
   blockMode: IDEBlockMode;
   typingMode: IDETypingMode;
   arrayMode: IDEArrayMode;
+};
+
+export type IDEKeywordCustomizationModes = {
+  semicolon: IDESemicolonMode;
+  block: IDEBlockMode;
+  typing: IDETypingMode;
+  array: IDEArrayMode;
+};
+
+export type IDEKeywordCustomizationState = {
+  mappings: KeywordMapping[];
+  operatorWordMap: IDEOperatorWordMap;
+  booleanLiteralMap: IDEBooleanLiteralMap;
+  statementTerminatorLexeme: string;
+  blockDelimiters: { open: string; close: string };
+  modes: IDEKeywordCustomizationModes;
+  languageDocumentation: IDELanguageDocumentationMap;
 };
 
 export type IDECompilerConfigPayload = {
@@ -35,6 +63,7 @@ export type IDECompilerConfigPayload = {
   blockDelimiters?: { open: string; close: string };
   indentationBlock: boolean;
   grammar: IDEGrammarConfig;
+  languageDocumentation: IDELanguageDocumentationMap;
 };
 
 export type IDEPartialCompilerConfigPayload = {
@@ -45,4 +74,5 @@ export type IDEPartialCompilerConfigPayload = {
   blockDelimiters?: { open: string; close: string };
   indentationBlock?: boolean;
   grammar?: Partial<IDEGrammarConfig>;
+  languageDocumentation?: IDELanguageDocumentationMap;
 };

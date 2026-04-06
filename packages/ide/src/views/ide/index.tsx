@@ -23,8 +23,7 @@ import { EditorContext, EditorProvider } from "@/contexts/editor/EditorContext";
 import { QuickFileSearch } from "@/components/quick-file-search";
 import { useIntermediatorCode } from "@/hooks/useIntermediatorCode";
 import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
-import { KeywordCustomizer } from "@/components/keyword-customizer";
-import { KeywordProvider } from "@/contexts/KeywordContext";
+import { KeywordProvider } from "@/contexts/keyword/KeywordContext";
 
 const DEFAULT_FILES = [
   { path: "src/main.?", initialCode: "// Main file\n" },
@@ -201,7 +200,6 @@ export function IDE() {
           </div>
         </div>
       </RuntimeErrorProvider>
-      <KeywordCustomizer />
     </>
   );
 }

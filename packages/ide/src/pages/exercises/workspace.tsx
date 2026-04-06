@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
 import { EditorContext, EditorProvider } from "@/contexts/editor/EditorContext";
-import { KeywordProvider } from "@/contexts/KeywordContext";
+import { KeywordProvider } from "@/contexts/keyword/KeywordContext";
 import { RuntimeErrorProvider } from "@/contexts/RuntimeErrorContext";
 import { IDE } from "@/views/ide";
 import { TerminalProvider } from "@/contexts/TerminalContext";
@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { localApi } from "@/lib/local-api";
 import { useToast } from "@/contexts/ToastContext";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { useKeywords } from "@/contexts/keyword/KeywordContext";
 import { useRouter } from "next/router";
 import { getAuthToken } from "@/lib/auth-cookies";
 import { CheckCircle2, Circle, ChevronRight, ListChecks } from "lucide-react";
@@ -30,11 +30,15 @@ function ListNavigatorSidebar({
   classId?: string;
 }) {
   const sorted = list.items.slice().sort((a, b) => a.orderIndex - b.orderIndex);
-  const currentIdx = sorted.findIndex((i) => i.exerciseId === currentExerciseId);
+  const currentIdx = sorted.findIndex(
+    (i) => i.exerciseId === currentExerciseId,
+  );
 
   const submittedSet = new Set<number>(list.submittedExerciseIds ?? []);
 
-  const completedCount = sorted.filter((i) => submittedSet.has(i.exerciseId)).length;
+  const completedCount = sorted.filter((i) =>
+    submittedSet.has(i.exerciseId),
+  ).length;
 
   return (
     <div className="w-52 shrink-0 border-r border-white/5 bg-[#0b1719]/80 backdrop-blur-md flex flex-col overflow-hidden">
@@ -79,7 +83,9 @@ function ListNavigatorSidebar({
               <span className="font-mono text-[10px] opacity-50 shrink-0">
                 {String(idx + 1).padStart(2, "0")}
               </span>
-              <span className="truncate leading-tight">{item.exercise.title}</span>
+              <span className="truncate leading-tight">
+                {item.exercise.title}
+              </span>
             </Link>
           );
         })}
@@ -173,7 +179,12 @@ function WorkspaceContent({
         },
         // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
         // Passes x-user-id and the JWT token so the route can forward to the Python backend.
-        { headers: { "x-user-id": String(userId), "x-authorization": getAuthToken() ?? "" } },
+        {
+          headers: {
+            "x-user-id": String(userId),
+            "x-authorization": getAuthToken() ?? "",
+          },
+        },
       );
 
       if (!data.valid) {
@@ -224,7 +235,11 @@ function WorkspaceContent({
       <header className="relative z-10 flex justify-between items-center px-6 py-3 bg-[#101f22]/90 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-4">
           <Link
-            href={list ? `/exercise-lists/${list.id}${classId ? `?classId=${classId}` : ""}` : "/dashboard"}
+            href={
+              list
+                ? `/exercise-lists/${list.id}${classId ? `?classId=${classId}` : ""}`
+                : "/dashboard"
+            }
             className="text-xs text-slate-500 hover:text-white transition-colors"
           >
             {list ? `← ${list.title}` : "← Painel"}
@@ -473,11 +488,23 @@ export default function ExerciseWorkspace({
               <WorkspaceContent
                 exercise={exercise}
                 userId={userId!}
-                list={list ? { ...list, submittedExerciseIds: [...(list.submittedExerciseIds ?? []), ...localSubmittedIds] } : undefined}
+                list={
+                  list
+                    ? {
+                        ...list,
+                        submittedExerciseIds: [
+                          ...(list.submittedExerciseIds ?? []),
+                          ...localSubmittedIds,
+                        ],
+                      }
+                    : undefined
+                }
                 classId={classId}
                 onSubmitSuccess={(id) => {
                   const parsedId = Number(id);
-                  setLocalSubmittedIds((prev) => (prev.includes(parsedId) ? prev : [...prev, parsedId]));
+                  setLocalSubmittedIds((prev) =>
+                    prev.includes(parsedId) ? prev : [...prev, parsedId],
+                  );
                 }}
               />
             </TerminalProvider>

@@ -1,7 +1,8 @@
 import IconButton from "@/components/buttons/icon-button";
 import { FileCode2, GitBranch, Search, Settings } from "lucide-react";
+import { useRouter } from "next/router";
 import type { SidebarView } from "./side-explorer/sidebar-panel";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { markLanguageCreatorReturn } from "@/lib/language-creator-navigation";
 
 interface SideMenuProps {
   isSidebarOpen: boolean;
@@ -54,11 +55,15 @@ export function SideMenu({
 }
 
 function ConfigButton() {
-  const { setIsOpenKeywordCustomizer } = useKeywords();
+  const router = useRouter();
+
   return (
     <IconButton
       tooltip="Configurações"
-      onClick={() => setIsOpenKeywordCustomizer(true)}
+      onClick={() => {
+        markLanguageCreatorReturn();
+        void router.push("/language-creator");
+      }}
     >
       <Settings className="h-4 w-4" />
     </IconButton>

@@ -7,7 +7,7 @@ import { classifyTokens } from "@/utils/compiler/editor/tokens";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CardsPreview } from "./cards-preview";
-import { useKeywords } from "@/contexts/KeywordContext";
+import { useKeywords } from "@/contexts/keyword/KeywordContext";
 import { useRouter } from "next/router";
 import { t } from "@/i18n";
 
@@ -18,7 +18,9 @@ interface IShowTokensProps {
 const TokenClassification = new Classification();
 
 export function ShowTokens({ analyseData }: IShowTokensProps) {
-  const { mappings } = useKeywords();
+  const {
+    customization: { mappings },
+  } = useKeywords();
   const { locale } = useRouter();
 
   const keyTypeIndexs = mappings.reduce(

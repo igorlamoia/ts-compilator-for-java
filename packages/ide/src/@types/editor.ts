@@ -20,6 +20,7 @@ export enum ESeverity {
 export type TEditorConfig = {
   theme: string;
   language: string;
+  editorOptions: monacoEditor.editor.IStandaloneEditorConstructionOptions;
 };
 
 import type * as monacoEditor from "monaco-editor";

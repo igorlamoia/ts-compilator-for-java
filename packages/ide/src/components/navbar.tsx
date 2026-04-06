@@ -99,7 +99,12 @@ export function Navbar({ links, hasAuth = true }: NavbarProps) {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onSelect={() => { setIsMenuOpen(false); push("/dashboard"); }}>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setIsMenuOpen(false);
+                      push("/dashboard");
+                    }}
+                  >
                     <LayoutDashboard className="w-4 h-4" />
                     Dashboard
                   </DropdownMenuItem>
