@@ -1,4 +1,4 @@
-import { Atom, Code, Languages, Sparkles, SquareTerminal } from "lucide-react";
+import { Atom, Code, Languages, Sparkles } from "lucide-react";
 import { OptionCard, OptionCardIconColor } from "../option-card";
 import type { WizardPresetId } from "../wizard-model";
 
@@ -19,44 +19,8 @@ const PRESET_OPTIONS: Array<{
   description: string;
   snippet: string;
   icon: ReactNode;
-  iconColor?: OptionCardIconColor["iconColor"];
+  iconColor?: OptionCardIconColor;
 }> = [
-  {
-    id: "traditional",
-    title: "Tradicional",
-    subtitle: "STANDARD C-STYLE",
-    description: "Mantém a linguagem próxima do vocabulário atual.",
-    snippet: 'print("Olá mundo")',
-    icon: <SquareTerminal className="h-5 w-5" />,
-    iconColor: "slate",
-  },
-  {
-    id: "didactic-pt",
-    title: "Didática em Português",
-    subtitle: "PT-BR LOGIC",
-    description: "Prefere verbos em português para ensinar a estrutura.",
-    snippet: 'escreva("Olá mundo")',
-    icon: <Languages className="h-5 w-5" />,
-    iconColor: "violet",
-  },
-  {
-    id: "minimal",
-    title: "Minimalista",
-    subtitle: "ZERO SYNTAX",
-    description: "Reduz o vocabulário à menor superfície útil.",
-    snippet: 'out("Olá mundo")',
-    icon: <Code className="h-5 w-5" />,
-    iconColor: "emerald",
-  },
-  {
-    id: "creative",
-    title: "Criativa",
-    subtitle: "NATURAL SPEAK",
-    description: "Explora uma linguagem mais expressiva e livre.",
-    snippet: 'fale("Olá mundo")',
-    icon: <Sparkles className="h-5 w-5" />,
-    iconColor: "rose",
-  },
   {
     id: "free",
     title: "Livre",
@@ -64,7 +28,52 @@ const PRESET_OPTIONS: Array<{
     description: "Deixa a configuração manual começar sem sugestão fixa.",
     snippet: 'diga("Olá mundo")',
     icon: <Atom className="h-5 w-5" />,
-    iconColor: "sky",
+    iconColor: "cyan",
+  },
+  {
+    id: "didactic-pt",
+    title: "Didatica em Portugues",
+    subtitle: "PT-BR LOGIC",
+    description: "Traz o vocabulário de controle, tipos e blocos para português.",
+    snippet: 'inicio\n  escreva("Olá mundo")\nfim',
+    icon: <Languages className="h-5 w-5" />,
+    iconColor: "violet",
+  },
+  {
+    id: "minimal",
+    title: "Minimalista",
+    subtitle: "ZERO SURFACE",
+    description: "Mantém todos os comandos visíveis, mas com aliases curtos.",
+    snippet: 'out("Olá mundo").',
+    icon: <Code className="h-5 w-5" />,
+    iconColor: "emerald",
+  },
+  {
+    id: "python-like",
+    title: "Pythonica",
+    subtitle: "INDENTED FLOW",
+    description: "Troca blocos por indentacao e remove terminadores explicitos.",
+    snippet: 'se (verdadeiro):\n  imprime("Olá mundo")',
+    icon: <Sparkles className="h-5 w-5" />,
+    iconColor: "rose",
+  },
+  {
+    id: "ruby-like",
+    title: "Ruby-like",
+    subtitle: "BEGIN / END",
+    description: "Usa blocos com inicio e fim, com nomes proximos do Ruby.",
+    snippet: 'if_then (true_word) inicio\n  puts("Olá mundo")\nfim',
+    icon: <Code className="h-5 w-5" />,
+    iconColor: "rose",
+  },
+  {
+    id: "mineres-like",
+    title: "Mineres",
+    subtitle: "TREM BUNITO",
+    description: "Puxa o vocabulário para um dialeto regional em tudo que o modelo suporta.",
+    snippet: 'simbora\n  oia_proce_ve("Olá mundo")\ncabo uai',
+    icon: <Languages className="h-5 w-5" />,
+    iconColor: "amber",
   },
 ];
 

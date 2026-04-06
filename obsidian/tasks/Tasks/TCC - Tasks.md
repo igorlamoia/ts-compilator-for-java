@@ -30,6 +30,8 @@ https://r3f.docs.pmnd.rs/getting-started/examples
 SENSACIONAL TUDO:
 https://reactbits.dev/backgrounds/letter-glitcht
 
+Perfil?
+https://reactbits.dev/components/profile-card
 ##### Plus
 - [ ] git functions
 	- [ ] conectar de fato com o git

@@ -6,19 +6,20 @@ import {
   JAVAMM_LANGUAGE_ID,
   registerJavaMMLanguage,
 } from "@/utils/compiler/editor/editor-language";
-import { Terminal } from "@/components/ui/terminal";
 import { useKeywordCustomizer } from "./keyword-customizer-context";
 
 type ExampleSnippetProps = {
   title: string;
   code: string;
+  output?: string[];
 };
 
-export function ExampleSnippet({ title, code }: ExampleSnippetProps) {
+export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
   const { darkMode } = useTheme();
   const { draftCustomization } = useKeywordCustomizer();
   const [highlightedCode, setHighlightedCode] = useState<string | null>(null);
   const lines = useMemo(() => code.split("\n"), [code]);
+  const hasOutput = Boolean(output?.length);
 
   useEffect(() => {
     let isCancelled = false;
@@ -68,38 +69,72 @@ export function ExampleSnippet({ title, code }: ExampleSnippetProps) {
   }, [code, darkMode, draftCustomization]);
 
   return (
-    <section className="space-y-2">
+    <section className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
         {title}
       </p>
-      <Terminal
-        sequence={false}
-        className={`max-w-none overflow-hidden rounded-lg ${
+      <div
+        className={`overflow-hidden rounded-2xl border ${
           darkMode
-            ? "border-slate-800 bg-slate-950"
-            : "border-slate-200/80 bg-white"
+            ? "border-slate-800 bg-[#0b1020] shadow-[0_20px_60px_-30px_rgba(15,23,42,0.8)]"
+            : "border-slate-200/80 bg-white shadow-[0_20px_60px_-30px_rgba(15,23,42,0.15)]"
         }`}
       >
-        {highlightedCode ? (
-          <span
-            className={`font-mono text-xs leading-6 ${
-              darkMode ? "text-cyan-100" : "text-slate-800"
-            }`}
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-          />
-        ) : (
-          lines.map((line, index) => (
-            <span
-              key={`${index}-${line}`}
-              className={`font-mono text-xs leading-6 ${
-                darkMode ? "text-cyan-100" : "text-slate-800"
-              }`}
-            >
-              {line || " "}
-            </span>
-          ))
-        )}
-      </Terminal>
+        <div className="flex items-center justify-between border-b border-slate-800/10 px-4 py-3 dark:border-white/10">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-red-500/90" />
+            <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/90" />
+            <span className="h-2.5 w-2.5 rounded-full bg-green-500/90" />
+          </div>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+            Editor
+          </span>
+        </div>
+
+        <div className="grid min-h-64 bg-[#090e1a] text-slate-100">
+          <div className="grid grid-cols-[3.5rem_minmax(0,1fr)]">
+            <div className="border-r border-white/5 bg-black/10 px-3 py-4 text-right font-mono text-[11px] leading-6 text-slate-500">
+              {lines.map((_, index) => (
+                <div key={index}>{String(index + 1).padStart(2, "0")}</div>
+              ))}
+            </div>
+
+            <pre className="overflow-auto p-4 font-mono text-xs leading-6 text-cyan-100">
+              {highlightedCode ? (
+                <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+              ) : (
+                <code>
+                  {lines.map((line, index) => (
+                    <span key={`${index}-${line}`}>
+                      {line || " "}
+                      {index < lines.length - 1 ? "\n" : null}
+                    </span>
+                  ))}
+                </code>
+              )}
+            </pre>
+          </div>
+
+          {hasOutput ? (
+            <div className="border-t border-white/8 bg-[#050914] px-4 py-3">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Terminal
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.22em] text-slate-600">
+                  Saída
+                </span>
+              </div>
+
+              <div className="font-mono text-xs leading-6 text-emerald-200">
+                {output!.map((line, index) => (
+                  <div key={`${index}-${line}`}>{line || " "}</div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </section>
   );
 }

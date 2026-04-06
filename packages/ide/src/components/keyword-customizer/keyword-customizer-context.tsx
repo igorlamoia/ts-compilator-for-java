@@ -389,16 +389,17 @@ export function KeywordCustomizerProvider({
   }, [activeStepIndex, visibleSteps]);
 
   const goToNextWizardStep = useCallback(() => {
-    if (activeStep.id === "variables") {
+    if (activeStep.id === "IO") {
+      const keywordError = validateWizardKeywordGroup(["print", "scan"]);
+      if (keywordError) return;
+    }
+
+    if (activeStep.id === "types") {
       const visibleVariableKeywords =
         draftCustomization.modes.typing === "typed"
           ? ["int", "float", "bool", "string"]
           : ["variavel"];
-      const keywordError = validateWizardKeywordGroup([
-        "print",
-        "scan",
-        ...visibleVariableKeywords,
-      ]);
+      const keywordError = validateWizardKeywordGroup(visibleVariableKeywords);
       if (keywordError) return;
     }
 

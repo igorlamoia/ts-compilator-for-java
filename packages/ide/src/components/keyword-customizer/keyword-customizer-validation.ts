@@ -16,9 +16,9 @@ type WizardStepValidationContext = KeywordCustomizerErrorState & {
 export function resolveStepAfterKeywordValidationFailure(
   original: string,
 ): WizardStepId {
-  if (["print", "scan"].includes(original)) return "variables";
+  if (["print", "scan"].includes(original)) return "IO";
   if (["int", "float", "bool", "string", "variavel"].includes(original)) {
-    return "variables";
+    return "types";
   }
   if (["void", "funcao"].includes(original)) return "structure";
   if (
@@ -60,7 +60,7 @@ export function getValidationErrorForWizardStep(
   stepId: WizardStepId,
   context: WizardStepValidationContext,
 ): string | null {
-  if (stepId === "variables") {
+  if (stepId === "IO" || stepId === "types") {
     return context.currentError;
   }
 

@@ -3,7 +3,6 @@ import type {
   IDEOperatorWordMap,
 } from "@/entities/compiler-config";
 import { DocumentedField } from "../documented-field";
-import { TextPressure } from "@/components/TextPressure";
 
 export type RulesStepProps = {
   values: {
@@ -56,20 +55,6 @@ export function RulesStep({ values, errors, actions }: RulesStepProps) {
           Ajuste apenas as regras já suportadas pelo domínio atual.
         </p>
       </header>
-      <div style={{ position: "relative", height: "100px" }}>
-        <TextPressure
-          text="Hello World!"
-          flex
-          alpha={false}
-          stroke={false}
-          width
-          weight
-          italic
-          textColor="#ffffff"
-          strokeColor="#5227FF"
-          minFontSize={36}
-        />
-      </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         {values.booleanLiterals.map((field) => (

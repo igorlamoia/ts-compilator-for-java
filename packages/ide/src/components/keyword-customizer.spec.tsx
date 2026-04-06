@@ -21,9 +21,15 @@ const validateStatementTerminatorLexemeMock = vi.fn<
   (...args: unknown[]) => string | null
 >(() => null);
 
-vi.mock("@/contexts/keyword/KeywordContext", () => ({
-  useKeywords: () => useKeywordsMock(),
-}));
+vi.mock("@/contexts/keyword/KeywordContext", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/contexts/keyword/KeywordContext")>();
+
+  return {
+    ...actual,
+    useKeywords: () => useKeywordsMock(),
+  };
+});
 
 vi.mock("next/router", () => ({
   useRouter: () => useRouterMock(),
@@ -288,6 +294,14 @@ describe("KeywordCustomizer", () => {
     useKeywordsMock.mockReturnValue(createKeywordsContext());
 
     const { container, root } = render();
+    const presetLabels = [
+      "Livre",
+      "Didatica em Portugues",
+      "Minimalista",
+      "Pythonica",
+      "Ruby-like",
+      "Mineres",
+    ];
 
     const clickPreset = (label: string) => {
       const button = Array.from(container.querySelectorAll("button")).find(
@@ -302,23 +316,24 @@ describe("KeywordCustomizer", () => {
       });
     };
 
-    clickPreset("Criativa");
+    const presetButtons = Array.from(container.querySelectorAll("button")).filter(
+      (button) =>
+        presetLabels.some((label) => button.textContent?.includes(label)),
+    );
+    expect(presetButtons[0]?.textContent).toContain("Livre");
+
+    clickPreset("Pythonica");
     expect(
       getSectionByTitle(container, "Resumo parcial")?.textContent,
-    ).toContain("entregue");
+    ).toContain("imprime");
 
     clickPreset("Livre");
     const previewAfterFree = getSectionByTitle(container, "Resumo parcial");
     expect(previewAfterFree?.textContent).toContain(
       "As escolhas personalizadas vao aparecer aqui",
     );
-    expect(previewAfterFree?.textContent).not.toContain("entregue");
-    expect(previewAfterFree?.textContent).not.toContain("fale");
-
-    clickPreset("Tradicional");
-    expect(
-      getSectionByTitle(container, "Resumo parcial")?.textContent,
-    ).toContain("As escolhas personalizadas vao aparecer aqui");
+    expect(previewAfterFree?.textContent).not.toContain("imprime");
+    expect(previewAfterFree?.textContent).not.toContain("retorne");
 
     act(() => {
       root.unmount();

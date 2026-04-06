@@ -10,7 +10,7 @@ import type { FlowStepProps } from "./steps/flow-step";
 import type { ReviewStepProps } from "./steps/review-step";
 import type { RulesStepProps } from "./steps/rules-step";
 import type { StructureStepProps } from "./steps/structure-step";
-import type { VariablesStepProps } from "./steps/variables-step";
+import type { VariablesStepProps } from "./steps/io-step";
 
 function getKeywordValue(
   context: KeywordCustomizerContextValue,

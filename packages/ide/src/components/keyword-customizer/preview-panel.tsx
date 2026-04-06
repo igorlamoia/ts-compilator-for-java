@@ -19,6 +19,12 @@ type SemanticToken =
   | "keyword.boolean-literal"
   | "keyword.operator-word";
 
+type PreviewCategory = {
+  key: SemanticToken | "keyword.structure";
+  title: string;
+  matches: (token: SemanticToken) => boolean;
+};
+
 function resolveKeywordSemanticToken(original: string): SemanticToken {
   const TYPES = new Set([
     "int",
@@ -116,7 +122,59 @@ function resolveChipChangedTextClass(original: string): string {
   }
 }
 
+const PREVIEW_CATEGORIES: PreviewCategory[] = [
+  {
+    key: "keyword.type",
+    title: "Tipos e Declaracoes",
+    matches: (token) => token === "keyword.type",
+  },
+  {
+    key: "keyword.io",
+    title: "Entrada/Saida",
+    matches: (token) => token === "keyword.io",
+  },
+  {
+    key: "keyword.conditional",
+    title: "Condicionais",
+    matches: (token) => token === "keyword.conditional",
+  },
+  {
+    key: "keyword.loop",
+    title: "Lacos",
+    matches: (token) => token === "keyword.loop",
+  },
+  {
+    key: "keyword.flow",
+    title: "Fluxo",
+    matches: (token) => token === "keyword.flow",
+  },
+  {
+    key: "keyword.operator-word",
+    title: "Operadores",
+    matches: (token) => token === "keyword.operator-word",
+  },
+  {
+    key: "keyword.boolean-literal",
+    title: "Booleanos",
+    matches: (token) => token === "keyword.boolean-literal",
+  },
+  {
+    key: "keyword.structure",
+    title: "Estrutura",
+    matches: (token) =>
+      token === "keyword.block-delimiter" ||
+      token === "keyword.statement-terminator",
+  },
+];
+
 export function PreviewPanel({ preview }: PreviewPanelProps) {
+  const groupedLexemes = PREVIEW_CATEGORIES.map((category) => ({
+    ...category,
+    items: preview.chosenLexemes.filter((mapping) =>
+      category.matches(resolveKeywordSemanticToken(mapping.original)),
+    ),
+  })).filter((category) => category.items.length > 0);
+
   return (
     <aside className="min-h-0 overflow-y-auto border-t border-slate-200/70  p-5 dark:border-slate-800/80 lg:border-l lg:border-t-0 lg:p-6">
       <div className="space-y-6 lg:sticky lg:top-0">
@@ -127,16 +185,30 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
             Resumo parcial
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="space-y-4">
             {preview.chosenLexemes.length ? (
-              preview.chosenLexemes.map((mapping) => (
-                <ChangedChip
-                  key={mapping.original}
-                  original={mapping.original}
-                  changed={mapping.custom}
-                  className={resolveChipBorderClass(mapping.original)}
-                  colorClassName={resolveChipChangedTextClass(mapping.original)}
-                />
+              groupedLexemes.map((category) => (
+                <div key={category.key} className="space-y-2">
+                  <p
+                    data-preview-category
+                    className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400"
+                  >
+                    {category.title}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {category.items.map((mapping) => (
+                      <ChangedChip
+                        key={mapping.original}
+                        original={mapping.original}
+                        changed={mapping.custom}
+                        className={resolveChipBorderClass(mapping.original)}
+                        colorClassName={resolveChipChangedTextClass(
+                          mapping.original,
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))
             ) : (
               <p className="text-xs text-slate-500 dark:text-slate-400">

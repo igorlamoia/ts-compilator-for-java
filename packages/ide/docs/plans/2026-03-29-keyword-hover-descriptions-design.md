@@ -65,7 +65,10 @@ type IDELanguageDocumentationEntry = {
   description: string;
 };
 
-type IDELanguageDocumentationMap = Record<string, IDELanguageDocumentationEntry>;
+type IDELanguageDocumentationMap = Record<
+  string,
+  IDELanguageDocumentationEntry
+>;
 ```
 
 This documentation map becomes part of the customization state and the exported compiler/editor configuration payload. The semantic identifier is the stable key. The current lexeme is still derived from the rest of the customization state:
@@ -146,7 +149,7 @@ This should be added inline in the same section where the user already edits the
 
 Expected coverage by step:
 
-- `VariablesStep`: `print`, `scan`, variable/type keywords
+- `IOStep`: `print`, `scan`, variable/type keywords
 - `StructureStep`: statement terminator and block delimiters
 - `RulesStep`: boolean literals and operator word aliases
 - `FlowStep`: flow-control keywords

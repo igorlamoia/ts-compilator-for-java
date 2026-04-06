@@ -9,12 +9,13 @@ import {
   buildVariablesStepProps,
 } from "./keyword-customizer-step-props";
 import { IdentityStep } from "./steps/identity-step";
-import { VariablesStep } from "./steps/variables-step";
+import { IOStep } from "./steps/io-step";
 import { StructureStep } from "./steps/structure-step";
 import { RulesStep } from "./steps/rules-step";
 import { FlowStep } from "./steps/flow-step";
 import { ReviewStep } from "./steps/review-step";
 import { getActiveWizardStepError } from "./keyword-customizer-validation";
+import { TypeStep } from "./steps/type-step";
 
 export function KeywordCustomizerStepContent() {
   const context = useKeywordCustomizer();
@@ -27,8 +28,10 @@ export function KeywordCustomizerStepContent() {
     switch (context.activeStep.id) {
       case "identity":
         return <IdentityStep {...buildIdentityStepProps(context)} />;
-      case "variables":
-        return <VariablesStep {...buildVariablesStepProps(context)} />;
+      case "types":
+        return <TypeStep {...buildVariablesStepProps(context)} />;
+      case "IO":
+        return <IOStep {...buildVariablesStepProps(context)} />;
       case "structure":
         return <StructureStep {...buildStructureStepProps(context)} />;
       case "rules":

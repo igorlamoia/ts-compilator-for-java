@@ -1,53 +1,11 @@
-import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
-import { TypingRelationshipBeam } from "./components/typing-relationship-beam";
-import { ExampleSnippet } from "../example-snippet";
-import { DocumentedField } from "../documented-field";
+import { BicepsFlexed, WandSparkles } from "lucide-react";
 import { OptionCard } from "../option-card";
-import { BicepsFlexed, Sparkles, WandSparkles } from "lucide-react";
+import { TypingRelationshipBeam } from "./components/typing-relationship-beam";
+import { VariablesStepProps } from "./io-step";
+import { DocumentedField } from "../documented-field";
+import { ExampleSnippet } from "../example-snippet";
 
-export type VariableStepKeyword =
-  | "print"
-  | "scan"
-  | "int"
-  | "float"
-  | "bool"
-  | "string"
-  | "variavel";
-
-export type VariablesStepProps = {
-  values: {
-    snippet?: string;
-    typingMode: StoredKeywordCustomization["modes"]["typing"];
-    arrayMode: StoredKeywordCustomization["modes"]["array"];
-    printKeyword: string;
-    printDescription: string;
-    scanKeyword: string;
-    scanDescription: string;
-    typingBeamKeywords: {
-      variavel: string;
-      string: string;
-      float: string;
-      int: string;
-      void: string;
-    };
-    variableKeywords: Array<{
-      key: Exclude<VariableStepKeyword, "print" | "scan">;
-      value: string;
-      description: string;
-    }>;
-  };
-  actions: {
-    syncTypingMode: (mode: "typed" | "untyped") => void;
-    syncArrayMode: (mode: "fixed" | "dynamic") => void;
-    syncKeyword: (original: VariableStepKeyword, value: string) => void;
-    syncKeywordDescription: (
-      original: VariableStepKeyword,
-      value: string,
-    ) => void;
-  };
-};
-
-export function VariablesStep({ values, actions }: VariablesStepProps) {
+export function TypeStep({ values, actions }: VariablesStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -55,45 +13,13 @@ export function VariablesStep({ values, actions }: VariablesStepProps) {
           Etapa 2
         </p>
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Vocabulário
+          Modelo de tipagem
         </h3>
         <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-          Defina leitura, escrita e o vocabulário usado para declarar variáveis.
+          Escolha primeiro se a linguagem será tipada ou não tipada.
         </p>
       </header>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <DocumentedField
-          label="Palavra de saída"
-          value={values.printKeyword}
-          description={values.printDescription}
-          onValueChange={(value) => actions.syncKeyword("print", value)}
-          onDescriptionChange={(value) =>
-            actions.syncKeywordDescription("print", value)
-          }
-        />
-
-        <DocumentedField
-          label="Palavra de leitura"
-          value={values.scanKeyword}
-          description={values.scanDescription}
-          onValueChange={(value) => actions.syncKeyword("scan", value)}
-          onDescriptionChange={(value) =>
-            actions.syncKeywordDescription("scan", value)
-          }
-        />
-      </div>
-
       <div className="space-y-3">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Modelo de tipagem
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Escolha primeiro se a linguagem será tipada ou não tipada.
-          </p>
-        </div>
-
         <div className="grid gap-3 sm:grid-cols-2">
           <OptionCard
             title="Não tipado"
@@ -173,7 +99,6 @@ export function VariablesStep({ values, actions }: VariablesStepProps) {
           </span>
         </button>
       </div>
-
       <ExampleSnippet
         title="Exemplo ao vivo"
         code={values.snippet ?? `${values.printKeyword}("Ola mundo")`}

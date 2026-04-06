@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultCustomizationState } from "@/contexts/keyword/KeywordContext";
 import { buildWizardPreview } from "./preview-data";
+import { applyWizardPreset } from "./wizard-model";
 
 describe("buildWizardPreview", () => {
   it("uses the current draft mappings in the live example and token summary", () => {
@@ -14,7 +15,7 @@ describe("buildWizardPreview", () => {
     draft.booleanLiteralMap = { true: "sim", false: "nao" };
 
     const preview = buildWizardPreview(draft, {
-      activeStepId: "variables",
+      activeStepId: "types",
       presetId: "didactic-pt",
     });
 
@@ -27,16 +28,107 @@ describe("buildWizardPreview", () => {
     );
   });
 
-  it("switches to an indentation example when the draft block mode changes", () => {
+  it("switches to an indentation example for python-like presets", () => {
     const draft = getDefaultCustomizationState();
     draft.modes.block = "indentation";
 
     const preview = buildWizardPreview(draft, {
       activeStepId: "structure",
-      presetId: "free",
+      presetId: "python-like",
     });
 
+    expect(preview.languageLabel).toBe("Pythonica");
+    expect(preview.dna).toContain("blocos por indentacao");
     expect(preview.snippet).toContain(":");
     expect(preview.snippet).not.toContain("{");
+  });
+
+  it("hides explicit type aliases from the python-like summary when the preset is untyped", () => {
+    const draft = applyWizardPreset(
+      getDefaultCustomizationState(),
+      "python-like",
+    );
+
+    const preview = buildWizardPreview(draft, {
+      activeStepId: "types",
+      presetId: "python-like",
+    });
+
+    expect(preview.dna).toContain("nao tipada");
+    expect(preview.chosenLexemes).toContainEqual({
+      original: "variavel",
+      custom: "nome",
+    });
+    expect(preview.chosenLexemes).not.toContainEqual({
+      original: "int",
+      custom: "numero",
+    });
+    expect(preview.chosenLexemes).not.toContainEqual({
+      original: "float",
+      custom: "decimal",
+    });
+    expect(preview.chosenLexemes).not.toContainEqual({
+      original: "bool",
+      custom: "flag",
+    });
+    expect(preview.chosenLexemes).not.toContainEqual({
+      original: "string",
+      custom: "texto",
+    });
+    expect(preview.chosenLexemes).not.toContainEqual({
+      original: "void",
+      custom: "nada",
+    });
+  });
+
+  it("uses the minimal preset label and short aliases in the preview", () => {
+    const draft = getDefaultCustomizationState();
+    draft.mappings = draft.mappings.map((item) =>
+      item.original === "print" ? { ...item, custom: "out" } : item,
+    );
+
+    const preview = buildWizardPreview(draft, {
+      activeStepId: "types",
+      presetId: "minimal",
+    });
+
+    expect(preview.languageLabel).toBe("Minimalista");
+    expect(preview.snippet).toContain("out(nome)");
+    expect(preview.chosenLexemes).toContainEqual({
+      original: "print",
+      custom: "out",
+    });
+  });
+
+  it("uses the mineres-like label and terminator in the preview", () => {
+    const draft = getDefaultCustomizationState();
+    draft.modes.semicolon = "required";
+    draft.statementTerminatorLexeme = "uai";
+    draft.blockDelimiters = { open: "simbora", close: "cabo" };
+
+    const preview = buildWizardPreview(draft, {
+      activeStepId: "structure",
+      presetId: "mineres-like",
+    });
+
+    expect(preview.languageLabel).toBe("Mineres");
+    expect(preview.dna).toContain("terminador obrigatorio");
+    expect(preview.snippet).toContain("uai");
+    expect(preview.snippet).toContain("simbora");
+    expect(preview.snippet).toContain("cabo");
+  });
+
+  it("switches to inicio and fim delimiters for ruby-like presets", () => {
+    const draft = getDefaultCustomizationState();
+    draft.blockDelimiters = { open: "inicio", close: "fim" };
+
+    const preview = buildWizardPreview(draft, {
+      activeStepId: "structure",
+      presetId: "ruby-like",
+    });
+
+    expect(preview.languageLabel).toBe("Ruby-like");
+    expect(preview.snippet).toContain("inicio");
+    expect(preview.snippet).toContain("fim");
   });
 });
