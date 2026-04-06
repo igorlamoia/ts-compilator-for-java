@@ -17,6 +17,8 @@ import {
 export type BuildPreviewOptions = {
   activeStepId: WizardStepId;
   presetId: WizardPresetId;
+  languageName?: string;
+  languageImageUrl?: string;
 };
 
 type PreviewToken = {
@@ -31,6 +33,8 @@ type PreviewLexemeChange = {
 
 export type WizardPreview = {
   languageLabel: string;
+  basedOnLabel: string;
+  languageImageUrl: string;
   dna: string[];
   baselineSnippet: string;
   snippet: string;
@@ -147,7 +151,10 @@ export function buildWizardPreview(
   const snippet = buildPreviewSource(draft, options.activeStepId);
 
   return {
-    languageLabel: WIZARD_PRESET_LABELS[options.presetId],
+    languageLabel:
+      options.languageName?.trim() || WIZARD_PRESET_LABELS[options.presetId],
+    basedOnLabel: WIZARD_PRESET_LABELS[options.presetId],
+    languageImageUrl: options.languageImageUrl?.trim() ?? "",
     dna: [
       draft.modes.typing === "typed" ? "tipada" : "nao tipada",
       draft.modes.block === "delimited"

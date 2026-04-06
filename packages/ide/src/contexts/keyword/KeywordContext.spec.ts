@@ -18,6 +18,7 @@ import {
   validateCustomKeyword,
 } from "@/contexts/keyword/keyword-validator";
 import { buildLexerConfigFromCustomization } from "@/lib/keyword-customization";
+import { saveSavedKeywordLanguage } from "@/lib/keyword-language-storage";
 import { vi, beforeEach, afterEach } from "vitest";
 
 (
@@ -400,6 +401,83 @@ describe("keyword context lexer config", () => {
         },
       }),
     );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("hydrates the active saved language when a saved-language slug is selected", () => {
+    const savedCustomization = getDefaultCustomizationState();
+    savedCustomization.mappings = savedCustomization.mappings.map((mapping) =>
+      mapping.original === "print"
+        ? { ...mapping, custom: "escreva_neon" }
+        : mapping,
+    );
+
+    saveSavedKeywordLanguage({
+      name: "Didatica Neon",
+      slug: "didatica-neon",
+      imageUrl: "https://img.example/neon.png",
+      imageQuery: "neon language",
+      presetId: "didactic-pt",
+      customization: savedCustomization,
+    });
+    localStorage.setItem(
+      "keyword-customization",
+      JSON.stringify(getDefaultCustomizationState()),
+    );
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    expect(
+      capturedKeywords?.customization.mappings.find(
+        (mapping) => mapping.original === "print",
+      )?.custom,
+    ).toBe("escreva_neon");
+    expect(localStorage.getItem("keyword-customization")).toContain(
+      "escreva_neon",
+    );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("falls back to defaults when the active saved language is corrupt", () => {
+    localStorage.setItem("keyword-customization-active", "broken-language");
+    localStorage.setItem("keyword-customization-broken-language", "{broken");
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        React.createElement(
+          KeywordProvider,
+          null,
+          React.createElement(CaptureKeywords),
+        ),
+      );
+    });
+
+    expect(capturedKeywords?.customization).toEqual(
+      getDefaultCustomizationState(),
+    );
+    expect(localStorage.getItem("keyword-customization")).toContain('"print"');
 
     act(() => {
       root.unmount();

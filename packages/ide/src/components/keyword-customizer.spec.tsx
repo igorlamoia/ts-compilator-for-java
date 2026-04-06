@@ -102,6 +102,10 @@ vi.mock("lucide-react", () => ({
   Code: () => <span>code</span>,
   Sparkles: () => <span>sparkles</span>,
   Atom: () => <span>atom</span>,
+  BicepsFlexed: () => <span>biceps</span>,
+  WandSparkles: () => <span>wand</span>,
+  MoveRight: () => <span>move-right</span>,
+  FileIcon: () => <span>file-icon</span>,
 }));
 
 import { KeywordCustomizer } from "./keyword-customizer";
@@ -158,6 +162,7 @@ describe("KeywordCustomizer", () => {
       push: vi.fn(),
       back: vi.fn(),
     });
+    localStorage.clear();
     sessionStorage.clear();
   });
 
@@ -227,7 +232,7 @@ describe("KeywordCustomizer", () => {
 
     const { container, root } = render();
 
-    clickButtonByText(container, "Continuar");
+    clickContinueTimes(container, 2);
     clickButtonByText(container, "Tipado");
 
     expect(container.textContent).toContain("bool");
@@ -252,7 +257,8 @@ describe("KeywordCustomizer", () => {
       "Personalização Interativa de Comandos",
     );
     expect(container.textContent).toContain("Identidade");
-    expect(container.textContent).toContain("Vocabulário");
+    expect(container.textContent).toContain("Entrada/Saída");
+    expect(container.textContent).toContain("Tipagem");
     expect(container.textContent).toContain("Estrutura");
     expect(container.textContent).toContain("Regras");
     expect(container.textContent).toContain("Fluxo");
@@ -280,7 +286,7 @@ describe("KeywordCustomizer", () => {
       "Ajuste o vocabulário usado para controle de fluxo",
     );
 
-    clickButtonByText(container, "Vocabulário");
+    clickButtonByText(container, "Tipagem");
     expect(container.textContent).toContain(
       "Escolha primeiro se a linguagem será tipada ou não tipada.",
     );
@@ -345,7 +351,7 @@ describe("KeywordCustomizer", () => {
 
     const { container, root } = render();
 
-    clickButtonByText(container, "Continuar");
+    clickContinueTimes(container, 2);
     const getInputValues = () =>
       Array.from(container.querySelectorAll("input")).map(
         (input) => (input as HTMLInputElement).value,
@@ -380,7 +386,7 @@ describe("KeywordCustomizer", () => {
 
     const { container, root } = render();
 
-    clickContinueTimes(container, 2);
+    clickContinueTimes(container, 3);
     expect(container.textContent).toContain("Estrutura");
 
     const terminatorInput = Array.from(
@@ -435,7 +441,7 @@ describe("KeywordCustomizer", () => {
 
     const { container, root } = render();
 
-    clickContinueTimes(container, 3);
+    clickContinueTimes(container, 5);
     expect(container.textContent).toContain("Regras");
 
     expect(container.textContent).toContain("Booleano invalido");
@@ -461,6 +467,12 @@ describe("KeywordCustomizer", () => {
 
     const { container, root } = render();
 
+    const languageNameInput = container.querySelector(
+      'input[aria-label="Nome da linguagem"]',
+    ) as HTMLInputElement | null;
+    expect(languageNameInput).toBeInstanceOf(HTMLInputElement);
+    setControlValue(languageNameInput!, "Didatica Neon");
+
     clickButtonByText(container, "Continuar");
     const keywordInput = Array.from(container.querySelectorAll("input")).find(
       (input) => (input as HTMLInputElement).value === "print",
@@ -479,12 +491,21 @@ describe("KeywordCustomizer", () => {
       );
     });
 
-    clickContinueTimes(container, 4);
+    clickContinueTimes(container, 5);
     expect(container.textContent).toContain("Revisão");
 
     clickButtonByText(container, "Salvar e Aplicar");
 
     expect(context.setCustomization).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem("keyword-customization-active")).toBe(
+      "didatica-neon",
+    );
+    expect(localStorage.getItem("keyword-customization-index")).toContain(
+      "Didatica Neon",
+    );
+    expect(localStorage.getItem("keyword-customization-didatica-neon")).toContain(
+      "Didatica Neon",
+    );
     expect(router.back).toHaveBeenCalledTimes(1);
     expect(router.push).not.toHaveBeenCalled();
 
@@ -544,6 +565,12 @@ describe("KeywordCustomizer", () => {
 
     const { container, root } = render();
 
+    const languageNameInput = container.querySelector(
+      'input[aria-label="Nome da linguagem"]',
+    ) as HTMLInputElement | null;
+    expect(languageNameInput).toBeInstanceOf(HTMLInputElement);
+    setControlValue(languageNameInput!, "Doc Neon");
+
     clickButtonByText(container, "Continuar");
 
     const outputLexemeInput = Array.from(
@@ -565,7 +592,7 @@ describe("KeywordCustomizer", () => {
     setControlValue(outputLexemeInput!, "mostrar");
     setControlValue(outputDescription!, "Exibe valores na saída.");
 
-    clickContinueTimes(container, 4);
+    clickContinueTimes(container, 5);
     clickButtonByText(container, "Salvar e Aplicar");
 
     expect(context.setCustomization).toHaveBeenCalledWith(

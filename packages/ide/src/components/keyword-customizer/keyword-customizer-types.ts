@@ -15,6 +15,7 @@ import type {
   WIZARD_STEPS,
 } from "./wizard-model";
 import type { KeywordCustomizerErrorState } from "./keyword-customizer-validation";
+import type { IdentityImageSearchResult } from "./steps/identity-step";
 
 export type WizardStep = (typeof WIZARD_STEPS)[number];
 
@@ -39,6 +40,10 @@ export type KeywordCustomizerWizardActions = {
   goToNextWizardStep: () => void;
   goToPreviousWizardStep: () => void;
   applyPreset: (presetId: WizardPresetId) => void;
+  setLanguageName: (value: string) => void;
+  setImageSearchQuery: (value: string) => void;
+  searchLanguageImages: () => Promise<void>;
+  selectLanguageImage: (imageUrl: string) => void;
   resetDraft: () => void;
   save: () => void;
   exit: () => void;
@@ -54,6 +59,12 @@ export type KeywordCustomizerContextValue = {
   visibleSteps: readonly WizardStep[];
   visitedStepIds: WizardStepId[];
   selectedPresetId: WizardPresetId;
+  languageName: string;
+  languageImageUrl: string;
+  languageImageQuery: string;
+  languageImageResults: IdentityImageSearchResult[];
+  isSearchingLanguageImages: boolean;
+  languageImageSearchError: string | null;
   hasChanges: boolean;
   actions: KeywordCustomizerSyncActions & KeywordCustomizerWizardActions;
 };

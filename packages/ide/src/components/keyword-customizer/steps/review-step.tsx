@@ -41,9 +41,23 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
             Nome da linguagem
           </p>
-          <p className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {values.preview.languageLabel}
-          </p>
+          <div className="mt-3 flex items-center gap-3">
+            {values.preview.languageImageUrl ? (
+              <img
+                src={values.preview.languageImageUrl}
+                alt={values.preview.languageLabel}
+                className="h-16 w-16 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+              />
+            ) : null}
+            <div className="space-y-1">
+              <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {values.preview.languageLabel}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Baseado em {values.preview.basedOnLabel}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">

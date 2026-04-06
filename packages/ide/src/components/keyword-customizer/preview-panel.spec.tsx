@@ -35,6 +35,8 @@ describe("PreviewPanel", () => {
         <PreviewPanel
           preview={{
             languageLabel: "Ruby-like",
+            basedOnLabel: "Ruby-like",
+            languageImageUrl: "",
             dna: [],
             baselineSnippet: "",
             snippet: "",

@@ -10,6 +10,7 @@ import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
 import { normalizeLanguageDocumentationMap } from "@/lib/compiler-config";
 import { buildLexerConfigFromCustomization } from "@/lib/keyword-customization";
+import { loadActiveSavedKeywordLanguage } from "@/lib/keyword-language-storage";
 import type {
   IDEBooleanLiteralMap,
   IDECompilerConfigPayload,
@@ -213,6 +214,11 @@ function loadCustomization(): StoredKeywordCustomization {
   if (typeof window === "undefined") return defaults;
 
   try {
+    const activeSavedLanguage = loadActiveSavedKeywordLanguage();
+    if (activeSavedLanguage) {
+      return activeSavedLanguage.customization;
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as LegacyCustomizationPayload;

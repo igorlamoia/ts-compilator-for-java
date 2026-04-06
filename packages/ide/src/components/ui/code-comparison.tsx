@@ -517,7 +517,7 @@ export function CodeComparison({
             <div className="dark:border-neutral-300/50 border-primary/20 bg-accent text-foreground flex items-center border-b p-2 text-sm">
               <FileIcon className="mr-2 h-4 w-4" />
               {filename}
-              <span className="ml-auto hidden md:block">before</span>
+              <span className="ml-auto hidden md:block">antes</span>
             </div>
             {renderCode(
               beforeCode,
@@ -540,7 +540,7 @@ export function CodeComparison({
             <div className="dark:border-neutral-300/50 border-primary/20 bg-accent text-foreground flex items-center border-b p-2 text-sm">
               <FileIcon className="mr-2 h-4 w-4" />
               {filename}
-              <span className="ml-auto hidden md:block">after</span>
+              <span className="ml-auto hidden md:block">depois</span>
             </div>
             {renderCode(
               afterCode,

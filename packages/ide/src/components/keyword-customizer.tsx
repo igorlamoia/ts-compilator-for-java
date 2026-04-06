@@ -39,7 +39,7 @@ function KeywordCustomizerShell() {
           />
 
           <div>
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[240px_minmax(0,1fr)_320px]">
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[240px_minmax(0,1fr)_340px]">
               <div>
                 <WizardStepper
                   steps={visibleSteps}
@@ -92,8 +92,26 @@ function LanguageBasedCard({
           Baseado em
         </p>
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          {preview.languageLabel}
+          {preview.basedOnLabel}
         </h3>
+      </div>
+
+      <div className="space-y-3 rounded-lg border border-slate-200/70 bg-slate-50/80 p-3 dark:border-slate-800/70 dark:bg-slate-950/60">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          Nome da linguagem
+        </p>
+        <div className="flex items-center gap-3">
+          {preview.languageImageUrl ? (
+            <img
+              src={preview.languageImageUrl}
+              alt={preview.languageLabel}
+              className="h-14 w-14 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+            />
+          ) : null}
+          <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            {preview.languageLabel}
+          </h4>
+        </div>
       </div>
 
       <div className="space-y-2">

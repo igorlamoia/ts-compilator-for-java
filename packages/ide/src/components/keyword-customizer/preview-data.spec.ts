@@ -20,6 +20,7 @@ describe("buildWizardPreview", () => {
     });
 
     expect(preview.languageLabel).toBe("Didatica em Portugues");
+    expect(preview.basedOnLabel).toBe("Didatica em Portugues");
     expect(preview.dna).toContain("blocos com delimitadores");
     expect(preview.snippet).toContain('string nome = "Ana"');
     expect(preview.snippet).toContain("escreva(nome)");
@@ -130,5 +131,18 @@ describe("buildWizardPreview", () => {
     expect(preview.languageLabel).toBe("Ruby-like");
     expect(preview.snippet).toContain("inicio");
     expect(preview.snippet).toContain("fim");
+  });
+
+  it("prefers the custom language name over the preset label", () => {
+    const preview = buildWizardPreview(getDefaultCustomizationState(), {
+      activeStepId: "identity",
+      presetId: "minimal",
+      languageName: "CafeScript BR",
+      languageImageUrl: "https://img.example/cafe.jpg",
+    });
+
+    expect(preview.languageLabel).toBe("CafeScript BR");
+    expect(preview.basedOnLabel).toBe("Minimalista");
+    expect(preview.languageImageUrl).toBe("https://img.example/cafe.jpg");
   });
 });
