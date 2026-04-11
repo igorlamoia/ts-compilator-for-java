@@ -25,7 +25,7 @@ export function HomeScreen() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 w-full max-w-2xl mt-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 w-full max-w-3xl mt-4">
           <button
             type="button"
             className="group flex flex-col items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-6 transition-all hover:bg-white/10 hover:border-cyan-500/50"
@@ -79,7 +79,7 @@ export function HomeScreen() {
         </div>
 
         {/* Getting Started */}
-        <div className="mt-8 rounded-lg border border-white/10 bg-white/5 p-6 max-w-2xl">
+        <div className="mt-8 rounded-lg border border-white/10 bg-white/5 p-6 max-w-3xl">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
               <Rocket className="h-5 w-5 text-blue-400" />

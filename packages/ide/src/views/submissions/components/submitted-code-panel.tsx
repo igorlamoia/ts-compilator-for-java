@@ -1,3 +1,5 @@
+import { CodeScrollArea } from "@/components/ui/code-scroll-area";
+import type { TValidationResult } from "@/types/submissions";
 import { CompileResultPanel } from "./compile-result-panel";
 
 export function SubmittedCodePanel({
@@ -9,7 +11,7 @@ export function SubmittedCodePanel({
 }: {
   codeSnapshot: string | undefined;
   exerciseDescription: string | undefined;
-  compileResult: any;
+  compileResult: TValidationResult | null | undefined;
   compiling: boolean;
   onRecompile: () => void;
 }) {
@@ -29,11 +31,11 @@ export function SubmittedCodePanel({
             {compiling ? "Compilando..." : "▶ Recompilar"}
           </button>
         </div>
-        <pre className="p-6 text-sm font-mono text-slate-200 overflow-x-auto leading-relaxed max-h-[500px] overflow-y-auto bg-black/20">
-          <code>
-            {codeSnapshot || "Nenhum código enviado"}
-          </code>
-        </pre>
+        <CodeScrollArea className="max-h-[500px] bg-black/20">
+          <pre className="w-max min-w-full p-6 font-mono text-sm leading-relaxed text-slate-200">
+            <code>{codeSnapshot || "Nenhum código enviado"}</code>
+          </pre>
+        </CodeScrollArea>
       </div>
 
       <CompileResultPanel compileResult={compileResult} />

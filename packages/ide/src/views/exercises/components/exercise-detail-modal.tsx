@@ -22,7 +22,7 @@ export function ExerciseDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl backdrop-blur-3xl">
+      <DialogContent className="max-w-3xl backdrop-blur-3xl">
         <DialogHeader>
           <DialogTitle className="text-lg">{exercise.title}</DialogTitle>
           <DialogDescription className="text-slate-400 text-xs">
@@ -63,7 +63,9 @@ export function ExerciseDetailModal({
                         #{idx + 1}
                       </span>
                       {tc.label && (
-                        <span className="text-xs text-slate-400">{tc.label}</span>
+                        <span className="text-xs text-slate-400">
+                          {tc.label}
+                        </span>
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-3">

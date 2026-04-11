@@ -18,6 +18,7 @@ import {
 } from "motion/react"
 
 import { cn } from "@/lib/utils"
+import { CodeScrollArea } from "@/components/ui/code-scroll-area"
 
 interface SequenceContextValue {
   completeItem: (index: number) => void
@@ -282,9 +283,11 @@ export const Terminal = ({
           <div className="h-2 w-2 rounded-full bg-green-500"></div>
         </div>
       </div>
-      <pre className="p-4">
-        <code className="grid gap-y-1 overflow-auto">{wrappedChildren}</code>
-      </pre>
+      <CodeScrollArea>
+        <pre className="w-max min-w-full p-4">
+          <code className="grid gap-y-1">{wrappedChildren}</code>
+        </pre>
+      </CodeScrollArea>
     </div>
   )
 

@@ -128,7 +128,7 @@ export function IdentityStep({ values, actions }: IdentityStepProps) {
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Que tipo de linguagem você quer criar?
         </h3>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
           Escolha um ponto de partida. A seleção apenas sugere lexemas iniciais
           e continua totalmente editável.
         </p>

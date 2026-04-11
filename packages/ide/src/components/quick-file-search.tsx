@@ -82,7 +82,7 @@ export function QuickFileSearch({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 top-1/4">
+      <DialogContent className="sm:max-w-3xl p-0 gap-0 top-1/4">
         <div className="flex flex-col">
           {/* Search Input */}
           <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/10">

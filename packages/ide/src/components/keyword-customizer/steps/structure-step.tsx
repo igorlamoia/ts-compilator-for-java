@@ -58,7 +58,7 @@ export function StructureStep({ values, errors, actions }: StructureStepProps) {
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Estrutura
         </h3>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
           Configure blocos, delimitadores e como cada instrução termina.
         </p>
       </header>

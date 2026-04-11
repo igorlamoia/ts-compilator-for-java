@@ -326,6 +326,111 @@
   scrollbar-gutter: stable;
 }
 
+@keyframes background-mascot-left-to-right {
+  0% {
+    transform: translate(-130%, -50%);
+  }
+  100% {
+    transform: translate(calc(100vw + 130%), -50%);
+  }
+}
+
+@keyframes background-mascot-right-to-left {
+  0% {
+    transform: translate(calc(100vw + 130%), -50%);
+  }
+  100% {
+    transform: translate(-130%, -50%);
+  }
+}
+
+@keyframes background-mascot-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-background-mascot-left-to-right {
+  animation: background-mascot-left-to-right 10s linear forwards;
+}
+
+.animate-background-mascot-right-to-left {
+  animation: background-mascot-right-to-left 10s linear forwards;
+}
+
+.animate-background-mascot-spin {
+  animation: background-mascot-spin 10s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .background-mascot-pass {
+    animation: none !important;
+  }
+
+  .animate-background-mascot-spin {
+    animation: none !important;
+  }
+}
+
+.perfect-scrollbar {
+  --perfect-scrollbar-track: rgba(148, 163, 184, 0.14);
+  --perfect-scrollbar-thumb: rgba(100, 116, 139, 0.58);
+  --perfect-scrollbar-thumb-hover: rgba(71, 85, 105, 0.78);
+  scrollbar-width: thin;
+  scrollbar-color: var(--perfect-scrollbar-thumb) var(--perfect-scrollbar-track);
+}
+
+.dark .perfect-scrollbar {
+  --perfect-scrollbar-track: rgba(15, 23, 42, 0.72);
+  --perfect-scrollbar-thumb: rgba(148, 163, 184, 0.56);
+  --perfect-scrollbar-thumb-hover: rgba(226, 232, 240, 0.72);
+  scrollbar-color: var(--perfect-scrollbar-thumb) var(--perfect-scrollbar-track);
+}
+
+.perfect-scrollbar::-webkit-scrollbar {
+  width: var(--perfect-scrollbar-size);
+  height: var(--perfect-scrollbar-size);
+}
+
+.perfect-scrollbar::-webkit-scrollbar:horizontal {
+  height: calc(var(--perfect-scrollbar-size) + 2px);
+}
+
+.perfect-scrollbar::-webkit-scrollbar-track {
+  border-radius: 9999px;
+  background: var(--perfect-scrollbar-track);
+}
+
+.perfect-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background: var(--perfect-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.perfect-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: var(--perfect-scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+.perfect-scrollbar::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.perfect-scrollbar::-webkit-scrollbar-track-piece {
+  border-radius: 9999px;
+  background: var(--perfect-scrollbar-track);
+}
+
+.perfect-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 :root {
   --color-1: oklch(66.2% 0.225 25.9);
   --color-2: oklch(60.4% 0.26 302);

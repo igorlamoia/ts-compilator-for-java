@@ -2,6 +2,7 @@ import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { TextPressure } from "@/components/TextPressure";
+import { HyperText } from "@/components/ui/hyper-text";
 
 export type VariableStepKeyword =
   | "print"
@@ -55,28 +56,20 @@ export function IOStep({ values, actions }: VariablesStepProps) {
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           I/O Entrada e saída
         </h3>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
           Antes de criar regras complexas, sua linguagem precisa aprender a
           falar. Toda linguagem começa com uma primeira mensagem, famoso{" "}
-          <strong>Hello World</strong>, ou melhor:
+          <strong>Hello World</strong>, ou melhor:{" "}
+          <HyperText
+            as="span"
+            className="text-sm text-slate-900 dark:text-slate-100"
+          >
+            Olá Mundo!
+          </HyperText>
         </p>
       </header>
 
-      <div style={{ position: "relative", height: "200px" }}>
-        <TextPressure
-          text="Olá Mundo!"
-          flex
-          alpha={false}
-          stroke={false}
-          width
-          weight
-          italic
-          textColor="#ffffff"
-          strokeColor="#5227FF"
-          minFontSize={36}
-        />
-      </div>
-      <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+      <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
         Como os programadores vão imprimir mensagens na tela? E como vão ler
         aquilo que o usuário digitar?
       </p>

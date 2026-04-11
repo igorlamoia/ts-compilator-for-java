@@ -4,6 +4,7 @@ import { FileIcon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
 import { cn } from "@/lib/utils";
+import { CodeScrollArea } from "./code-scroll-area";
 
 interface CodeComparisonProps {
   beforeCode: string;
@@ -472,12 +473,12 @@ export function CodeComparison({
       );
 
       return (
-        <div
+        <CodeScrollArea
           style={{ "--highlight-color": highlightColor } as React.CSSProperties}
           className={cn(
-            "bg-background h-full w-full overflow-auto font-mono text-xs",
-            "[&>pre]:h-full [&>pre]:w-screen! [&>pre]:py-2",
-            "[&>pre>code]:inline-block! [&>pre>code]:w-full!",
+            "bg-background h-full w-full font-mono text-xs",
+            "[&>pre]:h-full [&>pre]:min-w-full [&>pre]:w-max [&>pre]:py-2",
+            "[&>pre>code]:inline-block! [&>pre>code]:min-w-full",
             "[&>pre>code>span]:inline-block! [&>pre>code>span]:w-full [&>pre>code>span]:px-4 [&>pre>code>span]:py-0.5",
             "[&>pre>code>.highlighted]:inline-block [&>pre>code>.highlighted]:w-full [&>pre>code>.highlighted]:bg-(--highlight-color)!",
             blurredByDefault &&
@@ -495,9 +496,11 @@ export function CodeComparison({
       );
     } else {
       return (
-        <pre className="bg-background text-foreground h-full overflow-auto p-4 font-mono text-xs break-all">
-          {code}
-        </pre>
+        <CodeScrollArea className="bg-background text-foreground h-full">
+          <pre className="w-max min-w-full p-4 font-mono text-xs">
+            {code}
+          </pre>
+        </CodeScrollArea>
       );
     }
   };

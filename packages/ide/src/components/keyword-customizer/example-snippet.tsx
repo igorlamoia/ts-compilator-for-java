@@ -6,6 +6,7 @@ import {
   JAVAMM_LANGUAGE_ID,
   registerJavaMMLanguage,
 } from "@/utils/compiler/editor/editor-language";
+import { CodeScrollArea } from "@/components/ui/code-scroll-area";
 import { useKeywordCustomizer } from "./keyword-customizer-context";
 
 type ExampleSnippetProps = {
@@ -99,20 +100,22 @@ export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
               ))}
             </div>
 
-            <pre className="overflow-auto p-4 font-mono text-xs leading-6 text-cyan-100">
-              {highlightedCode ? (
-                <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
-              ) : (
-                <code>
-                  {lines.map((line, index) => (
-                    <span key={`${index}-${line}`}>
-                      {line || " "}
-                      {index < lines.length - 1 ? "\n" : null}
-                    </span>
-                  ))}
-                </code>
-              )}
-            </pre>
+            <CodeScrollArea className="min-w-0">
+              <pre className="w-max min-w-full p-4 font-mono text-xs leading-6 text-cyan-100">
+                {highlightedCode ? (
+                  <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+                ) : (
+                  <code>
+                    {lines.map((line, index) => (
+                      <span key={`${index}-${line}`}>
+                        {line || " "}
+                        {index < lines.length - 1 ? "\n" : null}
+                      </span>
+                    ))}
+                  </code>
+                )}
+              </pre>
+            </CodeScrollArea>
           </div>
 
           {hasOutput ? (

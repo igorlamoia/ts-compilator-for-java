@@ -126,7 +126,7 @@ export function ListsTab({
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-2xl">
+    <div className="flex flex-col gap-4 max-w-3xl">
       {exerciseLists.map((entry: any) => {
         const progress =
           entry.totalCount > 0

@@ -27,7 +27,7 @@ export default function Home() {
             z-100 relative
             `}
       >
-        <section className="flex flex-col gap-6 pb-20 max-w-screen-2xl m-auto z-10">
+        <section className="flex flex-col gap-6 pb-20 max-w-screen-3xl m-auto z-10">
           <HomeHero />
           <IDEView />
         </section>

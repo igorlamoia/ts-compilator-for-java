@@ -31,7 +31,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Revisão
         </h3>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
           Confira o resumo final antes de aplicar a configuração.
         </p>
       </header>

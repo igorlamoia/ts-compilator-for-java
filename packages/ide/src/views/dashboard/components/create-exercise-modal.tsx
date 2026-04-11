@@ -100,18 +100,15 @@ export function CreateExerciseModal({
     form.clearErrors();
 
     try {
-      await api.post(
-        "/exercises",
-        {
-          classId,
-          title: values.exTitle,
-          description: values.exDesc,
-          gradeWeight: values.exWeight,
-          testCases: values.testCases.filter(
-            (tc) => tc.input.trim() || tc.expectedOutput.trim(),
-          ),
-        },
-      );
+      await api.post("/exercises", {
+        classId,
+        title: values.exTitle,
+        description: values.exDesc,
+        gradeWeight: values.exWeight,
+        testCases: values.testCases.filter(
+          (tc) => tc.input.trim() || tc.expectedOutput.trim(),
+        ),
+      });
 
       onSuccess?.("Exercício criado com sucesso!");
       resetForm();
@@ -133,7 +130,7 @@ export function CreateExerciseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl backdrop-blur-3xl">
+      <DialogContent className="max-w-3xl backdrop-blur-3xl">
         <DialogHeader>
           <DialogTitle>Criar Exercício</DialogTitle>
           <DialogDescription className="text-slate-400">

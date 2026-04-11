@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Form } from "@/components/ui/form";
 import {
   PreviewPanel,
@@ -25,7 +26,7 @@ function KeywordCustomizerShell() {
 
   return (
     <Form {...form}>
-      <section className="flex flex-col gap-8 max-w-screen-2xl mx-auto">
+      <section className="flex flex-col gap-8 max-w-screen-3xl mx-auto">
         <form
           onSubmit={(event) => event.preventDefault()}
           aria-labelledby="keyword-customizer-title"
@@ -39,7 +40,7 @@ function KeywordCustomizerShell() {
           />
 
           <div>
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[240px_minmax(0,1fr)_340px]">
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[230px_minmax(0,1fr)_260px] xl:grid-cols-[340px_minmax(0,1fr)_360px]">
               <div>
                 <WizardStepper
                   steps={visibleSteps}
@@ -102,10 +103,12 @@ function LanguageBasedCard({
         </p>
         <div className="flex items-center gap-3">
           {preview.languageImageUrl ? (
-            <img
+            <Image
               src={preview.languageImageUrl}
               alt={preview.languageLabel}
-              className="h-14 w-14 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+              width={56}
+              height={56}
+              className="rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
             />
           ) : null}
           <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">

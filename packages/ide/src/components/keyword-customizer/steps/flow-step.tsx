@@ -46,7 +46,7 @@ export function FlowStep({ values, actions }: FlowStepProps) {
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Fluxo
         </h3>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
           Ajuste o vocabulário usado para controle de fluxo e navegação.
         </p>
       </header>

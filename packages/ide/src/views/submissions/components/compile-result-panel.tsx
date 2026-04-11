@@ -1,7 +1,13 @@
+import type { TValidationResult } from "@/types/submissions";
 import { TestCaseResults } from "@/components/test-case-results";
 
-export function CompileResultPanel({ compileResult }: { compileResult: any }) {
+export function CompileResultPanel({
+  compileResult,
+}: {
+  compileResult: TValidationResult | null | undefined;
+}) {
   if (!compileResult) return null;
+  const testCaseResults = compileResult.testCaseResults ?? [];
 
   return (
     <div
@@ -43,10 +49,10 @@ export function CompileResultPanel({ compileResult }: { compileResult: any }) {
         </div>
       )}
 
-      {compileResult.testCaseResults?.length > 0 && (
+      {testCaseResults.length > 0 && (
         <div className="mt-4 bg-[#182f34]/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <TestCaseResults
-            results={compileResult.testCaseResults}
+            results={testCaseResults}
             passed={compileResult.testCasesPassed ?? 0}
             total={compileResult.testCasesTotal ?? 0}
           />

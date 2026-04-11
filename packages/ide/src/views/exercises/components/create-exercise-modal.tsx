@@ -12,7 +12,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -59,24 +66,25 @@ export function CreateExerciseModal({
     defaultValues: { title: "", description: "", testCases: defaultTestCases },
   });
 
-  const { fields } = useFieldArray({ control: form.control, name: "testCases" });
+  const { fields } = useFieldArray({
+    control: form.control,
+    name: "testCases",
+  });
 
   useEffect(() => {
-    if (!open) form.reset({ title: "", description: "", testCases: defaultTestCases });
+    if (!open)
+      form.reset({ title: "", description: "", testCases: defaultTestCases });
   }, [open, form]);
 
   const onSubmit = async (values: CreateExerciseForm) => {
     try {
-      await api.post(
-        "/exercises",
-        {
-          title: values.title,
-          description: values.description,
-          testCases: values.testCases.filter(
-            (tc) => tc.input.trim() || tc.expectedOutput.trim()
-          ),
-        },
-      );
+      await api.post("/exercises", {
+        title: values.title,
+        description: values.description,
+        testCases: values.testCases.filter(
+          (tc) => tc.input.trim() || tc.expectedOutput.trim(),
+        ),
+      });
       showToast({ type: "success", message: "Exercício criado!" });
       form.reset();
       onOpenChange(false);
@@ -88,7 +96,7 @@ export function CreateExerciseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl backdrop-blur-3xl">
+      <DialogContent className="max-w-3xl backdrop-blur-3xl">
         <DialogHeader>
           <DialogTitle>Novo Exercício</DialogTitle>
           <DialogDescription className="text-slate-400">

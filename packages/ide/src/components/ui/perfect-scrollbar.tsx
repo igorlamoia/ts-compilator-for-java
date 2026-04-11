@@ -29,11 +29,22 @@ export const PerfectScrollbar = forwardRef<
         : axis === "both"
           ? "perfect-scrollbar-both"
           : "perfect-scrollbar-x";
+    const overflowClass =
+      axis === "y"
+        ? "overflow-y-auto overflow-x-hidden"
+        : axis === "both"
+          ? "overflow-auto"
+          : "overflow-x-auto overflow-y-hidden";
 
     return (
       <div
         ref={ref}
-        className={cn("perfect-scrollbar", axisClass, className)}
+        className={cn(
+          "perfect-scrollbar overscroll-contain",
+          axisClass,
+          overflowClass,
+          className,
+        )}
         style={
           {
             ...style,

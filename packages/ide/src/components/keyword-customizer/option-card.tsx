@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CodeScrollArea } from "@/components/ui/code-scroll-area";
 
 export type OptionCardIconColor =
   | "cyan"
@@ -92,9 +93,11 @@ export function OptionCard({
       </div>
 
       {snippet && (
-        <pre className="overflow-x-auto rounded-lg bg-slate-100 px-3 py-2 font-mono text-sm text-cyan-700 ring-1 ring-slate-200 dark:bg-black dark:text-cyan-200 dark:ring-slate-900">
-          <code>{snippet}</code>
-        </pre>
+        <CodeScrollArea className="rounded-lg bg-slate-100 ring-1 ring-slate-200 dark:bg-black dark:ring-slate-900">
+          <pre className="w-max min-w-full px-3 py-2 font-mono text-sm text-cyan-700 dark:text-cyan-200">
+            <code>{snippet}</code>
+          </pre>
+        </CodeScrollArea>
       )}
 
       <p className="text-sm leading-5 text-slate-600 dark:text-slate-400">

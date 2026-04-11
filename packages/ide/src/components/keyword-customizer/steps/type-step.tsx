@@ -15,7 +15,7 @@ export function TypeStep({ values, actions }: VariablesStepProps) {
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Modelo de tipagem
         </h3>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
           Escolha primeiro se a linguagem será tipada ou não tipada.
         </p>
       </header>

@@ -36,10 +36,19 @@ function listProgress(completed: number, total: number) {
 
 function studentListStatus(entry: ClassExerciseListEntry) {
   if (entry.completedCount >= entry.minRequired)
-    return { text: "Concluída", cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/25" };
+    return {
+      text: "Concluída",
+      cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/25",
+    };
   if (entry.completedCount > 0)
-    return { text: "Em andamento", cls: "bg-blue-500/15 text-blue-300 border-blue-500/25" };
-  return { text: "Não iniciada", cls: "bg-slate-500/15 text-slate-400 border-slate-500/25" };
+    return {
+      text: "Em andamento",
+      cls: "bg-blue-500/15 text-blue-300 border-blue-500/25",
+    };
+  return {
+    text: "Não iniciada",
+    cls: "bg-slate-500/15 text-slate-400 border-slate-500/25",
+  };
 }
 
 export function StudentListCard({
@@ -67,7 +76,8 @@ export function StudentListCard({
 
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 border border-white/8 px-2.5 py-1 rounded-full">
-          Mínimo: {entry.minRequired} exercício{entry.minRequired !== 1 ? "s" : ""}
+          Mínimo: {entry.minRequired} exercício
+          {entry.minRequired !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -113,7 +123,9 @@ export function StudentView() {
         setClasses(data);
         if (data[0]) setSelectedClassId(data[0].id);
       })
-      .catch(() => showToast({ type: "error", message: "Erro ao carregar turmas." }))
+      .catch(() =>
+        showToast({ type: "error", message: "Erro ao carregar turmas." }),
+      )
       .finally(() => setLoadingClasses(false));
   }, [showToast]);
 
@@ -121,9 +133,13 @@ export function StudentView() {
     if (!selectedClassId) return;
     setLoadingLists(true);
     api
-      .get<ClassExerciseListEntry[]>(`/classes/${selectedClassId}/exercise-lists`)
+      .get<ClassExerciseListEntry[]>(
+        `/classes/${selectedClassId}/exercise-lists`,
+      )
       .then(({ data }) => setEntries(data))
-      .catch(() => showToast({ type: "error", message: "Erro ao carregar listas." }))
+      .catch(() =>
+        showToast({ type: "error", message: "Erro ao carregar listas." }),
+      )
       .finally(() => setLoadingLists(false));
   }, [selectedClassId, showToast]);
 
@@ -164,7 +180,7 @@ export function StudentView() {
           description="Seu professor ainda não publicou listas de exercícios para esta turma."
         />
       ) : (
-        <div className="flex flex-col gap-4 max-w-2xl">
+        <div className="flex flex-col gap-4 max-w-3xl">
           {entries.map((entry) => (
             <StudentListCard
               key={entry.exerciseListId}

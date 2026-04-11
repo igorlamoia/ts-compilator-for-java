@@ -176,7 +176,7 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
   })).filter((category) => category.items.length > 0);
 
   return (
-    <aside className="min-h-0 overflow-y-auto border-t border-slate-200/70  p-5 dark:border-slate-800/80 lg:border-l lg:border-t-0 lg:p-6">
+    <aside className="min-h-0 overflow-y-auto border-t border-slate-200/70 pl-2 dark:border-slate-800/80 lg:border-l lg:border-t-0">
       <div className="space-y-6 lg:sticky lg:top-0">
         <ExampleSnippet title="Preview do código" code={preview.snippet} />
         <TokenPreview tokens={preview.tokenPreview} />

@@ -248,7 +248,7 @@ describe("KeywordCustomizer", () => {
     const { container, root } = render();
 
     expect(container.querySelector('[role="dialog"]')).toBeNull();
-    expect(container.textContent).toContain("DNA da Linguagem");
+    expect(container.textContent).toContain("Explore sua Linguagen");
     expect(container.textContent).toContain(
       "Defina o vocabulário, as regras e o fluxo da sua linguagem.",
     );
@@ -267,7 +267,7 @@ describe("KeywordCustomizer", () => {
     expect(container.textContent).toContain("book");
     expect(container.textContent).not.toContain("Case sensitive");
     expect(container.textContent).not.toContain("Ainda não suportado");
-    expect(container.textContent).toContain("DNA da linguagem");
+    expect(container.textContent).toContain("Explore sua Linguagen");
     expect(container.textContent).toContain("Preview do código");
     expect(container.textContent).toContain("Resumo parcial");
 
@@ -322,9 +322,10 @@ describe("KeywordCustomizer", () => {
       });
     };
 
-    const presetButtons = Array.from(container.querySelectorAll("button")).filter(
-      (button) =>
-        presetLabels.some((label) => button.textContent?.includes(label)),
+    const presetButtons = Array.from(
+      container.querySelectorAll("button"),
+    ).filter((button) =>
+      presetLabels.some((label) => button.textContent?.includes(label)),
     );
     expect(presetButtons[0]?.textContent).toContain("Livre");
 
@@ -503,9 +504,9 @@ describe("KeywordCustomizer", () => {
     expect(localStorage.getItem("keyword-customization-index")).toContain(
       "Didatica Neon",
     );
-    expect(localStorage.getItem("keyword-customization-didatica-neon")).toContain(
-      "Didatica Neon",
-    );
+    expect(
+      localStorage.getItem("keyword-customization-didatica-neon"),
+    ).toContain("Didatica Neon");
     expect(router.back).toHaveBeenCalledTimes(1);
     expect(router.push).not.toHaveBeenCalled();
 

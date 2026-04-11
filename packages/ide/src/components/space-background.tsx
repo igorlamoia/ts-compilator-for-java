@@ -1,3 +1,4 @@
+import { BackgroundMascotMarquee } from "./background-mascot-marquee";
 import { Meteors } from "./ui/meteors";
 import { Particles } from "@/components/ui/particles";
 
@@ -9,6 +10,7 @@ export function SpaceBackground() {
       dark:bg-linear-to-t dark:from-neutral-950 dark:to-slate-950
     "
     >
+      <BackgroundMascotMarquee />
       <Meteors number={5} />
       <Particles />
     </div>
