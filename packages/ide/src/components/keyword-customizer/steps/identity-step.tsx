@@ -50,12 +50,19 @@ export type IdentityStepProps = {
   };
 };
 
+const stringClass = "text-[#AD7B68]";
+const functionClass = "font-semibold text-emerald-300";
+const blockClass = "text-rose-300";
+const typeClass = "text-blue-400";
+const normalClass = "text-slate-200";
+const conditionalClass = "text-amber-300";
+
 const PRESET_OPTIONS: Array<{
   id: WizardPresetId;
   title: string;
   subtitle: string;
   description: string;
-  snippet: string;
+  snippet: ReactNode;
   icon: ReactNode;
   iconColor?: OptionCardIconColor;
 }> = [
@@ -64,7 +71,25 @@ const PRESET_OPTIONS: Array<{
     title: "Livre",
     subtitle: "CUSTOM DNA",
     description: "Deixa a configuração manual começar sem sugestão fixa.",
-    snippet: 'diga("Olá mundo")',
+    snippet: (
+      <span className="flex flex-col gap-1">
+        <p className="inline-flex flex-wrap gap-1">
+          <span className={typeClass}>int</span>
+          <span className={functionClass}>main</span>
+          <span className={normalClass}>(</span>
+          <span className={normalClass}>)</span>
+          <span className={blockClass}>&#123;</span>
+        </p>
+        <p>
+          <span className={`${functionClass} pl-2`}>print</span>
+          <span className="text-slate-200">(</span>
+          <span className={stringClass}>&quot;Olá mundo&quot;</span>
+          <span className="text-slate-200">)</span>
+          <span className={normalClass}>;</span>
+        </p>
+        <span className={blockClass}>&#125;</span>
+      </span>
+    ),
     icon: <Atom className="h-5 w-5" />,
     iconColor: "cyan",
   },
@@ -74,7 +99,25 @@ const PRESET_OPTIONS: Array<{
     subtitle: "PT-BR LOGIC",
     description:
       "Traz o vocabulário de controle, tipos e blocos para português.",
-    snippet: 'inicio\n  escreva("Olá mundo")\nfim',
+    snippet: (
+      <span className="flex flex-col gap-1">
+        <p className="inline-flex flex-wrap gap-1">
+          <span className={typeClass}>inteiro</span>
+          <span className={functionClass}>main</span>
+          <span className={normalClass}>(</span>
+          <span className={normalClass}>)</span>
+          <span className={blockClass}>inicio</span>
+        </p>
+        <span className="block pl-2">
+          <span className="text-emerald-300">escreva</span>
+          <span className="text-slate-200">(</span>
+          <span className="text-amber-300">&quot;Olá mundo&quot;</span>
+          <span className="text-slate-200">)</span>
+          <span className={normalClass}>;</span>
+        </span>
+        <span className="text-rose-300">fim</span>
+      </span>
+    ),
     icon: <Languages className="h-5 w-5" />,
     iconColor: "violet",
   },
@@ -83,7 +126,27 @@ const PRESET_OPTIONS: Array<{
     title: "Minimalista",
     subtitle: "ZERO SURFACE",
     description: "Mantém todos os comandos visíveis, mas com aliases curtos.",
-    snippet: 'out("Olá mundo").',
+    snippet: (
+      <>
+        <span className="flex flex-col gap-1">
+          <p className="inline-flex flex-wrap gap-1">
+            <span className={typeClass}>int</span>
+            <span className={functionClass}>main</span>
+            <span className={normalClass}>(</span>
+            <span className={normalClass}>)</span>
+            <span className={blockClass}>&#123;</span>
+          </p>
+          <p>
+            <span className={`${functionClass} pl-2`}>out</span>
+            <span className="text-slate-200">(</span>
+            <span className={stringClass}>&quot;Olá mundo&quot;</span>
+            <span className="text-slate-200">)</span>
+            <span className={normalClass}>;</span>
+          </p>
+          <span className={blockClass}>&#125;</span>
+        </span>
+      </>
+    ),
     icon: <Code className="h-5 w-5" />,
     iconColor: "emerald",
   },
@@ -93,7 +156,23 @@ const PRESET_OPTIONS: Array<{
     subtitle: "INDENTED FLOW",
     description:
       "Troca blocos por indentacao e remove terminadores explicitos.",
-    snippet: 'se (verdadeiro):\n  imprime("Olá mundo")',
+    snippet: (
+      <span className="flex flex-col gap-1">
+        <p className="inline-flex flex-wrap gap-1">
+          <span className={typeClass}>int</span>
+          <span className={functionClass}>main</span>
+          <span className={normalClass}>(</span>
+          <span className={normalClass}>)</span>
+          <span className={blockClass}>:</span>
+        </p>
+        <p>
+          <span className={`${functionClass} pl-2`}>print</span>
+          <span className="text-slate-200">(</span>
+          <span className={stringClass}>&quot;Olá mundo&quot;</span>
+          <span className="text-slate-200">)</span>
+        </p>
+      </span>
+    ),
     icon: <Sparkles className="h-5 w-5" />,
     iconColor: "rose",
   },
@@ -102,7 +181,37 @@ const PRESET_OPTIONS: Array<{
     title: "Ruby-like",
     subtitle: "BEGIN / END",
     description: "Usa blocos com inicio e fim, com nomes proximos do Ruby.",
-    snippet: 'if_then (true_word) inicio\n  puts("Olá mundo")\nfim',
+    snippet: (
+      <span className="flex flex-col gap-1">
+        <span className="flex flex-col gap-1">
+          <p className="inline-flex flex-wrap gap-1">
+            <span className={typeClass}>int</span>
+            <span className={functionClass}>main</span>
+            <span className={normalClass}>(</span>
+            <span className={normalClass}>)</span>
+            <span className="text-rose-300">inicio</span>
+          </p>
+        </span>
+        <div className="pl-2">
+          <span className="inline-flex flex-wrap items-center gap-1">
+            <span className={conditionalClass}>if_then</span>
+            <span className="text-slate-200">(</span>
+            <span className="text-cyan-300">true_word</span>
+            <span className="text-slate-200">)</span>
+            <span className="text-rose-300">inicio</span>
+          </span>
+          <span className="block pl-2">
+            <span className="text-emerald-300">puts</span>
+            <span className="text-slate-200">(</span>
+            <span className={stringClass}>&quot;Olá mundo&quot;</span>
+            <span className="text-slate-200">)</span>
+          </span>
+          <span className="text-rose-300">fim</span>
+        </div>
+
+        <span className="text-rose-300">fim</span>
+      </span>
+    ),
     icon: <Code className="h-5 w-5" />,
     iconColor: "rose",
   },
@@ -112,7 +221,27 @@ const PRESET_OPTIONS: Array<{
     subtitle: "TREM BUNITO",
     description:
       "Puxa o vocabulário para um dialeto regional em tudo que o modelo suporta.",
-    snippet: 'simbora\n  oia_proce_ve("Olá mundo")\ncabo uai',
+    snippet: (
+      <span className="flex flex-col gap-1">
+        <span className="flex flex-col gap-1">
+          <p className="inline-flex flex-wrap gap-1">
+            <span className={typeClass}>trem_di_numeru</span>
+            <span className={functionClass}>main</span>
+            <span className={normalClass}>(</span>
+            <span className={normalClass}>)</span>
+            <span className="text-rose-300">simbora</span>
+          </p>
+        </span>
+        <span className="block pl-2">
+          <span className="text-emerald-300">oia_proce_ve</span>
+          <span className="text-slate-200">(</span>
+          <span className={stringClass}>&quot;Olá mundo&quot;</span>
+          <span className="text-slate-200">)</span>
+          <span className="text-slate-200">uai</span>
+        </span>
+        <span className="text-rose-300">cabo uai</span>
+      </span>
+    ),
     icon: <Languages className="h-5 w-5" />,
     iconColor: "amber",
   },

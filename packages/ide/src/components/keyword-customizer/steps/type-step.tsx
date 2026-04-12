@@ -25,20 +25,28 @@ export function TypeStep({ values, actions }: VariablesStepProps) {
             title="Não tipado"
             subtitle="Magico"
             description="Mostra só uma palavra genérica para declarar variáveis."
-            snippet='variavel nome = "Ana"'
             selected={values.typingMode === "untyped"}
             onClick={() => actions.syncTypingMode("untyped")}
             icon={<WandSparkles className="h-5 w-5 text-cyan-300" />}
-          />
+          >
+            <ExampleSnippet
+              showHeader={false}
+              code={values.untypedSnippet}
+            />
+          </OptionCard>
           <OptionCard
             title="Tipado"
             subtitle="Dureza"
             description="Libera palavras específicas para int, float, bool e string."
-            snippet='string nome = "Ana"'
             selected={values.typingMode === "typed"}
             onClick={() => actions.syncTypingMode("typed")}
             icon={<BicepsFlexed className="h-5 w-5 text-cyan-300" />}
-          />
+          >
+            <ExampleSnippet
+              showHeader={false}
+              code={values.typedSnippet}
+            />
+          </OptionCard>
         </div>
 
         <TypingRelationshipBeam

@@ -29,10 +29,28 @@ describe("EditorThemes", () => {
     );
   });
 
+  it("styles block delimiters in the dark theme", () => {
+    expect(DarkTheme.rules).toContainEqual(
+      expect.objectContaining({
+        token: "keyword.blockDelimiter",
+        fontStyle: "bold",
+      }),
+    );
+  });
+
   it("styles delimiters in the light theme", () => {
     expect(LightTheme.rules).toContainEqual(
       expect.objectContaining({
         token: "delimiter",
+        fontStyle: "bold",
+      }),
+    );
+  });
+
+  it("styles block delimiters in the light theme", () => {
+    expect(LightTheme.rules).toContainEqual(
+      expect.objectContaining({
+        token: "keyword.blockDelimiter",
         fontStyle: "bold",
       }),
     );

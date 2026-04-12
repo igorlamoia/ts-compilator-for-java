@@ -34,6 +34,7 @@ export type JavaMMLanguageMetadata = {
   allKeywords: string[];
   operatorWords: string[];
   statementTerminators?: string[];
+  blockDelimiters?: string[];
   semanticGroups: Record<JavaMMSemanticGroupName, string[]>;
 };
 
@@ -111,10 +112,20 @@ function buildStatementTerminatorRules(
   ]);
 }
 
+function buildBlockDelimiterRules(
+  blockDelimiters: string[] = [],
+): [RegExp, string][] {
+  return blockDelimiters.map((delimiter) => [
+    new RegExp(`\\b${escapeRegExp(delimiter)}\\b`),
+    "keyword.blockDelimiter",
+  ]);
+}
+
 export function buildJavaMMMonarchLanguage(
   metadata: JavaMMLanguageMetadata,
 ): monacoEditor.languages.IMonarchLanguage {
   const statementTerminators = metadata.statementTerminators ?? [";"];
+  const blockDelimiters = metadata.blockDelimiters ?? [];
 
   return {
     keywords: metadata.allKeywords,
@@ -123,12 +134,14 @@ export function buildJavaMMMonarchLanguage(
     loops: metadata.semanticGroups.loops,
     flow: metadata.semanticGroups.flow,
     io: metadata.semanticGroups.io,
+    blockDelimiters: metadata.blockDelimiters ?? [],
     operatorWords: metadata.operatorWords,
     operators: [...DEFAULT_OPERATORS, ...metadata.operatorWords],
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
     tokenizer: {
       root: [
         ...buildStatementTerminatorRules(statementTerminators),
+        ...buildBlockDelimiterRules(blockDelimiters),
         [
           /[a-zA-Z_]\w*(?=\s*\()/,
           {
@@ -138,6 +151,7 @@ export function buildJavaMMMonarchLanguage(
               "@loops": "keyword.loop",
               "@flow": "keyword.flow",
               "@io": "keyword.io",
+              "@blockDelimiters": "keyword.blockDelimiter",
               "@operatorWords": "operator.word",
               "@keywords": "keyword",
               "@default": "entity.name.function",
@@ -153,6 +167,7 @@ export function buildJavaMMMonarchLanguage(
               "@loops": "keyword.loop",
               "@flow": "keyword.flow",
               "@io": "keyword.io",
+              "@blockDelimiters": "keyword.blockDelimiter",
               "@operatorWords": "operator.word",
               "@keywords": "keyword",
               "@default": "identifier",
@@ -261,6 +276,7 @@ export function buildJavaMMLanguageMetadata(
   operatorWordMap: IDEOperatorWordMap = {},
   booleanLiteralMap: IDEBooleanLiteralMap = DEFAULT_BOOLEAN_LITERAL_MAP,
   statementTerminatorLexeme?: string,
+  blockDelimiters?: JavaMMBlockDelimiters,
 ): JavaMMLanguageMetadata {
   const semanticGroups: JavaMMLanguageMetadata["semanticGroups"] = {
     types: [],
@@ -269,6 +285,10 @@ export function buildJavaMMLanguageMetadata(
     flow: [],
     io: [],
   };
+  const normalizedBlockDelimiters = [
+    blockDelimiters?.open?.trim(),
+    blockDelimiters?.close?.trim(),
+  ].filter((value): value is string => Boolean(value));
   const operatorWords = Array.from(
     new Set(
       Object.values(operatorWordMap)
@@ -314,6 +334,7 @@ export function buildJavaMMLanguageMetadata(
     statementTerminators: normalizeStatementTerminators(
       statementTerminatorLexeme,
     ),
+    blockDelimiters: Array.from(new Set(normalizedBlockDelimiters)),
     semanticGroups,
   };
 }
@@ -540,6 +561,7 @@ export function registerJavaMMLanguage(
     options.operatorWordMap,
     options.booleanLiteralMap,
     options.statementTerminatorLexeme,
+    options.blockDelimiters,
   );
 
   // (Re)definir o tokenizer Monarch
@@ -639,6 +661,7 @@ export function registerJavaMMLanguage(
             options.operatorWordMap,
             options.booleanLiteralMap,
             options.statementTerminatorLexeme,
+            options.blockDelimiters,
           );
           for (const operatorWord of metadata.operatorWords) {
             suggestions.push({

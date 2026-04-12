@@ -22,6 +22,21 @@ const ICON_COLOR_CLASSES: Record<OptionCardIconColor, string> = {
     "bg-slate-100/80 text-slate-700 ring-slate-300/70 dark:bg-slate-800/70 dark:text-slate-200 dark:ring-slate-600/60",
 };
 
+const DEFAULT_CARD_SHADOW = "0 18px 50px -34px rgba(0, 0, 0, 0.98)";
+
+const SELECTED_CARD_SHADOWS: Record<OptionCardIconColor, string> = {
+  cyan: "0 0 0 1px rgba(34, 211, 238, 0.28), 0 0 34px -10px rgba(6, 182, 212, 0.48), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
+  emerald:
+    "0 0 0 1px rgba(52, 211, 153, 0.3), 0 0 34px -10px rgba(16, 185, 129, 0.46), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
+  violet:
+    "0 0 0 1px rgba(167, 139, 250, 0.3), 0 0 34px -10px rgba(139, 92, 246, 0.48), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
+  amber:
+    "0 0 0 1px rgba(251, 191, 36, 0.3), 0 0 34px -10px rgba(245, 158, 11, 0.5), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
+  rose: "0 0 0 1px rgba(251, 113, 133, 0.3), 0 0 34px -10px rgba(244, 63, 94, 0.48), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
+  slate:
+    "0 0 0 1px rgba(148, 163, 184, 0.28), 0 0 32px -12px rgba(100, 116, 139, 0.42), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
+};
+
 type OptionCardIconProps = {
   icon?: ReactNode;
   color?: OptionCardIconColor;
@@ -46,10 +61,11 @@ type OptionCardProps = {
   description: string;
   icon?: ReactNode;
   iconColor?: OptionCardIconColor;
-  snippet?: string;
+  snippet?: ReactNode;
   selected?: boolean;
   disabled?: boolean;
   onClick?: () => void;
+  children?: ReactNode;
 };
 
 export function OptionCard({
@@ -62,47 +78,56 @@ export function OptionCard({
   selected = false,
   disabled = false,
   onClick,
+  children,
 }: OptionCardProps) {
+  const boxShadow = selected
+    ? SELECTED_CARD_SHADOWS[iconColor]
+    : DEFAULT_CARD_SHADOW;
+
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
+      style={{ boxShadow }}
       className={[
-        "group flex w-full flex-col gap-4 rounded-lg border border-transparent p-5 text-left transition-all",
-        "bg-white ring-1 ring-slate-200 dark:bg-slate-950/95 dark:ring-slate-900",
+        "group relative flex w-full flex-col gap-4 overflow-hidden rounded-2xl border border-white/8 bg-[#0E1629]/95 p-5 text-left transition-all backdrop-blur-xl",
+        "dark:border-white/6 dark:bg-[#0B1020]/96",
+        "before:pointer-events-none before:absolute before:inset-0 before:bg-linear-to-br before:from-white/4 before:via-transparent before:to-black/20 before:opacity-90 before:transition-opacity before:duration-300 group-hover:before:opacity-100",
+        "after:pointer-events-none after:absolute after:-left-12 after:top-4 after:h-28 after:w-28 after:rounded-full after:bg-white/3 after:blur-3xl after:transition-transform after:duration-500 group-hover:after:translate-x-2 group-hover:after:-translate-y-1",
+        "dark:after:bg-slate-500/6",
         selected
-          ? "border-cyan-500 ring-cyan-500 shadow-[0_0_0_1px_rgba(34,211,238,0.35),0_18px_40px_-20px_rgba(6,182,212,0.35)] dark:border-cyan-400 dark:shadow-[0_0_0_1px_rgba(34,211,238,0.35),0_18px_40px_-20px_rgba(6,182,212,0.45)]"
-          : "shadow-[0_10px_24px_-18px_rgba(15,23,42,0.35)] dark:shadow-[0_14px_32px_-20px_rgba(2,6,23,0.95)]",
+          ? "outline-none border-white/12 ring-0"
+          : "ring-1 ring-white/6 shadow-[0_10px_24px_-18px_rgba(0,0,0,0.6)]",
         disabled
           ? "cursor-not-allowed opacity-50"
-          : "cursor-pointer hover:ring-cyan-500 hover:shadow-[0_18px_40px_-20px_rgba(6,182,212,0.35)] dark:hover:ring-cyan-700",
+          : selected
+            ? "cursor-pointer hover:border-white/14 hover:ring-0"
+            : "cursor-pointer hover:border-white/12 hover:ring-white/10 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.75)]",
       ].join(" ")}
     >
-      <div className="flex items-center gap-3 ">
+      <div className="relative z-10 flex items-center gap-3">
         <OptionCardIcon icon={icon} color={iconColor} />
-        <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-400">
           {subtitle ?? "Esqueceu de mim"}
         </p>
       </div>
-
-      <div>
-        <p className="text-3xl font-semibold leading-tight text-slate-900 dark:text-slate-100">
+      <div className="relative z-10">
+        <p className="text-3xl font-semibold leading-tight text-slate-100">
           {title}
         </p>
       </div>
-
       {snippet && (
-        <CodeScrollArea className="rounded-lg bg-slate-100 ring-1 ring-slate-200 dark:bg-black dark:ring-slate-900">
-          <pre className="w-max min-w-full px-3 py-2 font-mono text-sm text-cyan-700 dark:text-cyan-200">
+        <CodeScrollArea className="relative z-10 rounded-xl bg-[#0a1020]/80 ring-1 ring-white/8">
+          <pre className="w-max min-w-full px-3 py-2 font-mono text-sm text-slate-200">
             <code>{snippet}</code>
           </pre>
         </CodeScrollArea>
       )}
-
-      <p className="text-sm leading-5 text-slate-600 dark:text-slate-400">
+      <p className="relative z-10 text-sm leading-5 text-slate-400">
         {description}
       </p>
+      {children}
     </button>
   );
 }

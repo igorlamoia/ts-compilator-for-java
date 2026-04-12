@@ -10,17 +10,26 @@ import { CodeScrollArea } from "@/components/ui/code-scroll-area";
 import { useKeywordCustomizer } from "./keyword-customizer-context";
 
 type ExampleSnippetProps = {
-  title: string;
+  title?: string;
   code: string;
   output?: string[];
+  input?: string[];
+  showHeader?: boolean;
 };
 
-export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
+export function ExampleSnippet({
+  title,
+  code,
+  output,
+  input,
+  showHeader = true,
+}: ExampleSnippetProps) {
   const { darkMode } = useTheme();
   const { draftCustomization } = useKeywordCustomizer();
   const [highlightedCode, setHighlightedCode] = useState<string | null>(null);
   const lines = useMemo(() => code.split("\n"), [code]);
   const hasOutput = Boolean(output?.length);
+  const hasInput = Boolean(input?.length);
 
   useEffect(() => {
     let isCancelled = false;
@@ -71,9 +80,11 @@ export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
 
   return (
     <section className="space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-        {title}
-      </p>
+      {title && (
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          {title}
+        </p>
+      )}
       <div
         className={`overflow-hidden rounded-2xl border ${
           darkMode
@@ -81,16 +92,18 @@ export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
             : "border-slate-200/80 bg-white shadow-[0_20px_60px_-30px_rgba(15,23,42,0.15)]"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-slate-800/10 px-4 py-3 dark:border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-500/90" />
-            <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/90" />
-            <span className="h-2.5 w-2.5 rounded-full bg-green-500/90" />
+        {showHeader && (
+          <div className="flex items-center justify-between border-b border-slate-800/10 px-4 py-3 dark:border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-500/90" />
+              <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/90" />
+              <span className="h-2.5 w-2.5 rounded-full bg-green-500/90" />
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+              Editor
+            </span>
           </div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-            Editor
-          </span>
-        </div>
+        )}
 
         <div className="grid min-h-12 bg-[#090e1a] text-slate-100">
           <div className="grid grid-cols-[2.5rem_minmax(0,1fr)]">
@@ -118,24 +131,45 @@ export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
             </CodeScrollArea>
           </div>
 
-          {hasOutput ? (
-            <div className="border-t border-white/8 bg-[#050914] px-4 py-3">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Terminal
-                </span>
-                <span className="text-[10px] uppercase tracking-[0.22em] text-slate-600">
-                  Saída
-                </span>
-              </div>
+          {(hasInput || hasOutput) && (
+            <div className="flex flex-col border-t border-white/8 bg-[#050914] px-4 py-3">
+              <span className="ml-auto text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                Terminal
+              </span>
+              <div className="flex">
+                {hasInput && (
+                  <div className="flex flex-col flex-1">
+                    <div className="items-center justify-between">
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-600">
+                        Entrada
+                      </span>
+                    </div>
 
-              <div className="font-mono text-xs leading-6 text-emerald-200">
-                {output!.map((line, index) => (
-                  <div key={`${index}-${line}`}>{line || " "}</div>
-                ))}
+                    <div className="font-mono text-xs leading-6 text-emerald-200">
+                      {input!.map((line, index) => (
+                        <div key={`${index}-${line}`}>{line || " "}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {hasOutput && (
+                  <div className="border-l flex flex-col flex-1 ml-2 pl-2 border-white/8">
+                    <div className=" items-center justify-between">
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-600">
+                        Saída
+                      </span>
+                    </div>
+
+                    <div className="font-mono text-xs leading-6 text-emerald-200">
+                      {output!.map((line, index) => (
+                        <div key={`${index}-${line}`}>{line || " "}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     </section>

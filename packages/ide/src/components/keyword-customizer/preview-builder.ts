@@ -19,38 +19,64 @@ function buildLineEnding(draft: StoredKeywordCustomization): string {
   return draft.statementTerminatorLexeme.trim() || ";";
 }
 
-function buildVariableSnippet(draft: StoredKeywordCustomization): string {
+export function untypedVariableSnippet(
+  draft: StoredKeywordCustomization,
+): string {
   const lineEnding = buildLineEnding(draft);
-  const print = getKeyword(draft, "print");
-
-  if (draft.modes.typing === "untyped") {
-    const variable = getKeyword(draft, "variavel");
-    return `${variable} nome = "Ana"${lineEnding}\n${print}(nome)${lineEnding}`;
-  }
-
+  const variable = getKeyword(draft, "variavel");
+  return `${variable} nome = "Ana"${lineEnding}\n${variable} idade = 25${lineEnding}\n${variable} altura = 1.75${lineEnding}\n${variable} estudante = true${lineEnding}`;
+}
+export function typedVariableSnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  const lineEnding = buildLineEnding(draft);
   const stringType = getKeyword(draft, "string");
-  return `${stringType} nome = "Ana"${lineEnding}\n${print}(nome)${lineEnding}`;
+  const intType = getKeyword(draft, "int");
+  const floatType = getKeyword(draft, "float");
+  const boolType = getKeyword(draft, "bool");
+  return `${stringType} nome = "Ana"${lineEnding}\n${intType} idade = 25${lineEnding}\n${floatType} altura = 1.75${lineEnding}\n${boolType} estudante = true${lineEnding}`;
+}
+export function buildVariableSnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  if (draft.modes.typing === "untyped") return untypedVariableSnippet(draft);
+  return typedVariableSnippet(draft);
 }
 
-function buildBlockSnippet(draft: StoredKeywordCustomization): string {
+export function buildIdentationSnippet(
+  draft: StoredKeywordCustomization,
+): string {
   const conditional = getKeyword(draft, "if");
   const otherwise = getKeyword(draft, "else");
   const print = getKeyword(draft, "print");
-  const scan = getKeyword(draft, "scan");
   const boolTrue = draft.booleanLiteralMap.true?.trim() || "true";
   const lineEnding = buildLineEnding(draft);
+  const funcao = getKeyword(draft, "funcao");
 
-  const baseCodeSnippet = "funcao main() ";
+  const baseCodeSnippet = `${funcao} main()`;
 
-  if (draft.modes.block === "indentation") {
-    return `${baseCodeSnippet}${conditional} (${boolTrue}):\n\t${print}("Olá Mundo!")\n${otherwise}:\n\t${print}("Sou mudo")`;
-  }
+  return `${baseCodeSnippet}:\n\t${conditional} (${boolTrue}):\n\t\t${print}("Olá Mundo!")\n\t${otherwise}:\n\t\t${print}("Sou mudo")`;
+}
+
+export function buildDelimiterSnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  const print = getKeyword(draft, "print");
+  const scan = getKeyword(draft, "scan");
+  const lineEnding = buildLineEnding(draft);
+  const funcao = getKeyword(draft, "funcao");
+  const baseCodeSnippet = `${funcao} main()`;
 
   const open = draft.blockDelimiters.open.trim() || "{";
   const close = draft.blockDelimiters.close.trim() || "}";
 
   return `${baseCodeSnippet}${open}\n\t${print}("Olá Mundo!")${lineEnding}
   ${scan}(nome)${lineEnding}\n\t${print}("Me chamo:", nome)\n${close}`;
+}
+
+export function buildBlockSnippet(draft: StoredKeywordCustomization): string {
+  if (draft.modes.block === "indentation") return buildIdentationSnippet(draft);
+  return buildDelimiterSnippet(draft);
 }
 
 function buildFlowSnippet(draft: StoredKeywordCustomization): string {

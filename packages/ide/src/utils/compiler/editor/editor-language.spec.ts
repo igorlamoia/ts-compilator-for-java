@@ -103,6 +103,38 @@ describe("buildJavaMMLanguageMetadata", () => {
     expect(rootTokenizer[1].cases["@types"]).toBe("keyword.type");
   });
 
+  it("assigns a Monaco token class to custom block delimiters", () => {
+    const language = buildJavaMMMonarchLanguage({
+      allKeywords: [],
+      operatorWords: [],
+      statementTerminators: [";"],
+      blockDelimiters: ["inicio", "fim"],
+      semanticGroups: {
+        types: [],
+        conditionals: [],
+        loops: [],
+        flow: [],
+        io: [],
+      },
+    });
+
+    const rootTokenizer = language.tokenizer.root.find(
+      (rule): rule is [RegExp, { cases: Record<string, string> }] =>
+        Array.isArray(rule) &&
+        typeof rule[1] === "object" &&
+        rule[1] !== null &&
+        "cases" in rule[1],
+    );
+
+    if (!rootTokenizer || !("cases" in rootTokenizer[1])) {
+      throw new Error("Unexpected Monarch tokenizer shape");
+    }
+
+    expect(rootTokenizer[1].cases["@blockDelimiters"]).toBe(
+      "keyword.blockDelimiter",
+    );
+  });
+
   it("classifies non-keyword identifiers followed by parenthesis as functions", () => {
     const language = buildJavaMMMonarchLanguage({
       allKeywords: ["if", "print"],
@@ -303,6 +335,39 @@ describe("buildJavaMMLanguageMetadata", () => {
       open: "inicio",
       close: "fim",
     });
+  });
+
+  it("forwards custom block delimiters into Monaco token metadata", () => {
+    const monaco = {
+      languages: {
+        getLanguages: () => [],
+        register: vi.fn(),
+        setMonarchTokensProvider: vi.fn(),
+        setLanguageConfiguration: vi.fn(),
+      },
+    };
+
+    registerJavaMMLanguage(
+      monaco as never,
+      [{ original: "if", custom: "se", tokenId: 28 }] as never,
+      {
+        blockMode: "delimited",
+        blockDelimiters: { open: "inicio", close: "fim" },
+      } as never,
+    );
+
+    const language =
+      monaco.languages.setMonarchTokensProvider.mock.calls[0]?.[1];
+    expect(language.blockDelimiters).toEqual(["inicio", "fim"]);
+    const blockDelimiterRules = language.tokenizer.root
+      .filter(
+        (rule): rule is [RegExp, string] =>
+          Array.isArray(rule) && rule[1] === "keyword.blockDelimiter",
+      )
+      .map(([pattern]) => pattern);
+
+    expect(blockDelimiterRules.some((rule) => rule.test("inicio"))).toBe(true);
+    expect(blockDelimiterRules.some((rule) => rule.test("fim"))).toBe(true);
   });
 
   it("offers configured boolean literals in autocomplete", () => {

@@ -6,6 +6,8 @@ import { OptionCard } from "../option-card";
 export type StructureStepProps = {
   values: {
     snippet?: string;
+    delimiterSnippet: string;
+    identationSnippet: string;
     semicolonMode: StoredKeywordCustomization["modes"]["semicolon"];
     blockMode: StoredKeywordCustomization["modes"]["block"];
     usesCustomDelimiters: boolean;
@@ -136,28 +138,19 @@ export function StructureStep({ values, errors, actions }: StructureStepProps) {
         <OptionCard
           title="Chaves"
           description="Mantém a estrutura delimitada por símbolos tradicionais."
-          snippet={'if (condicao) {\n  escreva("ok")\n}'}
-          selected={
-            values.blockMode === "delimited" && !values.usesCustomDelimiters
-          }
+          selected={values.blockMode === "delimited"}
           onClick={() => actions.syncBlockMode("delimited")}
-        />
-        <OptionCard
-          title="Início / fim"
-          description="Usa palavras para abrir e fechar blocos delimitados."
-          snippet={'se (condicao) inicio\n  escreva("ok")\nfim'}
-          selected={
-            values.blockMode === "delimited" && values.usesCustomDelimiters
-          }
-          onClick={() => actions.syncBlockMode("delimited")}
-        />
+        >
+          <ExampleSnippet showHeader={false} code={values.delimiterSnippet} />
+        </OptionCard>
         <OptionCard
           title="Indentação"
           description="Organiza blocos pela indentação, sem delimitadores."
-          snippet={'se (condicao):\n  escreva("ok")'}
           selected={values.blockMode === "indentation"}
           onClick={() => actions.syncBlockMode("indentation")}
-        />
+        >
+          <ExampleSnippet showHeader={false} code={values.identationSnippet} />
+        </OptionCard>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

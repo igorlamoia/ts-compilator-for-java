@@ -93,7 +93,8 @@ const FormLabel = React.forwardRef<
       ref={ref}
       className={cn(
         "uppercase tracking-wider ml-1",
-        "block text-xs font-medium uppercase tracking-wider text-slate-400",
+        // "block text-xs font-medium uppercase tracking-wider text-slate-400",
+        "font-semibold block text-xs tracking-[0.16em] text-slate-500 dark:text-slate-400",
         className,
       )}
       htmlFor={formItemId}

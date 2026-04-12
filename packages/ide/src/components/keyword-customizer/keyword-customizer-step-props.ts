@@ -11,6 +11,12 @@ import type { ReviewStepProps } from "./steps/review-step";
 import type { RulesStepProps } from "./steps/rules-step";
 import type { StructureStepProps } from "./steps/structure-step";
 import type { VariablesStepProps } from "./steps/io-step";
+import {
+  buildDelimiterSnippet,
+  buildIdentationSnippet,
+  typedVariableSnippet,
+  untypedVariableSnippet,
+} from "./preview-builder";
 
 function getKeywordValue(
   context: KeywordCustomizerContextValue,
@@ -68,6 +74,8 @@ export function buildVariablesStepProps(
   return {
     values: {
       snippet: context.preview.snippet,
+      typedSnippet: typedVariableSnippet(context.draftCustomization),
+      untypedSnippet: untypedVariableSnippet(context.draftCustomization),
       typingMode: context.draftCustomization.modes.typing,
       arrayMode: context.draftCustomization.modes.array,
       printKeyword: getKeywordValue(context, "print"),
@@ -110,6 +118,8 @@ export function buildStructureStepProps(
   return {
     values: {
       snippet: context.preview.snippet,
+      delimiterSnippet: buildDelimiterSnippet(context.draftCustomization),
+      identationSnippet: buildIdentationSnippet(context.draftCustomization),
       semicolonMode: draftCustomization.modes.semicolon,
       blockMode: draftCustomization.modes.block,
       usesCustomDelimiters:

@@ -1,7 +1,6 @@
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
-import { TextPressure } from "@/components/TextPressure";
 import { HyperText } from "@/components/ui/hyper-text";
 
 export type VariableStepKeyword =
@@ -16,6 +15,8 @@ export type VariableStepKeyword =
 export type VariablesStepProps = {
   values: {
     snippet?: string;
+    typedSnippet: string;
+    untypedSnippet: string;
     typingMode: StoredKeywordCustomization["modes"]["typing"];
     arrayMode: StoredKeywordCustomization["modes"]["array"];
     printKeyword: string;
@@ -98,7 +99,8 @@ export function IOStep({ values, actions }: VariablesStepProps) {
       <ExampleSnippet
         title="Exemplo ao vivo"
         code={values.snippet ?? `${values.printKeyword}("Ola mundo")`}
-        output={["Ola mundo"]}
+        input={["Ana"]}
+        output={["Ola mundo", "Me chamo: Ana"]}
       />
     </section>
   );
