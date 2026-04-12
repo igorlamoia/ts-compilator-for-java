@@ -2,6 +2,7 @@ import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
+import { Form, TextQuote } from "lucide-react";
 
 export type StructureStepProps = {
   values: {
@@ -137,6 +138,8 @@ export function StructureStep({ values, errors, actions }: StructureStepProps) {
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <OptionCard
           title="Chaves"
+          icon={<Form className="h-5 w-5" />}
+          iconColor="emerald"
           description="Mantém a estrutura delimitada por símbolos tradicionais."
           selected={values.blockMode === "delimited"}
           onClick={() => actions.syncBlockMode("delimited")}
@@ -148,6 +151,8 @@ export function StructureStep({ values, errors, actions }: StructureStepProps) {
           description="Organiza blocos pela indentação, sem delimitadores."
           selected={values.blockMode === "indentation"}
           onClick={() => actions.syncBlockMode("indentation")}
+          icon={<TextQuote className="h-5 w-5" />}
+          iconColor="violet"
         >
           <ExampleSnippet showHeader={false} code={values.identationSnippet} />
         </OptionCard>
