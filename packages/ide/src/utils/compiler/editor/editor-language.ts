@@ -709,7 +709,7 @@ export function registerJavaMMLanguage(
       JAVAMM_LANGUAGE_ID,
       {
         provideHover(model, position) {
-          if (shouldSuppressHoverForPosition(model, position)) {
+          if (shouldSuppressHoverForPosition(model as HoverableModelLike, position)) {
             return null;
           }
 
