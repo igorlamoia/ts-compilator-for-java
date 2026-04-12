@@ -2,6 +2,7 @@ import type { WizardPreview } from "./preview-data";
 import { ChangedChip } from "./changed-chip";
 import { ExampleSnippet } from "./example-snippet";
 import { TokenPreview } from "./token-preview";
+import { OPERATOR_WORD_FIELDS } from "@/lib/operator-word-map";
 
 export type PreviewPanelProps = {
   preview: WizardPreview;
@@ -167,13 +168,37 @@ const PREVIEW_CATEGORIES: PreviewCategory[] = [
   },
 ];
 
-export function PreviewPanel({ preview }: PreviewPanelProps) {
+function segregateLexemeChangesByCategory(preview: WizardPreview) {
   const groupedLexemes = PREVIEW_CATEGORIES.map((category) => ({
     ...category,
     items: preview.chosenLexemes.filter((mapping) =>
       category.matches(resolveKeywordSemanticToken(mapping.original)),
     ),
   })).filter((category) => category.items.length > 0);
+
+  // change the operator word to use OPERATOR_WORD_FIELDS key to be used as symbol in the preview
+  // groupedLexemes.forEach((category) => {
+  //   if (category.key === "keyword.operator-word") {
+  //     category.items.forEach((mapping) => {
+  //       console.log(mapping);
+  //       const operatorField = OPERATOR_WORD_FIELDS.find(
+  //         (field) => field.key.toLowerCase() === mapping.original.toLowerCase(),
+  //       );
+  //       if (operatorField) {
+  //         console.log("troca", operatorField.symbol);
+  //         mapping.original = operatorField.symbol;
+  //       }
+  //     });
+  //   }
+  // });
+
+  // console.log(groupedLexemes);
+
+  return groupedLexemes;
+}
+
+export function PreviewPanel({ preview }: PreviewPanelProps) {
+  const groupedLexemes = segregateLexemeChangesByCategory(preview);
 
   return (
     <aside className="min-h-0 overflow-y-auto border-t border-slate-200/70 pl-2 dark:border-slate-800/80 lg:border-l lg:border-t-0">
@@ -183,7 +208,7 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
 
         <section className="space-y-3 rounded-lg border border-slate-200/80 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-            Resumo parcial
+            Mapa da Linguagem
           </p>
           <div className="space-y-4">
             {preview.chosenLexemes.length ? (

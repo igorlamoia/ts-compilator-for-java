@@ -86,9 +86,11 @@ function LanguageBasedCard({
 }: {
   preview: PreviewPanelProps["preview"];
 }) {
+  const imageUrl = preview.languageImageUrl || "/images/language-default.png";
+
   return (
-    <section className="mt-6 mr-2 space-y-3 rounded-lg border border-slate-200/80 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-      <div className="space-y-1">
+    <section className="mt-6 mr-2 space-y-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900/90">
+      <div className="space-y-1 px-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
           Baseado em
         </p>
@@ -97,24 +99,30 @@ function LanguageBasedCard({
         </h3>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-slate-200/70 bg-slate-50/80 p-3 dark:border-slate-800/70 dark:bg-slate-950/60">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Nome da linguagem
-        </p>
-        <div className="flex items-center gap-3">
-          {preview.languageImageUrl ? (
-            <Image
-              src={preview.languageImageUrl}
-              alt={preview.languageLabel}
-              width={56}
-              height={56}
-              className="rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
-            />
-          ) : null}
-          <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {preview.languageLabel}
-          </h4>
+      <div className="group relative overflow-hidden rounded-2xl bg-slate-950 shadow-lg ring-1 ring-white/10 dark:border-slate-800">
+        <div className="absolute inset-0 bg-linear-to-b from-slate-950/5 via-slate-950/10 to-slate-950/80" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-white/15 to-transparent dark:from-white/5" />
+        <Image
+          src={imageUrl}
+          alt={preview.languageLabel}
+          width={640}
+          height={260}
+          unoptimized
+          className="h-32 w-full object-cover object-center opacity-95 transition duration-500 group-hover:scale-[1.02]"
+        />
+
+        <div className="absolute inset-x-0 bottom-0 z-10">
+          <div className="rounded-xl border border-white/10 bg-slate-950/55 p-2 backdrop-blur-[3px]">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.32em] text-cyan-200/80">
+              Nome da linguagem
+            </p>
+            <p className="mt-1 text-sm font-semibold tracking-[0.02em] text-white">
+              {preview.languageLabel}
+            </p>
+          </div>
         </div>
+
+        <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-cyan-400/10" />
       </div>
 
       <div className="space-y-2">

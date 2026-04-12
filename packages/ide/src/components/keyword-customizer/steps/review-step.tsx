@@ -2,6 +2,7 @@ import type { WizardPreview } from "../preview-data";
 import { WIZARD_STEPS, type WizardStepId } from "../wizard-model";
 import { PreviewCodeComparison } from "../preview-code-comparison";
 import { TokenPreview } from "../token-preview";
+import Image from "next/image";
 
 export type ReviewStepProps = {
   values: {
@@ -43,10 +44,12 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
           </p>
           <div className="mt-3 flex items-center gap-3">
             {values.preview.languageImageUrl ? (
-              <img
+              <Image
                 src={values.preview.languageImageUrl}
                 alt={values.preview.languageLabel}
-                className="h-16 w-16 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                width={64}
+                height={64}
+                className="rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
               />
             ) : null}
             <div className="space-y-1">
