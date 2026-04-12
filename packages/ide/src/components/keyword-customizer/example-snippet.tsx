@@ -92,7 +92,7 @@ export function ExampleSnippet({ title, code, output }: ExampleSnippetProps) {
           </span>
         </div>
 
-        <div className="grid min-h-64 bg-[#090e1a] text-slate-100">
+        <div className="grid min-h-12 bg-[#090e1a] text-slate-100">
           <div className="grid grid-cols-[2.5rem_minmax(0,1fr)]">
             <div className="border-r border-white/5 bg-black/10 px-2 py-4 text-right font-mono text-[11px] leading-6 text-slate-500">
               {lines.map((_, index) => (

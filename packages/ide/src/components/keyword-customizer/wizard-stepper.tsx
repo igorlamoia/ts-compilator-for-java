@@ -44,17 +44,14 @@ export function WizardStepper({
   };
 
   return (
-    <aside className="flex flex-col gap-6 border-b border-slate-200/70 dark:border-slate-800/80 lg:border-b-0 lg:border-r">
+    <aside className="flex flex-col gap-2 border-b border-slate-200/70 dark:border-slate-800/80 lg:border-b-0 lg:border-r">
       <div className="pr-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Progresso
-        </p>
         <div className="flex items-end justify-between gap-4">
-          <div>
+          <div className="flex items-center gap-2">
             <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
               {String(activeIndex + 1).padStart(2, "0")}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs mt-1 text-slate-500 dark:text-slate-400">
               de {steps.length} etapas
             </p>
           </div>
@@ -62,7 +59,7 @@ export function WizardStepper({
             {progress}%
           </p>
         </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
           <div
             className="h-full rounded-full bg-linear-to-r from-cyan-500 to-emerald-400"
             style={{ width: `${progress}%` }}
@@ -80,7 +77,7 @@ export function WizardStepper({
               type="button"
               onClick={() => onStepClick(step.id)}
               className={[
-                "flex items-center gap-3 border-l-4 px-3 py-2.5 transition-all",
+                "flex items-center gap-2 border-l-4 px-3 py-2.5 transition-all",
                 isActive
                   ? "border-l-cyan-500 bg-slate-900/40 text-cyan-400 dark:text-cyan-300"
                   : "border-l-transparent text-slate-400 hover:text-slate-300 dark:text-slate-500 dark:hover:text-slate-400",

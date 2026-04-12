@@ -12,6 +12,7 @@ import {
 import { KeywordCustomizerHeader } from "./keyword-customizer/keyword-customizer-header";
 import { KeywordCustomizerFooter } from "./keyword-customizer/keyword-customizer-footer";
 import { KeywordCustomizerStepContent } from "./keyword-customizer/keyword-customizer-step-content";
+import { TokenPreview } from "./keyword-customizer/token-preview";
 
 function KeywordCustomizerShell() {
   const {
@@ -23,7 +24,6 @@ function KeywordCustomizerShell() {
     hasChanges,
     actions,
   } = useKeywordCustomizer();
-
   return (
     <Form {...form}>
       <section className="flex flex-col gap-8 max-w-screen-3xl mx-auto">
@@ -39,34 +39,31 @@ function KeywordCustomizerShell() {
             onReset={actions.resetDraft}
           />
 
-          <div>
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[230px_minmax(0,1fr)_260px] xl:grid-cols-[340px_minmax(0,1fr)_360px]">
-              <div>
-                <WizardStepper
-                  steps={visibleSteps}
-                  activeStepId={activeStep.id}
-                  onStepClick={actions.goToWizardStep}
-                />
-                <LanguageBasedCard preview={preview} />
-              </div>
-
-              <div className="min-h-0 overflow-y-auto border-t border-slate-200/70  dark:border-slate-800/80  xl:border-x xl:border-t-0">
-                <div className="min-h-0 flex-1 overflow-y-auto p-5">
-                  <KeywordCustomizerStepContent />
-                </div>
-              </div>
-
-              <PreviewPanel preview={preview} />
+          <main className="grid items-start  lg:grid-cols-[230px_minmax(0,1fr)_260px] xl:grid-cols-[340px_minmax(0,1fr)_360px]">
+            <div className="flex flex-col gap-3">
+              <WizardStepper
+                steps={visibleSteps}
+                activeStepId={activeStep.id}
+                onStepClick={actions.goToWizardStep}
+              />
+              <LanguageBasedCard preview={preview} />
+              <TokenPreview tokens={preview.tokenPreview} />
             </div>
-          </div>
 
-          <KeywordCustomizerFooter
-            activeStepIndex={activeStepIndex}
-            totalSteps={visibleSteps.length}
-            onBack={actions.goToPreviousWizardStep}
-            onNext={actions.goToNextWizardStep}
-            onSave={actions.save}
-          />
+            <div className="border-t border-r border-slate-200/70 dark:border-slate-800/80 xl:border-x xl:border-t-0">
+              <div className="min-h-0 flex-1 p-5">
+                <KeywordCustomizerStepContent />
+                <KeywordCustomizerFooter
+                  activeStepIndex={activeStepIndex}
+                  totalSteps={visibleSteps.length}
+                  onBack={actions.goToPreviousWizardStep}
+                  onNext={actions.goToNextWizardStep}
+                  onSave={actions.save}
+                />
+              </div>
+            </div>
+            <PreviewPanel preview={preview} />
+          </main>
         </form>
       </section>
     </Form>
@@ -89,7 +86,7 @@ function LanguageBasedCard({
   const imageUrl = preview.languageImageUrl || "/images/language-default.png";
 
   return (
-    <section className="mt-6 mr-2 space-y-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900/90">
+    <section className="mr-2 space-y-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900/90">
       <div className="space-y-1 px-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
           Baseado em

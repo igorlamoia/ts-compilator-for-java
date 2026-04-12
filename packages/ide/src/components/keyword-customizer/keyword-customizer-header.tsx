@@ -18,10 +18,11 @@ export function KeywordCustomizerHeader({
     <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <Title as="h1" id="keyword-customizer-title">
-          <GradientText>Explore sua Linguagen</GradientText>
+          <GradientText>Laboratório Léxico</GradientText>
         </Title>
         <Subtitle id="keyword-customizer-description" className="mt-1">
-          Defina o vocabulário, as regras e o fluxo da sua linguagem.
+          Manipule o núcleo do interpretador em tempo real. Defina o
+          vocabulário, as regras e o fluxo da sua linguagem
         </Subtitle>
       </div>
       <div className="flex items-center gap-3">

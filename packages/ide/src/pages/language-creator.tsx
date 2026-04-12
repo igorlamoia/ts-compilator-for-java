@@ -19,7 +19,7 @@ const geistMono = localFont({
 
 export default function LanguageCreatorPage() {
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-x-hidden">
       <SpaceBackground />
       <Navbar />
       <main
