@@ -1,5 +1,11 @@
 import IconButton from "@/components/buttons/icon-button";
-import { FileCode2, GitBranch, Search, Settings } from "lucide-react";
+import {
+  FileCode2,
+  GitBranch,
+  Languages,
+  Search,
+  Settings,
+} from "lucide-react";
 import { useRouter } from "next/router";
 import type { SidebarView } from "./side-explorer/sidebar-panel";
 import { markLanguageCreatorReturn } from "@/lib/language-creator-navigation";
@@ -41,6 +47,13 @@ export function SideMenu({
         tooltip="Buscar"
       >
         <Search className="h-4 w-4" />
+      </IconButton>
+      <IconButton
+        selected={isSidebarOpen && activeView === "language"}
+        onClick={() => handleViewClick("language")}
+        tooltip="Linguagens"
+      >
+        <Languages className="h-4 w-4" />
       </IconButton>
       <IconButton
         selected={isSidebarOpen && activeView === "source-control"}

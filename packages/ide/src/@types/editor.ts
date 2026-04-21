@@ -43,6 +43,7 @@ export type TEditorContextType = {
   cleanIssues: () => void;
   monacoRef: MutableRefObject<typeof monacoEditor | null>;
   retokenize: () => void;
+  insertTextAtCursor: (text: string) => void;
   // File management methods
   loadFileContent: (filePath: string, initialCode?: string) => void;
   saveCurrentFile: (filePath: string) => void;

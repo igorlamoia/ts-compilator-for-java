@@ -3,7 +3,6 @@ import { StepForward } from "lucide-react";
 import { useRouter } from "next/router";
 import { t } from "@/i18n";
 import { RainbowButton } from "@/components/ui/rainbow-button";
-import { LanguageSelector } from "./language-selector";
 
 interface MenuProps {
   handleRun: () => void;
@@ -29,7 +28,6 @@ export function Menu({ handleRun, runAll, toggleTerminal }: MenuProps) {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <LanguageSelector />
         <IconButton
           onClick={handleRun}
           tooltip={t(locale, "ui.run_lexer")}

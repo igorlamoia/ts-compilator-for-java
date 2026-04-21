@@ -135,7 +135,7 @@ export function StructureStep({ values, errors, actions }: StructureStepProps) {
         ))}
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2">
         <OptionCard
           title="Chaves"
           icon={<Form className="h-5 w-5" />}

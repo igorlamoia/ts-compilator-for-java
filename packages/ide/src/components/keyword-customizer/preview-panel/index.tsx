@@ -84,8 +84,8 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
           <ScrollStack
             stackPosition="0%"
             scaleEndPosition="0%"
-            itemDistance={10}
-            itemStackDistance={5}
+            itemDistance={30}
+            itemStackDistance={30}
             blurAmount={0.5}
           >
             {groupedLexemes.map((category) => (

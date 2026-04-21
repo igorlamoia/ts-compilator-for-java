@@ -172,6 +172,33 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const insertTextAtCursor = useCallback(
+    (text: string) => {
+      const editor = editorInstanceRef.current;
+      const monaco = monacoRef.current;
+
+      if (!editor || !monaco) return;
+
+      const selection = editor.getSelection();
+      if (!selection) return;
+
+      editor.pushUndoStop();
+      editor.executeEdits("language-panel", [
+        {
+          range: selection,
+          text,
+          forceMoveMarkers: true,
+        },
+      ]);
+      const nextCode = editor.getValue();
+      setSourceCode(nextCode);
+      localStorage.setItem(getSourceCodeStorageKey(currentFilePath), nextCode);
+      editor.pushUndoStop();
+      editor.focus();
+    },
+    [currentFilePath],
+  );
+
   const cleanIssues = () => {
     const editor = editorInstanceRef.current;
     const monaco = monacoRef.current;
@@ -256,6 +283,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         cleanIssues,
         monacoRef,
         retokenize,
+        insertTextAtCursor,
         loadFileContent,
         saveCurrentFile,
       }}

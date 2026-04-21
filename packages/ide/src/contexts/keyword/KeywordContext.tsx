@@ -5,6 +5,7 @@ import {
   useEffect,
   ReactNode,
   useCallback,
+  useMemo,
 } from "react";
 import { useEditor } from "@/hooks/useEditor";
 import { updateJavaMMKeywords } from "@/utils/compiler/editor/editor-language";
@@ -299,88 +300,118 @@ export function KeywordProvider({ children }: { children: ReactNode }) {
     if (isHydrated) updateMonacoHighlighting();
   }, [isHydrated, updateMonacoHighlighting]);
 
-  const validateKeyword = (
-    original: string,
-    custom: string,
-    mappingsToValidate: KeywordMapping[] = customization.mappings,
-  ): string | null => {
-    return validateCustomKeyword(
-      original,
-      custom,
-      mappingsToValidate,
-      customization.booleanLiteralMap,
-    );
-  };
+  const validateKeyword = useCallback(
+    (
+      original: string,
+      custom: string,
+      mappingsToValidate: KeywordMapping[] = customization.mappings,
+    ): string | null => {
+      return validateCustomKeyword(
+        original,
+        custom,
+        mappingsToValidate,
+        customization.booleanLiteralMap,
+      );
+    },
+    [customization.booleanLiteralMap, customization.mappings],
+  );
 
-  const setCustomization = (
-    value:
-      | StoredKeywordCustomization
-      | ((current: StoredKeywordCustomization) => StoredKeywordCustomization),
-  ) => {
-    setCustomizationState((current) => resolveNextValue(value, current));
-  };
+  const setCustomization = useCallback(
+    (
+      value:
+        | StoredKeywordCustomization
+        | ((current: StoredKeywordCustomization) => StoredKeywordCustomization),
+    ) => {
+      setCustomizationState((current) => resolveNextValue(value, current));
+    },
+    [],
+  );
 
-  const setModes = (
-    value:
-      | IDEKeywordCustomizationModes
-      | ((
-          current: IDEKeywordCustomizationModes,
-        ) => IDEKeywordCustomizationModes),
-  ) => {
-    setCustomizationState((current) => ({
-      ...current,
-      modes: resolveNextValue(value, current.modes),
-    }));
-  };
+  const setModes = useCallback(
+    (
+      value:
+        | IDEKeywordCustomizationModes
+        | ((
+            current: IDEKeywordCustomizationModes,
+          ) => IDEKeywordCustomizationModes),
+    ) => {
+      setCustomizationState((current) => ({
+        ...current,
+        modes: resolveNextValue(value, current.modes),
+      }));
+    },
+    [],
+  );
 
-  const setMappings = (
-    value: KeywordMapping[] | ((current: KeywordMapping[]) => KeywordMapping[]),
-  ) => {
-    setCustomizationState((current) => ({
-      ...current,
-      mappings: resolveNextValue(value, current.mappings),
-    }));
-  };
+  const setMappings = useCallback(
+    (
+      value:
+        | KeywordMapping[]
+        | ((current: KeywordMapping[]) => KeywordMapping[]),
+    ) => {
+      setCustomizationState((current) => ({
+        ...current,
+        mappings: resolveNextValue(value, current.mappings),
+      }));
+    },
+    [],
+  );
 
-  const updateKeyword = (original: string, custom: string) => {
-    setMappings((prev: KeywordMapping[]) =>
-      prev.map((m: KeywordMapping) =>
-        m.original === original ? { ...m, custom } : m,
-      ),
-    );
-  };
+  const updateKeyword = useCallback(
+    (original: string, custom: string) => {
+      setMappings((prev: KeywordMapping[]) =>
+        prev.map((m: KeywordMapping) =>
+          m.original === original ? { ...m, custom } : m,
+        ),
+      );
+    },
+    [setMappings],
+  );
 
-  const resetCustomization = () => {
+  const resetCustomization = useCallback(() => {
     setCustomizationState(getDefaultCustomizationState());
-  };
+  }, []);
 
-  const buildKeywordMap = (): Record<string, number> => {
+  const buildKeywordMap = useCallback((): Record<string, number> => {
     const map: Record<string, number> = {};
     for (const m of customization.mappings) {
       map[m.custom] = m.tokenId;
     }
     return map;
-  };
+  }, [customization.mappings]);
 
-  const buildLexerConfig = (): IDECompilerConfigPayload => {
+  const buildLexerConfig = useCallback((): IDECompilerConfigPayload => {
     return buildLexerConfigFromCustomization(customization);
-  };
+  }, [customization]);
+
+  const contextValue = useMemo(
+    () => ({
+      customization,
+      setCustomization,
+      setModes,
+      setMappings,
+      updateKeyword,
+      resetCustomization,
+      buildKeywordMap,
+      validateKeyword,
+      validateBlockDelimiters,
+      buildLexerConfig,
+    }),
+    [
+      customization,
+      setCustomization,
+      setModes,
+      setMappings,
+      updateKeyword,
+      resetCustomization,
+      buildKeywordMap,
+      validateKeyword,
+      buildLexerConfig,
+    ],
+  );
 
   return (
-    <KeywordContext.Provider
-      value={{
-        customization,
-        setCustomization,
-        setModes,
-        setMappings,
-        updateKeyword,
-        resetCustomization,
-        buildKeywordMap,
-        validateKeyword,
-        validateBlockDelimiters,
-        buildLexerConfig,
-      }}
-    >
+    <KeywordContext.Provider value={contextValue}>
       {children}
     </KeywordContext.Provider>
   );
