@@ -5,12 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 This is a TypeScript-based compiler and IDE for Java-- (a simplified version of Java). The project is organized as a monorepo with two main packages:
+
 - **compiler**: Lexical analyzer, parser, intermediate code generator, and interpreter
 - **ide**: Next.js-based web IDE with Monaco Editor integration
 
 ## Common Commands
 
 ### Compiler Package
+
 ```bash
 cd packages/compiler
 
@@ -28,6 +30,7 @@ npm run test
 ```
 
 ### IDE Package
+
 ```bash
 cd packages/ide
 
@@ -45,11 +48,13 @@ npm run lint
 ```
 
 ### Root Commands
+
 The root is a simple workspace manager. Install dependencies from the root or individual packages.
 
 ## Architecture
 
 ### Compiler Pipeline
+
 The compiler follows a multi-stage architecture:
 
 1. **Lexer** (`packages/compiler/src/lexer/`): Character-by-character tokenization
@@ -84,14 +89,17 @@ The compiler follows a multi-stage architecture:
    - I/O operations are abstracted via `stdout`/`stdin` callbacks passed to constructor
 
 ### Data Flow
+
 ```
 input-code.java → Lexer → Token[] → TokenIterator → Grammar/Parser (w/ Emitter) → Instruction[] → Interpreter → Output
 ```
 
 ### IDE Architecture
+
 The IDE is a Next.js (Pages Router) app using Tailwind CSS v4, shadcn/radix-ui components, and React 19.
 
 **Pages:**
+
 - `/` — Home/landing page
 - `/login`, `/register` — Auth pages
 - `/dashboard` — User dashboard
@@ -99,26 +107,29 @@ The IDE is a Next.js (Pages Router) app using Tailwind CSS v4, shadcn/radix-ui c
 - `/exercises/[id]`, `/classes/[id]`, `/submissions/[id]` — LMS entity pages
 
 **API Routes** (`src/pages/api/`):
+
 - `/api/lexer` — Accepts source code + optional keyword map, returns token analysis
 - `/api/intermediator` — Returns intermediate code instructions
 - `/api/auth/login`, `/api/auth/register`, `/api/auth/me` — Auth (no password hashing; email lookup only for local dev)
 - `/api/classes/`, `/api/exercises/`, `/api/submissions/` — LMS CRUD and `/submissions/validate`
 
-**Database:** Prisma with SQLite (`prisma/dev.db`). Models: `Organization`, `User` (roles: ADMIN/TEACHER/STUDENT), `Class`, `ClassMember`, `Exercise`, `Submission`.
+**Database:** Backend uses SQLAlchemy async with Alembic migrations. IDE data access no longer depends on Prisma.
+
 ```bash
-cd packages/ide
-npx prisma generate       # Regenerate Prisma client after schema changes
-npx prisma migrate dev    # Apply migrations (dev)
-npx prisma studio         # Open Prisma database GUI
+cd backend
+uv run alembic upgrade head   # Apply migrations (dev)
+uv run alembic revision --autogenerate -m "describe change"
 ```
 
 **React Contexts** (`src/contexts/`) — All provided in `_app.tsx`:
+
 - `EditorContext` — Monaco editor instance, source code, file loading/saving, line markers
 - `KeywordContext` — Customizable Java-- keywords (13 keywords remappable, persisted in localStorage); `buildKeywordMap()` returns the map sent to the lexer API
 - `TerminalContext` — Terminal open/close state
 - `ThemeContext`, `ToastContext`, `RuntimeErrorContext`
 
 **Hooks** (`src/hooks/`):
+
 - `useEditor` — Consumes `EditorContext`
 - `useFileSystem` — Client-side virtual file system backed by `localStorage` (key: `files-storage`)
 - `useEditorWithFileSystem` — Combines editor + file system
@@ -126,6 +137,7 @@ npx prisma studio         # Open Prisma database GUI
 - `useExplorer`, `useSearch` — Side explorer panel state
 
 **Component Structure:**
+
 - `src/components/ui/` — shadcn-style base components (Button, Dialog, Tooltip, etc.)
 - `src/components/` — Feature components (terminal, token-card, keyword-customizer, etc.)
 - `src/views/` — Page-level layout compositions (IDE view, token views)
@@ -136,21 +148,26 @@ npx prisma studio         # Open Prisma database GUI
 
 - The IDE imports the compiler package directly as a local dependency (`@ts-compilator-for-java/compiler`).
 
-### Key Design Patterns 
+### Key Design Patterns
+
 - **Scanner Factory Pattern**: `LexerScannerFactory.getInstance()` returns appropriate scanner based on character
 - **Recursive Descent Parsing**: Each grammar rule is a function that calls other rule functions
 - **Three-Address Code**: All intermediate instructions have at most one operator and three addresses
 - **Iterator Pattern**: `TokenIterator` provides safe navigation through token stream
 
 ## Input Code Location
+
 The compiler reads from `packages/compiler/src/resource/input-code.java` by default. Edit this file to test different Java-- programs.
 
 ## Testing
+
 Tests are located in `packages/compiler/src/tests/`:
+
 - `lexer/`: Tests for individual scanner components (comments, numbers, strings)
 - `tokens/`: Tests for token classification
 
 When adding new language features:
+
 1. Add token definitions in `packages/compiler/src/token/constants/`
 2. Create/update scanner in `packages/compiler/src/lexer/scanners/`
 3. Add grammar production in `packages/compiler/src/grammar/syntax/`
@@ -159,13 +176,16 @@ When adding new language features:
 6. Add test cases
 
 ## Issue Reporting
+
 The codebase has an issue system (`packages/compiler/src/issue/`):
+
 - `IssueError`: Compilation errors (thrown)
 - `IssueWarning`: Non-fatal warnings (collected)
 - `IssueInfo`: Informational messages
-All issues track line and column position.
+  All issues track line and column position.
 
 ## Important Notes
+
 - The language is called "Java--" (Java minus minus) - a simplified subset of Java
 - Only single-parameter function declarations are currently supported: `<type> IDENT () { ... }`
 - The interpreter is stack-less and uses direct variable lookup by name

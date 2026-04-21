@@ -9,14 +9,17 @@ import { TerminalProvider } from "@/contexts/TerminalContext";
 import { TestCaseResults } from "@/components/test-case-results";
 import type { TTestCaseResult } from "@/types/submissions";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
-import { localApi } from "@/lib/local-api";
 import { useToast } from "@/contexts/ToastContext";
 import { useKeywords } from "@/contexts/keyword/KeywordContext";
 import { useRouter } from "next/router";
 import { getAuthToken } from "@/lib/auth-cookies";
 import { CheckCircle2, Circle, ChevronRight, ListChecks } from "lucide-react";
 import type { ExerciseList } from "@/types/api";
+import {
+  useExerciseListQuery,
+  useExerciseQuery,
+  useValidateSubmissionMutation,
+} from "@/hooks/use-api-queries";
 
 // ── list navigator sidebar ───────────────────────────────────────────────────
 
@@ -127,7 +130,7 @@ function WorkspaceContent({
   const { locale } = useRouter();
   const { getEditorCode } = useContext(EditorContext);
   const { buildLexerConfig } = useKeywords();
-  const [submitting, setSubmitting] = useState(false);
+  const validateSubmission = useValidateSubmissionMutation();
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
@@ -158,12 +161,10 @@ function WorkspaceContent({
       return;
     }
 
-    setSubmitting(true);
     try {
       const lexerConfig = buildLexerConfig();
-      const { data } = await localApi.post(
-        "/submissions/validate",
-        {
+      const data = await validateSubmission.mutateAsync({
+        payload: {
           exerciseId: exercise.id,
           exerciseListId: list?.id,
           classId,
@@ -177,21 +178,16 @@ function WorkspaceContent({
           grammar: lexerConfig.grammar,
           locale,
         },
-        // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
-        // Passes x-user-id and the JWT token so the route can forward to the Python backend.
-        {
-          headers: {
-            "x-user-id": String(userId),
-            "x-authorization": getAuthToken() ?? "",
-          },
+        headers: {
+          "x-user-id": String(userId),
+          "x-authorization": getAuthToken() ?? "",
         },
-      );
+      });
 
       if (!data.valid) {
         setSubmitErrors(data.errors || []);
         setSubmitWarnings(data.warnings || []);
         setShowSubmitPanel(true);
-        setSubmitting(false);
         return;
       }
 
@@ -209,11 +205,9 @@ function WorkspaceContent({
       setSubmitted(true);
       onSubmitSuccess?.(exercise.id);
       showToast({ type: "success", message: "Submissão enviada com sucesso!" });
-      setSubmitting(false);
     } catch {
       setError("Erro de conexão");
       showToast({ type: "error", message: "Erro de conexão ao submeter." });
-      setSubmitting(false);
     }
   };
 
@@ -289,10 +283,10 @@ function WorkspaceContent({
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={validateSubmission.isPending}
               className="px-5 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 shadow-[0_0_15px_rgba(13,204,242,0.3)] hover:shadow-[0_0_25px_rgba(13,204,242,0.5)] hover:opacity-90 transition-all disabled:opacity-50"
             >
-              {submitting
+              {validateSubmission.isPending
                 ? "Submetendo..."
                 : isAlreadySubmitted || submitted
                   ? "Resubmeter"
@@ -425,38 +419,28 @@ export default function ExerciseWorkspace({
 }) {
   const { userId } = useAuth();
   const { showToast } = useToast();
-  const [exercise, setExercise] = useState<any>(null);
-  const [list, setList] = useState<ExerciseList | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [localSubmittedIds, setLocalSubmittedIds] = useState<number[]>([]);
+  const exerciseQuery = useExerciseQuery(
+    exerciseId,
+    Boolean(userId && exerciseId),
+  );
+  const listQuery = useExerciseListQuery(
+    listId,
+    classId ? { classId } : undefined,
+    Boolean(userId && listId),
+  );
+  const exercise = exerciseQuery.data;
+  const list = listQuery.data;
 
   useEffect(() => {
-    if (!userId || !exerciseId) return;
+    if (exerciseQuery.error || listQuery.error) {
+      setError("Exercício não encontrado");
+      showToast({ type: "error", message: "Exercício não encontrado." });
+    }
+  }, [exerciseQuery.error, listQuery.error, showToast]);
 
-    const requests: [Promise<any>, Promise<any>?] = [
-      api.get(`/exercises/${exerciseId}`),
-      listId
-        ? api.get<ExerciseList>(`/exercise-lists/${listId}`, {
-            params: classId ? { classId } : undefined,
-          })
-        : undefined,
-    ].filter(Boolean) as [Promise<any>, Promise<any>?];
-
-    Promise.all(requests)
-      .then(([exerciseRes, listRes]) => {
-        setExercise(exerciseRes.data);
-        if (listRes) setList(listRes.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Exercício não encontrado");
-        showToast({ type: "error", message: "Exercício não encontrado." });
-        setLoading(false);
-      });
-  }, [exerciseId, listId, showToast, userId]);
-
-  if (loading) {
+  if (exerciseQuery.isPending || (listId && listQuery.isPending)) {
     return (
       <div className="min-h-screen bg-[#101f22] flex items-center justify-center">
         <div className="text-slate-500">Carregando exercício...</div>

@@ -1,53 +1,43 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { SpaceBackground } from "@/components/space-background";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { ExerciseList } from "@/types/api";
 import { TeacherDetailView } from "@/views/exercise-lists/components/teacher-detail-view";
 import { StudentDetailView } from "@/views/exercise-lists/components/student-detail-view";
 import type { ClassOption } from "@/views/exercise-lists/components/types";
+import {
+  useClassOptionsQuery,
+  useExerciseListQuery,
+} from "@/hooks/use-api-queries";
 
 export default function ExerciseListDetailPage() {
   const router = useRouter();
   const { id, classId } = router.query as { id?: string; classId?: string };
-  const { userId, user } = useAuth();
+  const { isTeacher, userId } = useAuth();
   const { showToast } = useToast();
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
-
-  const [list, setList] = useState<ExerciseList | null>(null);
-  const [classes, setClasses] = useState<ClassOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchList = useCallback(async () => {
-    if (!userId || !id) return;
-    try {
-      const [listRes, classesRes] = await Promise.all([
-        api.get<ExerciseList>(`/exercise-lists/${id}`),
-        isTeacher
-          ? api.get<ClassOption[]>("/classes")
-          : Promise.resolve({ data: [] }),
-      ]);
-      setList(listRes.data);
-      setClasses(classesRes.data);
-    } catch {
-      showToast({ type: "error", message: "Lista não encontrada." });
-      router.push("/exercise-lists");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, id, isTeacher, showToast, router]);
+  const listQuery = useExerciseListQuery(
+    id,
+    classId ? { classId } : undefined,
+    Boolean(userId && id),
+  );
+  const classesQuery = useClassOptionsQuery(Boolean(userId && isTeacher));
+  const list = listQuery.data ?? null;
+  const classes = (classesQuery.data ?? []) as ClassOption[];
 
   useEffect(() => {
-    fetchList();
-  }, [fetchList]);
+    if (listQuery.error) {
+      showToast({ type: "error", message: "Lista não encontrada." });
+      void router.push("/exercise-lists");
+    }
+  }, [listQuery.error, router, showToast]);
 
-  if (loading || !userId) {
+  if (listQuery.isPending || !userId) {
     return (
       <div className="min-h-screen bg-[#101f22] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#0dccf2]" />
@@ -78,7 +68,6 @@ export default function ExerciseListDetailPage() {
                 <TeacherDetailView
                   list={list}
                   classes={classes}
-                  onRefresh={fetchList}
                 />
               ) : (
                 <StudentDetailView

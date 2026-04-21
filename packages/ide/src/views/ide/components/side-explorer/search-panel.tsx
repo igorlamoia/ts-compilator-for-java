@@ -42,7 +42,7 @@ export function SearchPanel({ onFileSelect }: SearchPanelProps) {
   } = useSearch();
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <div className="flex items-center justify-between px-3 py-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
         Buscar
         <IconButton
@@ -142,7 +142,10 @@ function ResultsList({
   handleResultClick: (filePath: string, line?: number) => void;
 }) {
   return (
-    <PerfectScrollbar axis="y" className="flex-1 overflow-auto px-2 pb-4">
+    <PerfectScrollbar
+      axis="y"
+      className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 pb-4 touch-pan-y"
+    >
       {results.length === 0 && query.trim() && (
         <div className="p-4 text-center text-xs text-muted-foreground">
           Nenhum resultado encontrado

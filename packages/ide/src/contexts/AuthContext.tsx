@@ -7,12 +7,14 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   clearAuthToken,
   getAuthToken,
   setAuthToken,
 } from "@/lib/auth-cookies";
-import { api } from "@/lib/api";
+import { useAuthProfileQuery } from "@/hooks/use-api-queries";
+import { queryKeys } from "@/lib/query-keys";
 
 type UserRole = "ADMIN" | "TEACHER" | "STUDENT";
 
@@ -34,6 +36,7 @@ type AuthContextValue = {
   organizationId: number | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isTeacher: boolean;
   isHydrated: boolean;
   isProfileLoading: boolean;
   login: (payload: AuthPayload) => void;
@@ -43,67 +46,53 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [userId, setUserId] = useState<number | null>(null);
-  const [organizationId, setOrganizationId] = useState<number | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const queryClient = useQueryClient();
+  const [hasToken, setHasToken] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
 
-  const fetchProfile = useCallback(async () => {
-    setIsProfileLoading(true);
-
-    try {
-      const { data } = await api.get<AuthUser>("/auth/me");
-      setUser(data);
-      setUserId(data.id);
-      setOrganizationId(data.organizationId);
-    } catch {
-      clearAuthToken();
-      setUser(null);
-      setUserId(null);
-      setOrganizationId(null);
-    } finally {
-      setIsProfileLoading(false);
-    }
-  }, []);
+  const profileQuery = useAuthProfileQuery(isHydrated && hasToken);
+  const user = profileQuery.data ?? null;
+  const userId = user?.id ?? null;
+  const organizationId = user?.organizationId ?? null;
+  const isProfileLoading = hasToken && profileQuery.isPending;
 
   useEffect(() => {
     const token = getAuthToken();
 
-    if (token) {
-      void fetchProfile();
-    } else {
-      setUser(null);
-      setIsProfileLoading(false);
-    }
-
+    setHasToken(Boolean(token));
     setIsHydrated(true);
-  }, [fetchProfile]);
+  }, []);
+
+  useEffect(() => {
+    if (profileQuery.isError) {
+      clearAuthToken();
+      setHasToken(false);
+      queryClient.removeQueries({ queryKey: queryKeys.auth.profile });
+    }
+  }, [profileQuery.isError, queryClient]);
 
   const login = useCallback(
     ({ token, user }: AuthPayload) => {
       setAuthToken(token);
+      setHasToken(true);
 
       if (user) {
-        setUser(user);
-        setUserId(user.id);
-        setOrganizationId(user.organizationId);
-        setIsProfileLoading(false);
+        queryClient.setQueryData(queryKeys.auth.profile, user);
         return;
       }
 
-      void fetchProfile();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.auth.profile });
     },
-    [fetchProfile],
+    [queryClient],
   );
 
   const logout = useCallback(() => {
     clearAuthToken();
-    setUserId(null);
-    setOrganizationId(null);
-    setUser(null);
-    setIsProfileLoading(false);
-  }, []);
+    setHasToken(false);
+    queryClient.clear();
+  }, [queryClient]);
+
+  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -111,12 +100,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       organizationId,
       user,
       isAuthenticated: Boolean(userId),
+      isTeacher,
       isHydrated,
       isProfileLoading,
       login,
       logout,
     }),
-    [isHydrated, isProfileLoading, login, logout, organizationId, user, userId],
+    [
+      isHydrated,
+      isProfileLoading,
+      isTeacher,
+      login,
+      logout,
+      organizationId,
+      user,
+      userId,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

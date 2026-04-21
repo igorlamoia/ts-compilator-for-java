@@ -36,9 +36,7 @@ export function LoginForm({
         onSubmit={form.handleSubmit(onSubmit)}
       >
         {serverError && (
-          <div className="text-red-400 text-sm text-center">
-            {serverError}
-          </div>
+          <div className="text-red-400 text-sm text-center">{serverError}</div>
         )}
 
         {/* Email Field */}
@@ -49,11 +47,7 @@ export function LoginForm({
             <FormItem className="text-left">
               <FormLabel>Endereço de E-mail</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="nome@empresa.com"
-                  type="email"
-                  {...field}
-                />
+                <Input placeholder="nome@empresa.com" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -78,11 +72,7 @@ export function LoginForm({
                 </Link>
               </div>
               <FormControl>
-                <Input
-                  placeholder="••••••••"
-                  type="password"
-                  {...field}
-                />
+                <Input placeholder="••••••••" type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -90,7 +80,11 @@ export function LoginForm({
         />
 
         {/* Submit Button */}
-        <HeroButton type="submit" className="py-3">
+        <HeroButton
+          type="submit"
+          className="py-3"
+          isLoading={form.formState.isSubmitting}
+        >
           Entrar no Painel
           <LogIn />
         </HeroButton>

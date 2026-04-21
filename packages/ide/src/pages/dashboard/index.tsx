@@ -1,23 +1,18 @@
 import { useEffect, useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
 import { Alert } from "@/components/ui/alert";
-import { useAuth, type AuthUser } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
-import { useToast } from "@/contexts/ToastContext";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { ClassesGrid } from "@/views/dashboard/components/classes-grid";
 import { CreateClassModal } from "@/views/dashboard/components/create-class-modal";
 import { DashboardHeader } from "@/views/dashboard/components/dashboard-header";
 import { JoinClassModal } from "@/views/dashboard/components/join-class-modal";
+import { useClassesQuery } from "@/hooks/use-api-queries";
 
 export default function Dashboard() {
-  const { userId } = useAuth();
-  const { showToast } = useToast();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [classes, setClasses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const classesQuery = useClassesQuery();
+  const classes = classesQuery.data ?? [];
 
   // Modals
   const [showCreateClass, setShowCreateClass] = useState(false);
@@ -25,36 +20,18 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const fetchClasses = async () => {
-    try {
-      const { data: classesData } = await api.get("/classes");
-      setClasses(classesData);
-      setLoading(false);
-    } catch (error: any) {
-      showToast({
-        type: "error",
-        message: getApiErrorMessage(error, "Erro ao carregar turmas."),
-      });
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (!userId) return;
-    api.get("/auth/me")
-      .then(({ data }) => { setUser(data); fetchClasses(); });
-  }, [userId]);
-
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
+    if (classesQuery.error) {
+      setError(getApiErrorMessage(classesQuery.error, "Erro ao carregar turmas."));
+    }
+  }, [classesQuery.error]);
 
   const handleClassCreated = (message: string, accessCode: string) => {
     setSuccess(message);
-    fetchClasses();
   };
 
   const handleClassJoined = (message: string) => {
     setSuccess(message);
-    fetchClasses();
   };
 
   return (
@@ -78,14 +55,12 @@ export default function Dashboard() {
             )}
 
             <DashboardHeader
-              isTeacher={isTeacher}
               onCreateClass={() => setShowCreateClass(true)}
             />
 
             <ClassesGrid
               classes={classes}
-              isTeacher={isTeacher}
-              loading={loading}
+              loading={classesQuery.isPending}
               onJoinClass={() => setShowJoinClass(true)}
             />
           </main>

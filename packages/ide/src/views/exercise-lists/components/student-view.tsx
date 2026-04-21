@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
 import { Subtitle } from "@/components/text/subtitle";
 import { ChevronRight, ListChecks } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "./shared";
+import {
+  useClassExerciseListsQuery,
+  useClassesQuery,
+} from "@/hooks/use-api-queries";
 
 type ClassOption = { id: number; name: string };
 
@@ -110,38 +113,32 @@ export function StudentListCard({
 
 export function StudentView() {
   const { showToast } = useToast();
-  const [classes, setClasses] = useState<ClassOption[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | "">("");
-  const [entries, setEntries] = useState<ClassExerciseListEntry[]>([]);
-  const [loadingClasses, setLoadingClasses] = useState(true);
-  const [loadingLists, setLoadingLists] = useState(false);
+  const classesQuery = useClassesQuery();
+  const listsQuery = useClassExerciseListsQuery(
+    selectedClassId || undefined,
+    Boolean(selectedClassId),
+  );
+  const classes = (classesQuery.data ?? []) as ClassOption[];
+  const entries = (listsQuery.data ?? []) as ClassExerciseListEntry[];
 
   useEffect(() => {
-    api
-      .get<ClassOption[]>("/classes")
-      .then(({ data }) => {
-        setClasses(data);
-        if (data[0]) setSelectedClassId(data[0].id);
-      })
-      .catch(() =>
-        showToast({ type: "error", message: "Erro ao carregar turmas." }),
-      )
-      .finally(() => setLoadingClasses(false));
-  }, [showToast]);
+    if (!selectedClassId && classes[0]) {
+      setSelectedClassId(classes[0].id);
+    }
+  }, [classes, selectedClassId]);
 
   useEffect(() => {
-    if (!selectedClassId) return;
-    setLoadingLists(true);
-    api
-      .get<ClassExerciseListEntry[]>(
-        `/classes/${selectedClassId}/exercise-lists`,
-      )
-      .then(({ data }) => setEntries(data))
-      .catch(() =>
-        showToast({ type: "error", message: "Erro ao carregar listas." }),
-      )
-      .finally(() => setLoadingLists(false));
-  }, [selectedClassId, showToast]);
+    if (classesQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar turmas." });
+    }
+  }, [classesQuery.error, showToast]);
+
+  useEffect(() => {
+    if (listsQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar listas." });
+    }
+  }, [listsQuery.error, showToast]);
 
   return (
     <>
@@ -171,7 +168,7 @@ export function StudentView() {
         )}
       </div>
 
-      {loadingClasses || loadingLists ? (
+      {classesQuery.isPending || listsQuery.isPending ? (
         <LoadingSpinner label="Carregando listas..." />
       ) : entries.length === 0 ? (
         <EmptyState

@@ -1,7 +1,7 @@
 import { SpaceBackground } from "@/components/space-background";
 import { BorderBeam } from "@/components/ui/border-beam";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
@@ -9,31 +9,23 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "@/components/navbar";
 import { Copyright } from "@/components/copyright";
-import { useAuth, type AuthUser } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
-import { setAuthToken } from "@/lib/auth-cookies";
+import { useAuth } from "@/contexts/AuthContext";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { RegisterForm, registerSchema, type RegisterFormValues } from "@/components/auth/register-form";
 import { SocialLogin } from "@/components/auth/social-login";
-
-type Organization = { id: number; name: string };
+import {
+  useOrganizationsQuery,
+  useRegisterMutation,
+} from "@/hooks/use-api-queries";
 
 export default function Register() {
   const router = useRouter();
   const { login } = useAuth();
   const { showToast } = useToast();
   const [serverError, setServerError] = useState("");
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loadingOrgs, setLoadingOrgs] = useState(true);
-
-  useEffect(() => {
-    api
-      .get<Organization[]>("/organizations")
-      .then((res) => setOrganizations(res.data))
-      .catch(() => setOrganizations([]))
-      .finally(() => setLoadingOrgs(false));
-  }, []);
+  const organizationsQuery = useOrganizationsQuery();
+  const registerMutation = useRegisterMutation();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -50,10 +42,8 @@ export default function Register() {
     setServerError("");
 
     try {
-      const { data } = await api.post<{ accessToken: string }>("/auth/register", values);
-      setAuthToken(data.accessToken);
-      const { data: user } = await api.get<AuthUser>("/auth/me");
-      login({ token: data.accessToken, user });
+      const data = await registerMutation.mutateAsync(values);
+      login({ token: data.accessToken, user: data.user });
       router.push("/dashboard");
     } catch (error) {
       const message = getApiErrorMessage(
@@ -96,8 +86,8 @@ export default function Register() {
               form={form}
               onSubmit={handleRegister}
               serverError={serverError}
-              organizations={organizations}
-              loadingOrgs={loadingOrgs}
+              organizations={organizationsQuery.data ?? []}
+              loadingOrgs={organizationsQuery.isPending}
             />
 
             <div className="mt-6 flex flex-col items-center gap-4">

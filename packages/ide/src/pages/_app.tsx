@@ -9,6 +9,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, type ReactNode } from "react";
 import { Pointer } from "@/components/ui/pointer";
+import { AppQueryClientProvider } from "@/lib/query-client";
 
 type NextPageWithAuth = NextPage & {
   requireAuth?: boolean;
@@ -20,20 +21,22 @@ type AppPropsWithAuth = AppProps & {
 
 export default function App({ Component, pageProps }: AppPropsWithAuth) {
   return (
-    <ThemeProvider>
-      <Pointer />
-      <AuthLayout>
-        <AlertProvider>
-          <ToastProvider>
-            <div className="bg-white dark:bg-[#202020] text-gray-900 dark:text-gray-100 transition-colors duration-300">
-              <AuthGuard requireAuth={Component.requireAuth}>
-                <Component {...pageProps} />
-              </AuthGuard>
-            </div>
-          </ToastProvider>
-        </AlertProvider>
-      </AuthLayout>
-    </ThemeProvider>
+    <AppQueryClientProvider>
+      <ThemeProvider>
+        <Pointer />
+        <AuthLayout>
+          <AlertProvider>
+            <ToastProvider>
+              <div className="bg-white dark:bg-[#202020] text-gray-900 dark:text-gray-100 transition-colors duration-300">
+                <AuthGuard requireAuth={Component.requireAuth}>
+                  <Component {...pageProps} />
+                </AuthGuard>
+              </div>
+            </ToastProvider>
+          </AlertProvider>
+        </AuthLayout>
+      </ThemeProvider>
+    </AppQueryClientProvider>
   );
 }
 

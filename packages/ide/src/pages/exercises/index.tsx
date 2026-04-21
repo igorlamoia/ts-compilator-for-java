@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { SpaceBackground } from "@/components/space-background";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { HeroButton } from "@/components/buttons/hero";
 import { GradientText } from "@/components/text/gradient";
@@ -17,53 +16,42 @@ import { ExerciseDetailModal } from "@/views/exercises/components/exercise-detai
 import { DeleteConfirmModal } from "@/views/exercises/components/delete-confirm-modal";
 import { StatsBar } from "@/views/exercises/components/stats-bar";
 import { LoadingSpinner, EmptyState } from "@/views/exercises/components/shared";
+import {
+  useDeleteExerciseMutation,
+  useExercisesQuery,
+} from "@/hooks/use-api-queries";
 
 export default function ExercisesPage() {
-  const { userId, user } = useAuth();
+  const { isTeacher, userId } = useAuth();
   const { showToast } = useToast();
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
 
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [viewExercise, setViewExercise] = useState<Exercise | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Exercise | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const fetchExercises = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const { data } = await api.get<Exercise[]>("/exercises");
-      setExercises(data);
-    } catch {
-      showToast({ type: "error", message: "Erro ao carregar exercícios." });
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, showToast]);
+  const exercisesQuery = useExercisesQuery(undefined, Boolean(userId));
+  const deleteExercise = useDeleteExerciseMutation();
+  const exercises = exercisesQuery.data ?? [];
 
   useEffect(() => {
-    fetchExercises();
-  }, [fetchExercises]);
+    if (exercisesQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar exercícios." });
+    }
+  }, [exercisesQuery.error, showToast]);
 
   const handleDelete = async () => {
     if (!deleteTarget || !userId) return;
-    setIsDeleting(true);
     try {
-      await api.delete(`/exercises/${deleteTarget.id}`);
+      await deleteExercise.mutateAsync(deleteTarget.id);
       showToast({ type: "success", message: "Exercício excluído." });
       setDeleteTarget(null);
-      fetchExercises();
     } catch {
       showToast({ type: "error", message: "Erro ao excluir exercício." });
-    } finally {
-      setIsDeleting(false);
     }
   };
 
   const filtered = exercises.filter(
-    (e) =>
+    (e: Exercise) =>
       e.title.toLowerCase().includes(search.toLowerCase()) ||
       e.description.toLowerCase().includes(search.toLowerCase())
   );
@@ -100,12 +88,12 @@ export default function ExercisesPage() {
             </div>
 
             {/* Stats */}
-            {!loading && exercises.length > 0 && (
+            {!exercisesQuery.isPending && exercises.length > 0 && (
               <StatsBar exercises={exercises} />
             )}
 
             {/* Search */}
-            {!loading && exercises.length > 0 && (
+            {!exercisesQuery.isPending && exercises.length > 0 && (
               <div className="mb-6">
                 <div className="relative max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
@@ -121,7 +109,7 @@ export default function ExercisesPage() {
             )}
 
             {/* Content */}
-            {loading ? (
+            {exercisesQuery.isPending ? (
               <LoadingSpinner label="Carregando exercícios..." />
             ) : filtered.length === 0 && search ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-3">
@@ -134,7 +122,7 @@ export default function ExercisesPage() {
               <EmptyState />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filtered.map((exercise) => (
+                {filtered.map((exercise: Exercise) => (
                   <ExerciseCard
                     key={exercise.id}
                     exercise={exercise}
@@ -152,7 +140,6 @@ export default function ExercisesPage() {
       <CreateExerciseModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        onCreated={fetchExercises}
       />
 
       <ExerciseDetailModal
@@ -166,7 +153,7 @@ export default function ExercisesPage() {
         onOpenChange={(v) => !v && setDeleteTarget(null)}
         exerciseTitle={deleteTarget?.title ?? ""}
         onConfirm={handleDelete}
-        isDeleting={isDeleting}
+        isDeleting={deleteExercise.isPending}
       />
     </div>
   );

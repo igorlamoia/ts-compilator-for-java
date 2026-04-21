@@ -7,6 +7,18 @@ export interface ScrollStackItemProps {
   children: ReactNode;
 }
 
+export function resolveScrollStackCardOpacity(
+  index: number,
+  topCardIndex: number,
+  nextCardOverlapProgress: number,
+): number {
+  if (index !== topCardIndex) {
+    return 1;
+  }
+
+  return Math.max(0.35, 1 - nextCardOverlapProgress * 0.18);
+}
+
 // h-80 my-8 p-12 rounded-[40px] shadow-[0_0_30px_rgba(0,0,0,0.1)] box-border
 export const ScrollStackItem: React.FC<ScrollStackItemProps> = ({
   children,
@@ -131,6 +143,16 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
 
     const endElementTop = endElement ? getElementOffset(endElement) : 0;
 
+    let topCardIndex = 0;
+    for (let j = 0; j < cardsRef.current.length; j++) {
+      const jCardTop = getElementOffset(cardsRef.current[j]);
+      const jTriggerStart = jCardTop - stackPositionPx - itemStackDistance * j;
+
+      if (scrollTop >= jTriggerStart) {
+        topCardIndex = j;
+      }
+    }
+
     cardsRef.current.forEach((card, i) => {
       if (!card) return;
 
@@ -148,19 +170,22 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
       const targetScale = baseScale + i * itemScale;
       const scale = 1 - scaleProgress * (1 - targetScale);
       const rotation = rotationAmount ? i * rotationAmount * scaleProgress : 0;
+      const nextCard = cardsRef.current[i + 1];
+      const nextCardTop = nextCard ? getElementOffset(nextCard) : 0;
+      const nextCardTriggerStart =
+        nextCardTop - stackPositionPx - itemStackDistance * (i + 1);
+      const nextCardTriggerEnd = nextCardTop - scaleEndPositionPx;
+      const nextCardOverlapProgress = nextCard
+        ? calculateProgress(scrollTop, nextCardTriggerStart, nextCardTriggerEnd)
+        : 0;
+      const opacity = resolveScrollStackCardOpacity(
+        i,
+        topCardIndex,
+        nextCardOverlapProgress,
+      );
 
       let blur = 0;
       if (blurAmount) {
-        let topCardIndex = 0;
-        for (let j = 0; j < cardsRef.current.length; j++) {
-          const jCardTop = getElementOffset(cardsRef.current[j]);
-          const jTriggerStart =
-            jCardTop - stackPositionPx - itemStackDistance * j;
-          if (scrollTop >= jTriggerStart) {
-            topCardIndex = j;
-          }
-        }
-
         if (i < topCardIndex) {
           const depthInStack = topCardIndex - i;
           blur = Math.max(0, depthInStack * blurAmount);
@@ -182,6 +207,7 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
         scale: Math.round(scale * 1000) / 1000,
         rotation: Math.round(rotation * 100) / 100,
         blur: Math.round(blur * 100) / 100,
+        opacity: Math.round(opacity * 1000) / 1000,
       };
 
       const lastTransform = lastTransformsRef.current.get(i);
@@ -190,7 +216,8 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
         Math.abs(lastTransform.translateY - newTransform.translateY) > 0.1 ||
         Math.abs(lastTransform.scale - newTransform.scale) > 0.001 ||
         Math.abs(lastTransform.rotation - newTransform.rotation) > 0.1 ||
-        Math.abs(lastTransform.blur - newTransform.blur) > 0.1;
+        Math.abs(lastTransform.blur - newTransform.blur) > 0.1 ||
+        Math.abs(lastTransform.opacity - newTransform.opacity) > 0.001;
 
       if (hasChanged) {
         const transform = `translate3d(0, ${newTransform.translateY}px, 0) scale(${newTransform.scale}) rotate(${newTransform.rotation}deg)`;
@@ -199,6 +226,9 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
 
         card.style.transform = transform;
         card.style.filter = filter;
+        card.style.opacity = `${newTransform.opacity}`;
+        card.style.transition =
+          "transform 0.5s ease, filter 0.5s ease, opacity 0.35s ease";
 
         lastTransformsRef.current.set(i, newTransform);
       }

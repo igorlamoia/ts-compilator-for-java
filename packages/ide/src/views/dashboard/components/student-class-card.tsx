@@ -7,7 +7,7 @@ export function StudentClassCard({
   cls: any;
   onJoinClick: () => void;
 }) {
-  return <TeacherClassCard cls={cls} isTeacher={false} />;
+  return <TeacherClassCard cls={cls} />;
 }
 
 export function JoinClassCard({ onJoinClick }: { onJoinClick: () => void }) {

@@ -1,17 +1,18 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { StudentClassCard, JoinClassCard } from "./student-class-card";
 import { TeacherClassCard } from "./teacher-class-card";
 
 export function ClassesGrid({
   classes,
-  isTeacher,
   loading,
   onJoinClass,
 }: {
   classes: any[];
-  isTeacher: boolean;
   loading: boolean;
   onJoinClass: () => void;
 }) {
+  const { isTeacher } = useAuth();
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-slate-500 gap-4">
@@ -60,7 +61,6 @@ export function ClassesGrid({
         <TeacherClassCard
           key={cls.id}
           cls={cls}
-          isTeacher={isTeacher}
         />
       ))}
     </div>

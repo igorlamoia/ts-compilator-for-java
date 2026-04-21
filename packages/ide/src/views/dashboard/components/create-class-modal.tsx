@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { HeroButton } from "@/components/buttons/hero";
+import { useCreateClassMutation } from "@/hooks/use-api-queries";
 
 const createClassSchema = z.object({
   className: z.string().min(1, "Nome da turma é obrigatório"),
@@ -46,6 +46,7 @@ export function CreateClassModal({
   onSuccess,
   onError,
 }: CreateClassModalProps) {
+  const createClass = useCreateClassMutation();
   const form = useForm<CreateClassFormValues>({
     resolver: zodResolver(createClassSchema),
     defaultValues: {
@@ -66,14 +67,11 @@ export function CreateClassModal({
     const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
     try {
-      await api.post(
-        "/classes",
-        {
-          name: values.className,
-          description: values.classDesc,
-          accessCode,
-        },
-      );
+      await createClass.mutateAsync({
+        name: values.className,
+        description: values.classDesc,
+        accessCode,
+      });
 
       onSuccess?.(`Turma criada! Código de acesso: ${accessCode}`, accessCode);
       form.reset();
@@ -150,10 +148,10 @@ export function CreateClassModal({
           <HeroButton
             type="submit"
             form="create-class-form"
-            disabled={form.formState.isSubmitting}
+            disabled={createClass.isPending}
             className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >
-            {form.formState.isSubmitting ? "Criando..." : "Criar Turma"}
+            {createClass.isPending ? "Criando..." : "Criar Turma"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

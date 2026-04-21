@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { HeroButton } from "@/components/buttons/hero";
+import { useCreateExerciseMutation } from "@/hooks/use-api-queries";
 import {
   Accordion,
   AccordionContent,
@@ -75,6 +75,7 @@ export function CreateExerciseModal({
   onSuccess,
   onError,
 }: CreateExerciseModalProps) {
+  const createExercise = useCreateExerciseMutation();
   const form = useForm<CreateExerciseFormValues>({
     resolver: zodResolver(createExerciseSchema),
     defaultValues: {
@@ -100,7 +101,7 @@ export function CreateExerciseModal({
     form.clearErrors();
 
     try {
-      await api.post("/exercises", {
+      await createExercise.mutateAsync({
         classId,
         title: values.exTitle,
         description: values.exDesc,
@@ -232,10 +233,10 @@ export function CreateExerciseModal({
           <HeroButton
             type="submit"
             form="create-exercise-form"
-            disabled={form.formState.isSubmitting}
+            disabled={createExercise.isPending}
             className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >
-            {form.formState.isSubmitting ? "Criando..." : "Criar Exercício"}
+            {createExercise.isPending ? "Criando..." : "Criar Exercício"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

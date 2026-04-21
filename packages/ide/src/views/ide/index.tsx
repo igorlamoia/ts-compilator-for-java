@@ -138,7 +138,7 @@ export function IDE() {
                     <motion.div
                       initial={{ x: "-5%", opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      className="flex flex-col border-r border-black/10 dark:border-white/10 sm:w-70"
+                      className="flex min-h-0 flex-col overflow-hidden border-r border-black/10 dark:border-white/10 sm:w-70"
                       transition={{
                         type: "spring",
                         damping: 20,

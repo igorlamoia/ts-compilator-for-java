@@ -1,16 +1,17 @@
 import { Plus } from "lucide-react";
 import { HeroButton } from "@/components/buttons/hero";
+import { useAuth } from "@/contexts/AuthContext";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
 import { Subtitle } from "@/components/text/subtitle";
 
 export function DashboardHeader({
-  isTeacher,
   onCreateClass,
 }: {
-  isTeacher: boolean;
   onCreateClass: () => void;
 }) {
+  const { isTeacher } = useAuth();
+
   if (!isTeacher) {
     return (
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">

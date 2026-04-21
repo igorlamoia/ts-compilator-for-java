@@ -1,13 +1,14 @@
 import { ClipboardList, Users } from "lucide-react";
 import { HeroLink } from "@/components/buttons/hero";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function TeacherClassCard({
   cls,
-  isTeacher,
 }: {
   cls: any;
-  isTeacher: boolean;
 }) {
+  const { isTeacher } = useAuth();
+
   return (
     <div className="overflow-hidden group shadow-[0_1px_10px_rgba(0,0,0,0.1)] dark:shadow-none relative bg-white/3 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 hover:border-[#0dccf2]/40 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(13,204,242,0.15)] hover:-translate-y-1 flex flex-col h-full">
       {/* Top gradient accent */}

@@ -5,78 +5,55 @@ import { SpaceBackground } from "@/components/space-background";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
 import { useToast } from "@/contexts/ToastContext";
 import { MembersTab } from "@/views/classes/components/members-tab";
 import { ListsTab } from "@/views/classes/components/lists-tab";
+import {
+  useClassExerciseListsQuery,
+  useClassMembersQuery,
+  useExercisesQuery,
+} from "@/hooks/use-api-queries";
 
 export default function ClassDetail() {
   const router = useRouter();
-  const { userId } = useAuth();
+  const { isTeacher, user, userId } = useAuth();
   const { showToast } = useToast();
   const { id } = router.query;
-  const [exercises, setExercises] = useState<any[]>([]);
-  const [submissions, setSubmissions] = useState<Record<string, any[]>>({});
   const [expandedEx, setExpandedEx] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [membersData, setMembersData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"members" | "lists">("members");
-  const [exerciseLists, setExerciseLists] = useState<any[]>([]);
-  const [loadingLists, setLoadingLists] = useState(false);
+  const classId = typeof id === "string" ? id : undefined;
+  const exercisesQuery = useExercisesQuery(
+    classId ? { classId } : undefined,
+    Boolean(classId && userId),
+  );
+  const membersQuery = useClassMembersQuery(classId, Boolean(userId && user));
+  const exerciseListsQuery = useClassExerciseListsQuery(
+    classId,
+    Boolean(userId),
+  );
+  const exercises = exercisesQuery.data ?? [];
+  const membersData = membersQuery.data;
+  const exerciseLists = exerciseListsQuery.data ?? [];
 
-  // Load user info
   useEffect(() => {
-    if (!userId) return;
-    api
-      .get("/auth/me")
-      .then(({ data }) => setUser(data))
-      .catch(() => {
-        showToast({ type: "error", message: "Erro ao carregar usuário." });
-      });
-  }, [showToast, userId]);
+    if (exercisesQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar exercícios." });
+    }
+  }, [exercisesQuery.error, showToast]);
 
-  // Load exercises
   useEffect(() => {
-    if (!id || !userId) return;
-    api
-      .get("/exercises", {
-        params: { classId: id },
-      })
-      .then(({ data }) => data)
-      .then((data) => {
-        if (Array.isArray(data)) setExercises(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        showToast({ type: "error", message: "Erro ao carregar exercícios." });
-        setLoading(false);
-      });
-  }, [id, showToast, userId]);
+    if (membersQuery.error) {
+      console.error("Erro ao carregar membros.", membersQuery.error);
+    }
+  }, [membersQuery.error]);
 
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
-
-  // Load members
   useEffect(() => {
-    if (!id || !userId || !user) return;
-    api
-      .get(`/classes/${id}/members`)
-      .then(({ data }) => setMembersData(data))
-      .catch((err) => console.error("Erro ao carregar membros.", err));
-  }, [id, userId, user?.id]);
+    if (exerciseListsQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar listas." });
+    }
+  }, [exerciseListsQuery.error, showToast]);
 
-  // Load exercise lists for this class
-  useEffect(() => {
-    if (!id || !userId) return;
-    setLoadingLists(true);
-    api
-      .get(`/classes/${id}/exercise-lists`)
-      .then(({ data }) => { if (Array.isArray(data)) setExerciseLists(data); })
-      .catch(() => showToast({ type: "error", message: "Erro ao carregar listas." }))
-      .finally(() => setLoadingLists(false));
-  }, [id, userId, showToast]);
-
-  if (!user || loading) {
+  if (!user || exercisesQuery.isPending) {
     return (
       <div className="relative min-h-screen bg-[#101f22] text-slate-100 flex items-center justify-center">
         <SpaceBackground />
@@ -143,7 +120,7 @@ export default function ClassDetail() {
               {activeTab === 'lists' ? (
                 <ListsTab
                   exerciseLists={exerciseLists}
-                  loadingLists={loadingLists}
+                  loadingLists={exerciseListsQuery.isPending}
                   isTeacher={isTeacher}
                   classId={id}
                 />

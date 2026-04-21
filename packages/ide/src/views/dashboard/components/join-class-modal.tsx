@@ -21,9 +21,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { HeroButton } from "@/components/buttons/hero";
+import { useJoinClassMutation } from "@/hooks/use-api-queries";
 
 const joinClassSchema = z.object({
   joinCode: z
@@ -47,6 +47,7 @@ export function JoinClassModal({
   onSuccess,
   onError,
 }: JoinClassModalProps) {
+  const joinClass = useJoinClassMutation();
   const form = useForm<JoinClassFormValues>({
     resolver: zodResolver(joinClassSchema),
     defaultValues: {
@@ -64,10 +65,7 @@ export function JoinClassModal({
     form.clearErrors();
 
     try {
-      await api.post(
-        "/classes/join",
-        { accessCode: values.joinCode.toUpperCase() },
-      );
+      await joinClass.mutateAsync(values.joinCode.toUpperCase());
 
       onSuccess?.("Você entrou na turma!");
       form.reset();
@@ -129,10 +127,10 @@ export function JoinClassModal({
           <HeroButton
             type="submit"
             form="join-class-form"
-            disabled={form.formState.isSubmitting}
+            disabled={joinClass.isPending}
             className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >
-            {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
+            {joinClass.isPending ? "Entrando..." : "Entrar"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

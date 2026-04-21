@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
+import { useCreateExerciseMutation } from "@/hooks/use-api-queries";
 import {
   Dialog,
   DialogContent,
@@ -58,9 +58,10 @@ export function CreateExerciseModal({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onCreated: () => void;
+  onCreated?: () => void;
 }) {
   const { showToast } = useToast();
+  const createExercise = useCreateExerciseMutation();
   const form = useForm<CreateExerciseForm>({
     resolver: zodResolver(createExerciseSchema),
     defaultValues: { title: "", description: "", testCases: defaultTestCases },
@@ -78,7 +79,7 @@ export function CreateExerciseModal({
 
   const onSubmit = async (values: CreateExerciseForm) => {
     try {
-      await api.post("/exercises", {
+      await createExercise.mutateAsync({
         title: values.title,
         description: values.description,
         testCases: values.testCases.filter(
@@ -88,7 +89,7 @@ export function CreateExerciseModal({
       showToast({ type: "success", message: "Exercício criado!" });
       form.reset();
       onOpenChange(false);
-      onCreated();
+      onCreated?.();
     } catch {
       showToast({ type: "error", message: "Erro ao criar exercício." });
     }
@@ -174,10 +175,10 @@ export function CreateExerciseModal({
           <HeroButton
             type="submit"
             form="create-exercise-page-form"
-            disabled={form.formState.isSubmitting}
+            disabled={createExercise.isPending}
             className="bg-linear-to-r from-[#0dccf2] to-[#10b981] text-slate-800 hover:opacity-90"
           >
-            {form.formState.isSubmitting ? "Criando..." : "Criar Exercício"}
+            {createExercise.isPending ? "Criando..." : "Criar Exercício"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +18,10 @@ import { PublishModal } from "./publish-modal";
 import { AddExerciseModal } from "./add-exercise-modal";
 import { SubmissionsPanel } from "./submissions-panel";
 import { ExerciseRow } from "./exercise-row";
+import {
+  useExerciseListSubmissionsQuery,
+  useRemoveExerciseFromListMutation,
+} from "@/hooks/use-api-queries";
 
 export function deadlineInfo(deadline: string) {
   const diff = new Date(deadline).getTime() - Date.now();
@@ -33,53 +36,33 @@ export function deadlineInfo(deadline: string) {
 export function TeacherDetailView({
   list,
   classes,
-  onRefresh,
 }: {
   list: ExerciseList;
   classes: ClassOption[];
-  onRefresh: () => void;
 }) {
   const { showToast } = useToast();
   const [showPublish, setShowPublish] = useState(false);
   const [showAddExercise, setShowAddExercise] = useState(false);
-  const [submissions, setSubmissions] = useState<SubmissionRecord[]>([]);
   const [showSubmissions, setShowSubmissions] = useState(false);
-  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+  const exerciseIds = list.items.map((item) => item.exerciseId);
+  const submissionsQuery = useExerciseListSubmissionsQuery(
+    exerciseIds,
+    showSubmissions,
+  );
+  const removeExercise = useRemoveExerciseFromListMutation(list.id);
 
   const existingIds = new Set(list.items.map((i) => i.exerciseId));
-
-  const loadSubmissions = useCallback(async () => {
-    if (list.items.length === 0) return;
-    setLoadingSubmissions(true);
-    try {
-      const results = await Promise.all(
-        list.items.map((item) =>
-          api
-            .get<SubmissionRecord[]>(`/submissions?exerciseId=${item.exerciseId}`)
-            .then(({ data }) => data),
-        ),
-      );
-      setSubmissions(results.flat());
-    } catch {
-      showToast({ type: "error", message: "Erro ao carregar submissões." });
-    } finally {
-      setLoadingSubmissions(false);
-    }
-  }, [list.items, showToast]);
+  const submissions = (submissionsQuery.data ?? []) as SubmissionRecord[];
 
   const handleToggleSubmissions = () => {
-    if (!showSubmissions && submissions.length === 0) {
-      loadSubmissions();
-    }
     setShowSubmissions((v) => !v);
   };
 
   const handleRemoveExercise = async (exerciseId: string) => {
     try {
-      await api.delete(`/exercise-lists/${list.id}/exercises?exerciseId=${exerciseId}`);
+      await removeExercise.mutateAsync(exerciseId);
       showToast({ type: "success", message: "Exercício removido." });
-      onRefresh();
     } catch {
       showToast({ type: "error", message: "Erro ao remover exercício." });
     } finally {
@@ -158,7 +141,7 @@ export function TeacherDetailView({
       <SubmissionsPanel
         submissions={submissions}
         showSubmissions={showSubmissions}
-        loadingSubmissions={loadingSubmissions}
+        loadingSubmissions={submissionsQuery.isPending}
         onToggle={handleToggleSubmissions}
       />
 
@@ -168,14 +151,12 @@ export function TeacherDetailView({
         onOpenChange={setShowPublish}
         listId={String(list.id)}
         classes={classes}
-        onPublished={onRefresh}
       />
       <AddExerciseModal
         open={showAddExercise}
         onOpenChange={setShowAddExercise}
         listId={String(list.id)}
         existingIds={existingIds}
-        onAdded={onRefresh}
       />
       <AlertDialog
         open={removeTarget !== null}

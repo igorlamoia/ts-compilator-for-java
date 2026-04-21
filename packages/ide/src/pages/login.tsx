@@ -9,18 +9,19 @@ import { Subtitle } from "@/components/text/subtitle";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "@/components/navbar";
-import { useAuth, type AuthUser } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
 import { LoginForm, loginSchema, type LoginFormValues } from "@/components/auth/login-form";
 import { SocialLogin } from "@/components/auth/social-login";
+import { useLoginMutation } from "@/hooks/use-api-queries";
 
 export default function Login() {
   const router = useRouter();
   const { login } = useAuth();
   const { showToast } = useToast();
   const [serverError, setServerError] = useState("");
+  const loginMutation = useLoginMutation();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -34,23 +35,13 @@ export default function Login() {
     setServerError("");
 
     try {
-      const { data } = await api.post<{ accessToken: string; user?: AuthUser }>(
-        "/auth/login",
-        values,
-      );
+      const data = await loginMutation.mutateAsync(values);
 
       if (!data.accessToken) {
         throw new Error("Resposta de login sem token");
       }
 
-      if (data.user) {
-        login({ token: data.accessToken, user: data.user });
-      } else {
-        const { data: user } = await api.get<AuthUser>("/auth/me", {
-          headers: { Authorization: `Bearer ${data.accessToken}` },
-        });
-        login({ token: data.accessToken, user });
-      }
+      login({ token: data.accessToken, user: data.user });
 
       await router.push("/dashboard");
     } catch (error) {

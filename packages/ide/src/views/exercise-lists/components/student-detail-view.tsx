@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
 import { BookOpen, CheckCircle2, ChevronRight, Circle } from "lucide-react";
 import type { ExerciseList } from "@/types/api";
 import type { ClassExerciseListEntry } from "./types";
+import { useClassExerciseListsQuery } from "@/hooks/use-api-queries";
 
 export function StudentDetailView({
   list,
@@ -14,21 +14,16 @@ export function StudentDetailView({
   classId: string;
 }) {
   const { showToast } = useToast();
-  const [classEntry, setClassEntry] = useState<ClassExerciseListEntry | null>(null);
-  const [loading, setLoading] = useState(false);
+  const classListsQuery = useClassExerciseListsQuery(classId, Boolean(classId));
+  const entries = (classListsQuery.data ?? []) as ClassExerciseListEntry[];
+  const classEntry =
+    entries.find((entry) => entry.exerciseListId === list.id) ?? null;
 
   useEffect(() => {
-    if (!classId) return;
-    setLoading(true);
-    api
-      .get<ClassExerciseListEntry[]>(`/classes/${classId}/exercise-lists`)
-      .then(({ data }) => {
-        const entry = data.find((e) => e.exerciseListId === list.id) ?? null;
-        setClassEntry(entry);
-      })
-      .catch(() => showToast({ type: "error", message: "Erro ao carregar progresso." }))
-      .finally(() => setLoading(false));
-  }, [classId, list.id, showToast]);
+    if (classListsQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar progresso." });
+    }
+  }, [classListsQuery.error, showToast]);
 
   const submittedIds = new Set<number>(
     classEntry?.exerciseList.items.filter((i) => i.submitted).map((i) => i.exerciseId) ?? [],
@@ -62,7 +57,7 @@ export function StudentDetailView({
         </div>
 
         {/* progress */}
-        {!loading && (
+        {!classListsQuery.isPending && (
           <div className="mt-5 pt-5 border-t border-white/8">
             <div className="flex justify-between text-sm text-slate-400 mb-2">
               <span>

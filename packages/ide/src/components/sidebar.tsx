@@ -47,11 +47,10 @@ const teacherMenu: MenuItem[] = [
 
 export function Sidebar() {
   const { pathname } = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isTeacher } = useAuth();
 
   if (!isAuthenticated) return null;
 
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
   const menuItems = isTeacher ? teacherMenu : studentMenu;
 
   return (

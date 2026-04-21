@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
 import {
@@ -106,6 +107,24 @@ export function KeywordCustomizerProvider({
   const [languageImageSearchError, setLanguageImageSearchError] = useState<
     string | null
   >(null);
+  const { mutateAsync: searchLanguageImagesMutation } = useMutation({
+    mutationFn: async (query: string) => {
+      const response = await fetch(
+        `/api/language-images/search?q=${encodeURIComponent(query)}`,
+      );
+      const payload = (await response.json()) as
+        | { images?: IdentityImageSearchResult[]; error?: string }
+        | undefined;
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error ?? "Nao foi possivel buscar imagens agora.",
+        );
+      }
+
+      return payload?.images ?? [];
+    },
+  });
   const wizardSessionBaseCustomization = useRef(customization);
   const shouldReturnOnExit = useRef(false);
   const form = useForm<StoredKeywordCustomization>({
@@ -487,29 +506,19 @@ export function KeywordCustomizerProvider({
     setLanguageImageSearchError(null);
 
     try {
-      const response = await fetch(
-        `/api/language-images/search?q=${encodeURIComponent(trimmedQuery)}`,
-      );
-      const payload = (await response.json()) as
-        | { images?: IdentityImageSearchResult[]; error?: string }
-        | undefined;
-
-      if (!response.ok) {
-        setLanguageImageResults([]);
-        setLanguageImageSearchError(
-          payload?.error ?? "Nao foi possivel buscar imagens agora.",
-        );
-        return;
-      }
-
-      setLanguageImageResults(payload?.images ?? []);
-    } catch {
+      const images = await searchLanguageImagesMutation(trimmedQuery);
+      setLanguageImageResults(images);
+    } catch (error) {
       setLanguageImageResults([]);
-      setLanguageImageSearchError("Nao foi possivel buscar imagens agora.");
+      setLanguageImageSearchError(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel buscar imagens agora.",
+      );
     } finally {
       setIsSearchingLanguageImages(false);
     }
-  }, [languageImageQuery]);
+  }, [languageImageQuery, searchLanguageImagesMutation]);
 
   const selectLanguageImage = useCallback((imageUrl: string) => {
     setLanguageImageUrl(imageUrl);

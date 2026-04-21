@@ -85,7 +85,7 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
             stackPosition="0%"
             scaleEndPosition="0%"
             itemDistance={10}
-            itemStackDistance={30}
+            itemStackDistance={5}
             blurAmount={0.5}
           >
             {groupedLexemes.map((category) => (

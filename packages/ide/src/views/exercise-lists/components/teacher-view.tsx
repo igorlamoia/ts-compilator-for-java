@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
 import { HeroButton } from "@/components/buttons/hero";
 import { GradientText } from "@/components/text/gradient";
 import { Title } from "@/components/text/title";
@@ -10,17 +9,16 @@ import { BookOpen, ChevronRight, ListChecks, Plus, Users } from "lucide-react";
 import type { ExerciseList } from "@/types/api";
 import { LoadingSpinner, EmptyState } from "./shared";
 import { CreateListModal } from "./create-list-modal";
+import { useExerciseListsQuery } from "@/hooks/use-api-queries";
 
 type ClassOption = { id: string; name: string };
 
 export function TeacherListCard({
   list,
   classMap,
-  onRefresh,
 }: {
   list: ExerciseList;
   classMap: Record<string, string>;
-  onRefresh: () => void;
 }) {
   const classNames = list.classes
     .map((c) => classMap[c.classId] ?? String(c.classId).slice(0, 6))
@@ -71,29 +69,20 @@ export function TeacherView({
   classes: ClassOption[];
 }) {
   const { showToast } = useToast();
-  const [lists, setLists] = useState<ExerciseList[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const listsQuery = useExerciseListsQuery();
+  const lists = listsQuery.data ?? [];
 
   const classMap = useMemo(
     () => Object.fromEntries(classes.map((c) => [c.id, c.name])),
     [classes],
   );
 
-  const fetchLists = useCallback(async () => {
-    try {
-      const { data } = await api.get<ExerciseList[]>("/exercise-lists");
-      setLists(data);
-    } catch {
-      showToast({ type: "error", message: "Erro ao carregar listas." });
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast]);
-
   useEffect(() => {
-    fetchLists();
-  }, [fetchLists]);
+    if (listsQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar listas." });
+    }
+  }, [listsQuery.error, showToast]);
 
   const filtered = lists;
 
@@ -117,7 +106,7 @@ export function TeacherView({
         </HeroButton>
       </div>
 
-      {loading ? (
+      {listsQuery.isPending ? (
         <LoadingSpinner label="Carregando listas..." />
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -127,12 +116,11 @@ export function TeacherView({
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((list) => (
+          {filtered.map((list: ExerciseList) => (
             <TeacherListCard
               key={list.id}
               list={list}
               classMap={classMap}
-              onRefresh={fetchLists}
             />
           ))}
         </div>
@@ -141,7 +129,6 @@ export function TeacherView({
       <CreateListModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        onCreated={fetchLists}
       />
     </>
   );

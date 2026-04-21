@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
+import { usePublishExerciseListMutation } from "@/hooks/use-api-queries";
 import {
   Dialog,
   DialogContent,
@@ -47,9 +47,10 @@ export function PublishModal({
   onOpenChange: (v: boolean) => void;
   listId: string;
   classes: ClassOption[];
-  onPublished: () => void;
+  onPublished?: () => void;
 }) {
   const { showToast } = useToast();
+  const publishList = usePublishExerciseListMutation();
   const form = useForm<PublishForm>({
     resolver: zodResolver(publishSchema),
     defaultValues: { classId: "", totalGrade: "10", minRequired: "1", deadline: defaultDeadline() },
@@ -57,19 +58,17 @@ export function PublishModal({
 
   const onSubmit = async (values: PublishForm) => {
     try {
-      await api.post(
-        `/exercise-lists/${listId}/publish`,
-        {
-          classId: Number(values.classId),
-          totalGrade: Number(values.totalGrade),
-          minRequired: Number(values.minRequired),
-          deadline: new Date(values.deadline).toISOString(),
-        },
-      );
+      await publishList.mutateAsync({
+        listId,
+        classId: Number(values.classId),
+        totalGrade: Number(values.totalGrade),
+        minRequired: Number(values.minRequired),
+        deadline: new Date(values.deadline).toISOString(),
+      });
       showToast({ type: "success", message: "Lista publicada com sucesso!" });
       form.reset();
       onOpenChange(false);
-      onPublished();
+      onPublished?.();
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { detail?: string } } };
       const detail = axiosError?.response?.data?.detail;
@@ -182,8 +181,8 @@ export function PublishModal({
           >
             Cancelar
           </HeroButton>
-          <HeroButton type="submit" form="publish-form" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Publicando..." : "Publicar"}
+          <HeroButton type="submit" form="publish-form" disabled={publishList.isPending}>
+            {publishList.isPending ? "Publicando..." : "Publicar"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

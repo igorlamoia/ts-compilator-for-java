@@ -3,85 +3,81 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { SpaceBackground } from "@/components/space-background";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
-import { localApi } from "@/lib/local-api";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
-import { isAxiosError } from "axios";
 import { SubmissionInfoBar } from "@/views/submissions/components/submission-info-bar";
 import { GradingPanel } from "@/views/submissions/components/grading-panel";
 import { SubmittedCodePanel } from "@/views/submissions/components/submitted-code-panel";
+import {
+  useGradeSubmissionMutation,
+  useSubmissionQuery,
+  useValidateSubmissionMutation,
+} from "@/hooks/use-api-queries";
 
 export default function GradeSubmission() {
   const router = useRouter();
   const { userId } = useAuth();
   const { showToast } = useToast();
   const { id } = router.query;
-  const [submission, setSubmission] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [score, setScore] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [compileResult, setCompileResult] = useState<any>(null);
-  const [compiling, setCompiling] = useState(false);
+  const submissionId = typeof id === "string" ? id : undefined;
+  const submissionQuery = useSubmissionQuery(submissionId, Boolean(userId));
+  const gradeSubmission = useGradeSubmissionMutation();
+  const validateSubmission = useValidateSubmissionMutation();
+  const submission = submissionQuery.data;
 
   useEffect(() => {
-    if (!id || !userId) return;
-    api
-      .get(`/submissions/${id}`)
-      .then(({ data }) => {
-        setSubmission(data);
-        if (data.score != null) setScore(String(data.score));
-        if (data.teacherFeedback) setFeedback(data.teacherFeedback);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Submissão não encontrada");
-        showToast({ type: "error", message: "Submissão não encontrada." });
-        setLoading(false);
-      });
-  }, [id, showToast, userId]);
+    if (!submission) return;
+    if (submission.score != null) setScore(String(submission.score));
+    if (submission.teacherFeedback) setFeedback(submission.teacherFeedback);
+  }, [submission]);
+
+  useEffect(() => {
+    if (submissionQuery.error) {
+      setError("Submissão não encontrada");
+      showToast({ type: "error", message: "Submissão não encontrada." });
+    }
+  }, [showToast, submissionQuery.error]);
 
   const handleGrade = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSaving(true);
     setSaved(false);
     try {
-      await api.patch(
-        `/submissions/${id}`,
-        { score: Number(score), teacherFeedback: feedback },
-      );
+      if (!submissionId) return;
+      await gradeSubmission.mutateAsync({
+        submissionId,
+        score: Number(score),
+        teacherFeedback: feedback,
+      });
       setSaved(true);
-      setSaving(false);
     } catch (error) {
       const message = getApiErrorMessage(error, "Erro ao salvar nota");
       setError(message);
       showToast({ type: "error", message });
-      setSaving(false);
     }
   };
 
   const handleRecompile = async () => {
     if (!submission?.codeSnapshot) return;
-    setCompiling(true);
     setCompileResult(null);
     try {
-      const { data } = await localApi.post(
-        "/submissions/validate",
-        { exerciseId: submission.exerciseId, sourceCode: submission.codeSnapshot },
-        // /submissions/validate is a local Next.js route (uses TS compiler — not FastAPI).
-        // It still uses x-user-id for auth since it doesn't go through the JWT interceptor.
-        { params: { dryRun: "true" }, headers: { "x-user-id": userId! } },
-      );
+      const data = await validateSubmission.mutateAsync({
+        payload: {
+          exerciseId: submission.exerciseId,
+          sourceCode: submission.codeSnapshot,
+        },
+        params: { dryRun: "true" },
+        headers: { "x-user-id": String(userId) },
+      });
       setCompileResult(data);
     } catch {
       setCompileResult({ valid: false, errors: ["Erro de conexão"], warnings: [] });
       showToast({ type: "error", message: "Erro ao recompilar submissão." });
-    } finally {
-      setCompiling(false);
     }
   };
 
@@ -91,7 +87,7 @@ export default function GradeSubmission() {
       hour: "2-digit", minute: "2-digit",
     });
 
-  if (loading) {
+  if (submissionQuery.isPending) {
     return (
       <div className="min-h-screen bg-[#101f22] flex items-center justify-center">
         <div className="text-slate-500">Carregando submissão...</div>
@@ -132,7 +128,7 @@ export default function GradeSubmission() {
             codeSnapshot={submission?.codeSnapshot}
             exerciseDescription={submission?.exercise?.description}
             compileResult={compileResult}
-            compiling={compiling}
+            compiling={validateSubmission.isPending}
             onRecompile={handleRecompile}
           />
 
@@ -141,7 +137,7 @@ export default function GradeSubmission() {
             setScore={setScore}
             feedback={feedback}
             setFeedback={setFeedback}
-            saving={saving}
+            saving={gradeSubmission.isPending}
             saved={saved}
             error={error}
             onSubmit={handleGrade}

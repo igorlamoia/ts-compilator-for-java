@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
+import { useCreateExerciseListMutation } from "@/hooks/use-api-queries";
 import {
   Dialog,
   DialogContent,
@@ -36,9 +36,10 @@ export function CreateListModal({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onCreated: () => void;
+  onCreated?: () => void;
 }) {
   const { showToast } = useToast();
+  const createList = useCreateExerciseListMutation();
   const form = useForm<CreateListForm>({
     resolver: zodResolver(createListSchema),
     defaultValues: { title: "", description: "" },
@@ -46,14 +47,14 @@ export function CreateListModal({
 
   const onSubmit = async (values: CreateListForm) => {
     try {
-      await api.post(
-        "/exercise-lists",
-        { title: values.title, description: values.description },
-      );
+      await createList.mutateAsync({
+        title: values.title,
+        description: values.description,
+      });
       showToast({ type: "success", message: "Lista criada com sucesso!" });
       form.reset();
       onOpenChange(false);
-      onCreated();
+      onCreated?.();
     } catch {
       showToast({ type: "error", message: "Erro ao criar lista." });
     }
@@ -122,9 +123,9 @@ export function CreateListModal({
           <HeroButton
             type="submit"
             form="create-list-form"
-            disabled={form.formState.isSubmitting}
+            disabled={createList.isPending}
           >
-            {form.formState.isSubmitting ? "Criando..." : "Criar Lista"}
+            {createList.isPending ? "Criando..." : "Criar Lista"}
           </HeroButton>
         </DialogFooter>
       </DialogContent>

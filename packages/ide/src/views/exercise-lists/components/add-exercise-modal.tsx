@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +11,10 @@ import {
 import { HeroButton } from "@/components/buttons/hero";
 import { Loader2 } from "lucide-react";
 import type { Exercise } from "@/types/api";
+import {
+  useAddExerciseToListMutation,
+  useExercisesQuery,
+} from "@/hooks/use-api-queries";
 
 export function AddExerciseModal({
   open,
@@ -24,32 +27,26 @@ export function AddExerciseModal({
   onOpenChange: (v: boolean) => void;
   listId: string;
   existingIds: Set<number>;
-  onAdded: () => void;
+  onAdded?: () => void;
 }) {
   const { showToast } = useToast();
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
+  const exercisesQuery = useExercisesQuery(undefined, open);
+  const addExercise = useAddExerciseToListMutation(listId);
+  const exercises = exercisesQuery.data ?? [];
 
   useEffect(() => {
-    if (!open) return;
-    setLoading(true);
-    api
-      .get<Exercise[]>("/exercises")
-      .then(({ data }) => setExercises(data))
-      .catch(() => showToast({ type: "error", message: "Erro ao carregar exercícios." }))
-      .finally(() => setLoading(false));
-  }, [open, showToast]);
+    if (exercisesQuery.error) {
+      showToast({ type: "error", message: "Erro ao carregar exercícios." });
+    }
+  }, [exercisesQuery.error, showToast]);
 
   const handleAdd = async (exerciseId: string) => {
     setAdding(exerciseId);
     try {
-      await api.post(
-        `/exercise-lists/${listId}/exercises`,
-        { exerciseId, gradeWeight: 1 },
-      );
+      await addExercise.mutateAsync(exerciseId);
       showToast({ type: "success", message: "Exercício adicionado!" });
-      onAdded();
+      onAdded?.();
     } catch {
       showToast({ type: "error", message: "Erro ao adicionar exercício." });
     } finally {
@@ -57,7 +54,7 @@ export function AddExerciseModal({
     }
   };
 
-  const available = exercises.filter((e) => !existingIds.has(e.id));
+  const available = exercises.filter((e: Exercise) => !existingIds.has(e.id));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -69,7 +66,7 @@ export function AddExerciseModal({
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[50vh] overflow-y-auto space-y-2 py-2 px-1">
-          {loading ? (
+          {exercisesQuery.isPending ? (
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-[#0dccf2]" />
             </div>
@@ -80,7 +77,7 @@ export function AddExerciseModal({
                 : "Todos os seus exercícios já estão nesta lista."}
             </p>
           ) : (
-            available.map((ex) => (
+            available.map((ex: Exercise) => (
               <div
                 key={ex.id}
                 className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/3 border border-white/8 hover:border-[#0dccf2]/25 transition-colors"
