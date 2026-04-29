@@ -10,7 +10,9 @@ export type VariableStepKeyword =
   | "float"
   | "bool"
   | "string"
-  | "variavel";
+  | "variavel"
+  | "void"
+  | "funcao";
 
 export type VariablesStepProps = {
   values: {

@@ -1,5 +1,5 @@
 import { ExampleSnippet } from "../example-snippet";
-import { DocumentedField } from "../documented-field";
+import { KeywordReferenceTable } from "./components/keyword-reference-table";
 
 const FLOW_FIELDS = [
   "if",
@@ -36,6 +36,54 @@ export type FlowStepProps = {
   };
 };
 
+type FlowFieldKey = (typeof FLOW_FIELDS)[number];
+
+const FLOW_REFERENCE_META: Record<
+  FlowFieldKey,
+  { glyph: string; className: string }
+> = {
+  if: {
+    glyph: "IF",
+    className: "text-cyan-300 shadow-[0_0_20px_-8px_rgba(34,211,238,0.95)]",
+  },
+  else: {
+    glyph: "EL",
+    className: "text-violet-300 shadow-[0_0_20px_-8px_rgba(196,181,253,0.9)]",
+  },
+  while: {
+    glyph: "WH",
+    className: "text-emerald-300 shadow-[0_0_20px_-8px_rgba(110,231,183,0.9)]",
+  },
+  for: {
+    glyph: "FR",
+    className: "text-emerald-300 shadow-[0_0_20px_-8px_rgba(110,231,183,0.9)]",
+  },
+  return: {
+    glyph: "RT",
+    className: "text-amber-300 shadow-[0_0_20px_-8px_rgba(251,191,36,0.9)]",
+  },
+  break: {
+    glyph: "BR",
+    className: "text-rose-300 shadow-[0_0_20px_-8px_rgba(253,164,175,0.9)]",
+  },
+  continue: {
+    glyph: "CT",
+    className: "text-sky-300 shadow-[0_0_20px_-8px_rgba(125,211,252,0.9)]",
+  },
+  switch: {
+    glyph: "SW",
+    className: "text-indigo-300 shadow-[0_0_20px_-8px_rgba(165,180,252,0.9)]",
+  },
+  case: {
+    glyph: "CS",
+    className: "text-fuchsia-300 shadow-[0_0_20px_-8px_rgba(240,171,252,0.9)]",
+  },
+  default: {
+    glyph: "DF",
+    className: "text-slate-300 shadow-[0_0_20px_-8px_rgba(148,163,184,0.75)]",
+  },
+};
+
 export function FlowStep({ values, actions }: FlowStepProps) {
   return (
     <section className="space-y-6">
@@ -51,22 +99,22 @@ export function FlowStep({ values, actions }: FlowStepProps) {
         </p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {values.fields.map((field) => (
-          <DocumentedField
-            key={field.key}
-            label={field.key}
-            value={field.value}
-            description={field.description}
-            onValueChange={(nextValue) =>
-              actions.syncKeyword(field.key, nextValue)
-            }
-            onDescriptionChange={(description) =>
-              actions.syncKeywordDescription(field.key, description)
-            }
-          />
-        ))}
-      </div>
+      <KeywordReferenceTable
+        title="Palavras de fluxo"
+        items={values.fields.map((field) => ({
+          id: field.key,
+          value: field.value,
+          description: field.description,
+          reference: {
+            ...FLOW_REFERENCE_META[field.key],
+            label: field.key.toUpperCase(),
+          },
+        }))}
+        onValueChange={(field, value) => actions.syncKeyword(field, value)}
+        onDescriptionChange={(field, value) =>
+          actions.syncKeywordDescription(field, value)
+        }
+      />
 
       <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">

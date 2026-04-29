@@ -23,15 +23,18 @@ function TypingBeamChip({
   changed,
   active,
   chipRef,
+  className,
 }: {
   original: string;
   changed: string;
   active: boolean;
   chipRef: React.RefObject<HTMLDivElement | null>;
+  className?: string;
 }) {
   return (
     <div ref={chipRef}>
       <ChangedChip
+        className={className}
         original={original}
         changed={changed}
         active={active}
@@ -71,7 +74,7 @@ export function TypingRelationshipBeam({
           />
         </div>
 
-        <div className="flex flex-col items-end gap-4">
+        <div className="flex flex-col  items-end gap-4">
           <TypingBeamChip
             chipRef={stringRef}
             original="string"

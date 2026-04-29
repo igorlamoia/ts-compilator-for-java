@@ -68,7 +68,7 @@ export function buildVariablesStepProps(
 ): VariablesStepProps {
   const variableKeywords =
     context.draftCustomization.modes.typing === "untyped"
-      ? (["variavel"] as const)
+      ? (["variavel", "void", "funcao"] as const)
       : (["int", "float", "bool", "string"] as const);
 
   return {
@@ -112,7 +112,6 @@ export function buildVariablesStepProps(
 export function buildStructureStepProps(
   context: KeywordCustomizerContextValue,
 ): StructureStepProps {
-  const structureKeywords = ["void", "funcao"] as const;
   const { draftCustomization } = context;
 
   return {
@@ -131,11 +130,7 @@ export function buildStructureStepProps(
           draftCustomization.languageDocumentation["terminator.statement"]
             ?.description ?? "",
       },
-      keywords: structureKeywords.map((key) => ({
-        key,
-        value: getKeywordValue(context, key),
-        description: getKeywordDescription(context, key),
-      })),
+      keywords: [],
       delimiters: {
         open: {
           value: draftCustomization.blockDelimiters.open,

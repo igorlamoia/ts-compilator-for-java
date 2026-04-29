@@ -7,7 +7,6 @@ import {
   Sigma,
 } from "lucide-react";
 import type { WizardStepIcon, WizardStepId } from "./wizard-model";
-import { Pointer } from "../ui/pointer";
 import React from "react";
 
 type WizardStep = {
@@ -44,7 +43,7 @@ export function WizardStepper({
   };
 
   return (
-    <aside className="flex flex-col gap-2 border-b border-slate-200/70 dark:border-slate-800/80 lg:border-b-0 lg:border-r">
+    <aside className="flex flex-col gap-2 border-b border-slate-200/70 dark:border-slate-800/80 lg:border-b-0 ">
       <div className="pr-2">
         <div className="flex items-end justify-between gap-4">
           <div className="flex items-center gap-2">

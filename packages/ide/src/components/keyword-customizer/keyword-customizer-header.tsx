@@ -1,31 +1,52 @@
 import { GradientText } from "@/components/text/gradient";
 import { Subtitle } from "@/components/text/subtitle";
 import { Title } from "@/components/text/title";
-import { HeroButton } from "../buttons/hero";
+import { WizardStep } from "./keyword-customizer-types";
+import { WizardStepId } from "./wizard-model";
 
 export type KeywordCustomizerHeaderProps = {
-  hasChanges: boolean;
-  onCancel: () => void;
-  onReset: () => void;
+  steps: readonly WizardStep[];
+  activeStepId: WizardStepId;
 };
-
 export function KeywordCustomizerHeader({
-  hasChanges,
-  onCancel,
-  onReset,
+  steps,
+  activeStepId,
 }: KeywordCustomizerHeaderProps) {
+  const activeIndex = steps.findIndex((step) => step.id === activeStepId);
+  const progress = Math.round(((activeIndex + 1) / steps.length) * 100);
+
   return (
     <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <Title as="h1" id="keyword-customizer-title">
+      <div className="flex items-center -mt-4">
+        <Title as="h4" id="keyword-customizer-title">
           <GradientText>Laboratório Léxico</GradientText>
         </Title>
-        <Subtitle id="keyword-customizer-description" className="mt-1">
-          Manipule o núcleo do interpretador em tempo real. Defina o
-          vocabulário, as regras e o fluxo da sua linguagem
+        <Subtitle id="keyword-customizer-description" className="ml-1 mt-1">
+          - Manipule o núcleo do interpretador em tempo real
         </Subtitle>
+        {/* <div className="pr-2">
+          <div className="flex items-end justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                Etapa {String(activeIndex + 1).padStart(2, "0")}
+              </p>
+              <p className="text-xs mt-1 text-slate-500 dark:text-slate-400">
+                de {steps.length} etapas
+              </p>
+            </div>
+            <p className="text-xs font-medium text-cyan-600 dark:text-cyan-300">
+              {progress}%
+            </p>
+          </div>
+          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-linear-to-r from-cyan-500 to-emerald-400"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div> */}
       </div>
-      <div className="flex items-center gap-3">
+      {/* <div className="flex items-center gap-3">
         <HeroButton type="button" variant="ghost" onClick={onCancel}>
           Cancelar
         </HeroButton>
@@ -37,7 +58,7 @@ export function KeywordCustomizerHeader({
         >
           Restaurar Padrão
         </HeroButton>
-      </div>
+      </div> */}
     </div>
   );
 }

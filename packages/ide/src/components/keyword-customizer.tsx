@@ -15,15 +15,8 @@ import { KeywordCustomizerStepContent } from "./keyword-customizer/keyword-custo
 import { TokenPreview } from "./keyword-customizer/token-preview";
 
 function KeywordCustomizerShell() {
-  const {
-    form,
-    preview,
-    activeStep,
-    activeStepIndex,
-    visibleSteps,
-    hasChanges,
-    actions,
-  } = useKeywordCustomizer();
+  const { form, preview, activeStep, activeStepIndex, visibleSteps, actions } =
+    useKeywordCustomizer();
   return (
     <Form {...form}>
       <section className="flex flex-col gap-8 max-w-screen-3xl mx-auto">
@@ -33,12 +26,6 @@ function KeywordCustomizerShell() {
           aria-describedby="keyword-customizer-description"
           className="flex min-h-0 flex-col gap-8"
         >
-          <KeywordCustomizerHeader
-            hasChanges={hasChanges}
-            onCancel={actions.exit}
-            onReset={actions.resetDraft}
-          />
-
           <main className="grid items-start  lg:grid-cols-[230px_minmax(0,1fr)_260px] xl:grid-cols-[340px_minmax(0,1fr)_360px]">
             <div className="flex flex-col gap-3">
               <WizardStepper
@@ -52,6 +39,10 @@ function KeywordCustomizerShell() {
 
             <div className="border-t border-r border-slate-200/70 dark:border-slate-800/80 xl:border-x xl:border-t-0">
               <div className="min-h-0 flex-1 p-5">
+                <KeywordCustomizerHeader
+                  steps={visibleSteps}
+                  activeStepId={activeStep.id}
+                />
                 <KeywordCustomizerStepContent />
                 <KeywordCustomizerFooter
                   activeStepIndex={activeStepIndex}
