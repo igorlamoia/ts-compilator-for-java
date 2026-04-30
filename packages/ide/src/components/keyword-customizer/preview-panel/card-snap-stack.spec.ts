@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveCardSnapIndex } from "./card-snap-stack";
+import { resolveCardSnapAccent, resolveCardSnapIndex } from "./card-snap-stack";
 
 describe("resolveCardSnapIndex", () => {
   it("advances one card at a time", () => {
@@ -21,5 +21,19 @@ describe("resolveCardSnapIndex", () => {
 
   it("keeps an empty stack on the initial card index", () => {
     expect(resolveCardSnapIndex(0, "next", 0)).toBe(0);
+  });
+});
+
+describe("resolveCardSnapAccent", () => {
+  it("uses the loop icon color for loop shadows", () => {
+    expect(resolveCardSnapAccent("lacos").activeShadow).toContain(
+      "rgba(244,114,182",
+    );
+  });
+
+  it("uses the flow icon color for flow shadows", () => {
+    expect(resolveCardSnapAccent("fluxo").activeShadow).toContain(
+      "rgba(196,181,253",
+    );
   });
 });

@@ -10,11 +10,16 @@ import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 import { cn } from "@/lib/utils";
 
 type SnapDirection = "next" | "previous";
+type CardSnapAccent = {
+  activeButton: string;
+  activeShadow: string;
+};
 
 export type CardSnapStackItem = {
   key: string;
   label: string;
   icon: LucideIcon;
+  accent?: CardSnapAccent;
   children: ReactNode;
 };
 
@@ -29,6 +34,53 @@ export function resolveCardSnapIndex(
     direction === "next" ? currentIndex + 1 : currentIndex - 1;
 
   return Math.min(Math.max(nextIndex, 0), itemCount - 1);
+}
+
+export function resolveCardSnapAccent(key: string): CardSnapAccent {
+  switch (key) {
+    case "entrada":
+      return {
+        activeButton:
+          "border-emerald-300/60 bg-emerald-300/15 text-emerald-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(52,211,153,0.85)]",
+      };
+    case "tipos":
+      return {
+        activeButton: "border-cyan-300/60 bg-cyan-300/15 text-cyan-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(34,211,238,0.85)]",
+      };
+    case "condicionais":
+      return {
+        activeButton: "border-amber-300/60 bg-amber-300/15 text-amber-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(251,191,36,0.85)]",
+      };
+    case "lacos":
+      return {
+        activeButton: "border-pink-300/60 bg-pink-300/15 text-pink-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(244,114,182,0.85)]",
+      };
+    case "fluxo":
+      return {
+        activeButton:
+          "border-violet-300/60 bg-violet-300/15 text-violet-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(196,181,253,0.85)]",
+      };
+    case "booleanos":
+      return {
+        activeButton: "border-lime-300/60 bg-lime-300/15 text-lime-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(163,230,53,0.85)]",
+      };
+    case "operadores":
+      return {
+        activeButton: "border-sky-300/60 bg-sky-300/15 text-sky-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(125,211,252,0.85)]",
+      };
+    default:
+      return {
+        activeButton: "border-slate-300/60 bg-slate-300/15 text-slate-200",
+        activeShadow: "shadow-[0_24px_70px_-44px_rgba(203,213,225,0.75)]",
+      };
+  }
 }
 
 function renderItemIcon(item: CardSnapStackItem) {
@@ -100,6 +152,7 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
       >
         {items.map((item, index) => {
           const isActive = index === activeIndex;
+          const accent = item.accent ?? resolveCardSnapAccent(item.key);
 
           return (
             <button
@@ -114,7 +167,7 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
                 "flex h-8 items-center justify-center rounded-sm border text-slate-400 outline-none transition-all",
                 "focus-visible:ring-2 focus-visible:ring-cyan-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
                 isActive
-                  ? "border-cyan-300/60 bg-cyan-300/15 text-cyan-200 shadow-[0_0_18px_-10px_rgba(34,211,238,0.9)]"
+                  ? `${accent.activeButton} ${accent.activeShadow}`
                   : "border-slate-800 bg-slate-950/55 hover:border-slate-600 hover:text-slate-200",
               )}
             >
@@ -135,6 +188,7 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
           <div className="flex flex-col gap-5 pb-24">
             {items.map((item, index) => {
               const isActive = index === activeIndex;
+              const accent = item.accent ?? resolveCardSnapAccent(item.key);
 
               return (
                 <div
@@ -154,7 +208,7 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
                     "relative snap-start cursor-pointer rounded-sm outline-none transition-[transform,opacity,filter] duration-300",
                     "focus-visible:ring-2 focus-visible:ring-cyan-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
                     isActive
-                      ? "z-20 scale-[1.01] opacity-100 shadow-[0_24px_70px_-44px_rgba(34,211,238,0.75)]"
+                      ? `z-20 scale-[1.01] opacity-100 ${accent.activeShadow}`
                       : "z-0 scale-[0.985] opacity-70 saturate-[0.75] hover:opacity-90",
                   )}
                   style={{
@@ -174,6 +228,7 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
         >
           {items.map((item, index) => {
             const isActive = index === activeIndex;
+            const accent = item.accent ?? resolveCardSnapAccent(item.key);
 
             return (
               <button
@@ -188,7 +243,7 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
                   "flex h-7 w-7 items-center justify-center rounded-sm border text-slate-500 outline-none transition-all",
                   "focus-visible:ring-2 focus-visible:ring-cyan-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
                   isActive
-                    ? "border-cyan-300/60 bg-cyan-300/15 text-cyan-200"
+                    ? `${accent.activeButton} ${accent.activeShadow}`
                     : "border-transparent hover:border-slate-700 hover:text-slate-200",
                 )}
               >

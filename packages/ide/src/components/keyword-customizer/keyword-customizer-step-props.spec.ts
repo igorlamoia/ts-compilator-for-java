@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultCustomizationState } from "@/contexts/keyword/KeywordContext";
-import { buildStructureStepProps } from "./keyword-customizer-step-props";
+import {
+  buildRulesStepProps,
+  buildStructureStepProps,
+  buildVariablesStepProps,
+} from "./keyword-customizer-step-props";
+import type { KeywordCustomizerContextValue } from "./keyword-customizer-types";
 
-describe("buildStructureStepProps", () => {
-  it("fills the structure snippets from the draft", () => {
+function buildContext(
+  override: Partial<KeywordCustomizerContextValue> = {},
+): KeywordCustomizerContextValue {
     const draft = getDefaultCustomizationState();
-    const context = {
+
+    return {
       draftCustomization: draft,
       preview: { snippet: "live-preview" },
       errors: {
@@ -47,11 +54,102 @@ describe("buildStructureStepProps", () => {
         syncOperatorWord: () => undefined,
         syncStatementTerminator: () => undefined,
       },
-    } as never;
+      ...override,
+    } as KeywordCustomizerContextValue;
+}
+
+describe("buildStructureStepProps", () => {
+  it("fills the structure snippets from the draft", () => {
+    const context = buildContext();
 
     const props = buildStructureStepProps(context);
 
     expect(props.values.delimiterSnippet).toContain("funcao main()");
     expect(props.values.identationSnippet).toContain("funcao main():");
+  });
+
+  it("fills documented fields with default semantic definitions", () => {
+    const props = buildStructureStepProps(buildContext());
+
+    expect(props.values.statementTerminator.description).toBe(
+      "Marca o fim de uma instrução na linguagem.",
+    );
+    expect(props.values.delimiters.open.description).toBe(
+      "Marca a abertura de um bloco delimitado.",
+    );
+    expect(props.values.delimiters.close.description).toBe(
+      "Marca o fechamento de um bloco delimitado.",
+    );
+  });
+});
+
+describe("buildVariablesStepProps", () => {
+  it("fills keyword reference table descriptions with defaults", () => {
+    const props = buildVariablesStepProps(buildContext());
+
+    expect(props.values.variableKeywords).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "int",
+          description: "Declara valores inteiros na linguagem.",
+        }),
+        expect.objectContaining({
+          key: "string",
+          description: "Declara textos.",
+        }),
+      ]),
+    );
+  });
+
+  it("fills documented IO fields with default semantic definitions", () => {
+    const props = buildVariablesStepProps(buildContext());
+
+    expect(props.values.printDescription).toBe(
+      "Exibe valores na saída da linguagem.",
+    );
+    expect(props.values.scanDescription).toBe(
+      "Lê valores de entrada para o programa.",
+    );
+  });
+
+  it("keeps user edited semantic definitions when present", () => {
+    const draft = getDefaultCustomizationState();
+    draft.languageDocumentation = {
+      "keyword.print": {
+        description: "Mostra texto no console customizado.",
+      },
+    };
+
+    const props = buildVariablesStepProps(
+      buildContext({ draftCustomization: draft }),
+    );
+
+    expect(props.values.printDescription).toBe(
+      "Mostra texto no console customizado.",
+    );
+  });
+});
+
+describe("buildRulesStepProps", () => {
+  it("fills boolean and operator descriptions with defaults", () => {
+    const props = buildRulesStepProps(buildContext());
+
+    expect(props.values.booleanLiterals).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "true",
+          description: "Representa o valor lógico verdadeiro.",
+        }),
+      ]),
+    );
+    expect(props.values.operatorAliases).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "logical_and",
+          description:
+            "Retorna verdadeiro quando todas as condições são verdadeiras.",
+        }),
+      ]),
+    );
   });
 });

@@ -1,5 +1,6 @@
 import {
   getBooleanDocumentationId,
+  getDefaultDocumentationDescription,
   getKeywordDocumentationId,
   getOperatorDocumentationId,
 } from "@/lib/language-documentation";
@@ -33,11 +34,20 @@ function getKeywordDescription(
   context: KeywordCustomizerContextValue,
   original: string,
 ): string {
-  return (
-    context.draftCustomization.languageDocumentation[
-      getKeywordDocumentationId(original)
-    ]?.description ?? ""
+  return getDocumentationDescription(
+    context,
+    getKeywordDocumentationId(original),
   );
+}
+
+function getDocumentationDescription(
+  context: KeywordCustomizerContextValue,
+  id: string,
+): string {
+  const customDescription =
+    context.draftCustomization.languageDocumentation[id]?.description?.trim();
+
+  return customDescription || getDefaultDocumentationDescription(id);
 }
 
 export function buildIdentityStepProps(
@@ -126,23 +136,20 @@ export function buildStructureStepProps(
         draftCustomization.blockDelimiters.close.trim().length > 0,
       statementTerminator: {
         value: draftCustomization.statementTerminatorLexeme,
-        description:
-          draftCustomization.languageDocumentation["terminator.statement"]
-            ?.description ?? "",
+        description: getDocumentationDescription(
+          context,
+          "terminator.statement",
+        ),
       },
       keywords: [],
       delimiters: {
         open: {
           value: draftCustomization.blockDelimiters.open,
-          description:
-            draftCustomization.languageDocumentation["delimiter.open"]
-              ?.description ?? "",
+          description: getDocumentationDescription(context, "delimiter.open"),
         },
         close: {
           value: draftCustomization.blockDelimiters.close,
-          description:
-            draftCustomization.languageDocumentation["delimiter.close"]
-              ?.description ?? "",
+          description: getDocumentationDescription(context, "delimiter.close"),
         },
       },
     },
@@ -182,19 +189,19 @@ export function buildRulesStepProps(
         key,
         label: `Literal ${key}`,
         value: context.draftCustomization.booleanLiteralMap[key] ?? "",
-        description:
-          context.draftCustomization.languageDocumentation[
-            getBooleanDocumentationId(key)
-          ]?.description ?? "",
+        description: getDocumentationDescription(
+          context,
+          getBooleanDocumentationId(key),
+        ),
       })),
       operatorAliases: OPERATOR_WORD_FIELDS.map((field) => ({
         key: field.key,
         label: field.label,
         value: context.draftCustomization.operatorWordMap[field.key] ?? "",
-        description:
-          context.draftCustomization.languageDocumentation[
-            getOperatorDocumentationId(field.key)
-          ]?.description ?? "",
+        description: getDocumentationDescription(
+          context,
+          getOperatorDocumentationId(field.key),
+        ),
         placeholder: field.symbol,
       })),
     },
