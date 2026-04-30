@@ -34,6 +34,7 @@ export function WizardStepper({
 }: WizardStepperProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const activeIndex = steps.findIndex((step) => step.id === activeStepId);
+  const activeStep = steps[activeIndex] ?? steps[0];
   const progress = Math.round(((activeIndex + 1) / steps.length) * 100);
 
   const getStepIcon = (icon: WizardStepIcon) => {
@@ -60,22 +61,31 @@ export function WizardStepper({
 
   return (
     <aside
-      className={`backdrop-blur-[2px] flex flex-col gap-3 md:fixed md:w-[230px] xl:w-[340px] left-5 transition-[top,height] duration-300 ease-out ${
+      data-wizard-stepper
+      className={`max-lg:sticky max-lg:top-0 max-lg:z-40 max-lg:-mx-5 max-lg:border-b max-lg:border-slate-800/80 max-lg:bg-[#070d18]/95 max-lg:px-5 max-lg:py-3 max-lg:shadow-[0_18px_50px_-34px_rgba(2,6,23,0.95)] max-lg:backdrop-blur-xl lg:backdrop-blur-[2px] flex flex-col gap-3 lg:fixed lg:w-[230px] xl:w-[340px] left-5 transition-[top,height] duration-300 ease-out ${
         isScrolled
-          ? "md:top-4 md:h-screen"
-          : "md:top-18 md:h-[calc(100vh-4rem)]"
+          ? "lg:top-8 lg:h-screen"
+          : "lg:top-22 lg:h-[calc(100vh-4rem)]"
       }`}
     >
-      <div className="flex flex-col gap-2 border-b border-slate-200/70 dark:border-slate-800/80 lg:border-b-0 ">
+      <div className="flex flex-col gap-2 border-b border-slate-200/70 dark:border-slate-800/80 max-lg:border-b-0 lg:border-b-0 ">
         <div className="pr-2">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-end justify-between gap-4 max-lg:items-start">
             <div className="flex items-center gap-2">
               <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
                 {String(activeIndex + 1).padStart(2, "0")}
               </p>
-              <p className="text-xs mt-1 text-slate-500 dark:text-slate-400">
-                de {steps.length} etapas
-              </p>
+              <div className="mt-1 flex flex-col">
+                <p
+                  data-wizard-active-title
+                  className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200"
+                >
+                  {activeStep?.title}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  de {steps.length} etapas
+                </p>
+              </div>
             </div>
             <p className="text-xs font-medium text-cyan-600 dark:text-cyan-300">
               {progress}%
@@ -89,7 +99,10 @@ export function WizardStepper({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div
+          data-wizard-step-list
+          className="flex flex-col gap-1 max-lg:flex-row max-lg:gap-2 max-lg:overflow-x-auto max-lg:pb-1"
+        >
           {steps.map((step) => {
             const isActive = step.id === activeStepId;
 
@@ -97,12 +110,13 @@ export function WizardStepper({
               <button
                 key={step.id}
                 type="button"
+                data-wizard-step-button
                 onClick={() => onStepClick(step.id)}
                 className={[
-                  "flex items-center gap-2 border-l-4 px-3 py-2.5 transition-all",
+                  "flex items-center gap-2 border-l-4 px-3 py-2.5 transition-all max-lg:h-10 max-lg:w-10 max-lg:min-w-10 max-lg:flex-none max-lg:justify-center max-lg:rounded-full max-lg:border max-lg:px-0 max-lg:py-0",
                   isActive
-                    ? "border-l-cyan-500 bg-slate-900/40 text-cyan-400 dark:text-cyan-300"
-                    : "border-l-transparent text-slate-400 hover:text-slate-300 dark:text-slate-500 dark:hover:text-slate-400",
+                    ? "border-l-cyan-500 bg-slate-900/40 text-cyan-400 max-lg:border-cyan-400 max-lg:bg-cyan-400/10 max-lg:shadow-[0_0_24px_-10px_rgba(34,211,238,0.95)] dark:text-cyan-300"
+                    : "border-l-transparent text-slate-400 hover:text-slate-300 max-lg:border-slate-800 max-lg:bg-slate-950/60 dark:text-slate-500 dark:hover:text-slate-400",
                 ].join(" ")}
                 style={
                   {
@@ -117,7 +131,10 @@ export function WizardStepper({
                 <span className="flex h-5 w-5 items-center justify-center">
                   {getStepIcon(step.icon)}
                 </span>
-                <span className="text-xs font-medium uppercase tracking-widest">
+                <span
+                  data-wizard-step-label
+                  className="text-xs font-medium uppercase tracking-widest max-lg:sr-only"
+                >
                   {step.title}
                 </span>
               </button>
@@ -139,7 +156,10 @@ function LanguageBasedCard({
   const imageUrl = preview.languageImageUrl || "/images/language-default.png";
 
   return (
-    <section className="mr-2 space-y-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900/90">
+    <section
+      data-wizard-language-card
+      className="mr-2 space-y-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.55)] max-lg:hidden dark:border-slate-800 dark:bg-slate-900/90"
+    >
       <div className="space-y-1 px-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
           Baseado em
