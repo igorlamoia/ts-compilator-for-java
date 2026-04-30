@@ -1,10 +1,10 @@
+import { useEffect, useState } from "react";
 import type { WizardPreview } from "../preview-data";
 import { ExampleSnippet } from "../example-snippet";
 
+import { CardSnapStack } from "./card-snap-stack";
 import { CategorySection } from "./category-section";
 import { PREVIEW_CATEGORIES, PreviewCategory } from "./categories-list";
-import { ScrollStack, ScrollStackItem } from "@/components/ui/scroll-stack";
-import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 
 export type PreviewPanelProps = {
   preview: WizardPreview;
@@ -72,29 +72,61 @@ function segregateLexemeChangesByCategory(
   });
 }
 
+function formatPreviewCategoryLabel(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/(^|[\s/])([a-z])/g, (_, separator: string, char: string) => {
+      return `${separator}${char.toUpperCase()}`;
+    })
+    .replace(/\sE\s/g, " e ");
+}
+
 export function PreviewPanel({ preview }: PreviewPanelProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
   const groupedLexemes = segregateLexemeChangesByCategory(preview);
+  const cardItems = groupedLexemes.map((category) => {
+    const { key, title, icon, subtitle, items, changedCount, percentage } =
+      category;
+
+    return {
+      key,
+      label: formatPreviewCategoryLabel(title),
+      icon,
+      children: (
+        <CategorySection
+          title={title}
+          subtitle={subtitle}
+          icon={icon}
+          items={items}
+          changedCount={changedCount}
+          percentage={percentage}
+        />
+      ),
+    };
+  });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <aside className="sticky top-0 pl-2 self-start ">
-      <div className="relative rounded-lg flex h-[calc(100vh-10rem)] flex-col gap-6 overflow-hidden">
+    <aside
+      className={`lg:fixed lg:right-0 self-start pl-2 overflow-hidden lg:w-90 transition-[top,height] duration-300 ease-out ${
+        isScrolled
+          ? "lg:top-0 lg:h-screen"
+          : "lg:top-18 lg:h-[calc(100vh-4rem)]"
+      }`}
+    >
+      <div className="relative flex h-full flex-col gap-6 overflow-y-auto rounded-lg py-4 pr-4">
         <ExampleSnippet title="Preview do código" code={preview.snippet} />
 
-        <PerfectScrollbar>
-          <ScrollStack
-            stackPosition="0%"
-            scaleEndPosition="0%"
-            itemDistance={30}
-            itemStackDistance={30}
-            blurAmount={0.5}
-          >
-            {groupedLexemes.map((category) => (
-              <ScrollStackItem key={category.key}>
-                <CategorySection {...category} />
-              </ScrollStackItem>
-            ))}
-          </ScrollStack>
-        </PerfectScrollbar>
+        <CardSnapStack items={cardItems} />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-[#090f1bcc] via-[#090f1b66] to-transparent" />
       </div>

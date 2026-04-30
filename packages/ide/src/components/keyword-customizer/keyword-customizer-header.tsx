@@ -21,9 +21,11 @@ export function KeywordCustomizerHeader({
         <Title as="h4" id="keyword-customizer-title">
           <GradientText>Laboratório Léxico</GradientText>
         </Title>
-        <Subtitle id="keyword-customizer-description" className="ml-1 mt-1">
-          - Manipule o núcleo do interpretador em tempo real
-        </Subtitle>
+        <div className="backdrop-blur-[2px] p-2 bg-slate-400/10 rounded-md ml-2 mt-1">
+          <Subtitle id="keyword-customizer-description">
+            Manipule o núcleo do interpretador em tempo real
+          </Subtitle>
+        </div>
         {/* <div className="pr-2">
           <div className="flex items-end justify-between gap-4">
             <div className="flex items-center gap-2">

@@ -5,6 +5,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PreviewPanel } from "./preview-panel";
+import type { WizardPreview } from "./preview-data";
 
 (
   globalThis as typeof globalThis & {
@@ -23,54 +24,70 @@ vi.mock("./token-preview", () => ({
 describe("PreviewPanel", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+    vi.restoreAllMocks();
   });
 
-  it("groups changed lexemes by semantic category and hides empty groups", () => {
+  function renderPreviewPanel(preview: WizardPreview) {
+    class ResizeObserverStub {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+
+    Object.defineProperty(globalThis, "ResizeObserver", {
+      configurable: true,
+      value: ResizeObserverStub,
+    });
+
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
     act(() => {
-      root.render(
-        <PreviewPanel
-          preview={{
-            languageLabel: "Ruby-like",
-            basedOnLabel: "Ruby-like",
-            languageImageUrl: "",
-            dna: [],
-            baselineSnippet: "",
-            snippet: "",
-            tokenPreview: [],
-            chosenLexemes: [
-              { original: "int", custom: "num" },
-              { original: "print", custom: "puts" },
-              { original: "if", custom: "if_then" },
-              { original: "for", custom: "for_each" },
-              { original: "return", custom: "return_value" },
-              { original: "and", custom: "and_word" },
-              { original: "true", custom: "true_word" },
-              { original: "{", custom: "inicio" },
-              { original: ";", custom: "." },
-            ],
-          }}
-        />,
-      );
+      root.render(<PreviewPanel preview={preview} />);
     });
+
+    return { container, root };
+  }
+
+  const preview: WizardPreview = {
+    languageLabel: "Ruby-like",
+    basedOnLabel: "Ruby-like",
+    languageImageUrl: "",
+    dna: [],
+    baselineSnippet: "",
+    snippet: "",
+    tokenPreview: [],
+    chosenLexemes: [
+      { original: "int", custom: "num" },
+      { original: "print", custom: "puts" },
+      { original: "if", custom: "if_then" },
+      { original: "for", custom: "for_each" },
+      { original: "return", custom: "return_value" },
+      { original: "and", custom: "and_word" },
+      { original: "true", custom: "true_word" },
+      { original: "{", custom: "inicio" },
+      { original: ";", custom: "." },
+    ],
+  };
+
+  it("groups changed lexemes by semantic category", () => {
+    const { container, root } = renderPreviewPanel(preview);
 
     const text = container.textContent ?? "";
     const categoryTitles = Array.from(
       container.querySelectorAll("[data-preview-category]"),
-    ).map((node) => node.textContent?.trim());
+    ).map((node) => node.getAttribute("data-preview-category"));
 
     expect(categoryTitles).toEqual([
-      "Tipos e Declaracoes",
       "Entrada/Saida",
+      "Tipos e Declaracoes",
       "Condicionais",
       "Lacos",
       "Fluxo",
-      "Operadores",
       "Booleanos",
       "Estrutura",
+      "Operadores",
     ]);
 
     expect(text).toContain("int");
@@ -92,6 +109,81 @@ describe("PreviewPanel", () => {
     expect(text).toContain(";");
     expect(text).toContain(".");
     expect(text).not.toContain("Outros");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("focuses a category from the top nav, side nav, and card click", () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollTo", {
+      configurable: true,
+      value: scrollTo,
+    });
+
+    const { container, root } = renderPreviewPanel(preview);
+
+    const cards = () =>
+      Array.from(container.querySelectorAll("[data-card-snap-card]"));
+    const topNavButtons = () =>
+      Array.from(container.querySelectorAll("[data-card-snap-top-nav]"));
+    const sideNavButtons = () =>
+      Array.from(container.querySelectorAll("[data-card-snap-side-nav]"));
+
+    expect(topNavButtons()).toHaveLength(8);
+    expect(sideNavButtons()).toHaveLength(8);
+    expect(cards()[0].getAttribute("data-active")).toBe("true");
+
+    act(() => {
+      topNavButtons()[2].dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(cards()[2].getAttribute("data-active")).toBe("true");
+
+    act(() => {
+      sideNavButtons()[5].dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(cards()[5].getAttribute("data-active")).toBe("true");
+
+    act(() => {
+      cards()[1].dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(cards()[1].getAttribute("data-active")).toBe("true");
+    expect(scrollTo).toHaveBeenCalled();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("keeps wheel events inside the card stack scroll area", () => {
+    const { container, root } = renderPreviewPanel(preview);
+    const parentWheelListener = vi.fn();
+    container.addEventListener("wheel", parentWheelListener);
+    const scrollArea = container.querySelector("[data-card-snap-scroll-area]");
+
+    expect(scrollArea).not.toBeNull();
+
+    act(() => {
+      scrollArea?.dispatchEvent(
+        new WheelEvent("wheel", {
+          bubbles: true,
+          cancelable: true,
+          deltaY: 120,
+        }),
+      );
+    });
+
+    expect(parentWheelListener).not.toHaveBeenCalled();
 
     act(() => {
       root.unmount();
