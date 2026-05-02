@@ -12,7 +12,11 @@ import { Copyright } from "@/components/copyright";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
-import { RegisterForm, registerSchema, type RegisterFormValues } from "@/components/auth/register-form";
+import {
+  RegisterForm,
+  registerSchema,
+  type RegisterFormValues,
+} from "@/components/auth/register-form";
 import { SocialLogin } from "@/components/auth/social-login";
 import {
   useOrganizationsQuery,

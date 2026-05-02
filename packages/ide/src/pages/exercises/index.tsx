@@ -15,7 +15,10 @@ import { ExerciseCard } from "@/views/exercises/components/exercise-card";
 import { ExerciseDetailModal } from "@/views/exercises/components/exercise-detail-modal";
 import { DeleteConfirmModal } from "@/views/exercises/components/delete-confirm-modal";
 import { StatsBar } from "@/views/exercises/components/stats-bar";
-import { LoadingSpinner, EmptyState } from "@/views/exercises/components/shared";
+import {
+  LoadingSpinner,
+  EmptyState,
+} from "@/views/exercises/components/shared";
 import {
   useDeleteExerciseMutation,
   useExercisesQuery,
@@ -53,7 +56,7 @@ export default function ExercisesPage() {
   const filtered = exercises.filter(
     (e: Exercise) =>
       e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.description.toLowerCase().includes(search.toLowerCase())
+      e.description.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (!userId) return null;
@@ -137,10 +140,7 @@ export default function ExercisesPage() {
       </div>
 
       {/* Modals */}
-      <CreateExerciseModal
-        open={showCreate}
-        onOpenChange={setShowCreate}
-      />
+      <CreateExerciseModal open={showCreate} onOpenChange={setShowCreate} />
 
       <ExerciseDetailModal
         open={!!viewExercise}

@@ -117,13 +117,14 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
 
   return (
     <aside
-      className={`lg:fixed lg:right-0 self-start pl-2 overflow-hidden lg:w-90 transition-[top,height] duration-300 ease-out ${
+      data-preview-panel
+      className={`max-lg:h-[calc(100dvh-1rem)] lg:fixed lg:right-0 self-start pl-2 overflow-hidden lg:w-90 transition-[top,height] duration-300 ease-out ${
         isScrolled
           ? "lg:top-0 lg:h-screen"
           : "lg:top-18 lg:h-[calc(100vh-4rem)]"
       }`}
     >
-      <div className="relative flex h-full flex-col gap-6 overflow-y-auto rounded-lg py-4 pr-4">
+      <div className="relative flex h-full flex-col gap-6 overflow-hidden rounded-lg py-4 pr-4 lg:overflow-y-auto">
         <ExampleSnippet title="Preview do código" code={preview.snippet} />
 
         <CardSnapStack items={cardItems} />

@@ -189,4 +189,16 @@ describe("PreviewPanel", () => {
       root.unmount();
     });
   });
+
+  it("bounds the mobile preview panel so the card stack can scroll internally", () => {
+    const { container, root } = renderPreviewPanel(preview);
+    const panel = container.querySelector("[data-preview-panel]");
+
+    expect(panel).not.toBeNull();
+    expect(panel?.className).toContain("max-lg:h-[calc(100dvh-1rem)]");
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

@@ -19,6 +19,13 @@
       "env": {
         "PATH": "/home/lamoia/.local/share/mise/installs/node/24.13.1/bin:${env:PATH}"
       }
+    },
+    "stitch": {
+      "type": "http",
+      "url": "https://stitch.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "${env:STITCH_API_KEY}"
+      }
     }
   },
   "inputs": []

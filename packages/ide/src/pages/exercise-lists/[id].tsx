@@ -55,25 +55,24 @@ export default function ExerciseListDetailPage() {
           <main className="max-w-4xl mx-auto px-6 py-10 w-full">
             {/* breadcrumb */}
             <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-              <Link href="/exercise-lists" className="hover:text-slate-300 transition-colors flex items-center gap-1">
+              <Link
+                href="/exercise-lists"
+                className="hover:text-slate-300 transition-colors flex items-center gap-1"
+              >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Listas
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
-              <span className="text-slate-300 font-medium">{list?.title ?? "..."}</span>
+              <span className="text-slate-300 font-medium">
+                {list?.title ?? "..."}
+              </span>
             </nav>
 
             {list &&
               (isTeacher ? (
-                <TeacherDetailView
-                  list={list}
-                  classes={classes}
-                />
+                <TeacherDetailView list={list} classes={classes} />
               ) : (
-                <StudentDetailView
-                  list={list}
-                  classId={classId ?? ""}
-                />
+                <StudentDetailView list={list} classId={classId ?? ""} />
               ))}
           </main>
         </div>

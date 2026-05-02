@@ -12,7 +12,11 @@ import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { useToast } from "@/contexts/ToastContext";
-import { LoginForm, loginSchema, type LoginFormValues } from "@/components/auth/login-form";
+import {
+  LoginForm,
+  loginSchema,
+  type LoginFormValues,
+} from "@/components/auth/login-form";
 import { SocialLogin } from "@/components/auth/social-login";
 import { useLoginMutation } from "@/hooks/use-api-queries";
 

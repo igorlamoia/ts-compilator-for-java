@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { FileCodeIcon, LanguagesIcon, MonitorIcon } from "lucide-react";
+import { FileCodeIcon, MonitorIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Dock, DockIcon } from "@/components/ui/dock";
-import { SUPPORTED_LOCALES, t } from "@/i18n";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -53,9 +51,6 @@ const DATA = {
 };
 
 export function Footer() {
-  const router = useRouter();
-  const { locale, pathname, query } = router;
-
   return (
     <>
       <footer className="pointer-events-none fixed bottom-3 left-0 right-0 z-100 isolate flex justify-center">
@@ -88,40 +83,6 @@ export function Footer() {
               </DockIcon>
             ))}
             <Separator orientation="vertical" className="h-full" />
-            <DockIcon>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    aria-label={t(locale, "footer.language")}
-                    className={cn(
-                      buttonVariants({ variant: "ghost", size: "icon" }),
-                      "size-12 rounded-full cursor-default",
-                    )}
-                  >
-                    <LanguagesIcon className="size-4" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="flex gap-1">
-                    {SUPPORTED_LOCALES.map((targetLocale) => (
-                      <Link
-                        key={targetLocale.code}
-                        href={{ pathname, query }}
-                        locale={targetLocale.code}
-                        className={cn(
-                          "rounded px-1.5 py-0.5 text-xs border border-transparent",
-                          targetLocale.code === locale
-                            ? "bg-gray-200 text-neutral-900 dark:bg-neutral-700/50 dark:text-white"
-                            : "dark:hover:bg-neutral-700/50 text-neutral-700 dark:text-neutral-300 hover:bg-gray-200",
-                        )}
-                      >
-                        {targetLocale.flag} {targetLocale.code}
-                      </Link>
-                    ))}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </DockIcon>
           </Dock>
         </TooltipProvider>
       </footer>

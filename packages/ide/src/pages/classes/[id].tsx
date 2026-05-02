@@ -88,27 +88,53 @@ export default function ClassDetail() {
                   href="/dashboard"
                   className="group inline-flex items-center gap-2 text-slate-500 hover:text-[#0dccf2] transition-colors mb-4 text-sm"
                 >
-                  <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                  <svg
+                    className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.5"
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                   Voltar ao Painel
                 </Link>
                 <div className="flex items-center gap-2 text-[#0dccf2] mb-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
-                  <span className="text-xs font-bold uppercase tracking-wider">Dashboard da Turma</span>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+                    />
+                  </svg>
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    Dashboard da Turma
+                  </span>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Recursos & Estudantes</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+                  Recursos & Estudantes
+                </h1>
               </div>
               <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
                 <button
-                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'lists' ? 'bg-[#0dccf2]/20 text-[#0dccf2] shadow-lg shadow-[#0dccf2]/20' : 'text-slate-400 hover:text-slate-200'}`}
-                  onClick={() => setActiveTab('lists')}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === "lists" ? "bg-[#0dccf2]/20 text-[#0dccf2] shadow-lg shadow-[#0dccf2]/20" : "text-slate-400 hover:text-slate-200"}`}
+                  onClick={() => setActiveTab("lists")}
                 >
                   Listas
                 </button>
                 <button
-                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'members' ? 'bg-[#0dccf2]/20 text-[#0dccf2] shadow-lg shadow-[#0dccf2]/20' : 'text-slate-400 hover:text-slate-200'}`}
-                  onClick={() => setActiveTab('members')}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === "members" ? "bg-[#0dccf2]/20 text-[#0dccf2] shadow-lg shadow-[#0dccf2]/20" : "text-slate-400 hover:text-slate-200"}`}
+                  onClick={() => setActiveTab("members")}
                 >
                   Todos da Turma
                 </button>
@@ -117,7 +143,7 @@ export default function ClassDetail() {
 
             {/* Tab content */}
             <div className="py-6">
-              {activeTab === 'lists' ? (
+              {activeTab === "lists" ? (
                 <ListsTab
                   exerciseLists={exerciseLists}
                   loadingLists={exerciseListsQuery.isPending}

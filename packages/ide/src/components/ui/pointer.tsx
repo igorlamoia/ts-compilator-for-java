@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AnimatePresence,
   HTMLMotionProps,
@@ -383,13 +383,10 @@ export function Pointer({
   const [resolvedVariant, setResolvedVariant] = useState<
     Exclude<PointerVariant, "auto">
   >(variant === "auto" ? "default" : variant);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!window.matchMedia("(pointer: fine)").matches) return;
-
-    const parentElement = containerRef.current?.parentElement ?? null;
 
     const root = document.documentElement;
 
@@ -421,26 +418,37 @@ export function Pointer({
       setIsActive(false);
     };
 
-    if (parentElement) {
-      root.classList.add("custom-pointer-active");
-      parentElement.addEventListener("mousemove", handleMouseMove);
-      parentElement.addEventListener("mouseenter", handleMouseEnter);
-      parentElement.addEventListener("mouseleave", handleMouseLeave);
-    }
+    const handleMouseOut = (e: MouseEvent) => {
+      if (e.relatedTarget === null) {
+        setIsActive(false);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        setIsActive(false);
+      }
+    };
+
+    root.classList.add("custom-pointer-active");
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseenter", handleMouseEnter);
+    document.addEventListener("mouseout", handleMouseOut);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleMouseLeave);
 
     return () => {
-      if (parentElement) {
-        root.classList.remove("custom-pointer-active");
-        parentElement.removeEventListener("mousemove", handleMouseMove);
-        parentElement.removeEventListener("mouseenter", handleMouseEnter);
-        parentElement.removeEventListener("mouseleave", handleMouseLeave);
-      }
+      root.classList.remove("custom-pointer-active");
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseenter", handleMouseEnter);
+      document.removeEventListener("mouseout", handleMouseOut);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleMouseLeave);
     };
   }, [variant, x, y]);
 
   return (
     <>
-      <div ref={containerRef} />
       <AnimatePresence>
         {isActive && (
           <motion.div

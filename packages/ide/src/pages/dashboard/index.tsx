@@ -22,7 +22,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (classesQuery.error) {
-      setError(getApiErrorMessage(classesQuery.error, "Erro ao carregar turmas."));
+      setError(
+        getApiErrorMessage(classesQuery.error, "Erro ao carregar turmas."),
+      );
     }
   }, [classesQuery.error]);
 
@@ -44,19 +46,25 @@ export default function Dashboard() {
           <main className="max-w-7xl mx-auto px-6 py-12 w-full">
             {/* Alerts */}
             {error && (
-              <Alert variant="error" onClose={() => setError("")} className="mb-8">
+              <Alert
+                variant="error"
+                onClose={() => setError("")}
+                className="mb-8"
+              >
                 {error}
               </Alert>
             )}
             {success && (
-              <Alert variant="success" onClose={() => setSuccess("")} className="mb-8">
+              <Alert
+                variant="success"
+                onClose={() => setSuccess("")}
+                className="mb-8"
+              >
                 {success}
               </Alert>
             )}
 
-            <DashboardHeader
-              onCreateClass={() => setShowCreateClass(true)}
-            />
+            <DashboardHeader onCreateClass={() => setShowCreateClass(true)} />
 
             <ClassesGrid
               classes={classes}
@@ -79,7 +87,6 @@ export default function Dashboard() {
             onSuccess={handleClassJoined}
             onError={setError}
           />
-
         </div>
       </div>
     </div>

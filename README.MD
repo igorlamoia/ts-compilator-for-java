@@ -50,3 +50,23 @@ The main code is in the file `packages/compiler/src/index.ts`
 
 Feel free to contribute to the project, we are open to suggestions and improvements.
 Even more so if it is for new test cases
+
+Usar:
+https://reactbits.dev/animations/laser-flow
+https://reactbits.dev/animations/splash-cursor
+https://reactbits.dev/backgrounds/galaxy
+
+apresentar ideias ou linguagens em algum lugar sugestivo:
+https://reactbits.dev/components/card-swap
+
+Agradecimentos a libs/framewoks:
+https://reactbits.dev/animations/logo-loop
+Assim fica ainda mais legal com a temática:
+https://reactbits.dev/animations/orbit-images
+
+card ou Botão:
+https://reactbits.dev/animations/electric-border
+
+Se apresentar:
+https://reactbits.dev/components/chroma-grid
+https://reactbits.dev/components/profile-card (efeito legal)
