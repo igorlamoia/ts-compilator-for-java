@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -65,13 +66,17 @@ export function KeywordReferenceRow<TKey extends string>({
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-500 md:sr-only">
           Definição semântica
         </span>
-        <Textarea
-          value={item.description}
-          onChange={(event) => onDescriptionChange(item.id, event.target.value)}
-          aria-label={`Definição semântica para ${editLabel}`}
-          rows={1}
-          className="min-h-11 resize-y border-white/10 bg-transparent py-2.5 text-sm font-medium leading-6 text-slate-400 placeholder:text-slate-600 focus:bg-transparent md:resize-none"
-        />
+        <PerfectScrollbar>
+          <Textarea
+            value={item.description}
+            onChange={(event) =>
+              onDescriptionChange(item.id, event.target.value)
+            }
+            aria-label={`Definição semântica para ${editLabel}`}
+            rows={1}
+            className="min-h-11 resize-y border-white/10 bg-transparent py-2.5 text-sm font-medium leading-6 text-slate-400 placeholder:text-slate-600 focus:bg-transparent md:resize-none"
+          />
+        </PerfectScrollbar>
       </label>
     </div>
   );

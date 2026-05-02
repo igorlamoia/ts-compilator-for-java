@@ -37,20 +37,32 @@ const SELECTED_CARD_SHADOWS: Record<OptionCardIconColor, string> = {
     "0 0 0 1px rgba(148, 163, 184, 0.28), 0 0 32px -12px rgba(100, 116, 139, 0.42), 0 22px 48px -30px rgba(2, 6, 23, 0.92)",
 };
 
-type OptionCardIconProps = {
+export type OptionCardIconProps = {
   icon?: ReactNode;
   color?: OptionCardIconColor;
+  size: "sm" | "md" | "lg";
 };
 
-export function OptionCardIcon({ icon, color = "cyan" }: OptionCardIconProps) {
+export function OptionCardIcon({
+  icon,
+  color = "cyan",
+  size = "lg",
+}: OptionCardIconProps) {
+  const sizes = {
+    sm: "h-6 w-6 p-1",
+    md: "h-8 w-8 p-1",
+    lg: "h-10 w-10 p-1",
+  };
   return (
     <span
       className={[
-        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ring-1",
+        "flex " +
+          sizes[size] +
+          " shrink-0 items-center justify-center rounded-md ring-1",
         ICON_COLOR_CLASSES[color],
       ].join(" ")}
     >
-      {icon ?? <span className="h-2 w-2 rounded-lg bg-current" />}
+      {icon ?? <span className="h-2 w-2 rounded-md bg-current" />}
     </span>
   );
 }

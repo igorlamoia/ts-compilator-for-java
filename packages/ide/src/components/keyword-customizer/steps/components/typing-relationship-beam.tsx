@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { MoveRight } from "lucide-react";
 import { ChangedChip } from "../../changed-chip";
 
@@ -50,6 +51,7 @@ export function TypingRelationshipBeam({
   typingMode,
   labels,
 }: TypingRelationshipBeamProps) {
+  const isDesktop = useBreakpoint("lg");
   const beamContainerRef = useRef<HTMLDivElement>(null);
   const untypedRef = useRef<HTMLDivElement>(null);
   const stringRef = useRef<HTMLDivElement>(null);
@@ -64,8 +66,14 @@ export function TypingRelationshipBeam({
       ref={beamContainerRef}
       className="relative overflow-hidden rounded-lg border border-slate-200/80 bg-slate-50/60 px-4 py-5 dark:border-slate-800/80 dark:bg-slate-900/50"
     >
-      <div className="relative z-10 flex min-h-52.5 items-center justify-between gap-8">
-        <div className="flex shrink-0 items-center">
+      <div
+        className={`relative z-10 flex min-h-52.5 gap-8 ${
+          isDesktop
+            ? "lg:items-center justify-between"
+            : "flex-col items-center justify-center"
+        }`}
+      >
+        <div className={isDesktop ? "flex shrink-0 items-center" : "flex"}>
           <TypingBeamChip
             chipRef={untypedRef}
             original="variavel"
@@ -74,7 +82,11 @@ export function TypingRelationshipBeam({
           />
         </div>
 
-        <div className="flex flex-col  items-end gap-4">
+        <div
+          className={`flex flex-wrap justify-center gap-3 sm:gap-4 lg:flex-col ${
+            isDesktop ? "items-end" : "items-center"
+          }`}
+        >
           <TypingBeamChip
             chipRef={stringRef}
             original="string"
@@ -106,8 +118,8 @@ export function TypingRelationshipBeam({
         containerRef={beamContainerRef}
         fromRef={untypedRef}
         toRef={stringRef}
-        fromAnchor="right"
-        toAnchor="left"
+        fromAnchor={isDesktop ? "right" : "bottom"}
+        toAnchor={isDesktop ? "left" : "top"}
         reverse={!isTyped}
         pathOpacity={0.22}
         duration={5}
@@ -116,8 +128,8 @@ export function TypingRelationshipBeam({
         containerRef={beamContainerRef}
         fromRef={untypedRef}
         toRef={floatRef}
-        fromAnchor="right"
-        toAnchor="left"
+        fromAnchor={isDesktop ? "right" : "bottom"}
+        toAnchor={isDesktop ? "left" : "top"}
         reverse={!isTyped}
         pathOpacity={0.22}
         duration={5}
@@ -127,8 +139,8 @@ export function TypingRelationshipBeam({
         containerRef={beamContainerRef}
         fromRef={untypedRef}
         toRef={intRef}
-        fromAnchor="right"
-        toAnchor="left"
+        fromAnchor={isDesktop ? "right" : "bottom"}
+        toAnchor={isDesktop ? "left" : "top"}
         reverse={!isTyped}
         pathOpacity={0.22}
         duration={5}
@@ -138,8 +150,8 @@ export function TypingRelationshipBeam({
         containerRef={beamContainerRef}
         fromRef={untypedRef}
         toRef={voidRef}
-        fromAnchor="right"
-        toAnchor="left"
+        fromAnchor={isDesktop ? "right" : "bottom"}
+        toAnchor={isDesktop ? "left" : "top"}
         reverse={!isTyped}
         pathOpacity={0.22}
         duration={5}

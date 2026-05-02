@@ -45,7 +45,7 @@ describe("preview-builder variable snippets", () => {
     const draft = createDraft();
 
     expect(typedVariableSnippet(draft)).toBe(
-      'texto nome = "Ana"fim\nnumero idade = 25fim\ndecimal altura = 1.75fim\nlogico estudante = truefim',
+      'texto nome = "Kiki"fim\nnumero idade = 25fim\ndecimal altura = 1.75fim\nlogico estudante = truefim',
     );
   });
 
@@ -54,7 +54,7 @@ describe("preview-builder variable snippets", () => {
     draft.modes.typing = "untyped";
 
     expect(untypedVariableSnippet(draft)).toBe(
-      'var nome = "Ana"fim\nvar idade = 25fim\nvar altura = 1.75fim\nvar estudante = truefim',
+      'var nome = "Kiki"fim\nvar idade = 25fim\nvar altura = 1.75fim\nvar estudante = truefim',
     );
   });
 });

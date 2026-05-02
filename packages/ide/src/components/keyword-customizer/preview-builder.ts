@@ -24,7 +24,7 @@ export function untypedVariableSnippet(
 ): string {
   const lineEnding = buildLineEnding(draft);
   const variable = getKeyword(draft, "variavel");
-  return `${variable} nome = "Ana"${lineEnding}\n${variable} idade = 25${lineEnding}\n${variable} altura = 1.75${lineEnding}\n${variable} estudante = true${lineEnding}`;
+  return `${variable} nome = "Kiki"${lineEnding}\n${variable} idade = 25${lineEnding}\n${variable} altura = 1.75${lineEnding}\n${variable} estudante = true${lineEnding}`;
 }
 export function typedVariableSnippet(
   draft: StoredKeywordCustomization,
@@ -34,7 +34,7 @@ export function typedVariableSnippet(
   const intType = getKeyword(draft, "int");
   const floatType = getKeyword(draft, "float");
   const boolType = getKeyword(draft, "bool");
-  return `${stringType} nome = "Ana"${lineEnding}\n${intType} idade = 25${lineEnding}\n${floatType} altura = 1.75${lineEnding}\n${boolType} estudante = true${lineEnding}`;
+  return `${stringType} nome = "Kiki"${lineEnding}\n${intType} idade = 25${lineEnding}\n${floatType} altura = 1.75${lineEnding}\n${boolType} estudante = true${lineEnding}`;
 }
 export function buildVariableSnippet(
   draft: StoredKeywordCustomization,

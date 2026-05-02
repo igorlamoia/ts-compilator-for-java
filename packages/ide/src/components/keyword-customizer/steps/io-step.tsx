@@ -2,6 +2,7 @@ import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { HyperText } from "@/components/ui/hyper-text";
+import { Terminal } from "lucide-react";
 
 export type VariableStepKeyword =
   | "print"
@@ -78,31 +79,38 @@ export function IOStep({ values, actions }: VariablesStepProps) {
       </p>
       <div className="grid gap-4 lg:grid-cols-2">
         <DocumentedField
-          label="Palavra de saída"
-          value={values.printKeyword}
-          description={values.printDescription}
-          onValueChange={(value) => actions.syncKeyword("print", value)}
-          onDescriptionChange={(value) =>
-            actions.syncKeywordDescription("print", value)
-          }
-        />
-
-        <DocumentedField
-          label="Palavra de leitura"
+          label="Capturar entrada"
           value={values.scanKeyword}
           description={values.scanDescription}
           onValueChange={(value) => actions.syncKeyword("scan", value)}
           onDescriptionChange={(value) =>
             actions.syncKeywordDescription("scan", value)
           }
+          icon={{
+            icon: <Terminal />,
+            color: "emerald",
+          }}
+        />
+        <DocumentedField
+          label="Exibir saída"
+          value={values.printKeyword}
+          description={values.printDescription}
+          onValueChange={(value) => actions.syncKeyword("print", value)}
+          onDescriptionChange={(value) =>
+            actions.syncKeywordDescription("print", value)
+          }
+          icon={{
+            icon: <Terminal />,
+            color: "rose",
+          }}
         />
       </div>
 
       <ExampleSnippet
         title="Exemplo ao vivo"
         code={values.snippet ?? `${values.printKeyword}("Ola mundo")`}
-        input={["Ana"]}
-        output={["Ola mundo", "Me chamo: Ana"]}
+        input={["Kiki"]}
+        output={["Ola mundo", "Me chamo: Kiki"]}
       />
     </section>
   );

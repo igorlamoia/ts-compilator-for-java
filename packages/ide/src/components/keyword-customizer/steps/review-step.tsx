@@ -5,6 +5,8 @@ import { TokenPreview } from "../token-preview";
 import Image from "next/image";
 import LaserFlow from "../../laser-flow";
 import { Overlay } from "@/components/effect/overlay";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
+import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 
 export type ReviewStepProps = {
   values: {
@@ -21,6 +23,7 @@ export type ReviewStepProps = {
 };
 
 export function ReviewStep({ values, actions }: ReviewStepProps) {
+  const isLarge = useBreakpoint("xl");
   return (
     <section>
       <div className="relative overflow-hidden space-y-6 ">
@@ -28,7 +31,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
           <LaserFlow
             color="#22d3ee"
             horizontalBeamOffset={0.24}
-            verticalBeamOffset={-0.16}
+            verticalBeamOffset={isLarge ? -0.16 : -0.3}
             horizontalSizing={0.6}
             verticalSizing={2}
             wispDensity={8}
@@ -43,7 +46,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
             falloffStart={1.2}
           />
         </div>
-        <div className="h-170">
+        <div className="xl:h-170 h-300">
           <header className="space-y-2">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
               Etapa 6
@@ -55,7 +58,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
               Confira o resumo final antes de aplicar a configuração.
             </p>
           </header>
-          <div className="relative z-10 space-y-6">
+          <div className="relative z-10 space-y-6 mt-3">
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="rounded-lg border border-slate-200/80 bg-white/85 p-4 backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/70">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
@@ -104,32 +107,11 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
                 </div>
               </div>
             </div>
-
-            <div className="rounded-lg border border-slate-200/80 bg-white/85 p-4 backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/70">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Vocabulário atual da linguagem
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {values.editedMappings.length ? (
-                  values.editedMappings.map((mapping) => (
-                    <span
-                      key={mapping.original}
-                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
-                    >
-                      {mapping.original} → {mapping.custom}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
-                    Nenhum lexema foi alterado.
-                  </span>
-                )}
-              </div>
-            </div>
+            <CurrentVocabulary values={values} />
           </div>
         </div>
       </div>
-      <div className="-mt-62 relative z-10">
+      <div className="-mt-65 xl:-mt-62 relative z-10">
         <BoxResult values={values} actions={actions} />
         <Overlay side="bottom" />
         <Overlay side="left" size={20} />
@@ -140,12 +122,44 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
   );
 }
 
+function CurrentVocabulary({ values }: Pick<ReviewStepProps, "values">) {
+  return (
+    <div className="rounded-lg border border-slate-200/80 bg-white/85 p-4 backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/70">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+        Vocabulário atual da linguagem
+      </p>
+      <PerfectScrollbar>
+        <div className="mt-3 flex flex-wrap gap-2 max-h-80">
+          {values.editedMappings.length ? (
+            values.editedMappings.map((mapping) => (
+              <span
+                key={mapping.original}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
+              >
+                {mapping.original} → {mapping.custom}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm text-slate-500 dark:text-slate-400">
+              Nenhum lexema foi alterado.
+            </span>
+          )}
+        </div>
+      </PerfectScrollbar>
+    </div>
+  );
+}
+
 function BoxResult({ values, actions }: ReviewStepProps) {
   const stepLabels = new Map(
     WIZARD_STEPS.map((step) => [step.id, step.title] as const),
   );
   return (
-    <div className="pb-15 space-y-6 rounded-t-xl border-t-2 border-x-2 border-slate-200/80 bg-white/90 p-4 backdrop-blur dark:border-cyan-500 dark:bg-slate-900/70">
+    <div
+      className="pb-15 space-y-6 rounded-t-xl border-t-2 border-x-2 border-slate-200/80 bg-white/90 p-4 backdrop-blur dark:border-cyan-500 dark:bg-slate-900/70
+      shadow-[10px_-20px_50px_-15px_rgba(34,211,238,0.3)]
+    "
+    >
       <PreviewCodeComparison
         title="Comparação do código final"
         beforeCode={values.preview.baselineSnippet}

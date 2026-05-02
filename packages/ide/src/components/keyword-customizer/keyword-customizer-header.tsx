@@ -19,11 +19,11 @@ export function KeywordCustomizerHeader({
     <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex items-center -mt-4">
         <Title as="h4" id="keyword-customizer-title">
-          <GradientText>Laboratório Léxico</GradientText>
+          <GradientText>Explorador Universal</GradientText>
         </Title>
         <div className="backdrop-blur-[2px] p-2 bg-slate-400/10 rounded-md ml-2 mt-1">
           <Subtitle id="keyword-customizer-description">
-            Manipule o núcleo do interpretador em tempo real
+            Torne a experiência de codar tão única quanto você.
           </Subtitle>
         </div>
         {/* <div className="pr-2">

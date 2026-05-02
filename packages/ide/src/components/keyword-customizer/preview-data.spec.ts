@@ -22,7 +22,7 @@ describe("buildWizardPreview", () => {
     expect(preview.languageLabel).toBe("Didatica em Portugues");
     expect(preview.basedOnLabel).toBe("Didatica em Portugues");
     expect(preview.dna).toContain("blocos com delimitadores");
-    expect(preview.snippet).toContain('string nome = "Ana"');
+    expect(preview.snippet).toContain('string nome = "Kiki"');
     expect(preview.snippet).toContain("escreva(nome)");
     expect(preview.tokenPreview.map((token) => token.lexeme)).toContain(
       "escreva",
