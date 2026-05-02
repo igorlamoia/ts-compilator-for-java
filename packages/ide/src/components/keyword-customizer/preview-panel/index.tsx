@@ -5,6 +5,7 @@ import { ExampleSnippet } from "../example-snippet";
 import { CardSnapStack } from "./card-snap-stack";
 import { CategorySection } from "./category-section";
 import { PREVIEW_CATEGORIES, PreviewCategory } from "./categories-list";
+import { Overlay } from "@/components/effect/overlay";
 
 export type PreviewPanelProps = {
   preview: WizardPreview;
@@ -128,8 +129,7 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
         <ExampleSnippet title="Preview do código" code={preview.snippet} />
 
         <CardSnapStack items={cardItems} />
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-[#090f1bcc] via-[#090f1b66] to-transparent" />
+        <Overlay side="bottom" />
       </div>
     </aside>
   );
