@@ -5,11 +5,46 @@ import {
   type KeywordReference,
 } from "./components/keyword-reference-table";
 import { TypingRelationshipBeam } from "./components/typing-relationship-beam";
-import type { VariablesStepProps } from "./io-step";
+import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
 
-type TypeKeywordField =
-  VariablesStepProps["values"]["variableKeywords"][number];
+export type TypeStepKeyword =
+  | "int"
+  | "float"
+  | "bool"
+  | "string"
+  | "variavel"
+  | "void"
+  | "funcao";
+
+export type TypeStepProps = {
+  values: {
+    snippet?: string;
+    typedSnippet: string;
+    untypedSnippet: string;
+    typingMode: StoredKeywordCustomization["modes"]["typing"];
+    printKeyword: string;
+    typingBeamKeywords: {
+      variavel: string;
+      string: string;
+      float: string;
+      int: string;
+      bool: string;
+    };
+    variableKeywords: Array<{
+      key: TypeStepKeyword;
+      value: string;
+      description: string;
+    }>;
+  };
+  actions: {
+    syncTypingMode: (mode: "typed" | "untyped") => void;
+    syncKeyword: (original: TypeStepKeyword, value: string) => void;
+    syncKeywordDescription: (original: TypeStepKeyword, value: string) => void;
+  };
+};
+
+type TypeKeywordField = TypeStepProps["values"]["variableKeywords"][number];
 
 const TYPE_REFERENCE_META: Partial<Record<string, KeywordReference>> = {
   variavel: {
@@ -58,7 +93,7 @@ function getTypeReference(fieldKey: TypeKeywordField["key"]): KeywordReference {
   );
 }
 
-export function TypeStep({ values, actions }: VariablesStepProps) {
+export function TypeStep({ values, actions }: TypeStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">

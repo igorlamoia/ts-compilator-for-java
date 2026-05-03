@@ -1,61 +1,62 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultCustomizationState } from "@/contexts/keyword/KeywordContext";
 import {
+  buildIOStepProps,
   buildRulesStepProps,
   buildStructureStepProps,
-  buildVariablesStepProps,
+  buildTypeStepProps,
 } from "./keyword-customizer-step-props";
 import type { KeywordCustomizerContextValue } from "./keyword-customizer-types";
 
 function buildContext(
   override: Partial<KeywordCustomizerContextValue> = {},
 ): KeywordCustomizerContextValue {
-    const draft = getDefaultCustomizationState();
+  const draft = getDefaultCustomizationState();
 
-    return {
-      draftCustomization: draft,
-      preview: { snippet: "live-preview" },
-      errors: {
-        delimiterError: null,
-        statementTerminatorError: null,
-        booleanLiteralError: null,
-        operatorError: null,
-      },
-      visitedStepIds: [],
-      selectedPresetId: "free",
-      languageName: "",
-      languageImageUrl: "",
-      languageImageQuery: "",
-      languageImageResults: [],
-      isSearchingLanguageImages: false,
-      languageImageSearchError: null,
-      hasChanges: false,
-      activeStep: "structure",
-      activeStepIndex: 0,
-      visibleSteps: [],
-      form: {} as never,
-      actions: {
-        goToWizardStep: () => undefined,
-        goToNextWizardStep: () => undefined,
-        goToPreviousWizardStep: () => undefined,
-        applyPreset: () => undefined,
-        setLanguageName: () => undefined,
-        setImageSearchQuery: () => undefined,
-        searchLanguageImages: async () => undefined,
-        selectLanguageImage: () => undefined,
-        resetDraft: () => undefined,
-        save: () => undefined,
-        exit: () => undefined,
-        syncKeyword: () => undefined,
-        syncDocumentation: () => undefined,
-        syncMode: () => undefined,
-        syncDelimiter: () => undefined,
-        syncBooleanLiteral: () => undefined,
-        syncOperatorWord: () => undefined,
-        syncStatementTerminator: () => undefined,
-      },
-      ...override,
-    } as KeywordCustomizerContextValue;
+  return {
+    draftCustomization: draft,
+    preview: { snippet: "live-preview" },
+    errors: {
+      delimiterError: null,
+      statementTerminatorError: null,
+      booleanLiteralError: null,
+      operatorError: null,
+    },
+    visitedStepIds: [],
+    selectedPresetId: "free",
+    languageName: "",
+    languageImageUrl: "",
+    languageImageQuery: "",
+    languageImageResults: [],
+    isSearchingLanguageImages: false,
+    languageImageSearchError: null,
+    hasChanges: false,
+    activeStep: "structure",
+    activeStepIndex: 0,
+    visibleSteps: [],
+    form: {} as never,
+    actions: {
+      goToWizardStep: () => undefined,
+      goToNextWizardStep: () => undefined,
+      goToPreviousWizardStep: () => undefined,
+      applyPreset: () => undefined,
+      setLanguageName: () => undefined,
+      setImageSearchQuery: () => undefined,
+      searchLanguageImages: async () => undefined,
+      selectLanguageImage: () => undefined,
+      resetDraft: () => undefined,
+      save: () => undefined,
+      exit: () => undefined,
+      syncKeyword: () => undefined,
+      syncDocumentation: () => undefined,
+      syncMode: () => undefined,
+      syncDelimiter: () => undefined,
+      syncBooleanLiteral: () => undefined,
+      syncOperatorWord: () => undefined,
+      syncStatementTerminator: () => undefined,
+    },
+    ...override,
+  } as KeywordCustomizerContextValue;
 }
 
 describe("buildStructureStepProps", () => {
@@ -91,9 +92,9 @@ describe("buildStructureStepProps", () => {
   });
 });
 
-describe("buildVariablesStepProps", () => {
+describe("buildTypeStepProps", () => {
   it("fills keyword reference table descriptions with defaults", () => {
-    const props = buildVariablesStepProps(buildContext());
+    const props = buildTypeStepProps(buildContext());
 
     expect(props.values.variableKeywords).toEqual(
       expect.arrayContaining([
@@ -108,9 +109,11 @@ describe("buildVariablesStepProps", () => {
       ]),
     );
   });
+});
 
+describe("buildIOStepProps", () => {
   it("fills documented IO fields with default semantic definitions", () => {
-    const props = buildVariablesStepProps(buildContext());
+    const props = buildIOStepProps(buildContext());
 
     expect(props.values.printDescription).toBe(
       "Exibe valores na saída da linguagem.",
@@ -128,9 +131,7 @@ describe("buildVariablesStepProps", () => {
       },
     };
 
-    const props = buildVariablesStepProps(
-      buildContext({ draftCustomization: draft }),
-    );
+    const props = buildIOStepProps(buildContext({ draftCustomization: draft }));
 
     expect(props.values.printDescription).toBe(
       "Mostra texto no console customizado.",

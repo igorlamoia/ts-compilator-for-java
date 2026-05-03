@@ -1,6 +1,7 @@
 import React, {
   ReactNode,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -91,13 +92,21 @@ function renderItemIcon(item: CardSnapStackItem) {
 type CardSnapStackProps = {
   items: CardSnapStackItem[];
   className?: string;
+  focusKey?: string;
+  focusRequestId?: number;
 };
 
-export function CardSnapStack({ items, className }: CardSnapStackProps) {
+export function CardSnapStack({
+  items,
+  className,
+  focusKey,
+  focusRequestId,
+}: CardSnapStackProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
   const lastWheelAtRef = useRef(0);
+  const itemKeySignature = items.map((item) => item.key).join("\0");
 
   const focusCard = useCallback((index: number) => {
     if (items.length === 0) return;
@@ -133,6 +142,15 @@ export function CardSnapStack({ items, className }: CardSnapStackProps) {
     },
     [activeIndex, focusCard, items.length],
   );
+
+  useEffect(() => {
+    if (!focusKey || focusRequestId === undefined) return;
+
+    const targetIndex = itemKeySignature.split("\0").indexOf(focusKey);
+    if (targetIndex === -1) return;
+
+    focusCard(targetIndex);
+  }, [focusCard, focusKey, focusRequestId, itemKeySignature]);
 
   const handleCardKeyDown = (
     event: React.KeyboardEvent<HTMLDivElement>,

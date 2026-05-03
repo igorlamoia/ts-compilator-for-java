@@ -47,7 +47,13 @@ describe("PreviewPanel", () => {
       root.render(<PreviewPanel preview={preview} />);
     });
 
-    return { container, root };
+    const rerender = (nextPreview: WizardPreview) => {
+      act(() => {
+        root.render(<PreviewPanel preview={nextPreview} />);
+      });
+    };
+
+    return { container, rerender, root };
   }
 
   const preview: WizardPreview = {
@@ -184,6 +190,57 @@ describe("PreviewPanel", () => {
     });
 
     expect(parentWheelListener).not.toHaveBeenCalled();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("focuses the card for the category changed by an edited input", () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollTo", {
+      configurable: true,
+      value: scrollTo,
+    });
+
+    const initialPreview: WizardPreview = {
+      ...preview,
+      chosenLexemes: [{ original: "print", custom: "puts" }],
+    };
+    const { container, rerender, root } = renderPreviewPanel(initialPreview);
+
+    const cards = () =>
+      Array.from(container.querySelectorAll("[data-card-snap-card]"));
+    const topNavButtons = () =>
+      Array.from(container.querySelectorAll("[data-card-snap-top-nav]"));
+
+    act(() => {
+      topNavButtons()[7].dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(cards()[7].getAttribute("data-active")).toBe("true");
+
+    rerender({
+      ...initialPreview,
+      chosenLexemes: [
+        { original: "print", custom: "puts" },
+        { original: "return", custom: "retorna" },
+      ],
+    });
+
+    expect(cards()[4].getAttribute("data-preview-category")).toBe("Fluxo");
+    expect(cards()[4].getAttribute("data-active")).toBe("true");
+    expect(scrollTo).toHaveBeenCalled();
+
+    act(() => {
+      topNavButtons()[7].dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(cards()[7].getAttribute("data-active")).toBe("true");
 
     act(() => {
       root.unmount();

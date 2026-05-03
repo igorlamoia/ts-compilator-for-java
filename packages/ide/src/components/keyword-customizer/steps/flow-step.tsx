@@ -84,6 +84,51 @@ const FLOW_REFERENCE_META: Record<
 };
 
 export function FlowStep({ values, actions }: FlowStepProps) {
+  const conditionalKeys: FlowFieldKey[] = [
+    "if",
+    "else",
+    "switch",
+    "case",
+    "default",
+  ];
+  const loopKeys: FlowFieldKey[] = ["for", "while"];
+  const flowKeys: FlowFieldKey[] = ["break", "continue", "return"];
+
+  const conditionalItems = values.fields.filter((field) =>
+    conditionalKeys.includes(field.key),
+  );
+  const loopItems = values.fields.filter((field) =>
+    loopKeys.includes(field.key),
+  );
+  const flowItems = values.fields.filter((field) =>
+    flowKeys.includes(field.key),
+  );
+
+  const keywordMap = new Map(
+    values.fields.map((field) => [field.key, field.value] as const),
+  );
+  const keywordFor = (key: FlowFieldKey) => keywordMap.get(key) || key;
+
+  const conditionalSnippet = `${keywordFor("if")} (nota > 7) {\n  print("aprovado")\n} ${keywordFor(
+    "else",
+  )} {\n  print("recuperacao")\n}\n\n${keywordFor(
+    "switch",
+  )} (nivel) {\n  ${keywordFor("case")} 1:\n    print("iniciante")\n  ${keywordFor(
+    "case",
+  )} 2:\n    print("intermediario")\n  ${keywordFor(
+    "default",
+  )}:\n    print("avancado")\n}`;
+  const loopSnippet = `${keywordFor("for")} (i = 0; i < 3; i = i + 1) {\n  print(i)\n}\n\n${keywordFor(
+    "while",
+  )} (tentativas < 3) {\n  tentativas = tentativas + 1\n}`;
+  const flowSnippet = `${keywordFor("while")} (contador < 5) {\n  contador = contador + 1\n  ${keywordFor(
+    "if",
+  )} (contador == 2) {\n    ${keywordFor("continue")}\n  }\n  ${keywordFor(
+    "if",
+  )} (contador == 4) {\n    ${keywordFor("break")}\n  }\n}\n\n${keywordFor(
+    "return",
+  )} contador`;
+
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -97,10 +142,9 @@ export function FlowStep({ values, actions }: FlowStepProps) {
           Ajuste o vocabulário usado para controle de fluxo e navegação.
         </p>
       </header>
-
       <KeywordReferenceTable
-        title="Palavras de fluxo"
-        items={values.fields.map((field) => ({
+        title="Condicionais"
+        items={conditionalItems.map((field) => ({
           id: field.key,
           value: field.value,
           description: field.description,
@@ -114,11 +158,44 @@ export function FlowStep({ values, actions }: FlowStepProps) {
           actions.syncKeywordDescription(field, value)
         }
       />
-
       <ExampleSnippet
-        title="Exemplo de fluxo"
-        code={values.snippet ?? "while (condicao) {\n  return valor\n}"}
+        title="Exemplo de condicionais"
+        code={conditionalSnippet}
       />
+      <KeywordReferenceTable
+        title="Loops"
+        items={loopItems.map((field) => ({
+          id: field.key,
+          value: field.value,
+          description: field.description,
+          reference: {
+            ...FLOW_REFERENCE_META[field.key],
+            label: field.key.toUpperCase(),
+          },
+        }))}
+        onValueChange={(field, value) => actions.syncKeyword(field, value)}
+        onDescriptionChange={(field, value) =>
+          actions.syncKeywordDescription(field, value)
+        }
+      />
+      <ExampleSnippet title="Exemplo de loops" code={loopSnippet} />
+      <KeywordReferenceTable
+        title="Fluxo"
+        items={flowItems.map((field) => ({
+          id: field.key,
+          value: field.value,
+          description: field.description,
+          reference: {
+            ...FLOW_REFERENCE_META[field.key],
+            label: field.key.toUpperCase(),
+          },
+        }))}
+        onValueChange={(field, value) => actions.syncKeyword(field, value)}
+        onDescriptionChange={(field, value) =>
+          actions.syncKeywordDescription(field, value)
+        }
+      />
+      <ExampleSnippet title="Exemplo de fluxo" code={flowSnippet} />
     </section>
   );
 }

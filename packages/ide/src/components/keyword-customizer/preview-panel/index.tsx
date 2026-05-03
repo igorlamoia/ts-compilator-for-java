@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { WizardPreview } from "../preview-data";
 import { ExampleSnippet } from "../example-snippet";
 
@@ -36,6 +36,35 @@ function buildLexemeChangeMap(preview: WizardPreview): Map<string, string> {
   return new Map(
     preview.chosenLexemes.map((item) => [item.original, item.custom]),
   );
+}
+
+function resolveChangedLexemeOriginal(
+  previousChanges: Map<string, string>,
+  currentChanges: WizardPreview["chosenLexemes"],
+): string | undefined {
+  const currentChangesMap = new Map(
+    currentChanges.map((item) => [item.original, item.custom]),
+  );
+
+  const editedChange = currentChanges.find(
+    (item) => previousChanges.get(item.original) !== item.custom,
+  );
+
+  if (editedChange) return editedChange.original;
+
+  for (const original of previousChanges.keys()) {
+    if (!currentChangesMap.has(original)) return original;
+  }
+
+  return undefined;
+}
+
+function findPreviewCategoryKeyForLexeme(
+  original: string,
+): PreviewCategory["key"] | undefined {
+  return PREVIEW_CATEGORIES.find((category) =>
+    category.lexemes.includes(original),
+  )?.key;
 }
 
 function buildCategoryItems(
@@ -84,6 +113,11 @@ function formatPreviewCategoryLabel(title: string): string {
 
 export function PreviewPanel({ preview }: PreviewPanelProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const previousLexemeChangesRef = useRef<Map<string, string> | null>(null);
+  const [focusRequest, setFocusRequest] = useState<{
+    key: PreviewCategory["key"];
+    id: number;
+  }>();
   const groupedLexemes = segregateLexemeChangesByCategory(preview);
   const cardItems = groupedLexemes.map((category) => {
     const { key, title, icon, subtitle, items, changedCount, percentage } =
@@ -116,6 +150,30 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const previousChanges = previousLexemeChangesRef.current;
+    const currentChanges = buildLexemeChangeMap(preview);
+
+    if (previousChanges) {
+      const changedOriginal = resolveChangedLexemeOriginal(
+        previousChanges,
+        preview.chosenLexemes,
+      );
+      const changedCategoryKey = changedOriginal
+        ? findPreviewCategoryKeyForLexeme(changedOriginal)
+        : undefined;
+
+      if (changedCategoryKey) {
+        setFocusRequest((current) => ({
+          key: changedCategoryKey,
+          id: (current?.id ?? 0) + 1,
+        }));
+      }
+    }
+
+    previousLexemeChangesRef.current = currentChanges;
+  }, [preview]);
+
   return (
     <aside
       data-preview-panel
@@ -128,7 +186,11 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
       <div className="relative flex h-full flex-col gap-6 overflow-hidden rounded-lg py-4 pr-4 lg:overflow-y-auto">
         <ExampleSnippet title="Preview do código" code={preview.snippet} />
 
-        <CardSnapStack items={cardItems} />
+        <CardSnapStack
+          items={cardItems}
+          focusKey={focusRequest?.key}
+          focusRequestId={focusRequest?.id}
+        />
         <Overlay side="bottom" />
       </div>
     </aside>

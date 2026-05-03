@@ -89,7 +89,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                   Resumo das regras
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2 overflow-x">
                   {values.preview.dna.map((item) => (
                     <span
                       key={item}

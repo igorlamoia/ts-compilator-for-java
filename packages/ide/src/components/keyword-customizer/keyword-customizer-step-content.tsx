@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { useKeywordCustomizer } from "./keyword-customizer-context";
 import {
+  buildIOStepProps,
   buildFlowStepProps,
   buildIdentityStepProps,
   buildReviewStepProps,
   buildRulesStepProps,
   buildStructureStepProps,
-  buildVariablesStepProps,
+  buildTypeStepProps,
 } from "./keyword-customizer-step-props";
 import { IdentityStep } from "./steps/identity-step";
 import { IOStep } from "./steps/io-step";
@@ -29,9 +30,9 @@ export function KeywordCustomizerStepContent() {
       case "identity":
         return <IdentityStep {...buildIdentityStepProps(context)} />;
       case "types":
-        return <TypeStep {...buildVariablesStepProps(context)} />;
+        return <TypeStep {...buildTypeStepProps(context)} />;
       case "IO":
-        return <IOStep {...buildVariablesStepProps(context)} />;
+        return <IOStep {...buildIOStepProps(context)} />;
       case "structure":
         return <StructureStep {...buildStructureStepProps(context)} />;
       case "rules":

@@ -46,9 +46,6 @@ describe("TypeStep", () => {
             untypedSnippet: "variavel idade",
             typingMode: "typed",
             printKeyword: "mostrar",
-            printDescription: "Mostra valores.",
-            scanKeyword: "ler",
-            scanDescription: "Lê valores.",
             typingBeamKeywords: {
               variavel: "variavel",
               string: "texto",

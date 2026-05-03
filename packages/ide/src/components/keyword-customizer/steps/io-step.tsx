@@ -1,54 +1,25 @@
-import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { HyperText } from "@/components/ui/hyper-text";
 import { Terminal } from "lucide-react";
 
-export type VariableStepKeyword =
-  | "print"
-  | "scan"
-  | "int"
-  | "float"
-  | "bool"
-  | "string"
-  | "variavel"
-  | "void"
-  | "funcao";
+export type IOKeyword = "print" | "scan";
 
-export type VariablesStepProps = {
+export type IOStepProps = {
   values: {
     snippet?: string;
-    typedSnippet: string;
-    untypedSnippet: string;
-    typingMode: StoredKeywordCustomization["modes"]["typing"];
     printKeyword: string;
     printDescription: string;
     scanKeyword: string;
     scanDescription: string;
-    typingBeamKeywords: {
-      variavel: string;
-      string: string;
-      float: string;
-      int: string;
-      bool: string;
-    };
-    variableKeywords: Array<{
-      key: Exclude<VariableStepKeyword, "print" | "scan">;
-      value: string;
-      description: string;
-    }>;
   };
   actions: {
-    syncTypingMode: (mode: "typed" | "untyped") => void;
-    syncKeyword: (original: VariableStepKeyword, value: string) => void;
-    syncKeywordDescription: (
-      original: VariableStepKeyword,
-      value: string,
-    ) => void;
+    syncKeyword: (original: IOKeyword, value: string) => void;
+    syncKeywordDescription: (original: IOKeyword, value: string) => void;
   };
 };
 
-export function IOStep({ values, actions }: VariablesStepProps) {
+export function IOStep({ values, actions }: IOStepProps) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">

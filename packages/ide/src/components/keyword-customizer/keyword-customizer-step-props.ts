@@ -11,7 +11,8 @@ import type { FlowStepProps } from "./steps/flow-step";
 import type { ReviewStepProps } from "./steps/review-step";
 import type { RulesStepProps } from "./steps/rules-step";
 import type { StructureStepProps } from "./steps/structure-step";
-import type { VariablesStepProps } from "./steps/io-step";
+import type { IOStepProps } from "./steps/io-step";
+import type { TypeStepProps } from "./steps/type-step";
 import {
   buildDynamicArraySnippet,
   buildDelimiterSnippet,
@@ -77,9 +78,9 @@ export function buildIdentityStepProps(
   };
 }
 
-export function buildVariablesStepProps(
+export function buildTypeStepProps(
   context: KeywordCustomizerContextValue,
-): VariablesStepProps {
+): TypeStepProps {
   const variableKeywords =
     context.draftCustomization.modes.typing === "untyped"
       ? (["variavel", "funcao"] as const)
@@ -92,9 +93,6 @@ export function buildVariablesStepProps(
       untypedSnippet: untypedVariableSnippet(context.draftCustomization),
       typingMode: context.draftCustomization.modes.typing,
       printKeyword: getKeywordValue(context, "print"),
-      printDescription: getKeywordDescription(context, "print"),
-      scanKeyword: getKeywordValue(context, "scan"),
-      scanDescription: getKeywordDescription(context, "scan"),
       typingBeamKeywords: {
         variavel: getKeywordValue(context, "variavel"),
         string: getKeywordValue(context, "string"),
@@ -110,6 +108,29 @@ export function buildVariablesStepProps(
     },
     actions: {
       syncTypingMode: (mode) => context.actions.syncMode("typing", mode),
+      syncKeyword: (original, value) =>
+        context.actions.syncKeyword(original, value),
+      syncKeywordDescription: (original, value) =>
+        context.actions.syncDocumentation(
+          getKeywordDocumentationId(original),
+          value,
+        ),
+    },
+  };
+}
+
+export function buildIOStepProps(
+  context: KeywordCustomizerContextValue,
+): IOStepProps {
+  return {
+    values: {
+      snippet: context.preview.snippet,
+      printKeyword: getKeywordValue(context, "print"),
+      printDescription: getKeywordDescription(context, "print"),
+      scanKeyword: getKeywordValue(context, "scan"),
+      scanDescription: getKeywordDescription(context, "scan"),
+    },
+    actions: {
       syncKeyword: (original, value) =>
         context.actions.syncKeyword(original, value),
       syncKeywordDescription: (original, value) =>
