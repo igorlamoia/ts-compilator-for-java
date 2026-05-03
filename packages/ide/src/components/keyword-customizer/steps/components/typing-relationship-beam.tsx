@@ -11,7 +11,7 @@ type TypingRelationshipBeamProps = {
     string: string;
     float: string;
     int: string;
-    void: string;
+    bool: string;
   };
 };
 
@@ -57,7 +57,7 @@ export function TypingRelationshipBeam({
   const stringRef = useRef<HTMLDivElement>(null);
   const floatRef = useRef<HTMLDivElement>(null);
   const intRef = useRef<HTMLDivElement>(null);
-  const voidRef = useRef<HTMLDivElement>(null);
+  const boolRef = useRef<HTMLDivElement>(null);
 
   const isTyped = typingMode === "typed";
 
@@ -106,9 +106,9 @@ export function TypingRelationshipBeam({
             active={isTyped}
           />
           <TypingBeamChip
-            chipRef={voidRef}
-            original="void"
-            changed={formatNodeLabel("void", labels.void)}
+            chipRef={boolRef}
+            original="bool"
+            changed={formatNodeLabel("bool", labels.bool)}
             active={isTyped}
           />
         </div>
@@ -149,7 +149,7 @@ export function TypingRelationshipBeam({
       <AnimatedBeam
         containerRef={beamContainerRef}
         fromRef={untypedRef}
-        toRef={voidRef}
+        toRef={boolRef}
         fromAnchor={isDesktop ? "right" : "bottom"}
         toAnchor={isDesktop ? "left" : "top"}
         reverse={!isTyped}

@@ -47,7 +47,7 @@ describe("WizardStepper", () => {
             languageLabel: "Teste",
             basedOnLabel: "JavaMM",
             languageImageUrl: "",
-            dna: ["tipada"],
+            dna: ["tipada", "vetores dinâmicos"],
             baselineSnippet: "",
             snippet: "",
             tokenPreview: [],
@@ -77,6 +77,7 @@ describe("WizardStepper", () => {
     expect(stepLabels[0].className).toContain("max-lg:sr-only");
     expect(activeTitle?.textContent).toBe("Tipos");
     expect(languageCard?.className).toContain("max-lg:hidden");
+    expect(languageCard?.textContent).toContain("vetores dinâmicos");
 
     act(() => {
       root.unmount();

@@ -15,15 +15,14 @@ describe("buildWizardPreview", () => {
     draft.booleanLiteralMap = { true: "sim", false: "nao" };
 
     const preview = buildWizardPreview(draft, {
-      activeStepId: "types",
+      activeStepId: "structure",
       presetId: "didactic-pt",
     });
 
     expect(preview.languageLabel).toBe("Didatica em Portugues");
     expect(preview.basedOnLabel).toBe("Didatica em Portugues");
     expect(preview.dna).toContain("blocos com delimitadores");
-    expect(preview.snippet).toContain('string nome = "Kiki"');
-    expect(preview.snippet).toContain("escreva(nome)");
+    expect(preview.snippet).toContain("escreva(");
     expect(preview.tokenPreview.map((token) => token.lexeme)).toContain(
       "escreva",
     );
@@ -42,6 +41,18 @@ describe("buildWizardPreview", () => {
     expect(preview.dna).toContain("blocos por indentacao");
     expect(preview.snippet).toContain(":");
     expect(preview.snippet).not.toContain("{");
+  });
+
+  it("adds the array mode to the language DNA", () => {
+    const draft = getDefaultCustomizationState();
+    draft.modes.array = "dynamic";
+
+    const preview = buildWizardPreview(draft, {
+      activeStepId: "structure",
+      presetId: "minimal",
+    });
+
+    expect(preview.dna).toContain("vetores dinâmicos");
   });
 
   it("hides explicit type aliases from the python-like summary when the preset is untyped", () => {
@@ -89,12 +100,12 @@ describe("buildWizardPreview", () => {
     );
 
     const preview = buildWizardPreview(draft, {
-      activeStepId: "types",
+      activeStepId: "structure",
       presetId: "minimal",
     });
 
     expect(preview.languageLabel).toBe("Minimalista");
-    expect(preview.snippet).toContain("out(nome)");
+    expect(preview.snippet).toContain("out(");
     expect(preview.chosenLexemes).toContainEqual({
       original: "print",
       custom: "out",

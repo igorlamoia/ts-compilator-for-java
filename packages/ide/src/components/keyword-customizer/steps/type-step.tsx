@@ -113,44 +113,6 @@ export function TypeStep({ values, actions }: VariablesStepProps) {
           actions.syncKeywordDescription(field, value)
         }
       />
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => actions.syncArrayMode("fixed")}
-          className={[
-            "rounded-lg border px-4 py-3 text-left transition-colors",
-            values.arrayMode === "fixed"
-              ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
-              : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
-          ].join(" ")}
-        >
-          <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Tamanho fixo
-          </span>
-          <span className="block text-xs text-slate-500 dark:text-slate-400">
-            Mantém o comportamento atual de vetores e matrizes fixas.
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => actions.syncArrayMode("dynamic")}
-          className={[
-            "rounded-lg border px-4 py-3 text-left transition-colors",
-            values.arrayMode === "dynamic"
-              ? "border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-cyan-950/40"
-              : "border-slate-200/80 bg-white/80 dark:border-slate-800/80 dark:bg-slate-900/80",
-          ].join(" ")}
-        >
-          <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Tamanho dinâmico
-          </span>
-          <span className="block text-xs text-slate-500 dark:text-slate-400">
-            Permite explorar estruturas mais flexíveis.
-          </span>
-        </button>
-      </div>
       <ExampleSnippet
         title="Exemplo ao vivo"
         code={values.snippet ?? `${values.printKeyword}("Ola mundo")`}

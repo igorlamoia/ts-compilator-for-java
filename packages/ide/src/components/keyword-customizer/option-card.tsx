@@ -38,9 +38,9 @@ const SELECTED_CARD_SHADOWS: Record<OptionCardIconColor, string> = {
 };
 
 export type OptionCardIconProps = {
-  icon?: ReactNode;
+  icon?: ReactNode | string;
   color?: OptionCardIconColor;
-  size: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg";
 };
 
 export function OptionCardIcon({
@@ -62,7 +62,11 @@ export function OptionCardIcon({
         ICON_COLOR_CLASSES[color],
       ].join(" ")}
     >
-      {icon ?? <span className="h-2 w-2 rounded-md bg-current" />}
+      {typeof icon === "string" ? (
+        <span className="text-sm font-mono">{icon}</span>
+      ) : (
+        (icon ?? <span className="h-2 w-2 rounded-md bg-current" />)
+      )}
     </span>
   );
 }

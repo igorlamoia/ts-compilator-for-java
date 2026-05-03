@@ -382,11 +382,11 @@ const STEP_FIELDS: Record<WizardStepId, string[]> = {
     "string",
     "variavel",
     "modes.typing",
-    "modes.array",
   ],
   structure: [
     "statementTerminatorLexeme",
     "modes.semicolon",
+    "modes.array",
     "void",
     "funcao",
     "modes.block",

@@ -37,15 +37,16 @@ describe("FlowStep", () => {
               {
                 key: "if",
                 value: "se",
-                description: "Executa um bloco quando a condição for verdadeira.",
+                description:
+                  "Executa um bloco quando a condição for verdadeira.",
               },
               {
                 key: "while",
                 value: "enquanto",
-                description: "Repete enquanto uma condição continuar verdadeira.",
+                description:
+                  "Repete enquanto uma condição continuar verdadeira.",
               },
             ],
-            currentVocabulary: ["se", "enquanto"],
           }}
           actions={{
             syncKeyword,

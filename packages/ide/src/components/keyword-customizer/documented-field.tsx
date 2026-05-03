@@ -13,7 +13,7 @@ export type DocumentedFieldProps = {
   placeholder?: string;
   descriptionPlaceholder?: string;
   disabled?: boolean;
-  icon?: Omit<OptionCardIconProps, "size">;
+  icon?: OptionCardIconProps;
 };
 
 export function DocumentedField({

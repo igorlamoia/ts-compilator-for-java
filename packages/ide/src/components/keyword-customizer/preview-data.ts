@@ -79,7 +79,8 @@ function collectPreviewLexemeChanges(
   const keywordChanges = draft.mappings
     .filter(
       (item) =>
-        item.custom !== item.original && !hiddenKeywordChanges.has(item.original),
+        item.custom !== item.original &&
+        !hiddenKeywordChanges.has(item.original),
     )
     .map((item) => ({ original: item.original, custom: item.custom }));
 
@@ -163,6 +164,7 @@ export function buildWizardPreview(
       draft.modes.semicolon === "required"
         ? "terminador obrigatorio"
         : "fim de linha opcional",
+      draft.modes.array === "fixed" ? "vetores fixos" : "vetores dinâmicos",
     ],
     baselineSnippet,
     snippet,

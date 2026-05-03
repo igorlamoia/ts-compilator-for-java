@@ -313,14 +313,14 @@ describe("wizard-model", () => {
       "string",
       "variavel",
       "modes.typing",
-      "modes.array",
     ]);
   });
 
-  it("maps terminator and semicolon controls into the structure step", () => {
+  it("maps terminator, array and block controls into the structure step", () => {
     expect(getWizardStepFields("structure")).toEqual([
       "statementTerminatorLexeme",
       "modes.semicolon",
+      "modes.array",
       "void",
       "funcao",
       "modes.block",

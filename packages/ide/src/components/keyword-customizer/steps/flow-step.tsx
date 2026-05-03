@@ -22,7 +22,6 @@ export type FlowStepProps = {
       value: string;
       description: string;
     }>;
-    currentVocabulary: string[];
   };
   actions: {
     syncKeyword: (
@@ -115,22 +114,6 @@ export function FlowStep({ values, actions }: FlowStepProps) {
           actions.syncKeywordDescription(field, value)
         }
       />
-
-      <div className="rounded-lg border border-slate-200/80 bg-white/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/80">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Vocabulário atual da linguagem
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {values.currentVocabulary.map((token) => (
-            <span
-              key={token}
-              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
-            >
-              {token}
-            </span>
-          ))}
-        </div>
-      </div>
 
       <ExampleSnippet
         title="Exemplo de fluxo"

@@ -21,7 +21,6 @@ export type VariablesStepProps = {
     typedSnippet: string;
     untypedSnippet: string;
     typingMode: StoredKeywordCustomization["modes"]["typing"];
-    arrayMode: StoredKeywordCustomization["modes"]["array"];
     printKeyword: string;
     printDescription: string;
     scanKeyword: string;
@@ -31,7 +30,7 @@ export type VariablesStepProps = {
       string: string;
       float: string;
       int: string;
-      void: string;
+      bool: string;
     };
     variableKeywords: Array<{
       key: Exclude<VariableStepKeyword, "print" | "scan">;
@@ -41,7 +40,6 @@ export type VariablesStepProps = {
   };
   actions: {
     syncTypingMode: (mode: "typed" | "untyped") => void;
-    syncArrayMode: (mode: "fixed" | "dynamic") => void;
     syncKeyword: (original: VariableStepKeyword, value: string) => void;
     syncKeywordDescription: (
       original: VariableStepKeyword,

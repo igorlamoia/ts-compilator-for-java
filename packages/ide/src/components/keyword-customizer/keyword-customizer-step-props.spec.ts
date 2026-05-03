@@ -66,6 +66,14 @@ describe("buildStructureStepProps", () => {
 
     expect(props.values.delimiterSnippet).toContain("funcao main()");
     expect(props.values.identationSnippet).toContain("funcao main():");
+    expect(props.values.optionalTerminatorSnippet).toBe('print("ok")');
+    expect(props.values.requiredTerminatorSnippet).toBe('print("ok");');
+    expect(props.values.fixedArraySnippet).toBe(
+      'string animes[2] = ["Naruto", "AOT"]',
+    );
+    expect(props.values.dynamicArraySnippet).toBe(
+      'string animes[] = ["Naruto", "AOT"]',
+    );
   });
 
   it("fills documented fields with default semantic definitions", () => {

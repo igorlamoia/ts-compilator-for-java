@@ -13,8 +13,12 @@ import type { RulesStepProps } from "./steps/rules-step";
 import type { StructureStepProps } from "./steps/structure-step";
 import type { VariablesStepProps } from "./steps/io-step";
 import {
+  buildDynamicArraySnippet,
   buildDelimiterSnippet,
+  buildFixedArraySnippet,
   buildIdentationSnippet,
+  buildOptionalTerminatorSnippet,
+  buildRequiredTerminatorSnippet,
   typedVariableSnippet,
   untypedVariableSnippet,
 } from "./preview-builder";
@@ -78,8 +82,8 @@ export function buildVariablesStepProps(
 ): VariablesStepProps {
   const variableKeywords =
     context.draftCustomization.modes.typing === "untyped"
-      ? (["variavel", "void", "funcao"] as const)
-      : (["int", "float", "bool", "string"] as const);
+      ? (["variavel", "funcao"] as const)
+      : (["int", "float", "bool", "string", "void"] as const);
 
   return {
     values: {
@@ -87,7 +91,6 @@ export function buildVariablesStepProps(
       typedSnippet: typedVariableSnippet(context.draftCustomization),
       untypedSnippet: untypedVariableSnippet(context.draftCustomization),
       typingMode: context.draftCustomization.modes.typing,
-      arrayMode: context.draftCustomization.modes.array,
       printKeyword: getKeywordValue(context, "print"),
       printDescription: getKeywordDescription(context, "print"),
       scanKeyword: getKeywordValue(context, "scan"),
@@ -97,7 +100,7 @@ export function buildVariablesStepProps(
         string: getKeywordValue(context, "string"),
         float: getKeywordValue(context, "float"),
         int: getKeywordValue(context, "int"),
-        void: getKeywordValue(context, "void"),
+        bool: getKeywordValue(context, "bool"),
       },
       variableKeywords: variableKeywords.map((key) => ({
         key,
@@ -107,7 +110,6 @@ export function buildVariablesStepProps(
     },
     actions: {
       syncTypingMode: (mode) => context.actions.syncMode("typing", mode),
-      syncArrayMode: (mode) => context.actions.syncMode("array", mode),
       syncKeyword: (original, value) =>
         context.actions.syncKeyword(original, value),
       syncKeywordDescription: (original, value) =>
@@ -127,9 +129,18 @@ export function buildStructureStepProps(
   return {
     values: {
       snippet: context.preview.snippet,
+      optionalTerminatorSnippet: buildOptionalTerminatorSnippet(
+        context.draftCustomization,
+      ),
+      requiredTerminatorSnippet: buildRequiredTerminatorSnippet(
+        context.draftCustomization,
+      ),
       delimiterSnippet: buildDelimiterSnippet(context.draftCustomization),
       identationSnippet: buildIdentationSnippet(context.draftCustomization),
+      fixedArraySnippet: buildFixedArraySnippet(context.draftCustomization),
+      dynamicArraySnippet: buildDynamicArraySnippet(context.draftCustomization),
       semicolonMode: draftCustomization.modes.semicolon,
+      arrayMode: draftCustomization.modes.array,
       blockMode: draftCustomization.modes.block,
       usesCustomDelimiters:
         draftCustomization.blockDelimiters.open.trim().length > 0 ||
@@ -169,6 +180,7 @@ export function buildStructureStepProps(
       syncStatementTerminatorDescription: (value) =>
         context.actions.syncDocumentation("terminator.statement", value),
       syncSemicolonMode: (mode) => context.actions.syncMode("semicolon", mode),
+      syncArrayMode: (mode) => context.actions.syncMode("array", mode),
       syncKeyword: (original, value) =>
         context.actions.syncKeyword(original, value),
       syncKeywordDescription: (original, value) =>
@@ -250,9 +262,6 @@ export function buildFlowStepProps(
         value: getKeywordValue(context, key),
         description: getKeywordDescription(context, key),
       })),
-      currentVocabulary: FLOW_FIELDS.map((key) =>
-        getKeywordValue(context, key),
-      ),
     },
     actions: {
       syncKeyword: (original, value) =>

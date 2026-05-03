@@ -45,7 +45,6 @@ describe("TypeStep", () => {
             typedSnippet: "inteiro idade",
             untypedSnippet: "variavel idade",
             typingMode: "typed",
-            arrayMode: "fixed",
             printKeyword: "mostrar",
             printDescription: "Mostra valores.",
             scanKeyword: "ler",
@@ -55,7 +54,7 @@ describe("TypeStep", () => {
               string: "texto",
               float: "decimal",
               int: "inteiro",
-              void: "vazio",
+              bool: "booleano",
             },
             variableKeywords: [
               {
@@ -72,7 +71,6 @@ describe("TypeStep", () => {
           }}
           actions={{
             syncTypingMode: vi.fn(),
-            syncArrayMode: vi.fn(),
             syncKeyword,
             syncKeywordDescription,
           }}
@@ -128,6 +126,17 @@ describe("TypeStep", () => {
       "string",
       "Texto exibido ao usuário.",
     );
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not render array mode choices in the typing step", () => {
+    const { container, root } = renderTypeStep();
+
+    expect(container.textContent).not.toContain("Tamanho fixo");
+    expect(container.textContent).not.toContain("Tamanho dinâmico");
 
     act(() => {
       root.unmount();

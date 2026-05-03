@@ -19,6 +19,47 @@ function buildLineEnding(draft: StoredKeywordCustomization): string {
   return draft.statementTerminatorLexeme.trim() || ";";
 }
 
+function buildRequiredLineEnding(draft: StoredKeywordCustomization): string {
+  return draft.statementTerminatorLexeme.trim() || ";";
+}
+
+export function buildOptionalTerminatorSnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  const print = getKeyword(draft, "print");
+  return `${print}("ok")`;
+}
+
+export function buildRequiredTerminatorSnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  return `${buildOptionalTerminatorSnippet(draft)}${buildRequiredLineEnding(draft)}`;
+}
+
+function buildArrayDeclarationPrefix(draft: StoredKeywordCustomization): string {
+  if (draft.modes.typing === "untyped") {
+    return "";
+  }
+
+  return `${getKeyword(draft, "string")} `;
+}
+
+export function buildFixedArraySnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  const lineEnding = buildLineEnding(draft);
+  const prefix = buildArrayDeclarationPrefix(draft);
+  return `${prefix}animes[2] = ["Naruto", "AOT"]${lineEnding}`;
+}
+
+export function buildDynamicArraySnippet(
+  draft: StoredKeywordCustomization,
+): string {
+  const lineEnding = buildLineEnding(draft);
+  const prefix = buildArrayDeclarationPrefix(draft);
+  return `${prefix}animes[] = ["Naruto", "AOT"]${lineEnding}`;
+}
+
 export function untypedVariableSnippet(
   draft: StoredKeywordCustomization,
 ): string {
