@@ -52,7 +52,9 @@ type StyledPresetMappings = {
   funcao: string;
 };
 
-type StyledOperatorWordMap = Required<StoredKeywordCustomization["operatorWordMap"]>;
+type StyledOperatorWordMap = Required<
+  StoredKeywordCustomization["operatorWordMap"]
+>;
 
 type StyledWizardPresetDefinition = WizardPresetDefinition & {
   mappings: StyledPresetMappings;
@@ -354,8 +356,9 @@ export const WIZARD_STEPS = [
   },
   {
     id: "rules",
-    title: "Regras",
-    description: "Ajuste regras sintaticas suportadas hoje.",
+    title: "Operadores",
+    description:
+      "Ajuste os operadores, literais booleanos e regras de decisão.",
     icon: "sigma",
   },
   {
@@ -375,14 +378,7 @@ export const WIZARD_STEPS = [
 const STEP_FIELDS: Record<WizardStepId, string[]> = {
   identity: [],
   IO: ["print", "scan"],
-  types: [
-    "int",
-    "float",
-    "bool",
-    "string",
-    "variavel",
-    "modes.typing",
-  ],
+  types: ["int", "float", "bool", "string", "variavel", "modes.typing"],
   structure: [
     "statementTerminatorLexeme",
     "modes.semicolon",

@@ -93,13 +93,13 @@ export function RulesStep({ values, errors, actions }: RulesStepProps) {
     <section className="space-y-6">
       <header className="space-y-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 4
+          Etapa 5
         </p>
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Regras
+          Operadores
         </h3>
         <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
-          Ajuste apenas as regras já suportadas pelo domínio atual.
+          Ajuste os operadores já suportados pelo domínio atual.
         </p>
       </header>
 
@@ -112,7 +112,9 @@ export function RulesStep({ values, errors, actions }: RulesStepProps) {
           reference: getRuleReference(field),
           editLabel: field.label,
         }))}
-        onValueChange={(field, value) => actions.syncBooleanLiteral(field, value)}
+        onValueChange={(field, value) =>
+          actions.syncBooleanLiteral(field, value)
+        }
         onDescriptionChange={(field, value) =>
           actions.syncBooleanLiteralDescription(field, value)
         }
@@ -134,7 +136,9 @@ export function RulesStep({ values, errors, actions }: RulesStepProps) {
           editLabel: field.label,
           placeholder: field.placeholder,
         }))}
-        onValueChange={(field, value) => actions.syncOperatorAlias(field, value)}
+        onValueChange={(field, value) =>
+          actions.syncOperatorAlias(field, value)
+        }
         onDescriptionChange={(field, value) =>
           actions.syncOperatorAliasDescription(field, value)
         }

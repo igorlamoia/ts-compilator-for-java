@@ -50,11 +50,6 @@ export function resolveCardSnapAccent(key: string): CardSnapAccent {
         activeButton: "border-cyan-300/60 bg-cyan-300/15 text-cyan-200",
         activeShadow: "shadow-[0_24px_70px_-44px_rgba(34,211,238,0.85)]",
       };
-    case "condicionais":
-      return {
-        activeButton: "border-amber-300/60 bg-amber-300/15 text-amber-200",
-        activeShadow: "shadow-[0_24px_70px_-44px_rgba(251,191,36,0.85)]",
-      };
     case "lacos":
       return {
         activeButton: "border-pink-300/60 bg-pink-300/15 text-pink-200",
@@ -165,7 +160,7 @@ export function CardSnapStack({
   return (
     <div className={cn("relative flex min-h-0 flex-1 flex-col gap-3", className)}>
       <div
-        className="grid grid-cols-8 gap-1.5 pr-6"
+        className="grid grid-cols-6 gap-1.5 pr-6"
         aria-label="Categorias do preview"
       >
         {items.map((item, index) => {

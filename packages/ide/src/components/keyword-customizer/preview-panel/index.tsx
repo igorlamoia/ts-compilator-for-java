@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { WizardPreview } from "../preview-data";
+import type { WizardStepId } from "../wizard-model";
 import { ExampleSnippet } from "../example-snippet";
 
 import { CardSnapStack } from "./card-snap-stack";
@@ -9,6 +10,7 @@ import { Overlay } from "@/components/effect/overlay";
 
 export type PreviewPanelProps = {
   preview: WizardPreview;
+  activeStepId?: WizardStepId;
 };
 
 export type CategoryTone = {
@@ -67,6 +69,25 @@ function findPreviewCategoryKeyForLexeme(
   )?.key;
 }
 
+function findPreviewCategoryKeyForStep(
+  stepId?: WizardStepId,
+): PreviewCategory["key"] | undefined {
+  switch (stepId) {
+    case "IO":
+      return "entrada";
+    case "types":
+      return "tipos";
+    case "structure":
+      return "estrutura";
+    case "rules":
+      return "operadores";
+    case "flow":
+      return "fluxo";
+    default:
+      return undefined;
+  }
+}
+
 function buildCategoryItems(
   category: PreviewCategory,
   changedMap: Map<string, string>,
@@ -111,7 +132,7 @@ function formatPreviewCategoryLabel(title: string): string {
     .replace(/\sE\s/g, " e ");
 }
 
-export function PreviewPanel({ preview }: PreviewPanelProps) {
+export function PreviewPanel({ preview, activeStepId }: PreviewPanelProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const previousLexemeChangesRef = useRef<Map<string, string> | null>(null);
   const [focusRequest, setFocusRequest] = useState<{
@@ -173,6 +194,17 @@ export function PreviewPanel({ preview }: PreviewPanelProps) {
 
     previousLexemeChangesRef.current = currentChanges;
   }, [preview]);
+
+  useEffect(() => {
+    const changedCategoryKey = findPreviewCategoryKeyForStep(activeStepId);
+
+    if (changedCategoryKey) {
+      setFocusRequest((current) => ({
+        key: changedCategoryKey,
+        id: (current?.id ?? 0) + 1,
+      }));
+    }
+  }, [activeStepId]);
 
   return (
     <aside

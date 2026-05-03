@@ -49,7 +49,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
         <div className="xl:h-170 h-300">
           <header className="space-y-2">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-              Etapa 6
+              Etapa 7
             </p>
             <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               Revisão

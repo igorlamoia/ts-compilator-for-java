@@ -4,22 +4,12 @@ import {
   Repeat,
   Sigma,
   Terminal,
-  ToggleRight,
   Type,
-  Workflow,
   type LucideIcon,
 } from "lucide-react";
 
 export type PreviewCategory = {
-  key:
-    | "tipos"
-    | "entrada"
-    | "condicionais"
-    | "lacos"
-    | "fluxo"
-    | "operadores"
-    | "booleanos"
-    | "estrutura";
+  key: "tipos" | "entrada" | "lacos" | "fluxo" | "operadores" | "estrutura";
   title: string;
   subtitle: string;
   lexemes: string[];
@@ -41,35 +31,7 @@ export const PREVIEW_CATEGORIES: PreviewCategory[] = [
     lexemes: ["int", "float", "bool", "string", "void", "variavel", "funcao"],
     icon: Type,
   },
-  {
-    key: "condicionais",
-    title: "CONDICIONAIS",
-    subtitle: "Regras de decisão e caminhos alternativos.",
-    lexemes: ["if", "else", "switch", "case", "default"],
-    icon: GitCompareArrows,
-  },
-  {
-    key: "lacos",
-    title: "LACOS",
-    subtitle: "Repetições controladas pela lógica do programa.",
-    lexemes: ["for", "while"],
-    icon: Repeat,
-  },
-  {
-    key: "fluxo",
-    title: "FLUXO",
-    subtitle: "Saídas antecipadas e controle de execução.",
-    lexemes: ["break", "continue", "return"],
-    icon: Workflow,
-  },
 
-  {
-    key: "booleanos",
-    title: "BOOLEANOS",
-    subtitle: "Representam verdadeiro e falso.",
-    lexemes: ["true", "false"],
-    icon: ToggleRight,
-  },
   {
     key: "estrutura",
     title: "ESTRUTURA",
@@ -77,10 +39,11 @@ export const PREVIEW_CATEGORIES: PreviewCategory[] = [
     lexemes: ["{", "}", ";"],
     icon: Code2,
   },
+
   {
     key: "operadores",
     title: "OPERADORES",
-    subtitle: "Palavras que ajudam a compor expressões.",
+    subtitle: "Palavras e literais que ajudam a compor expressões.",
     lexemes: [
       "and",
       "or",
@@ -91,7 +54,33 @@ export const PREVIEW_CATEGORIES: PreviewCategory[] = [
       "greater_equal",
       "equals",
       "not_equal",
+      "true",
+      "false",
     ],
     icon: Sigma,
+  },
+  {
+    key: "fluxo",
+    title: "FLUXO",
+    subtitle:
+      "Saídas antecipadas e controle de execução. Regras de decisão e caminhos alternativos.",
+    lexemes: [
+      "if",
+      "else",
+      "switch",
+      "case",
+      "default",
+      "break",
+      "continue",
+      "return",
+    ],
+    icon: GitCompareArrows,
+  },
+  {
+    key: "lacos",
+    title: "LACOS",
+    subtitle: "Repetições controladas pela lógica do programa.",
+    lexemes: ["for", "while"],
+    icon: Repeat,
   },
 ];

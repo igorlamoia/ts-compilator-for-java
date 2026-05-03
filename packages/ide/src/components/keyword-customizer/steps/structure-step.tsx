@@ -62,7 +62,7 @@ export function StructureStep({ values, errors, actions }: StructureStepProps) {
     <section className="space-y-6">
       <header className="space-y-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 3
+          Etapa 4
         </p>
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Estrutura

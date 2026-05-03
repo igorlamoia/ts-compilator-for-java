@@ -48,14 +48,6 @@ function getCategoryLexemes(
         getKeywordValue(customization, "variavel"),
         getKeywordValue(customization, "funcao"),
       ];
-    case "condicionais":
-      return [
-        getKeywordValue(customization, "if"),
-        getKeywordValue(customization, "else"),
-        getKeywordValue(customization, "switch"),
-        getKeywordValue(customization, "case"),
-        getKeywordValue(customization, "default"),
-      ];
     case "lacos":
       return [
         getKeywordValue(customization, "for"),
@@ -63,14 +55,14 @@ function getCategoryLexemes(
       ];
     case "fluxo":
       return [
+        getKeywordValue(customization, "if"),
+        getKeywordValue(customization, "else"),
+        getKeywordValue(customization, "switch"),
+        getKeywordValue(customization, "case"),
+        getKeywordValue(customization, "default"),
         getKeywordValue(customization, "break"),
         getKeywordValue(customization, "continue"),
         getKeywordValue(customization, "return"),
-      ];
-    case "booleanos":
-      return [
-        customization.booleanLiteralMap.true?.trim() || "true",
-        customization.booleanLiteralMap.false?.trim() || "false",
       ];
     case "estrutura":
       return [
@@ -89,6 +81,8 @@ function getCategoryLexemes(
         customization.operatorWordMap.greater_equal?.trim() || "greater_equal",
         customization.operatorWordMap.equal_equal?.trim() || "equals",
         customization.operatorWordMap.not_equal?.trim() || "not_equal",
+        customization.booleanLiteralMap.true?.trim() || "true",
+        customization.booleanLiteralMap.false?.trim() || "false",
       ];
     default:
       return [];

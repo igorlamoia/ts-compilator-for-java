@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PreviewPanel } from "./preview-panel";
 import type { WizardPreview } from "./preview-data";
+import type { WizardStepId } from "./wizard-model";
 
 (
   globalThis as typeof globalThis & {
@@ -27,7 +28,10 @@ describe("PreviewPanel", () => {
     vi.restoreAllMocks();
   });
 
-  function renderPreviewPanel(preview: WizardPreview) {
+  function renderPreviewPanel(
+    preview: WizardPreview,
+    activeStepId?: WizardStepId,
+  ) {
     class ResizeObserverStub {
       observe() {}
       unobserve() {}
@@ -44,12 +48,17 @@ describe("PreviewPanel", () => {
     const root = createRoot(container);
 
     act(() => {
-      root.render(<PreviewPanel preview={preview} />);
+      root.render(<PreviewPanel preview={preview} activeStepId={activeStepId} />);
     });
 
-    const rerender = (nextPreview: WizardPreview) => {
+    const rerender = (
+      nextPreview: WizardPreview,
+      nextActiveStepId = activeStepId,
+    ) => {
       act(() => {
-        root.render(<PreviewPanel preview={nextPreview} />);
+        root.render(
+          <PreviewPanel preview={nextPreview} activeStepId={nextActiveStepId} />,
+        );
       });
     };
 
@@ -88,11 +97,9 @@ describe("PreviewPanel", () => {
     expect(categoryTitles).toEqual([
       "Entrada/Saida",
       "Tipos e Declaracoes",
-      "Condicionais",
-      "Lacos",
-      "Fluxo",
-      "Booleanos",
       "Estrutura",
+      "Fluxo",
+      "Lacos",
       "Operadores",
     ]);
 
@@ -137,8 +144,8 @@ describe("PreviewPanel", () => {
     const sideNavButtons = () =>
       Array.from(container.querySelectorAll("[data-card-snap-side-nav]"));
 
-    expect(topNavButtons()).toHaveLength(8);
-    expect(sideNavButtons()).toHaveLength(8);
+    expect(topNavButtons()).toHaveLength(6);
+    expect(sideNavButtons()).toHaveLength(6);
     expect(cards()[0].getAttribute("data-active")).toBe("true");
 
     act(() => {
@@ -215,32 +222,85 @@ describe("PreviewPanel", () => {
       Array.from(container.querySelectorAll("[data-card-snap-top-nav]"));
 
     act(() => {
-      topNavButtons()[7].dispatchEvent(
+      topNavButtons()[5].dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
     });
 
-    expect(cards()[7].getAttribute("data-active")).toBe("true");
+    expect(cards()[5].getAttribute("data-active")).toBe("true");
 
     rerender({
       ...initialPreview,
       chosenLexemes: [
         { original: "print", custom: "puts" },
-        { original: "return", custom: "retorna" },
+        { original: "if", custom: "se" },
       ],
     });
 
-    expect(cards()[4].getAttribute("data-preview-category")).toBe("Fluxo");
-    expect(cards()[4].getAttribute("data-active")).toBe("true");
+    expect(cards()[3].getAttribute("data-preview-category")).toBe("Fluxo");
+    expect(cards()[3].textContent).toContain("if");
+    expect(cards()[3].textContent).toContain("se");
+    expect(cards()[3].getAttribute("data-active")).toBe("true");
     expect(scrollTo).toHaveBeenCalled();
 
     act(() => {
-      topNavButtons()[7].dispatchEvent(
+      topNavButtons()[5].dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
     });
 
-    expect(cards()[7].getAttribute("data-active")).toBe("true");
+    expect(cards()[5].getAttribute("data-active")).toBe("true");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("groups boolean literals into operators for rules-step focus", () => {
+    const { container, root } = renderPreviewPanel(preview);
+
+    const cards = Array.from(
+      container.querySelectorAll("[data-card-snap-card]"),
+    );
+    const operatorCard = cards.find(
+      (card) => card.getAttribute("data-preview-category") === "Operadores",
+    );
+
+    expect(operatorCard).toBeDefined();
+    expect(operatorCard?.textContent).toContain("true");
+    expect(operatorCard?.textContent).toContain("true_word");
+    expect(operatorCard?.textContent).not.toContain("Booleanos");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("focuses operators when the wizard moves to the rules step", () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollTo", {
+      configurable: true,
+      value: scrollTo,
+    });
+
+    const { container, rerender, root } = renderPreviewPanel(preview, "types");
+
+    const cards = () =>
+      Array.from(container.querySelectorAll("[data-card-snap-card]"));
+
+    expect(cards()[1].getAttribute("data-preview-category")).toBe(
+      "Tipos e Declaracoes",
+    );
+    expect(cards()[1].getAttribute("data-active")).toBe("true");
+
+    rerender(preview, "rules");
+
+    const operatorCard = cards().find(
+      (card) => card.getAttribute("data-preview-category") === "Operadores",
+    );
+
+    expect(operatorCard?.getAttribute("data-active")).toBe("true");
+    expect(scrollTo).toHaveBeenCalled();
 
     act(() => {
       root.unmount();

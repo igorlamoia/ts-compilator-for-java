@@ -1,9 +1,5 @@
-import Image from "next/image";
 import { Form } from "@/components/ui/form";
-import {
-  PreviewPanel,
-  PreviewPanelProps,
-} from "./keyword-customizer/preview-panel";
+import { PreviewPanel } from "./keyword-customizer/preview-panel";
 import { WizardStepper } from "./keyword-customizer/wizard-stepper";
 import {
   KeywordCustomizerProvider,
@@ -50,7 +46,7 @@ function KeywordCustomizerShell() {
                 />
               </div>
             </div>
-            <PreviewPanel preview={preview} />
+            <PreviewPanel preview={preview} activeStepId={activeStep.id} />
           </main>
         </form>
       </section>
