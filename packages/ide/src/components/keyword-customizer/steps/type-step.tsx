@@ -7,6 +7,7 @@ import {
 import { TypingRelationshipBeam } from "./components/typing-relationship-beam";
 import type { StoredKeywordCustomization } from "@/contexts/keyword/types";
 import { ExampleSnippet } from "../example-snippet";
+import { Step } from "./components/step";
 
 export type TypeStepKeyword =
   | "int"
@@ -96,17 +97,13 @@ function getTypeReference(fieldKey: TypeKeywordField["key"]): KeywordReference {
 export function TypeStep({ values, actions }: TypeStepProps) {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 3
-        </p>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Modelo de tipagem
-        </h3>
-        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+      <Step.Header>
+        <Step.Index>Etapa 3</Step.Index>
+        <Step.Title>Modelo de tipagem</Step.Title>
+        <Step.Description>
           Escolha primeiro se a linguagem será tipada ou não tipada.
-        </p>
-      </header>
+        </Step.Description>
+      </Step.Header>
       <div className="space-y-3">
         <TypingRelationshipBeam
           typingMode={values.typingMode}

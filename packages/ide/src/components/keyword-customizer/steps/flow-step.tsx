@@ -1,5 +1,6 @@
 import { ExampleSnippet } from "../example-snippet";
 import { KeywordReferenceTable } from "./components/keyword-reference-table";
+import { Step } from "./components/step";
 
 const FLOW_FIELDS = [
   "if",
@@ -131,17 +132,13 @@ export function FlowStep({ values, actions }: FlowStepProps) {
 
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 6
-        </p>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Fluxo
-        </h3>
-        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+      <Step.Header>
+        <Step.Index>Etapa 6</Step.Index>
+        <Step.Title>Fluxo</Step.Title>
+        <Step.Description>
           Ajuste o vocabulário usado para controle de fluxo e navegação.
-        </p>
-      </header>
+        </Step.Description>
+      </Step.Header>
       <KeywordReferenceTable
         title="Condicionais"
         items={conditionalItems.map((field) => ({

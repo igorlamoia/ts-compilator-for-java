@@ -7,6 +7,7 @@ import LaserFlow from "../../laser-flow";
 import { Overlay } from "@/components/effect/overlay";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
+import { Step } from "./components/step";
 
 export type ReviewStepProps = {
   values: {
@@ -47,17 +48,13 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
           />
         </div>
         <div className="xl:h-170 h-300">
-          <header className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-              Etapa 7
-            </p>
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              Revisão
-            </h3>
-            <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+          <Step.Header>
+            <Step.Index>Etapa 7</Step.Index>
+            <Step.Title>Revisão</Step.Title>
+            <Step.Description>
               Confira o resumo final antes de aplicar a configuração.
-            </p>
-          </header>
+            </Step.Description>
+          </Step.Header>
           <div className="relative z-10 space-y-6 mt-3">
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="rounded-lg border border-slate-200/80 bg-white/85 p-4 backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/70">

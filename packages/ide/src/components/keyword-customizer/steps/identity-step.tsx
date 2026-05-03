@@ -1,6 +1,7 @@
 import { Atom, Code, Languages, Sparkles } from "lucide-react";
 import { OptionCard, OptionCardIconColor } from "../option-card";
 import type { WizardPresetId } from "../wizard-model";
+import { Step } from "./components/step";
 
 import type { ReactNode } from "react";
 export type IdentityImageSearchResult = {
@@ -250,18 +251,14 @@ const PRESET_OPTIONS: Array<{
 export function IdentityStep({ values, actions }: IdentityStepProps) {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 1
-        </p>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Que tipo de linguagem você quer criar?
-        </h3>
-        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+      <Step.Header>
+        <Step.Index>Etapa 1</Step.Index>
+        <Step.Title>Que tipo de linguagem você quer criar?</Step.Title>
+        <Step.Description>
           Escolha um ponto de partida. A seleção apenas sugere lexemas iniciais
           e continua totalmente editável.
-        </p>
-      </header>
+        </Step.Description>
+      </Step.Header>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {PRESET_OPTIONS.map((preset) => (

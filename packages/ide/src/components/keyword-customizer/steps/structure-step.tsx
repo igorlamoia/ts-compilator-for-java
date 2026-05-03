@@ -3,6 +3,7 @@ import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { OptionCard } from "../option-card";
 import { Braces, Form, ListPlus, LockKeyhole, TextQuote } from "lucide-react";
+import { Step } from "./components/step";
 
 export type StructureStepProps = {
   values: {
@@ -60,17 +61,13 @@ export type StructureStepProps = {
 export function StructureStep({ values, errors, actions }: StructureStepProps) {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 4
-        </p>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Estrutura
-        </h3>
-        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+      <Step.Header>
+        <Step.Index>Etapa 4</Step.Index>
+        <Step.Title>Estrutura</Step.Title>
+        <Step.Description>
           Configure blocos, delimitadores e como cada instrução termina.
-        </p>
-      </header>
+        </Step.Description>
+      </Step.Header>
 
       <div className="grid gap-3 md:grid-cols-2">
         <OptionCard

@@ -6,6 +6,7 @@ import {
   KeywordReferenceTable,
   type KeywordReference,
 } from "./components/keyword-reference-table";
+import { Step } from "./components/step";
 
 export type RulesStepProps = {
   values: {
@@ -91,17 +92,13 @@ function getRuleReference(field: RuleAliasField): KeywordReference {
 export function RulesStep({ values, errors, actions }: RulesStepProps) {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 5
-        </p>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Operadores
-        </h3>
-        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+      <Step.Header>
+        <Step.Index>Etapa 5</Step.Index>
+        <Step.Title>Operadores</Step.Title>
+        <Step.Description>
           Ajuste os operadores já suportados pelo domínio atual.
-        </p>
-      </header>
+        </Step.Description>
+      </Step.Header>
 
       <KeywordReferenceTable
         title="Literais booleanos"

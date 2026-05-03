@@ -2,6 +2,7 @@ import { ExampleSnippet } from "../example-snippet";
 import { DocumentedField } from "../documented-field";
 import { HyperText } from "@/components/ui/hyper-text";
 import { Terminal } from "lucide-react";
+import { Step } from "./components/step";
 
 export type IOKeyword = "print" | "scan";
 
@@ -22,14 +23,10 @@ export type IOStepProps = {
 export function IOStep({ values, actions }: IOStepProps) {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Etapa 2
-        </p>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          I/O Entrada e saída
-        </h3>
-        <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
+      <Step.Header>
+        <Step.Index>Etapa 2</Step.Index>
+        <Step.Title>I/O Entrada e saída</Step.Title>
+        <Step.Description>
           Antes de criar regras complexas, sua linguagem precisa aprender a
           falar. Toda linguagem começa com uma primeira mensagem, famoso{" "}
           <strong>Hello World</strong>, ou melhor:{" "}
@@ -39,8 +36,8 @@ export function IOStep({ values, actions }: IOStepProps) {
           >
             Olá Mundo!
           </HyperText>
-        </p>
-      </header>
+        </Step.Description>
+      </Step.Header>
 
       <p className="max-w-3xl text-sm text-slate-600 dark:text-slate-400">
         Como os programadores vão imprimir mensagens na tela? E como vão ler
