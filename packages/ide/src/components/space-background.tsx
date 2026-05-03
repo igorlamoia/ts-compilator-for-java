@@ -10,7 +10,7 @@ export function SpaceBackground() {
       dark:bg-linear-to-t dark:from-neutral-950 dark:to-slate-950
     "
     >
-      <BackgroundMascotMarquee />
+      {/* <BackgroundMascotMarquee /> */}
       <Meteors number={5} />
       <Particles />
     </div>

@@ -51,7 +51,7 @@ export function TypingRelationshipBeam({
   typingMode,
   labels,
 }: TypingRelationshipBeamProps) {
-  const isDesktop = useBreakpoint("lg");
+  const { matches: isDesktop } = useBreakpoint("lg");
   const beamContainerRef = useRef<HTMLDivElement>(null);
   const untypedRef = useRef<HTMLDivElement>(null);
   const stringRef = useRef<HTMLDivElement>(null);

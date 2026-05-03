@@ -1,21 +1,18 @@
-import type { WizardPreview } from "../preview-data";
-import { WIZARD_STEPS, type WizardStepId } from "../wizard-model";
-import { PreviewCodeComparison } from "../preview-code-comparison";
-import { TokenPreview } from "../token-preview";
+import type { WizardPreview } from "../../preview-data";
+import { WIZARD_STEPS, type WizardStepId } from "../../wizard-model";
+import { PreviewCodeComparison } from "../../preview-code-comparison";
+import { TokenPreview } from "../../token-preview";
 import Image from "next/image";
-import LaserFlow from "../../laser-flow";
+import LaserFlow from "../../../laser-flow";
 import { Overlay } from "@/components/effect/overlay";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
-import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
-import { Step } from "./components/step";
+import { Step } from "../components/step";
+import { CurrentVocabulary } from "./current-vocabulary";
 
 export type ReviewStepProps = {
   values: {
     preview: WizardPreview;
-    editedMappings: Array<{
-      original: string;
-      custom: string;
-    }>;
+    vocabularySections: VocabularySection[];
     visitedStepIds: WizardStepId[];
   };
   actions: {
@@ -23,8 +20,21 @@ export type ReviewStepProps = {
   };
 };
 
+export type VocabularySection = {
+  title: string;
+  items: string[];
+};
+
+function getCurrentVerticalOffset(
+  current: ReturnType<typeof useBreakpoint>["current"],
+) {
+  if (current.isXl || current.is2xl || current.is3xl) return -0.16;
+  return -0.12;
+}
+
 export function ReviewStep({ values, actions }: ReviewStepProps) {
-  const isLarge = useBreakpoint("xl");
+  const { current } = useBreakpoint("xl");
+  const verticalBeamOffset = getCurrentVerticalOffset(current);
   return (
     <section>
       <div className="relative overflow-hidden space-y-6 ">
@@ -32,12 +42,12 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
           <LaserFlow
             color="#22d3ee"
             horizontalBeamOffset={0.24}
-            verticalBeamOffset={isLarge ? -0.16 : -0.3}
+            verticalBeamOffset={verticalBeamOffset}
             horizontalSizing={0.6}
             verticalSizing={2}
-            wispDensity={8}
+            wispDensity={1}
             wispSpeed={8}
-            wispIntensity={5}
+            wispIntensity={25}
             flowSpeed={0.35}
             flowStrength={0.25}
             fogIntensity={0.45}
@@ -47,7 +57,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
             falloffStart={1.2}
           />
         </div>
-        <div className="xl:h-170 h-300">
+        <div className="h-290 xl:h-210 3xl:h-170">
           <Step.Header>
             <Step.Index>Etapa 7</Step.Index>
             <Step.Title>Revisão</Step.Title>
@@ -108,7 +118,7 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
           </div>
         </div>
       </div>
-      <div className="-mt-65 xl:-mt-62 relative z-10">
+      <div className="-mt-114  xl:-mt-75 3xl:-mt-62 relative z-10">
         <BoxResult values={values} actions={actions} />
         <Overlay side="bottom" />
         <Overlay side="left" size={20} />
@@ -116,34 +126,6 @@ export function ReviewStep({ values, actions }: ReviewStepProps) {
       <Overlay side="bottom" />
       <Overlay side="bottom" />
     </section>
-  );
-}
-
-function CurrentVocabulary({ values }: Pick<ReviewStepProps, "values">) {
-  return (
-    <div className="rounded-lg border border-slate-200/80 bg-white/85 p-4 backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/70">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-        Vocabulário atual da linguagem
-      </p>
-      <PerfectScrollbar>
-        <div className="mt-3 flex flex-wrap gap-2 max-h-80">
-          {values.editedMappings.length ? (
-            values.editedMappings.map((mapping) => (
-              <span
-                key={mapping.original}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
-              >
-                {mapping.original} → {mapping.custom}
-              </span>
-            ))
-          ) : (
-            <span className="text-sm text-slate-500 dark:text-slate-400">
-              Nenhum lexema foi alterado.
-            </span>
-          )}
-        </div>
-      </PerfectScrollbar>
-    </div>
   );
 }
 

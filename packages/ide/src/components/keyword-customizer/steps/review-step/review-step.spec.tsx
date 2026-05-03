@@ -4,7 +4,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ReviewStep } from "./review-step";
+import { ReviewStep } from "../review-step";
 
 (
   globalThis as typeof globalThis & {
@@ -44,7 +44,7 @@ describe("ReviewStep", () => {
               tokenPreview: [],
               chosenLexemes: [],
             },
-            editedMappings: [],
+            vocabularySections: [{ title: "Tipos", items: ["int", "float"] }],
             visitedStepIds: ["identity", "review"],
           }}
           actions={{

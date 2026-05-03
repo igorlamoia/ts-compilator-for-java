@@ -272,6 +272,18 @@ const FLOW_FIELDS = [
   "default",
 ] as const;
 
+const TYPE_FIELDS = [
+  "variavel",
+  "funcao",
+  "int",
+  "float",
+  "bool",
+  "string",
+  "void",
+] as const;
+
+const IO_FIELDS = ["print", "scan"] as const;
+
 export function buildFlowStepProps(
   context: KeywordCustomizerContextValue,
 ): FlowStepProps {
@@ -299,15 +311,58 @@ export function buildFlowStepProps(
 export function buildReviewStepProps(
   context: KeywordCustomizerContextValue,
 ): ReviewStepProps {
+  const statementTerminator =
+    context.draftCustomization.statementTerminatorLexeme.trim() || ";";
+  const blockOpen =
+    context.draftCustomization.blockDelimiters.open.trim() || "{";
+  const blockClose =
+    context.draftCustomization.blockDelimiters.close.trim() || "}";
+
+  const typeLexemes = TYPE_FIELDS.map((key) => getKeywordValue(context, key));
+  const ioLexemes = IO_FIELDS.map((key) => getKeywordValue(context, key));
+  const flowLexemes = FLOW_FIELDS.map((key) => getKeywordValue(context, key));
+  const operatorLexemes = OPERATOR_WORD_FIELDS.map(
+    (field) =>
+      context.draftCustomization.operatorWordMap[field.key]?.trim() ||
+      field.symbol,
+  );
+  const booleanLexemes = (["true", "false"] as const).map(
+    (key) => context.draftCustomization.booleanLiteralMap[key]?.trim() || key,
+  );
+
   return {
     values: {
       preview: context.preview,
-      editedMappings: context.draftCustomization.mappings
-        .filter((mapping) => mapping.custom !== mapping.original)
-        .map((mapping) => ({
-          original: mapping.original,
-          custom: mapping.custom,
-        })),
+      vocabularySections: [
+        {
+          title: "Tipos",
+          items: typeLexemes,
+        },
+        {
+          title: "I/O",
+          items: ioLexemes,
+        },
+        {
+          title: "Estrutura",
+          items: [
+            `terminador: ${statementTerminator}`,
+            `abrir: ${blockOpen}`,
+            `fechar: ${blockClose}`,
+          ],
+        },
+        {
+          title: "Booleanos",
+          items: booleanLexemes,
+        },
+        {
+          title: "Operadores",
+          items: operatorLexemes,
+        },
+        {
+          title: "Fluxo",
+          items: flowLexemes,
+        },
+      ],
       visitedStepIds: context.visitedStepIds,
     },
     actions: {

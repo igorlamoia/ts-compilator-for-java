@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { PerfectScrollbar } from "@/components/ui/perfect-scrollbar";
 import { Textarea } from "@/components/ui/textarea";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { cn } from "@/lib/utils";
 
 export type KeywordReference = {
@@ -30,7 +31,7 @@ export function KeywordReferenceRow<TKey extends string>({
   onDescriptionChange,
 }: KeywordReferenceRowProps<TKey>) {
   const editLabel = item.editLabel ?? item.id;
-
+  const { matches } = useBreakpoint("md");
   return (
     <div className="grid grid-cols-[6rem_minmax(9rem,1fr)] gap-4 px-4 py-5 md:grid-cols-[7rem_minmax(12rem,0.8fr)_minmax(16rem,1.2fr)] md:items-center">
       <div className="flex w-16 flex-col items-center justify-center gap-2 sm:w-20">
@@ -73,7 +74,7 @@ export function KeywordReferenceRow<TKey extends string>({
               onDescriptionChange(item.id, event.target.value)
             }
             aria-label={`Definição semântica para ${editLabel}`}
-            rows={1}
+            rows={matches ? 1 : 2}
             className="min-h-11 resize-y border-white/10 bg-transparent py-2.5 text-sm font-medium leading-6 text-slate-400 placeholder:text-slate-600 focus:bg-transparent md:resize-none"
           />
         </PerfectScrollbar>
